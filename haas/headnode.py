@@ -11,7 +11,7 @@ which are not are labeld as such (typically under the heading
 
 import uuid
 from subprocess import check_call as cmd
-from spl import config
+from haas import config
 
 class Connection(object):
     """A connection to libvirtd"""

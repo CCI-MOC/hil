@@ -1,8 +1,8 @@
 
 from flask import Flask, jsonify, abort, make_response, request
-import spl.control
-import spl.er
-import spl.config
+import haas.control
+import haas.er
+import haas.config
 from flask.ext.httpauth import HTTPBasicAuth
 auth = HTTPBasicAuth()
 
@@ -29,7 +29,7 @@ def verify_password(username, password):
 def get_groups():
     print g.username
     groups = []
-    for group in  spl.control.query_db(spl.er.Group):
+    for group in  haas.control.query_db(haas.er.Group):
         print group
         groups.append({
                 'group_name':group.group_name,
@@ -43,7 +43,7 @@ def get_groups():
 
 @app.route('/groups/<group_name>', methods = ['GET'])
 def get_group(group_name):
-    group = spl.control.get_entity_by_cond(spl.er.Group,"group_name=='%s'"%group_name)
+    group = haas.control.get_entity_by_cond(haas.er.Group,"group_name=='%s'"%group_name)
 
     group_dict ={
         'group_name': group.group_name,
@@ -55,7 +55,7 @@ def get_group(group_name):
 
 @app.route('/groups/<group_name>/nodes', methods = ['GET'])
 def get_group_nodes(group_name):
-    group = spl.control.get_entity_by_cond(spl.er.Group,"group_name=='%s'"%group_name)
+    group = haas.control.get_entity_by_cond(haas.er.Group,"group_name=='%s'"%group_name)
     nodes = []
     print group
     for node in group.nodes:
@@ -67,8 +67,8 @@ def get_group_nodes(group_name):
 @app.route('/groups/<group_name>/nodes/add/<node_id>',methods = ['GET'])
 def add_node_to_group(group_name,node_id):
     node_id = int(node_id)
-    group = spl.control.get_entity_by_cond(spl.er.Group,'group_name == "%s"'%group_name)
-    node = spl.control.get_entity_by_cond(spl.er.Node, 'node_id == %d'%node_id)
+    group = haas.control.get_entity_by_cond(haas.er.Group,'group_name == "%s"'%group_name)
+    node = haas.control.get_entity_by_cond(haas.er.Node, 'node_id == %d'%node_id)
     if not group or not node or node.available == False:
         abort(400)
     node.group = group
@@ -77,8 +77,8 @@ def add_node_to_group(group_name,node_id):
 @app.route('/groups/<group_name>/nodes/remove/<node_id>',methods = ['GET'])
 def remove_node_from_group(group_name,node_id):
     node_id = int(node_id)
-    group = spl.control.get_entity_by_cond(spl.er.Group,'group_name == "%s"'%group_name)
-    node = spl.control.get_entity_by_cond(spl.er.Node, 'node_id == %d'%node_id)
+    group = haas.control.get_entity_by_cond(haas.er.Group,'group_name == "%s"'%group_name)
+    node = haas.control.get_entity_by_cond(haas.er.Node, 'node_id == %d'%node_id)
     if not group or not node:
         abort(400)
     node.group = None
@@ -98,13 +98,13 @@ def create_group():
         'deployed' : False
     }
     print group
-    spl.control.create_group(group['group_name'],group['vm_name'],group['network_id'])
+    haas.control.create_group(group['group_name'],group['vm_name'],group['network_id'])
     groups.append(group)
     return jsonify({ 'group':group}), 201
 
 @app.route('/groups/<group_name>', methods = ['DELETE'])
 def destroy_group(group_name):
-    spl.control.destroy_group(group_name)
+    haas.control.destroy_group(group_name)
     return get_groups()
 
 

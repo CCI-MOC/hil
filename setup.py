@@ -1,10 +1,10 @@
 
 from setuptools import setup, find_packages
-setup(name='spl',
+setup(name='haas',
       version='1.0',
       url='https://github.com/CCI-MOC/moc-public',
       packages=find_packages(),
-      scripts=['spl_init.py', 'spl_restful.py', 'spl_shell.py'],
+      scripts=['haas_init.py', 'haas_restful.py', 'haas_shell.py'],
       install_requires=[
           'flask',
           'sqlalchemy',

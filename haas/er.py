@@ -148,7 +148,7 @@ class User(Base):
     def __repr__(self):
         return "User<user_name:%r user_type:%r user_password:%r>"%(self.user_name,self.user_type,self.password)
 
-engine=create_engine('sqlite:///spl.db',echo=False)
+engine=create_engine('sqlite:///haas.db',echo=False)
 Base.metadata.create_all(engine)
 Session=sessionmaker(bind=engine)
 session=Session()

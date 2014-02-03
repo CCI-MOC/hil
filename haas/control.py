@@ -1,5 +1,5 @@
 from er import *
-import spl.config
+import haas.config
 
 import os
 import os.path
