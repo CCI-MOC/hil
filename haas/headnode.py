@@ -95,6 +95,8 @@ class HeadNode(object):
         cmd(['brctl', 'addbr', bridge])
         cmd(['vconfig', 'add', config.trunk_nic, vlan_id])
         cmd(['brctl', 'addif', bridge, vlan_nic])
+        cmd(['ifconfig', bridge, 'up', 'promisc'])
+        cmd(['ifconfig', vlan_nic, 'up', 'promisc'])
         cmd(['virsh', 'attach-interface', self.name, 'bridge', bridge, '--config'])
         self.nics.append(vlan_id)
 
@@ -105,6 +107,8 @@ class HeadNode(object):
             nic = str(nic)
             bridge = 'br-vlan%s' % nic
             vlan_nic = '%s.%d' % (config.trunk_nic, nic)
+            cmd(['ifconfig', bridge, 'down'])
+            cmd(['ifconfig', vlan_nic, 'down'])
             cmd(['brctl', 'delif', bridge, vlan_nic])
             cmd(['vconfig', 'rem', vlan_nic])
             cmd(['brctl', 'delbr', bridge])
