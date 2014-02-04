@@ -145,7 +145,7 @@ def deploy_group(group_name):
     group = get_entity_by_cond(Group,'group_name=="%s"'%group_name)
     vm_name = group.vm.vm_name
     
-    vm_node = headnode.HeadNode(vm_name)
+    vm_node = haas.headnode.HeadNode(vm_name)
     
     port_list = ""
     for node in group.nodes:
@@ -164,9 +164,10 @@ def deploy_group(group_name):
     dell.edit_ports_on_vlan("",str(vlan_id),True)
 
 def create_head_node():
-    conn = headnode.Connection()
+    conn = haas.headnode.Connection()
     vm_node = conn.make_headnode()
     vm = VM(vm_node.name)
+    print vm.vm_name
     session.add(vm)
     session.commit()
 
