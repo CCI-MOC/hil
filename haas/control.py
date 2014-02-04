@@ -1,6 +1,6 @@
 from er import *
 import haas.config
-
+import haas.headnode
 import os
 import os.path
 import dell
@@ -143,14 +143,37 @@ def check_same_non_empty_list(ls):
 
 def deploy_group(group_name):
     group = get_entity_by_cond(Group,'group_name=="%s"'%group_name)
+    vm_name = group.vm.vm_name
+    
+    vm_node = headnode.HeadNode(vm_name)
+    
     port_list = ""
     for node in group.nodes:
         port_list = port_list + str(node.nics[0].port.port_no)+","
     
     port_list = port_list[0:-1]
     vlan_id = group.vlans[0].vlan_id
+    
+    vm_node.add_nic(vlan_id)
+    vm_node.start()
+    
     print vlan_id
     print port_list
     
     dell.make_remove_vlans(str(vlan_id),True)
     dell.edit_ports_on_vlan("",str(vlan_id),True)
+
+def create_head_node():
+    conn = headnode.Connection()
+    vm_node = conn.make_headnode()
+    vm = VM(vm_node.name)
+    session.add(vm)
+    session.commit()
+
+def attach_head_node(group_name,vm_name):
+    group = get_entity_by_cond(Group,'group_name=="%s"'%group_name)
+    vm = get_entity_by_cond(VM,'vm_name=="%s"'%vm_name)
+    vm.available = False
+    group.vm = vm
+    session.commit()
+

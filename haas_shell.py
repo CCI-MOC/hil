@@ -2,6 +2,7 @@ import haas.command_pattern
 import haas.control
 import haas.er
 
+
 class_name={'group':haas.er.Group,
             'vm':haas.er.VM,
             'node':haas.er.Node,
