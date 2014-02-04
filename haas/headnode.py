@@ -103,7 +103,7 @@ class HeadNode(object):
         cmd(['virsh', 'undefine', self.name, '--remove-all-storage'])
         for nic in self.nics:
             nic = str(nic)
-            bridge = 'br-vlan%d' % nic
+            bridge = 'br-vlan%s' % nic
             vlan_nic = '%s.%d' % (config.trunk_nic, nic)
             cmd(['brctl', 'delif', bridge, vlan_nic])
             cmd(['vconfig', 'rem', vlan_nic])
