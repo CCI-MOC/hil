@@ -161,7 +161,7 @@ def deploy_group(group_name):
     print port_list
     
     dell.make_remove_vlans(str(vlan_id),True)
-    dell.edit_ports_on_vlan("",str(vlan_id),True)
+    dell.edit_ports_on_vlan(port_list,str(vlan_id),True)
 
 def create_head_node():
     conn = haas.headnode.Connection()
