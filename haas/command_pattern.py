@@ -79,5 +79,5 @@ add_node = re.compile('^node add (\d+) (\w+)$')
 #create a headnode
 create_headnode = re.compile('^headnode create$')
 #attach a headnode to a group
-attach_headnode = re.compile('^headnode attach (\w+) (\w+)$');
+attach_headnode = re.compile('^headnode attach ([\w-]+) (\w+)$');
 

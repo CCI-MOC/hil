@@ -1,7 +1,7 @@
 import haas.command_pattern
 import haas.control
 import haas.er
-import getch
+import getpass
 import sys
 
 class_name={'group':haas.er.Group,
@@ -132,7 +132,7 @@ def attach_headnode(cmd):
 
 while True:
     user_name = raw_input('user:')
-    print "password:",
+    '''print "password:",
     password = ""
     while True:
         ch = getch.getch()
@@ -141,6 +141,8 @@ while True:
         password += ch
         sys.stdout.write('*')
     print
+    '''
+    password = getpass.getpass("Password: ")
     if auth(user_name,password):
       haas.control.login_user(user_name)
       break
@@ -149,7 +151,9 @@ while True:
 
 while True:
     cmd = raw_input('haas>')
-    if haas.command_pattern.create_group.match(cmd):
+    if cmd=="":
+        pass
+    elif haas.command_pattern.create_group.match(cmd):
         create_group(cmd)
     elif cmd == 'show all':
         show_all()
