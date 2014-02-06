@@ -6,7 +6,7 @@ Base=declarative_base()
 
 class NIC(Base):
     __tablename__ = 'nics'
-    
+    meta      = ["NIC id","MAC address","Name","Available","Node id","Port id"]
     nic_id    = Column(Integer, primary_key = True)
     mac_addr  = Column(String)
     # The name is one of ipmi, pxe, data0, data1
@@ -32,31 +32,43 @@ class NIC(Base):
             self.available,
             self.node_id if self.node else None,
             self.port_id if self.port else None)
-        
+    def list_repr(self):
+        return [self.nic_id,
+                self.mac_addr,
+                self.name,
+                self.available,
+                self.node_id if self.node else None,
+                self.port_id if self.port else None]
         
 class Node(Base):
     __tablename__='nodes'
 
+    meta       = ["Node id","Available","Group"]
     node_id    = Column(Integer,primary_key=True)
     available  = Column(Boolean)
     group_name = Column(String,ForeignKey('groups.group_name'))
     #Many to one mapping to group
     group      = relationship("Group",backref=backref('nodes',order_by=node_id))
 
-
+    
 
     def __init__(self,node_id,available = True):
         self.node_id   = node_id
         self.available = available
 
     def __repr__(self):
-        return "<Node(node_id:%r available:%r group_name:%r)"%(
+        return "<Node(node_id:%r available:%r group_name:%r>"%(
             self.node_id,
             self.available,
             self.group.group_name if self.group else None)
-
+    
+    def list_repr(self):
+        return [self.node_id,self.available,self.group_name if self.group else None]
+    
+    
 class Group(Base):
     __tablename__='groups'
+    meta        = ["Group name","Deployed","Owner name"]
     group_name  = Column(String,primary_key=True)
     vm_name     = Column(String,ForeignKey('vms.vm_name'))
     deployed    = Column(Boolean)
@@ -76,9 +88,14 @@ class Group(Base):
           self.group_name,
           self.deployed,
           self.owner_name)
+    def list_repr(self):
+        return [self.group_name,
+                self.deployed,
+                self.owner_name]
 
 class VM(Base):
     __tablename__ = 'vms'
+    meta          = ["VM name","Available","Group"]
     vm_name       = Column(String,primary_key=True)
     available     = Column(Boolean)
 
@@ -87,12 +104,17 @@ class VM(Base):
         self.available = available
 
     def __repr__(self):
-        return "<VM(%r %r)>"%(self.vm_name,self.available)
+        return "<VM(%r %r %r)>"%(self.vm_name,self.available,self.group.group_name if self.group else None)
+    def list_repr(self):
+        return [self.vm_name,
+                self.available,
+                self.group.group_name if self.group else None]
 
 
 
 class Vlan(Base):
     __tablename__ ='vlans'
+    meta          = ["VLAN id","Available","Group","NIC name"]
     vlan_id       = Column(Integer,primary_key=True)
     available     = Column(Boolean)
     nic_name      = Column(String)
@@ -103,14 +125,20 @@ class Vlan(Base):
         self.vlan_id   = vlan_id
         self.available = available
     def __repr__(self):
-        return "Vlan(vlan_id:%r available:%r group_name:%r nic_name:%r)"%(
+        return "Vlan<vlan_id:%r available:%r group_name:%r nic_name:%r>"%(
             self.vlan_id,
             self.available,
             self.group_name if self.group_name else None,
             self.nic_name if self.nic_name else None)
+    def list_repr(self):
+        return [self.vlan_id,
+                self.available,
+                self.group_name if self.group else None,
+                self.nic_name if self.nic_name else None]
 
 class Port(Base):
     __tablename__ = 'ports'
+    meta          = ["Port id","Switch id","Port #"]
     port_id       = Column(Integer,primary_key=True)
     switch_id     = Column(Integer,ForeignKey('switches.switch_id'))
     port_no       = Column(Integer)
@@ -121,11 +149,15 @@ class Port(Base):
         self.port_no   = port_no
     
     def __repr__(self):
-        return "Port(port_id:%r switch_id:%r port_no:%r)"%(self.port_id,self.switch_id,self.port_no)
-
+        return "Port<port_id:%r switch_id:%r port_no:%r>"%(self.port_id,self.switch_id,self.port_no)
+    def list_repr(self):
+        return [self.port_id,
+                self.switch_id,
+                self.port_no]
 
 class Switch(Base):
     __tablename__ = 'switches'
+    meta          = ["Switch id","Model"]
     switch_id     = Column(Integer,primary_key=True)
     script        = Column(String)
 
@@ -133,10 +165,14 @@ class Switch(Base):
         self.switch_id = switch_id
         self.script    = script
     def __repr__(self):
-        return "Switch(switch_id:%r script:%r)"%(self.switch_id,self.script)
+        return "Switch<switch_id:%r script:%r>"%(self.switch_id,self.script)
 
+    def list_repr(self):
+        return [self.switch_id,self.script]
+        
 class User(Base):
     __tablename__ = 'users'
+    meta      = ["User name","Type"]
     user_name = Column(String,primary_key=True)
     user_type = Column(String)
     password  = Column(String)
@@ -146,8 +182,11 @@ class User(Base):
         self.user_type = user_type
         self.password  = password
     def __repr__(self):
-        return "User<user_name:%r user_type:%r user_password:%r>"%(self.user_name,self.user_type,self.password)
+        return "User<user_name:%r user_type:%r>"%(self.user_name,self.user_type)
 
+    def list_repr(self):
+        return [self.user_name,self.user_type]
+        
 engine=create_engine('sqlite:///haas.db',echo=False)
 Base.metadata.create_all(engine)
 Session=sessionmaker(bind=engine)

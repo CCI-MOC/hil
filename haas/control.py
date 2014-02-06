@@ -4,13 +4,16 @@ import haas.headnode
 import os
 import os.path
 import dell
-
+import tabulate
 current_user = ""
 
 def query_db(classname):
     all=session.query(classname).all()
+    table = [classname.meta]
     for some in all:
-        print some
+        table.append(some.list_repr())
+    print tabulate.tabulate(table,headers="firstrow")
+    print
     return all
 
 def create_user(user_name,password):
@@ -68,6 +71,7 @@ def connect_vlan(vlan_id,group_name,nic_name):
     group          = get_entity_by_cond(Group,'group_name=="%s"'%group_name)
     vlan.nic_name  = nic_name
     vlan.group     = group
+    vlan.available = False
     session.commit()
 
 
@@ -163,7 +167,7 @@ def deploy_group(group_name):
     dell.make_remove_vlans(str(vlan_id),True)
     dell.edit_ports_on_vlan(port_list,str(vlan_id),True)
 
-def create_head_node():
+def create_headnode():
     conn = haas.headnode.Connection()
     vm_node = conn.make_headnode()
     vm = VM(vm_node.name)
@@ -171,7 +175,7 @@ def create_head_node():
     session.add(vm)
     session.commit()
 
-def attach_head_node(group_name,vm_name):
+def attach_headnode(vm_name,group_name):
     group = get_entity_by_cond(Group,'group_name=="%s"'%group_name)
     vm = get_entity_by_cond(VM,'vm_name=="%s"'%vm_name)
     vm.available = False

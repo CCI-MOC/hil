@@ -28,6 +28,6 @@ haas.control.create_port(3,1,3)
 
 haas.control.connect_nic(17,17)
 haas.control.connect_nic(16,16)
-haas.control.connect_nic(16,16)
+haas.control.connect_nic(15,15)
 
 
