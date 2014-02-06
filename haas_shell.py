@@ -1,7 +1,8 @@
 import haas.command_pattern
 import haas.control
 import haas.er
-
+import getch
+import sys
 
 class_name={'group':haas.er.Group,
             'vm':haas.er.VM,
@@ -111,7 +112,7 @@ def show_all():
 
 def auth(user_name,password):
     user = haas.control.get_entity_by_cond(haas.er.User,'user_name=="%s"'%(user_name))
-    print user
+    #print user
     if not user:
         return False
     return user.password == password
@@ -120,10 +121,22 @@ def create_user(cmd):
     user_name,password = haas.command_pattern.create_user.match(cmd).groups()
     haas.control.create_user(user_name,password)
 
+def attach_headnode(cmd):
+    parts = haas.command_pattern.attach_headnode.match(cmd);
+    vm_name, group_name = parts.groups()
+    haas.control.attach_headnode(vm_name,group_name)
 
 while True:
     user_name = raw_input('user:')
-    password = raw_input("password:")
+    print "password:",
+    password = ""
+    while True:
+        ch = getch.getch()
+        if ch == '\n':
+            break
+        password += ch
+        sys.stdout.write('*')
+    print
     if auth(user_name,password):
       haas.control.login_user(user_name)
       break
@@ -164,11 +177,13 @@ while True:
     elif haas.command_pattern.connect_vlan.match(cmd):
         connect_vlan(cmd)
     elif haas.command_pattern.add_node.match(cmd):
-        print 'add node'
         add_node(cmd)
     elif haas.command_pattern.remove.match(cmd):
-        print 'remove node'
         remove_node(cmd)
+    elif haas.command_pattern.create_headnode.match(cmd):
+        haas.control.create_headnode()
+    elif haas.command_pattern.attach_headnode.match(cmd):
+        attach_headnode(cmd)
     elif haas.command_pattern.create_user.match(cmd):
         create_user(cmd)
     elif cmd == 'exit':

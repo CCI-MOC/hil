@@ -50,7 +50,7 @@ class Node(Base):
         self.available = available
 
     def __repr__(self):
-        return "<Node(node_id:%r available:%r group_name:%r)"%(
+        return "<Node(node_id:%r available:%r group_name:%r>"%(
             self.node_id,
             self.available,
             self.group.group_name if self.group else None)
@@ -87,7 +87,7 @@ class VM(Base):
         self.available = available
 
     def __repr__(self):
-        return "<VM(%r %r)>"%(self.vm_name,self.available)
+        return "<VM(%r %r %r)>"%(self.vm_name,self.available,self.group.group_name if self.group else None)
 
 
 
@@ -103,7 +103,7 @@ class Vlan(Base):
         self.vlan_id   = vlan_id
         self.available = available
     def __repr__(self):
-        return "Vlan(vlan_id:%r available:%r group_name:%r nic_name:%r)"%(
+        return "Vlan<vlan_id:%r available:%r group_name:%r nic_name:%r>"%(
             self.vlan_id,
             self.available,
             self.group_name if self.group_name else None,
@@ -121,7 +121,7 @@ class Port(Base):
         self.port_no   = port_no
     
     def __repr__(self):
-        return "Port(port_id:%r switch_id:%r port_no:%r)"%(self.port_id,self.switch_id,self.port_no)
+        return "Port<port_id:%r switch_id:%r port_no:%r>"%(self.port_id,self.switch_id,self.port_no)
 
 
 class Switch(Base):
@@ -133,7 +133,7 @@ class Switch(Base):
         self.switch_id = switch_id
         self.script    = script
     def __repr__(self):
-        return "Switch(switch_id:%r script:%r)"%(self.switch_id,self.script)
+        return "Switch<switch_id:%r script:%r>"%(self.switch_id,self.script)
 
 class User(Base):
     __tablename__ = 'users'
@@ -146,7 +146,7 @@ class User(Base):
         self.user_type = user_type
         self.password  = password
     def __repr__(self):
-        return "User<user_name:%r user_type:%r user_password:%r>"%(self.user_name,self.user_type,self.password)
+        return "User<user_name:%r user_type:%r>"%(self.user_name,self.user_type)
 
 engine=create_engine('sqlite:///haas.db',echo=False)
 Base.metadata.create_all(engine)

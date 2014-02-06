@@ -11,20 +11,10 @@ group create <group_name>
 vlan create <vlan_id>
 vlan connect <vlan_id> <group_name> <nic_name>
 node add <node_id> <group_name>
+headnode create
+headnode attach <vm_name> <group_name>
+group deploy <group_name>
 
-show all
-show <specific table>
-show free [specific table]
-show group <group_name>
-create vlan <vlan_id>
-destroy vlan <vlan_id>
-create group <group_name> vlan <vlan_id> head-node <vm_name>
-destroy group <group_name>
-
-remove <node_ids> from <group_name>
-change <group_name> vlan to <vlan_id>
-change <group_name> head to <vm_name>
-deploy
 exit
 '''
 create_user = re.compile('^create user (\w+) (\w+)$')
@@ -85,4 +75,9 @@ connect_vlan = re.compile('^vlan connect (\d+) (\w+) (\w+)$')
 
 #add a node to group
 add_node = re.compile('^node add (\d+) (\w+)$')
+
+#create a headnode
+create_headnode = re.compile('^headnode create$')
+#attach a headnode to a group
+attach_headnode = re.compile('^headnode attach (\w+) (\w+)$');
 
