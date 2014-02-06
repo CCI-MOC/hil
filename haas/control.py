@@ -71,6 +71,7 @@ def connect_vlan(vlan_id,group_name,nic_name):
     group          = get_entity_by_cond(Group,'group_name=="%s"'%group_name)
     vlan.nic_name  = nic_name
     vlan.group     = group
+    vlan.available = False
     session.commit()
 
 
