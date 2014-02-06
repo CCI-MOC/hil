@@ -6,6 +6,10 @@ import sys
 
 class_name={'group':haas.er.Group,
             'vm':haas.er.VM,
+            'port':haas.er.Port,
+            'nic':haas.er.NIC,
+            'vlan':haas.er.Vlan,
+            'switch':haas.er.Switch,
             'node':haas.er.Node,
             'user':haas.er.User}
 
