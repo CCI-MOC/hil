@@ -13,6 +13,7 @@ def query_db(classname):
     for some in all:
         table.append(some.list_repr())
     print tabulate.tabulate(table,headers="firstrow")
+    print
     return all
 
 def create_user(user_name,password):
