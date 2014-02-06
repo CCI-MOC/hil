@@ -4,13 +4,15 @@ import haas.headnode
 import os
 import os.path
 import dell
-
+import tabulate
 current_user = ""
 
 def query_db(classname):
     all=session.query(classname).all()
+    table = [classname.meta]
     for some in all:
-        print some
+        table.append(some.list_repr())
+    print tabulate.tabulate(table,headers="firstrow")
     return all
 
 def create_user(user_name,password):
