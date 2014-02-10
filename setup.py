@@ -9,5 +9,6 @@ setup(name='haas',
           'flask',
           'sqlalchemy',
           'Flask-HTTPAuth',
+          'tabulate',
       ],
       )
