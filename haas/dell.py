@@ -22,6 +22,8 @@ def edit_ports_on_vlan(port_ids,vlan_id,add,switch_ip='192.168.3.245'):
     # Expects that you send a comma separated list of ports
     # A string for vlan_id
     # And a bool for adding (True = adding, False = Removing)
+    if port_ids == "":
+       return
     x=0
     for port_id in port_ids.split(','):
         if add:
