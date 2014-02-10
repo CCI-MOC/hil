@@ -70,7 +70,7 @@ def add_node_to_group(group_name,node_id):
     group = haas.control.get_entity_by_cond(haas.er.Group,'group_name == "%s"'%group_name)
     node = haas.control.get_entity_by_cond(haas.er.Node, 'node_id == %d'%node_id)
     if not group or not node or node.available == False:
-        abort(400)
+        abort(404)
     node.group = group
     return get_group_nodes(group_name)
 
@@ -80,7 +80,7 @@ def remove_node_from_group(group_name,node_id):
     group = haas.control.get_entity_by_cond(haas.er.Group,'group_name == "%s"'%group_name)
     node = haas.control.get_entity_by_cond(haas.er.Node, 'node_id == %d'%node_id)
     if not group or not node:
-        abort(400)
+        abort(404)
     node.group = None
     node.available = True
     return get_group_nodes(group_name)
