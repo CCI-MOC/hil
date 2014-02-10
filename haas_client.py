@@ -23,11 +23,11 @@ def get_group_nodes(group_name):
     print r.text
 
 def add_node_to_group(group_name,node_id):
-    r = requests.get('http://%s/groups/%s/nodes/add/%d'%(ip_addr,group_name,node_id))
+    r = requests.post('http://%s/groups/%s/nodes/add/%d'%(ip_addr,group_name,node_id))
     print r.text
 
 def remove_node_from_group(group_name,node_id):
-    r = requests.get('http://%s/groups/%s/nodes/remove/%d'%(ip_addr,group_name,node_id))
+    r = requests.delete('http://%s/groups/%s/nodes/remove/%d'%(ip_addr,group_name,node_id))
     print r.text
 
 def destroy_group(group_name):

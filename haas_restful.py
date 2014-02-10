@@ -64,7 +64,7 @@ def get_group_nodes(group_name):
     nodes_dict={"nodes":nodes}
     return jsonify(nodes_dict)
 
-@app.route('/groups/<group_name>/nodes/add/<node_id>',methods = ['GET'])
+@app.route('/groups/<group_name>/nodes/add/<node_id>',methods = ['POST'])
 def add_node_to_group(group_name,node_id):
     node_id = int(node_id)
     group = haas.control.get_entity_by_cond(haas.er.Group,'group_name == "%s"'%group_name)
@@ -74,7 +74,7 @@ def add_node_to_group(group_name,node_id):
     node.group = group
     return get_group_nodes(group_name)
 
-@app.route('/groups/<group_name>/nodes/remove/<node_id>',methods = ['GET'])
+@app.route('/groups/<group_name>/nodes/remove/<node_id>',methods = ['DELETE'])
 def remove_node_from_group(group_name,node_id):
     node_id = int(node_id)
     group = haas.control.get_entity_by_cond(haas.er.Group,'group_name == "%s"'%group_name)
