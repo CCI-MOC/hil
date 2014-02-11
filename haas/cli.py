@@ -1,5 +1,6 @@
 
 from haas import control
+import re
 
 # A list of tuples of the form `(matcher, func)`, where `func` is a
 # function to run when a command matching matcher is executed. Commands
@@ -46,7 +47,7 @@ def run_command(args):
         match = matcher.match(args)
         if not match:
             continue
-        func(*match.group())
+        func(*match.groups())
         return True
     return False 
 
@@ -90,7 +91,7 @@ def connect_nic(nic_id, port_id):
     return control.connect_nic(nic_id, port_id)
 
 @command('switch create (\d+) (\w+)')
-def create_switch(switch_id, script)
+def create_switch(switch_id, script):
     control.create_switch(int(switch_id), script)
 
 create_port = re.compile('^port create (\d+) (\d+) (\d+)$')
@@ -110,7 +111,7 @@ destroy_vlan = re.compile('^destroy vlan (\d+)')
 create_user = re.compile('^create user (\w+) (\w+)$')
 remove = re.compile('^remove (\S+) from (\w+)$')
 
-@command('headnode attach ([\w-]+) (\w+)');
+@command('headnode attach ([\w-]+) (\w+)')
 def headnode_attach(vlan_id, group_name): pass
 
 @command('exit')
