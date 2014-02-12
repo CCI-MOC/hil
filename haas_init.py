@@ -41,7 +41,7 @@ def create_switch_pool():
 def create_port_pool():
     keys=["port_id","switch_id","port_no"]
     with open(haas.config.file_names["port"]) as file:
-        for line in file):
+        for line in file:
             values = line.rstrip().split(" ")
             d = dict(zip(keys,values))
             session.add(Port(int(d["port_id"]),int(d["switch_id"]),int(d["port_no"])))
