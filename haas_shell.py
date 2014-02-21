@@ -1,17 +1,17 @@
 import haas.command_pattern
 import haas.control
-import haas.er
+import haas.model
 import getpass
 import sys
 
-class_name={'group':haas.er.Group,
-            'vm':haas.er.VM,
-            'port':haas.er.Port,
-            'nic':haas.er.NIC,
-            'vlan':haas.er.Vlan,
-            'switch':haas.er.Switch,
-            'node':haas.er.Node,
-            'user':haas.er.User}
+class_name={'group':haas.model.Group,
+            'vm':haas.model.VM,
+            'port':haas.model.Port,
+            'nic':haas.model.NIC,
+            'vlan':haas.model.Vlan,
+            'switch':haas.model.Switch,
+            'node':haas.model.Node,
+            'user':haas.model.User}
 
 def create_group(cmd):
     '''
@@ -105,17 +105,17 @@ def show_table(cmd):
     haas.control.query_db(class_name[table])
 
 def show_all():
-    haas.control.query_db(haas.er.Node)
-    haas.control.query_db(haas.er.NIC)
-    haas.control.query_db(haas.er.Port)
-    haas.control.query_db(haas.er.Vlan)
-    haas.control.query_db(haas.er.VM)
-    haas.control.query_db(haas.er.Switch)
-    haas.control.query_db(haas.er.Group)
-    haas.control.query_db(haas.er.User)
+    haas.control.query_db(haas.model.Node)
+    haas.control.query_db(haas.model.NIC)
+    haas.control.query_db(haas.model.Port)
+    haas.control.query_db(haas.model.Vlan)
+    haas.control.query_db(haas.model.VM)
+    haas.control.query_db(haas.model.Switch)
+    haas.control.query_db(haas.model.Group)
+    haas.control.query_db(haas.model.User)
 
 def auth(user_name,password):
-    user = haas.control.get_entity_by_cond(haas.er.User,'user_name=="%s"'%(user_name))
+    user = haas.control.get_entity_by_cond(haas.model.User,'user_name=="%s"'%(user_name))
     #print user
     if not user:
         return False

@@ -1,4 +1,4 @@
-from haas.er import *
+from haas.model import *
 import haas.config
 import haas.control
 def create_node_pool():
