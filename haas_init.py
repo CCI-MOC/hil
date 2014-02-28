@@ -62,7 +62,7 @@ def connect_node_to_port():
 def add_users():
     keys=["user_name","password","user_type"]
     with open(haas.config.file_names["user"]) as file:
-        for line in open(haas.config.file_names["user"]):
+        for line in file:
             values = line.rstrip().split(" ")
             d = dict(zip(keys,values))
             session.add(User(d["user_name"],d["password"],d["user_type"]))
