@@ -7,6 +7,8 @@ import dell
 import tabulate
 current_user = ""
 
+from sqlalchemy.exc import IntegrityError
+
 class DuplicateError(Exception):
     pass
 
@@ -79,9 +81,13 @@ def connect_vlan(vlan_id,group_name,nic_name):
 
 
 def create_vlan(vlan_id):
-    vlan = Vlan(vlan_id)
-    session.add(vlan)
-    session.commit()
+    print vlan_id
+    try:
+        vlan = Vlan(vlan_id)
+        session.add(vlan)
+        session.commit()
+    except IntegrityError:
+        raise DuplicateError('duplicate vlan #%d.' % vlan_id)
 
 def add_node_to_group(node_id,group_name):
     #ownership check
