@@ -1,4 +1,4 @@
-from haas.er import *
+from haas.model import *
 import haas.config
 import haas.control
 def create_node_pool():
@@ -41,7 +41,7 @@ def create_switch_pool():
 def create_port_pool():
     keys=["port_id","switch_id","port_no"]
     with open(haas.config.file_names["port"]) as file:
-        for line in file):
+        for line in file:
             values = line.rstrip().split(" ")
             d = dict(zip(keys,values))
             session.add(Port(int(d["port_id"]),int(d["switch_id"]),int(d["port_no"])))
@@ -62,7 +62,7 @@ def connect_node_to_port():
 def add_users():
     keys=["user_name","password","user_type"]
     with open(haas.config.file_names["user"]) as file:
-        for line in open(haas.config.file_names["user"]):
+        for line in file:
             values = line.rstrip().split(" ")
             d = dict(zip(keys,values))
             session.add(User(d["user_name"],d["password"],d["user_type"]))

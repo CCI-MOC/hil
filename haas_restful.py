@@ -1,7 +1,7 @@
 
 from flask import Flask, jsonify, abort, make_response, request
 import haas.control
-import haas.er
+import haas.model
 import haas.config
 from flask.ext.httpauth import HTTPBasicAuth
 auth = HTTPBasicAuth()
@@ -29,7 +29,7 @@ def verify_password(username, password):
 def get_groups():
     print g.username
     groups = []
-    for group in  haas.control.query_db(haas.er.Group):
+    for group in  haas.control.query_db(haas.model.Group):
         print group
         groups.append({
                 'group_name':group.group_name,
@@ -43,7 +43,7 @@ def get_groups():
 
 @app.route('/groups/<group_name>', methods = ['GET'])
 def get_group(group_name):
-    group = haas.control.get_entity_by_cond(haas.er.Group,"group_name=='%s'"%group_name)
+    group = haas.control.get_entity_by_cond(haas.model.Group,"group_name=='%s'"%group_name)
 
     group_dict ={
         'group_name': group.group_name,
@@ -55,7 +55,7 @@ def get_group(group_name):
 
 @app.route('/groups/<group_name>/nodes', methods = ['GET'])
 def get_group_nodes(group_name):
-    group = haas.control.get_entity_by_cond(haas.er.Group,"group_name=='%s'"%group_name)
+    group = haas.control.get_entity_by_cond(haas.model.Group,"group_name=='%s'"%group_name)
     nodes = []
     print group
     for node in group.nodes:
@@ -67,8 +67,8 @@ def get_group_nodes(group_name):
 @app.route('/groups/<group_name>/nodes/add/<node_id>',methods = ['POST'])
 def add_node_to_group(group_name,node_id):
     node_id = int(node_id)
-    group = haas.control.get_entity_by_cond(haas.er.Group,'group_name == "%s"'%group_name)
-    node = haas.control.get_entity_by_cond(haas.er.Node, 'node_id == %d'%node_id)
+    group = haas.control.get_entity_by_cond(haas.model.Group,'group_name == "%s"'%group_name)
+    node = haas.control.get_entity_by_cond(haas.model.Node, 'node_id == %d'%node_id)
     if not group or not node or node.available == False:
         abort(404)
     node.group = group
@@ -77,8 +77,8 @@ def add_node_to_group(group_name,node_id):
 @app.route('/groups/<group_name>/nodes/remove/<node_id>',methods = ['DELETE'])
 def remove_node_from_group(group_name,node_id):
     node_id = int(node_id)
-    group = haas.control.get_entity_by_cond(haas.er.Group,'group_name == "%s"'%group_name)
-    node = haas.control.get_entity_by_cond(haas.er.Node, 'node_id == %d'%node_id)
+    group = haas.control.get_entity_by_cond(haas.model.Group,'group_name == "%s"'%group_name)
+    node = haas.control.get_entity_by_cond(haas.model.Node, 'node_id == %d'%node_id)
     if not group or not node:
         abort(404)
     node.group = None
@@ -108,6 +108,41 @@ def destroy_group(group_name):
     return get_groups()
 
 
+'''
+new interface begins
+'''
+
+@app.route('/nodes',methods = ['POST'])
+def create_node():
+    node_id = request.json['node_id']
+    haas.control.create_node(node_id)
+    return jsonify({'node_id':node_id}),201
+    
+@app.route('/nics',methods=['POST'])
+def create_nic():
+    nic = {}
+    nic["nic_id"] = request.json['nic_id']
+    nic["mac_addr"] = request.json['mac_addr']
+    nic["name"] = request.json['name']
+    haas.control.create_nic(nic["nic_id"],nic["mac_addr"],nic["name"])
+    return jsonify(nic),201
+
+@app.route('/switches',methods=['POST'])
+def create_switch():
+    switch = {}
+    switch["switch_id"] = request.json['switch_id']
+    switch['script'] = request.json['script']
+    haas.control.create_switch(switch['switch_id'],switch['script'])
+    return jsonify(switch),201
+
+@app.route('/ports',methods=['POST'])
+def create_port():
+    port = {}
+    port["port_id"] = request.json['port_id']
+    port['switch_id'] = request.json['switch_id']
+    port['port_no'] = request.json['port_no']
+    haas.control.create_port(port['port_id'],port['switch_id'],port['port_no'])
+    return jsonify(port),201
 
 if __name__ == '__main__':
     app.run(debug = True)
