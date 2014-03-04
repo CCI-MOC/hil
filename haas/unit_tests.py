@@ -29,7 +29,18 @@ class TestModels(unittest.TestCase):
         """Make sure `create_vlan` raises an appropriate error for duplicate vlans."""
         create_vlan(108)
         self.assertRaises(DuplicateError, create_vlan, (108))
-
-
+        session.rollback()
+        
+        
+    #one node only has one pxe nic
+    #cannot add an unavailable node to a group
+    
+    #test_exist
+    def test_exist(self):
+        create_node(2)
+        print 'what about i'
+        self.assertRaises(NotExistError,add_node_to_group,2,'alice_group')
+        
+        
 if __name__ == '__main__':
     unittest.main()
