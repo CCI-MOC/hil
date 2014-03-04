@@ -118,6 +118,9 @@ def deploy_group(group_name):
 def create_user(user_name,password):
     control.create_user(user_name,password)
     
+@command('headnode create')
+def headnode_create():
+    control.create_headnode()
 
 @command('headnode attach ([\w-]+) (\w+)')
 def headnode_attach(vm_name, group_name):
