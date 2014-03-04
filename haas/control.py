@@ -7,6 +7,9 @@ import dell
 import tabulate
 current_user = ""
 
+class DuplicateError(Exception):
+    pass
+
 def query_db(classname):
     all=session.query(classname).all()
     table = [classname.meta]

@@ -16,6 +16,7 @@ from haas.control import *
 class TestModels(unittest.TestCase):
     
     def test_create_vlans(self):
+        """Create two vlans, and make sure both end up in the db."""
         create_vlan(104)
         create_vlan(105)
         self.assertEqual(len(session.query(model.Vlan).all()), 2)
@@ -25,8 +26,9 @@ class TestModels(unittest.TestCase):
     # create_vlan is throwing a semantically meaningful exception,
     # rather than the one passed up from sqlalchemy.
     def test_duplicate(self):
+        """Make sure `create_vlan` raises an appropriate error for duplicate vlans."""
         create_vlan(108)
-        create_vlan(108)
+        self.assertRaises(DuplicateError, create_vlan, (108))
 
 
 if __name__ == '__main__':
