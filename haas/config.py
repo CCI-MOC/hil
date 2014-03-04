@@ -14,4 +14,4 @@ paths={
     "headnode-config" : "/var/lib/headnode-config",
 }
 
-trunk_nic = 'eth1'
+trunk_nic = 'eth4'
