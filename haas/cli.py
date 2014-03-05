@@ -81,17 +81,21 @@ def create_group(group_name):
 def create_node(node_id):
     control.create_node(node_id)
 
+@command('node add (\d+) (\w+)')
+def add_node(node_id,group_name):
+    control.add_node_to_group(int(node_id),group_name)
+
 @command('nic create (\d+) (\w+) (\w+)')
 def create_nic(nic_id, mac_addr, name):
     control.create_nic(int(nic_id), mac_addr, name)
 
-@command('nic add (\d+) (\d+)')
-def add_nic(nic_id, node_id):
-    control.add_nic(int(nic_id), int(node_id))
-
 @command('nic connect (\d+) (\d+)')
 def connect_nic(nic_id, port_id):
     control.connect_nic(int(nic_id), int(port_id))
+
+@command('nic add (\d+) (\d+)')
+def add_nic(nic_id, node_id):
+    control.add_nic(int(nic_id), int(node_id))
 
 @command('switch create (\d+) (\w+)')
 def create_switch(switch_id, script):
@@ -109,18 +113,6 @@ def create_vlan(vlan_id):
 def connect_vlan(vlan_id,group_name,nic_name):
     control.connect_vlan(int(vlan_id),group_name,nic_name)
 
-@command('node add (\d+) (\w+)')
-def add_node(node_id,group_name):
-    control.add_node_to_group(int(node_id),group_name)
-
-@command('group deploy (\w+)')
-def deploy_group(group_name):
-    control.destroy_group(group_name)
-    
-@command('user create (\w+) (\w+)')
-def create_user(user_name,password):
-    control.create_user(user_name,password)
-    
 @command('headnode create')
 def headnode_create():
     control.create_headnode()
@@ -129,6 +121,14 @@ def headnode_create():
 def headnode_attach(vm_name, group_name):
     control.attach_headnode(vm_name,group_name)
 
+@command('group deploy (\w+)')
+def deploy_group(group_name):
+    control.destroy_group(group_name)
+    
+@command('user create (\w+) (\w+)')
+def create_user(user_name,password):
+    control.create_user(user_name,password)
+
 @command('show all')
 def show_all():
     control.show_all()
@@ -136,13 +136,6 @@ def show_all():
 @command('show (\w+)')
 def show_table(table_name):
     control.show_table(table_name)
-
- 
-@command('exit')
-def exit_cmd():
-    print 'Bye for now.'
-    raise _QuitException()
-
 
 @command('help')
 def usage():
@@ -167,3 +160,8 @@ def usage():
         exit
         '''
     print help_text
+
+@command('exit')
+def exit_cmd():
+    print 'Bye for now.'
+    raise _QuitException()
