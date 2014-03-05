@@ -1,4 +1,3 @@
-import haas.command_pattern
 import haas.control
 import haas.model
 import getpass
