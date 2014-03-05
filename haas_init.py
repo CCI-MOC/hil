@@ -78,4 +78,5 @@ def load_resources():
     add_users()
 
 if __name__=='__main__':
+    haas.config.load()
     load_resources()

@@ -4,6 +4,9 @@ import haas.model
 import getpass
 import sys
 
+import haas.config
+haas.config.load()
+
 class_name={'group':haas.model.Group,
             'vm':haas.model.VM,
             'port':haas.model.Port,
