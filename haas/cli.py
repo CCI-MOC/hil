@@ -160,6 +160,7 @@ def usage():
         user create <user name> <password>
         show all
         show [ group | vm | port | nic | vlan | switch | node | user ]
+        help
         exit
         '''
     print help_text
