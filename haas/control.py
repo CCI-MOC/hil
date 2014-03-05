@@ -7,6 +7,14 @@ import dell
 import tabulate
 current_user = ""
 
+from sqlalchemy.exc import IntegrityError, InvalidRequestError
+
+class DuplicateError(Exception):
+    pass
+
+class NotExistError(Exception):
+    pass
+
 def query_db(classname):
     all=session.query(classname).all()
     table = [classname.meta]
@@ -76,26 +84,30 @@ def connect_vlan(vlan_id,group_name,nic_name):
 
 
 def create_vlan(vlan_id):
-    vlan = Vlan(vlan_id)
-    session.add(vlan)
-    session.commit()
+    print vlan_id
+    try:
+        vlan = Vlan(vlan_id)
+        session.add(vlan)
+        session.commit()
+    except IntegrityError:
+        raise DuplicateError('duplicate vlan #%d.' % vlan_id)
 
 def add_node_to_group(node_id,group_name):
-    #ownership check
 
     node=get_entity_by_cond(Node,'node_id==%d'%node_id)
     group=get_entity_by_cond(Group,'group_name=="%s"'%group_name)
-
-    if group.owner_name!=current_user and current_user!="admin":
-        print 'access denied'
-        return
-
-    if node.available:
-        node.group=group
-        node.available=False
-    else:
-        print "error: node ",node_id," not available"
-        return
+    try:
+        if group.owner_name!=current_user and current_user!="admin":
+            print 'access denied'
+            return
+        if node.available:
+            node.group=group
+            node.available=False
+        else:
+            print "error: node ",node_id," not available"
+            return
+    except AttributeError:
+        raise NotExistError('Either node %d or group %s does not exist'%(node_id,group_name))        
     session.commit()
 
 def remove_node_from_group(node_id,group_name):
