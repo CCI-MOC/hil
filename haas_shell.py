@@ -15,7 +15,7 @@ def auth(user_name,password):
 
 
 while True:
-    user_name = raw_input('user:')
+    user_name = raw_input('user: ')
     password = getpass.getpass("Password: ")
     if auth(user_name,password):
       haas.control.login_user(user_name)
