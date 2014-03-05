@@ -159,7 +159,7 @@ def usage():
         group deploy <group_name>
         user create <user name> <password>
         show all
-        show <table name>
+        show <group, vm, port, nic, vlan, switch, node, user>
         exit
         '''
     print help_text
