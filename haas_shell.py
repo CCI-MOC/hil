@@ -18,8 +18,8 @@ while True:
     user_name = raw_input('user: ')
     password = getpass.getpass("Password: ")
     if auth(user_name,password):
-      haas.control.login_user(user_name)
-      break
+        haas.control.login_user(user_name)
+        break
     print 'invalid user/password combination!'
 
 haas.cli.main_loop()
