@@ -6,7 +6,6 @@ import haas.cli
 
 def auth(user_name,password):
     user = haas.control.get_entity_by_cond(haas.model.User,'user_name=="%s"'%(user_name))
-    #print user
     if not user:
         return False
     return user.password == password
