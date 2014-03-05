@@ -1,22 +1,5 @@
 import re
 
-help_text='''
-node create <node_id>
-nic create <nic_id> <mac_addr> <name>
-nic add <nic_id> <node_id>
-switch create <switch_id> <script>
-port create <port_id> <switch_id> <port_no>
-nic connect <nic_id> <port_id>
-group create <group_name>
-vlan create <vlan_id>
-vlan connect <vlan_id> <group_name> <nic_name>
-node add <node_id> <group_name>
-headnode create
-headnode attach <vm_name> <group_name>
-group deploy <group_name>
-
-exit
-'''
 create_user = re.compile('^create user (\w+) (\w+)$')
 
 
