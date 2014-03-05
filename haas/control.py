@@ -7,8 +7,7 @@ import dell
 import tabulate
 current_user = ""
 
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.exc import InvalidRequestError
+from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
 class DuplicateError(Exception):
     pass
@@ -94,7 +93,6 @@ def create_vlan(vlan_id):
         raise DuplicateError('duplicate vlan #%d.' % vlan_id)
 
 def add_node_to_group(node_id,group_name):
-    #ownership check
 
     node=get_entity_by_cond(Node,'node_id==%d'%node_id)
     group=get_entity_by_cond(Group,'group_name=="%s"'%group_name)
@@ -109,8 +107,7 @@ def add_node_to_group(node_id,group_name):
             print "error: node ",node_id," not available"
             return
     except AttributeError:
-        print 'attrib'
-        raise NotExistError('node %d or group %s not exists'%(node_id,group_name))        
+        raise NotExistError('Either node %d or group %s does not exist'%(node_id,group_name))        
     session.commit()
 
 def remove_node_from_group(node_id,group_name):

@@ -32,13 +32,9 @@ class TestModels(unittest.TestCase):
         session.rollback()
         
         
-    #one node only has one pxe nic
-    #cannot add an unavailable node to a group
-    
-    #test_exist
     def test_exist(self):
+        """Add a node to a group that does not exist. Should raise a NotExistError."""
         create_node(2)
-        print 'what about i'
         self.assertRaises(NotExistError,add_node_to_group,2,'alice_group')
         
         
