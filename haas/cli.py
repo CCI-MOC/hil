@@ -141,20 +141,22 @@ def exit_cmd():
 @command('help')
 def usage():
     help_text='''
+        group create <group_name>
         node create <node_id>
+        node add <node_id> <group_name>
         nic create <nic_id> <mac_addr> <name>
+        nic connect <nic_id> <port_id>
         nic add <nic_id> <node_id>
         switch create <switch_id> <script>
         port create <port_id> <switch_id> <port_no>
-        nic connect <nic_id> <port_id>
-        group create <group_name>
         vlan create <vlan_id>
         vlan connect <vlan_id> <group_name> <nic_name>
-        node add <node_id> <group_name>
         headnode create
         headnode attach <vm_name> <group_name>
         group deploy <group_name>
+        user create <user name> <password>
         show all
+        show <table name>
         exit
         '''
     print help_text
