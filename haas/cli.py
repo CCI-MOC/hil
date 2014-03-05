@@ -69,6 +69,9 @@ def main_loop():
                 usage()
     except _QuitException:
         pass
+    except EOFError:
+        # We should exit cleanly on EOF
+        pass
 
 @command('group create (\w+)')
 def create_group(group_name):
