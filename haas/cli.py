@@ -159,8 +159,13 @@ def show_table(table_name):
 @command('help')
 def usage():
     """help"""
+    print "------- commands --------"
     for _, func in commands:
-        print func.__doc__
+        print "   ", func.__doc__
+    print "------ notes ------------"
+    print " port_id - global number for port on switch"
+    print " port_no - switch specific number of port"
+
 
 @command('exit')
 def exit_cmd():
