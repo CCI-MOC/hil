@@ -3,7 +3,6 @@ import haas.model
 import getpass
 import sys
 import haas.cli
-#refactored
 
 def auth(user_name,password):
     user = haas.control.get_entity_by_cond(haas.model.User,'user_name=="%s"'%(user_name))
