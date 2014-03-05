@@ -15,6 +15,9 @@ class DuplicateError(Exception):
 class NotExistError(Exception):
     pass
 
+class NotAvailableError(Exception):
+    pass
+    
 def query_db(classname):
     all=session.query(classname).all()
     table = [classname.meta]
@@ -104,8 +107,7 @@ def add_node_to_group(node_id,group_name):
             node.group=group
             node.available=False
         else:
-            print "error: node ",node_id," not available"
-            return
+            raise NotAvailableError('Not available')
     except AttributeError:
         raise NotExistError('Either node %d or group %s does not exist'%(node_id,group_name))        
     session.commit()
@@ -129,6 +131,10 @@ def remove_node_from_group(node_id,group_name):
 
 def create_group(group_name):
     group=Group(group_name)
+    global current_user
+    #if current user is not set, default to admin, (for unit tests purpose)
+    if current_user == '':
+        current_user = 'admin'
     user = get_entity_by_cond(User,'user_name=="%s"'%current_user)
     group.owner = user
     session.add(group)
