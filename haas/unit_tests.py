@@ -47,6 +47,14 @@ class TestModels(unittest.TestCase):
         add_node_to_group(1,'alice_group')
         self.assertRaises(NotAvailableError,add_node_to_group,1,'bob_group')
         
+    #Duplicate NICs, e.g. a node cannot have two PXE NICs. 
+    def test_duplicate_nics(self):
+        """Add two PXE NICs to a node, should raise DuplicateError"""
+        create_nic(1,'mac1','pxe')
+        create_nic(2,'mac2','pxe')
+        create_node(3)
+        add_nic(1,3)
+        self.assertRaises(DuplicateError,add_nic,2,3)
     
 if __name__ == '__main__':
     unittest.main()

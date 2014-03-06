@@ -59,6 +59,9 @@ def create_nic(nic_id,mac_addr,name):
 def add_nic(nic_id,node_id):
     nic = get_entity_by_cond(NIC,'nic_id==%d'%nic_id)
     node = get_entity_by_cond(Node,'node_id==%d'%node_id)
+    for node_nic in node.nics:
+        if node_nic.name == nic.name:
+            raise DuplicateError("NIC name duplicate")
     nic.node = node
     session.commit()
 
