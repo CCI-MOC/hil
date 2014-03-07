@@ -1,0 +1,4 @@
+flask
+sqlalchemy
+Flask-HTTPAuth
+tabulate
