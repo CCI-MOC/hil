@@ -9,3 +9,8 @@ switch = data/switch.txt
 port = data/port.txt
 connect = data/connect.txt
 user = data/user.txt
+
+[switch dell]
+user = foo
+pass = bar
+ip = 192.168.0.2

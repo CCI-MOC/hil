@@ -189,7 +189,7 @@ def deploy_group(group_name):
     vm_node.start()
    
     for node in group.nodes:
-        dell.set_access_vlan(node.nics[0].port.port_no)
+        dell.set_access_vlan(node.nics[0].port.port_no, vlan_id)
 
 def create_headnode():
     conn = haas.headnode.Connection()
