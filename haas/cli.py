@@ -139,7 +139,7 @@ def headnode_attach(vm_name, group_name):
 @command('group deploy (\w+)')
 def deploy_group(group_name):
     """group deploy <group_name>"""
-    control.destroy_group(group_name)
+    control.deploy_group(group_name)
     
 @command('user create (\w+) (\w+)')
 def create_user(user_name,password):
