@@ -1,3 +1,5 @@
+# Workflow the team should follow
+
 create new branch
 
 	git branch -b NEWBRANCH
