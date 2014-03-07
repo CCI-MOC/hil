@@ -1,9 +1,33 @@
 from haas.model import *
-import haas.config
+from haas import config
 import haas.control
+
+@config.option('file_names')
+def validate_file_names(file_names):
+    if not isinstance(file_names, dict):
+        raise config.ConfigError("`file_names` is not a dictionary.")
+    required_files = [
+        'node',
+        'network',
+        'vm',
+        'switch',
+        'port',
+        'connect',
+        'user',
+    ]
+    for filename in required_files:
+        if filename not in file_names:
+            raise config.ConfigError(
+                'option `file_names` is missing `%s`' % filename)
+
+        if not isinstance(file_names[filename], basestring):
+            raise config.ConfigError(
+                'option `file_names.%s` is not a string.' % filename)
+        
+
 def create_node_pool():
     keys=['node_id','mac_addr','manage_ip']
-    with open(haas.config.file_names["node"]) as file:
+    with open(config.get('file_names')["node"]) as file:
         for line in file:
             values=line.rstrip().split(' ')
             d=dict(zip(keys,values))
@@ -12,7 +36,7 @@ def create_node_pool():
 
 def create_network_pool():
     keys=['network_id','network_technology']
-    with open(haas.config.file_names["network"]) as file:
+    with open(config.get('file_names')["network"]) as file:
         for line in file:
             values=line.rstrip().split(" ")
             d=dict(zip(keys,values))
@@ -21,7 +45,7 @@ def create_network_pool():
 
 def create_vm_pool():
     keys=['vm_name']
-    with open(haas.config.file_names["vm"]) as file:
+    with open(config.get('file_names')["vm"]) as file:
         for line in file:
             values = line.rstrip().split(" ")
             d = dict(zip(keys,values))
@@ -31,7 +55,7 @@ def create_vm_pool():
 
 def create_switch_pool():
     keys=["switch_id","script"]
-    with open(haas.config.file_names["switch"]) as file:
+    with open(config.get('file_names')["switch"]) as file:
         for line in file:
             values = line.rstrip().split(" ")
             d = dict(zip(keys,values))
@@ -40,7 +64,7 @@ def create_switch_pool():
 
 def create_port_pool():
     keys=["port_id","switch_id","port_no"]
-    with open(haas.config.file_names["port"]) as file:
+    with open(config.get('file_names')["port"]) as file:
         for line in file:
             values = line.rstrip().split(" ")
             d = dict(zip(keys,values))
@@ -50,7 +74,7 @@ def create_port_pool():
 def connect_node_to_port():
 
     keys=["node_id","port_id"]
-    with open(haas.config.file_names["connect"]) as file:
+    with open(config.get('file_names')["connect"]) as file:
         for line in file:
             values = line.rstrip().split(" ")
             d=dict(zip(keys,values))
@@ -61,7 +85,7 @@ def connect_node_to_port():
 
 def add_users():
     keys=["user_name","password","user_type"]
-    with open(haas.config.file_names["user"]) as file:
+    with open(config.get('file_names')["user"]) as file:
         for line in file:
             values = line.rstrip().split(" ")
             d = dict(zip(keys,values))

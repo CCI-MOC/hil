@@ -13,6 +13,11 @@ import uuid
 from subprocess import check_call as cmd
 from haas import config
 
+@config.option('trunk_nic')
+def validate_trunk_nic(trunk_nic):
+    if not isinstance(trunk_nic, basestring):
+        raise config.ConfigError('trunk_nic is not a string')
+
 class Connection(object):
     """A connection to libvirtd"""
 
@@ -89,11 +94,12 @@ class HeadNode(object):
         cmd(['virsh', 'destroy', self.name])
 
     def add_nic(self, vlan_id):
+        trunk_nic = config.get('trunk_nic')
         bridge = 'br-vlan%d' % vlan_id
-        vlan_nic = '%s.%d' % (config.trunk_nic, vlan_id)
+        vlan_nic = '%s.%d' % (trunk_nic, vlan_id)
         vlan_id = str(vlan_id)
         cmd(['brctl', 'addbr', bridge])
-        cmd(['vconfig', 'add', config.trunk_nic, vlan_id])
+        cmd(['vconfig', 'add', trunk_nic, vlan_id])
         cmd(['brctl', 'addif', bridge, vlan_nic])
         cmd(['ifconfig', bridge, 'up', 'promisc'])
         cmd(['ifconfig', vlan_nic, 'up', 'promisc'])
@@ -102,11 +108,12 @@ class HeadNode(object):
 
     def delete(self):
         """Delete the vm, including associated storage"""
+        trunk_nic = config.get('trunk_nic')
         cmd(['virsh', 'undefine', self.name, '--remove-all-storage'])
         for nic in self.nics:
             nic = str(nic)
             bridge = 'br-vlan%s' % nic
-            vlan_nic = '%s.%d' % (config.trunk_nic, nic)
+            vlan_nic = '%s.%d' % (trunk_nic, nic)
             cmd(['ifconfig', bridge, 'down'])
             cmd(['ifconfig', vlan_nic, 'down'])
             cmd(['brctl', 'delif', bridge, vlan_nic])

@@ -1,8 +1,15 @@
 import json
 
 _cfg = None
-trunk_nic = None
-file_names = None
+_validators = []
+
+class ConfigError(Exception):
+    pass
+
+
+def get(name):
+    return _cfg[name]
+
 
 def load(filename=None):
     """Load the configuration from a file.
@@ -19,6 +26,21 @@ def load(filename=None):
     with open(filename) as f:
         _cfg = json.loads(f.read())
 
-    global trunk_nic, file_names
-    trunk_nic = _cfg["trunk_nic"]
-    file_names = _cfg["file_names"]
+    for validate, name in _validators:
+        validate(_cfg[name])
+
+
+def option(name):
+    """`option` is a decorator for registering configuration options.
+
+    `name` is the name of the option to register. The decorated function
+    will be run after the configuration is loaded, and serves to
+    validate the option in question. The function should raise a `ConfigError`
+    if the option is invalid.
+    """
+    def register(validate):
+        _validators.append((validate,name))
+        if _cfg:
+            validate(_cfg[name])
+        return validate
+    return register
