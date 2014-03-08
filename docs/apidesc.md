@@ -1,4 +1,11 @@
-current interface, grew organically:
+#HaaS API
+
+Eventually this will be the final documentation for the API, for now,
+it has additional information to give context for the conversation.
+We first discuss the original API, then the proposed API.
+
+##Original API
+Current interface, grew organically:
 
     group create <group_name>
     node create <node_id>
@@ -20,32 +27,14 @@ current interface, grew organically:
     exit
 
 Not clear what was atomic, synchronization model, and there were a
-series of inconsistencies.  
+series of inconsistencies, and we don't have model of permissions...
 
-There are two classes of users:
+##Proposed API
 
-1. Administrators: Responsible for configuring the hardware,
-   and configuring the HaaS service.
-2. Users: Configuring specific groups, allocating nodes to groups,
-   deleting groups...
+First describe the users and security model, then the main objects,
+then the actual API.
 
-Administrators can shoot themselves (or each other) in the foot.  If
-two administrators modify the HaaS service (e.g., add switches, add
-nodes, move ports around...) behavior may be non deterministic.
-Administrators can block all "Users" from accessing the HaaS service
-while they are making changes. 
-
-To users re-configuring a group can shoot each other in the foot, and
-are responsible for coordinating among themselves.  They cannot,
-however, impact users controlling different groups. 
-
-A user making a series of changes to a group can make all the
-individual changes, and only once they are complete "deploy" them to
-the switch.  
-
-An administrator can perform "User" activities on any group. 
-
-Objects on the (new model) are:
+###Objects on the (new model) are:
 
 * node - a physical node
 * master_node   - a controlling machine for a group, today a VM
@@ -59,7 +48,39 @@ Objects on the (new model) are:
         	  to admins 
 * network        - a network, today implemented as a VLAN
 
-user operations:
+
+### Permissions users and synchronization
+
+Users will belong to different groups.  Groups will in turn own
+projects.  One special group is
+the "admin" group.  
+
+The HaaS does not provide rich synchronization, garbage collection of
+orphaned objects (e.g. deleting a node does not delete NICs), ... it
+is assumed that its users are sophisticated, and tools are built above
+the HaaS service to keep users from shooting themselves in the foot.
+
+However, it does have a number of important requirements: 1) it must
+allow administrators to be able to change the system without messing
+up users trying to access the system concurrently, 2) it must keep
+users from being able to mess up users in other projects..., 3) it
+must allow users to be able to configure their systems in a fashion
+where their users see a complete set of changes, rather than
+intermediate results. 
+
+For the former, admins can block any user not belonging to the admin
+group from the system.
+
+For the latter, we will support a "deploy" operation, where users can
+make many indivual changes, and then "deploy" them in one operation. 
+
+Administrators can shoot themselves (or each other) in the foot.  If
+two administrators modify the HaaS service (e.g., add switches, add
+nodes, move ports around...) behavior may be non deterministic.
+
+An administrator can perform "User" activities on any group. 
+
+###User operations:
 
     user_create                	<user name> <password>
     user_destroy                <user name>
@@ -100,7 +121,7 @@ user operations:
     help
     exit
 
-admin operations:
+###Admin operations:
     node_create                	<node_id>
     node_destroy                <node_id>
  
@@ -116,7 +137,7 @@ admin operations:
     unblock_users
 
 
-Changes:
+###Changes:
 
 * commands start with the name of the containing object
   e.g., node add -> group connect node 
@@ -133,7 +154,7 @@ Changes:
 * got rid port_id and port_no, always identify port as a switch and
   port number relative to that switch, like nics on a 
 
-Notes:
+###Notes:
 
 * does a destroy operation leads to orphaned objects, or does it clean
   up?  I think the latter is necessary, e.g., if you destroy a group,
