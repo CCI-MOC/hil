@@ -1,11 +1,9 @@
 from haas.model import *
-from haas import config
-from haas.config import cfg
+import haas.config
 import haas.control
-
 def create_node_pool():
     keys=['node_id','mac_addr','manage_ip']
-    with open(cfg.get('filenames', 'node')) as file:
+    with open(haas.config.file_names["node"]) as file:
         for line in file:
             values=line.rstrip().split(' ')
             d=dict(zip(keys,values))
@@ -14,7 +12,7 @@ def create_node_pool():
 
 def create_network_pool():
     keys=['network_id','network_technology']
-    with open(cfg.get('file_names', 'network')) as file:
+    with open(haas.config.file_names["network"]) as file:
         for line in file:
             values=line.rstrip().split(" ")
             d=dict(zip(keys,values))
@@ -23,7 +21,7 @@ def create_network_pool():
 
 def create_vm_pool():
     keys=['vm_name']
-    with open(cfg.get('file_names', 'vm')) as file:
+    with open(haas.config.file_names["vm"]) as file:
         for line in file:
             values = line.rstrip().split(" ")
             d = dict(zip(keys,values))
@@ -33,7 +31,7 @@ def create_vm_pool():
 
 def create_switch_pool():
     keys=["switch_id","script"]
-    with open(cfg.get('file_names', 'switch')) as file:
+    with open(haas.config.file_names["switch"]) as file:
         for line in file:
             values = line.rstrip().split(" ")
             d = dict(zip(keys,values))
@@ -42,7 +40,7 @@ def create_switch_pool():
 
 def create_port_pool():
     keys=["port_id","switch_id","port_no"]
-    with open(cfg.get('file_names', 'port')) as file:
+    with open(haas.config.file_names["port"]) as file:
         for line in file:
             values = line.rstrip().split(" ")
             d = dict(zip(keys,values))
@@ -52,7 +50,7 @@ def create_port_pool():
 def connect_node_to_port():
 
     keys=["node_id","port_id"]
-    with open(cfg.get('file_names', 'connect')) as file:
+    with open(haas.config.file_names["connect"]) as file:
         for line in file:
             values = line.rstrip().split(" ")
             d=dict(zip(keys,values))
@@ -63,7 +61,7 @@ def connect_node_to_port():
 
 def add_users():
     keys=["user_name","password","user_type"]
-    with open(cfg.get('file_names', 'user')) as file:
+    with open(haas.config.file_names["user"]) as file:
         for line in file:
             values = line.rstrip().split(" ")
             d = dict(zip(keys,values))
@@ -80,5 +78,4 @@ def load_resources():
     add_users()
 
 if __name__=='__main__':
-    haas.config.load()
     load_resources()
