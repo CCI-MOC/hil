@@ -39,6 +39,7 @@ class TestModels(unittest.TestCase):
         
     def test_available(self):
         """Add an unavailable node to a group
+
         When you add a node to a group, while the node is already in another group
         This should raise a NotAvailableError
         """
