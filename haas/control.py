@@ -6,6 +6,27 @@ import os.path
 import dell
 import tabulate
 current_user = ""
+class_name={'group':Group,
+            'vm':VM,
+            'port':Port,
+            'nic':NIC,
+            'vlan':Vlan,
+            'switch':Switch,
+            'node':Node,
+            'user':User}
+
+
+def show_table(table_name):
+    if table_name not in class_name:
+        print 'no such table'
+        print 'available tables are:'
+        for key in class_name:
+            print key
+        return
+    query_db(class_name[table_name])
+                
+                                                                        
+
 
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
@@ -203,3 +224,13 @@ def attach_headnode(vm_name,group_name):
     group.vm = vm
     session.commit()
 
+def show_all():
+    query_db(Node)
+    query_db(NIC)
+    query_db(Port)
+    query_db(Vlan)
+    query_db(VM)
+    query_db(Switch)
+    query_db(Group)
+    query_db(User)
+                                    
