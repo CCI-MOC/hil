@@ -76,6 +76,20 @@ def main_loop():
         # We should exit cleanly on EOF
         pass
 
+def main_loop_read_script(script):
+    try:
+        lines = open(script,'r')
+        print lines
+        for cmd in lines:
+            if not run_command(cmd):
+                print "Invalid command."
+                usage()
+    except _QuitException:
+        pass
+    except EOFError:
+        # We should exit cleanly on EOF
+        pass
+
 @command('group create (\w+)')
 def create_group(group_name):
     """group create <group_name>"""
@@ -155,6 +169,11 @@ def show_all():
 def show_table(table_name):
     """show [ group | vm | port | nic | vlan | switch | node | user ]"""
     control.show_table(table_name)
+
+@command('read_script (\w+)')
+def read_script(script):
+    """read from a script to populate the database"""
+    main_loop_read_script(script)
 
 @command('help')
 def usage():
