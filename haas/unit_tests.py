@@ -30,24 +30,25 @@ class TestModels(unittest.TestCase):
         create_vlan(108)
         self.assertRaises(DuplicateError, create_vlan, (108))
         session.rollback()
- 
+
     def test_exist(self):
         """Add a node to a group that does not exist. Should raise a NotExistError."""
         create_node(2)
         self.assertRaises(NotExistError,add_node_to_group,2,'linz_group')
-    
 
-    #When you add a node to a group, while the node is already in another group
-    #This should raise a NotAvailableError
+        
     def test_available(self):
-        """Add an unavailable node to a group"""
+        """Add an unavailable node to a group
+        When you add a node to a group, while the node is already in another group
+        This should raise a NotAvailableError
+        """
+        login_user('admin')
         create_group('alice_group')
         create_group('bob_group')
         create_node(1)
         add_node_to_group(1,'alice_group')
         self.assertRaises(NotAvailableError,add_node_to_group,1,'bob_group')
-        
-    #Duplicate NICs, e.g. a node cannot have two PXE NICs. 
+
     def test_duplicate_nics(self):
         """Add two PXE NICs to a node, should raise DuplicateError"""
         create_nic(1,'mac1','pxe')
@@ -55,6 +56,6 @@ class TestModels(unittest.TestCase):
         create_node(3)
         add_nic(1,3)
         self.assertRaises(DuplicateError,add_nic,2,3)
-    
+
 if __name__ == '__main__':
     unittest.main()

@@ -156,9 +156,6 @@ def remove_node_from_group(node_id,group_name):
 def create_group(group_name):
     group=Group(group_name)
     global current_user
-    #if current user is not set, default to admin, (for unit tests purpose)
-    if current_user == '':
-        current_user = 'admin'
     user = get_entity_by_cond(User,'user_name=="%s"'%current_user)
     group.owner = user
     session.add(group)
