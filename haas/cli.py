@@ -104,8 +104,12 @@ def run_command(text):
         print('Invalid command.')
         usage()
     else:
-        cmd = commands[parts[0]]
-        cmd.invoke(text)
+        try:
+            cmd = commands[parts[0]]
+            cmd.invoke(text)
+        except BadCommandError, e:
+            print e.message
+            usage()
 
 def main_loop():
     """Runs the interactive command interpreter.
