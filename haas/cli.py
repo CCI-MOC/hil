@@ -2,13 +2,69 @@
 from haas import control
 import inspect
 
-# A dictionary with names of commands (strings) as keys, and the corresponding
-# functions as values. See the `command` decorator, below, for details.
+# A dictionary with names of commands (strings) as keys, and the
+# corresponding `_Command` objects as values. See also `command`.
 commands = {}
 
-
 # This is used by the exit command to tell the main loop when to stop.
-class _QuitException(Exception): pass
+class _QuitException(Exception):
+    pass
+
+
+class BadCommandError(Exception):
+    """raised by a `Command` object to indicate an invalid command"""
+    pass
+
+class _Command(object):
+    """A shell command, such as `exit`, `create_nic`, `deploy_group`, etc."""
+
+    def __init__(self, func, name=None):
+        """Creates a command with `func` as the action to be performed.
+
+        if `name` is specified, use it as the name by which the command will be
+        invoked. otherwise, use `func.__name__`.
+        """
+        self.func = func
+        if name:
+            self.name = name
+        else:
+            self.name = func.__name__
+        commands[self.name] = self
+
+        self.arg_names = inspect.getargspec(func).args
+        self.arg_count = len(self.arg_names)
+
+    def _validate(self, text):
+        """Verify that `text` is a valid invocation of this command.
+
+        If `text` is invalid, `_validate` will raise a
+        `BadCommandError`, with a message describing the problem.
+        otherwise, it will return normally.
+        """
+        parts = text.split()
+
+        # Make sure we were invoked by the correct name. This should *always* be
+        # the case, no matter what the user inputs.
+        assert parts[0] == self.name, 'BUG: command invoked by wrong name.'
+
+        if len(parts) != self.arg_count + 1:
+            # `parts` should have one more element than the number of
+            # expected arguments (which will be the command name).
+            raise BadCommandError('%s : Wrong number of arguments.' % self.name)
+
+    def invoke(self, text):
+        """Invoke the command with text `text`.
+
+        Raise a BadCommandError if the command is invalid.
+        """
+        self._validate(text)
+        parts = text.split()
+        self.func(*parts[1:])
+
+    def usage(self):
+        """Displays a usage summary for this command."""
+        print "   ", self.name, ' '.join(map(lambda x: '<%s>' % x, self.arg_names))
+
 
 def command(name=None):
     """`command` is a decorator used to define shell commands.
@@ -32,25 +88,22 @@ def command(name=None):
     This decorator does not modify its argument.
     """
     def register(func):
-        if name:
-            commands[name] = func
-        else:
-            commands[func.__name__] = func
+        _Command(func, name=name)
         return func
     return register
 
-def run_command(cmd):
-    """Run the command specified in the string `cmd`.
+def run_command(text):
+    """Run the command specified in the string `text`.
 
-    if `cmd` is not a valid command, display a help message to the user.
+    if `text` is not a valid command, display a help message to the user.
     """
-    parts = cmd.split()
+    parts = text.split()
     if parts[0] not in commands:
         print('Invalid command.')
         usage()
     else:
-        func = commands[parts[0]]
-        func(*parts[1:])
+        cmd = commands[parts[0]]
+        cmd.invoke(text)
 
 def main_loop():
     """Runs the interactive command interpreter.
@@ -156,9 +209,8 @@ def usage():
     names = commands.keys()
     names.sort()
     for cmd_name in names:
-        func = commands[cmd_name]
-        arg_names = inspect.getargspec(func).args
-        print "   ", cmd_name, ' '.join(map(lambda x: '<%s>' % x, arg_names))
+        cmd = commands[cmd_name]
+        cmd.usage()
     print "------ notes ------------"
     print " port_id - global number for port on switch"
     print " port_no - switch specific number of port"
