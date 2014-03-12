@@ -98,6 +98,8 @@ def run_command(text):
     if `text` is not a valid command, display a help message to the user.
     """
     parts = text.split()
+    if len(parts) == 0: # empty command
+        return
     if parts[0] not in commands:
         print('Invalid command.')
         usage()
