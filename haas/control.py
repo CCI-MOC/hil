@@ -36,6 +36,9 @@ class DuplicateError(Exception):
 class NotExistError(Exception):
     pass
 
+class NotAvailableError(Exception):
+    pass
+    
 def query_db(classname):
     all=session.query(classname).all()
     table = [classname.meta]
@@ -77,6 +80,9 @@ def create_nic(nic_id,mac_addr,name):
 def add_nic(nic_id,node_id):
     nic = get_entity_by_cond(NIC,'nic_id==%d'%nic_id)
     node = get_entity_by_cond(Node,'node_id==%d'%node_id)
+    for node_nic in node.nics:
+        if node_nic.name == nic.name:
+            raise DuplicateError("NIC name duplicate")
     nic.node = node
     session.commit()
 
@@ -125,8 +131,7 @@ def add_node_to_group(node_id,group_name):
             node.group=group
             node.available=False
         else:
-            print "error: node ",node_id," not available"
-            return
+            raise NotAvailableError('Not available')
     except AttributeError:
         raise NotExistError('Either node %d or group %s does not exist'%(node_id,group_name))        
     session.commit()
@@ -150,6 +155,7 @@ def remove_node_from_group(node_id,group_name):
 
 def create_group(group_name):
     group=Group(group_name)
+    global current_user
     user = get_entity_by_cond(User,'user_name=="%s"'%current_user)
     group.owner = user
     session.add(group)
