@@ -48,7 +48,11 @@ then the actual API.
 * NIC - network card, identified by a user-specified label (e.g.,
   PXE, ipmi, user1, silly) will have a visible ethernet mac address
   (or equivalent unique number for other network types), and is always
-  part of one node and connected to at most one port.  
+  part of one node and connected to at most one port.
+* HNIC - headnode network card, identified by a user-specified label (e.g.,
+  PXE, ipmi, user1, silly) will have a visible ethernet mac address
+  (or equivalent unique number for other network types), and is always
+  part of one headnode.
 * switch - a physical network switch, note not visible to
   users, just admins, has one or more ports
 * port - a port on a switch to which NICs can be connected.
@@ -103,12 +107,12 @@ project at the same time.
 
 
 ###User operations:
-    give_access_user            <user_label> <group_label>
-    give_access_network         <network_label> <group_label>
-
     user_create                 <user_label> <password>
     user_destroy                <user_label>
  
+    group_add_user              <group_label> <user_label> 
+    group_add_network           <group_label> <network_label> 
+
     project_create              <project_label> <group_label>
     project_destroy             <project_label>
  
@@ -122,12 +126,12 @@ project at the same time.
     project_detach_headnode     <hn_label> <project_label>
  
     # allocate/deallocate node to a project
-    project_connect_node        <node_label> <project_label>
-    project_detach_node         <node_label> <project_label>
+    project_connect_node        <project_label> <node_label> 
+    project_detach_node         <project_label> <node_label> 
  
     # networking operations on a project
-    project_connect_network     <network_label> 
-    project_detach_network      <network_label>
+    project_connect_network     <project_label> <network_label>
+    project_detach_network      <project_label> <network_label>
     project deploy              <project_label>
  
     # networking operations on a physical node
@@ -135,14 +139,15 @@ project at the same time.
     node_detach_network         <node_label> <nic_label> 
  
     # networking operations on a headnode
-    headnode_create_nic         <hn_label> <nic_label> 
-    headnode_destroy_nic        <hn_label> <nic_label>
-    headnode_connect_network    <hn_label> <nic_label> <network>
-    headnode_detach_network     <hn_label> <nic_label> 
+    headnode_create_hnic        <hn_label> <hnic_label> 
+    headnode_destroy_hnic       <hn_label> <hnic_label>
+    headnode_connect_network    <hn_label> <hnic_label> <network>
+    headnode_detach_network     <hn_label> <hnic_label> 
  
     # query interface, limited for users to resources 
     # that are free, or that groups belonging to user own
-    show [ group | project | vm | port | nic | vlan | switch | node | user ] <obj>
+    show [ group | project | vm | port | nic | hnic | vlan | switch |
+      node | user ] <obj> 
     help
     exit
 
@@ -160,8 +165,8 @@ project at the same time.
     # dump all information about the system
     show all
 
-    #import a network (e.g., public VLAN) into the system
-    import_network <network_label> <network_id>
+    #import a vlan (e.g., public VLAN) into the system
+    import_vlan <network_label> <vlan_id>
 
     # block and unblock users without admin privileges
     block_users
@@ -186,7 +191,7 @@ project at the same time.
 * headnode create specifies a vm_label
 * call string names everywhere
 * got rid port_id and port_no, always identify port as a switch and
-  port number relative to that switch, like nics on a 
+  port number relative to that switch, like nics on a node
 * give access to networks, attach things, ... by "connect" operations,
   e.g. connect a network to a group, connect a nic to a port, connect
   a nic to a network, connect a user to a group
@@ -199,3 +204,22 @@ project at the same time.
 * how do we associate arbitrary data with an object, e.g., mac
   address... we should have operations to get info about an arbitrary
   object 
+* user_destroy will fail if the user is in any groups.  So, a user can
+  create another user, add them to her groups, and then remove them and
+  destroy them if they have not yet been added to other groups.  
+* Note, the current model is that all users on a group have full
+  control.  This seems sufficient for this simple tool, but we
+  probably will need to revise in the longer term, as we want group
+  administrators...
+* When you create a headnode, you pass it an authorized_key files for
+  the group, so user can log into it.  You also pass its own
+  credentials so  that it can query the service. Each node will have
+  its own credentials, and adding a headnode to a project will also,
+  implicitly, add the headnode's credentials to that group. The user
+  can move the headnode from one project to another, so the headnode
+  needs to query the service to find out what project/... its
+  connected to. The one piece   of information it has is the mac
+  address of the nics it has. 
+* right now we are working with ethernet and VLANs, and in a few
+  places this is visible.  We will need to reconsider some of the
+  interfaces when we move to IB and/or SDN
