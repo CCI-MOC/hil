@@ -68,17 +68,17 @@ example, provide garbage collection of orphaned objects, ... it is
 assumed that its users are sophisticated, and tools are built above
 the HaaS service to keep users from shooting themselves in the foot.
 For example, the HaaS layer won't, when a group frees a node, remove
-it from all the group's networks.  Similarely we won't when deleting a
+it from all the group's networks.  Similarly we won't when deleting a
 project, in turn free the nodes and delete the headnodes.  It will be
-the user/higher level tools responsiblility.  
+the user/higher level tools' responsibility.  
 
 Most objects are identified by "labels" that are globally unique,
 e.g., nodes, networks, groups, users, headnodes.  While we may
 eventually change this, it seems a reasonable limitation for now that
-simplies the implementation and will allow potential sharing of
+simplifies the implementation and will allow potential sharing of
 resources. The system will return an error if a second user tries to
 create an object with an already existing label. The one exception is
-NICs, where the lable is unique only on a per-node basis. 
+NICs, where the label is unique only on a per-node basis. 
 
 ### Permissions users and synchronization mechanisms/assumptions
 
@@ -91,7 +91,7 @@ The only user visible objects that can be shared between groups are
 networks and users. 
 
 To allow the administrators to modify the system resources without
-messing up users trying to access the system confurrently, the HaaS
+messing up users trying to access the system concurrently, the HaaS
 allows administrators to "block" any user not belonging to the admin
 group from the system. Administrators are expected to coordinate among
 themselves to ensure that only one is reconfiguring the system at a
@@ -100,8 +100,8 @@ time.
 To ensure users to be able to configure their systems in a fashion
 where "their" users see a complete set of changes, rather than
 intermediate results, we provide a "deploy" operation, where users can
-make many indivual changes, and then "deploy" them in one operation to
-the network.  Users are expect to coordinate among themselves on
+make many individual changes, and then "deploy" them in one operation to
+the network.  Users are expected to coordinate among themselves on
 changes to a project so that two users are not modifying the same
 project at the same time. 
 
@@ -168,7 +168,7 @@ project at the same time.
     #import a vlan (e.g., public VLAN) into the system
     import_vlan <network_label> <vlan_id>
 
-    # block and unblock users without admin privaledges
+    # block and unblock users without admin privileges
     block_users
     unblock_users
 
@@ -186,7 +186,7 @@ project at the same time.
 * hide internal numbers, e.g. vlan_id, ... instead use lables
 * got rid of operations on group of objects, i.e., vlan connect
   operated on all nics with label, which would have forced us to do
-  bizzar work if a new nic got added with same label
+  bizzare work if a new nic got added with same label
 * connect all words in command with "_" since could be function name
 * headnode create specifies a vm_label
 * call string names everywhere
