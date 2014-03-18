@@ -1,4 +1,4 @@
-
+# XXX: This needs to be updated to match the new model module
 import unittest
 
 import os
