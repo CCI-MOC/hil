@@ -1,6 +1,6 @@
 # REST API Mapping
 
-This document describes how the api described in [apidesc][1] is
+This document describes how the api described in [apidesc.md] is
 implemented in terms of http.
 
 ## General Principles
