@@ -1,4 +1,9 @@
-#! /usr/bin/python
+"""A switch driver for the Dell Powerconnect
+
+Currently the driver uses telnet to connect to the switch's console; in
+the long term we want to be using SNMP.
+"""
+
 import os
 import pexpect
 import re
