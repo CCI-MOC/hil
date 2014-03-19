@@ -56,5 +56,5 @@ as needed to create the logical networks.
             %virtualized node%
             ]/[ switch's Ethernet ports
             --- connection (virtual or physical)
-            access{X} Denotes that the adjacent port is set to access mode, with vlan #N.
+            access{X} Denotes that the adjacent port is set to access mode, with vlan #X.
             trunk Denotes that the adjacent port is set to trunk mode.
