@@ -1,2 +1,5 @@
 [headnode]
 trunk_nic = eth0
+
+[database]
+sqlite:///haas.db

@@ -3,10 +3,17 @@ from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import *
 from passlib.hash import sha256_crypt
 
+from haas.config import cfg
 
 Base = declarative_base()
 Session = sessionmaker()
 
+def init_db(create=False):
+    uri = cfg.get('database', 'uri')
+    engine = create_engine(uri)
+    if create:
+        Base.metadata.create_all(engine)
+    Session.configure(bind=engine)
 
 class Model(Base):
     """All of our database models are descendants of this class.
