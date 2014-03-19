@@ -1,7 +1,7 @@
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import *
-from passlib.hash import sha256_crypt
+from passlib.hash import sha512_crypt
 
 from haas.config import cfg
 
@@ -57,7 +57,7 @@ class User(Model):
    
     The username is the object's label.
     """
-    hashed_password = Column(String) # hashed and salted with passlib (sha256)
+    hashed_password = Column(String) # hashed and salted with passlib (sha512)
 
     def __init__(self, name, password):
         self.label = name
@@ -69,11 +69,11 @@ class User(Model):
         `password` should be the plaintext password. It will be checked
         against the salted/hashed one in the database.
         """
-        return sha256_crypt.verify(password, self.hashed_password)
+        return sha512_crypt.verify(password, self.hashed_password)
 
     def set_password(self, password):
         """Sets the user's password to `password`.
 
         `password` should be the plaintext of the password, not the hash.
         """
-        self.hashed_password = sha256_crypt.encrypt(password)
+        self.hashed_password = sha512_crypt.encrypt(password)
