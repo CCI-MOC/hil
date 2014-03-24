@@ -6,3 +6,5 @@ dist
 .venv
 *.db
 haas.cfg
+*.img
+ubuntu-kvm

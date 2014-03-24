@@ -1,0 +1,18 @@
+<image>
+	<!-- see virt-image(5) a description of this file format. -->
+	<name>base-headnode</name>
+	<domain>
+		<boot type="hvm">
+			<guest>
+				<arch>i686</arch>
+			</guest>
+			<os>
+				<loader dev="hd" />
+			</os>
+			<drive disk="base-headnode.img" />
+		</boot>
+	</domain>
+	<storage>
+		<disk file="base-headnode.img" format="qcow2" use="system" />
+	</storage>
+</image>
