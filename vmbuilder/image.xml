@@ -11,8 +11,12 @@
 			</os>
 			<drive disk="base-headnode.img" />
 		</boot>
+		<devices>
+			<interface />
+		</devices>
 	</domain>
 	<storage>
-		<disk file="base-headnode.img" format="qcow2" use="system" />
+		<disk id="base-headnode.img" format="qcow2" use="system"
+			file="/var/lib/libvirt/images/base-headnode.img" />
 	</storage>
 </image>
