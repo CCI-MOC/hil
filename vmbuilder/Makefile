@@ -1,8 +1,10 @@
 DISK_NAME = base-headnode.img
 DISK_TARG = /var/lib/libvirt/images/$(DISK_NAME)
 
-VIRT_USER = libvirt-qemu
-VIRT_GROUP = kvm
+include config.mak
+
+VIRT_USER ?= libvirt-qemu
+VIRT_GROUP ?= kvm
 
 all: $(DISK_NAME)
 

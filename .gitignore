@@ -8,3 +8,4 @@ dist
 haas.cfg
 *.img
 ubuntu-kvm
+config.mak
