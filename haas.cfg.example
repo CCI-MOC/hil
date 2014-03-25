@@ -1,0 +1,7 @@
+[headnode]
+trunk_nic = eth0
+
+[switch dell]
+user = foo
+pass = bar
+ip = 192.168.0.2
