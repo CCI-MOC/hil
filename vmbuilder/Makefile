@@ -20,3 +20,5 @@ $(DISK_TARG): $(DISK_NAME)
 $(DISK_NAME): build-vm.sh
 	./$<
 	mv ubuntu-kvm/*.qcow2 $@
+clean:
+	rm -rf $(DISK_NAME) ubuntu-kvm
