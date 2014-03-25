@@ -13,7 +13,7 @@ vmbuilder kvm ubuntu \
 	--suite precise   `NB Use ubuntu 12.04.`                             \
 	--flavour virtual `NB Use the virtual appliance kernel.`             \
 	--arch i386       `NB No need for long mode on a machine this size.` \
-	--mem 512         `NB This should be plenty of memory.`              \
+	--mem $RAM        `NB This should be plenty of memory.`              \
 	`NB --part expects a filename, but it seems silly to make a separate`\
 	`NB file for this. the '<(command)' bash extension allows us to get` \
 	`NB around this.` \
