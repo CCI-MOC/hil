@@ -13,7 +13,6 @@ def auth(user_name,password):
         return False
     return user.password == password
 
-
 while True:
     user_name = raw_input('user: ')
     password = getpass.getpass("Password: ")
