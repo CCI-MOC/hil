@@ -21,7 +21,7 @@ install: image.xml $(DISK_TARG)
 $(DISK_TARG): $(DISK_NAME)
 	install -m600 $< $@ -o $(VIRT_USER) -g $(VIRT_GROUP)
 
-$(DISK_NAME): build-vm.sh
+$(DISK_NAME): build-vm.sh copy-files post_build.sh
 	RAM=$(RAM) ./$<
 	mv ubuntu-kvm/*.qcow2 $@
 clean:

@@ -31,4 +31,11 @@ swap 1000
 	\
 	`NB Extra packages: ` \
 	--addpkg acpid `NB This lets the vm respond to acpi shutdown. ` \
-	-o `NB overwrite old image`
+	--addpkg dnsmasq `NB all purpose pxe stuff. ` \
+	`NB dependencies for power_cycle script: ` \
+	--addpkg python-pkg-resources  \
+	--addpkg python-requests \
+	-o `NB overwrite old image` \
+	`NB install the power cycle script: ` \
+	--copy $PWD/copy-files \
+	--exec $PWD/post_build.sh
