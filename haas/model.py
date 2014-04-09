@@ -47,7 +47,17 @@ class Headnode(Model): pass
 class Hnic(Model): pass
 class Network(Model): pass
 class Nic(Model): pass
-class Node(Model): pass
+class Node(Model):
+    """A node is a physical computer
+    The node id is the object's label
+    """
+    available  = Column(Boolean)
+    project_name = Column(String,ForeignKey('Project.label'))
+    #Many to one mapping to group
+    project    = relationship("Project",backref=backref('nodes',order_by=label))
+    def __init__(self,node_id):
+        self.label = node_id
+    
 class Port(Model): pass
 class Project(Model): pass
 class Switch(Model): pass
