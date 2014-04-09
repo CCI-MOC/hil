@@ -53,8 +53,8 @@ class Node(Model):
     The node id is the object's label
     """
     available  = Column(Boolean)
-    
     project    = relationship('Project',backref=backref('nodes',order_by=label))
+    
     def __init__(self,node_id):
         self.label = node_id
     
