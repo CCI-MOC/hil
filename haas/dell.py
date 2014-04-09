@@ -1,41 +1,52 @@
-#! /usr/bin/python
+"""A switch driver for the Dell Powerconnect
+
+Currently the driver uses telnet to connect to the switch's console; in
+the long term we want to be using SNMP.
+"""
+
 import os
+import pexpect
+import re
 
+from haas.config import cfg
 
-def make_remove_vlans(vlan_ids,add,switch_ip='192.168.3.245'):
-    # Expects that you send a string which is a comma separated list of vlan_ids and a bool for adding or removing
-    for vlan_id in vlan_ids.split(','):
-        if add:
-            cmd='''snmpset -L n -v1 -cDell_Network_Manager 192.168.3.245 \
-dot1qVlanStaticName.%s s "%s" \
-dot1qVlanStaticEgressPorts.%s x '00' \
-dot1qVlanForbiddenEgressPorts.%s x '00' \
-dot1qVlanStaticUntaggedPorts.%s x '00' \
-dot1qVlanStaticRowStatus.%s i 4'''%(vlan_id,"vlan"+vlan_id,vlan_id,vlan_id,vlan_id,vlan_id)
-            print cmd
-            os.system(cmd)
-#os.system(cmd)
-        else:
-           pass
-def edit_ports_on_vlan(port_ids,vlan_id,add,switch_ip='192.168.3.245'):
+def set_access_vlan(port, vlan_id):
+    main_prompt = re.escape('console#')
+    config_prompt = re.escape('console(config)#')
+    if_prompt = re.escape('console(config-if)#')
+
+    # load the configuration:
+    switch_ip = cfg.get('switch dell', 'ip')
+    switch_user = cfg.get('switch dell', 'user')
+    switch_pass = cfg.get('switch dell', 'pass')
+
+    # connect to the switch, and log in:
+    console = pexpect.spawn('telnet ' + switch_ip)
+    console.expect('User Name:')
+    console.sendline(switch_user)
+    console.expect('Password:')
+    console.sendline(switch_pass)
+    console.expect(main_prompt)
+
+    # select the right interface:
+    console.sendline('config')
+    console.expect(config_prompt)
+    console.sendline('int gi1/0/%d' % port)
+    console.expect(if_prompt)
+
+    # set the vlan:
+    console.sendline('sw access vlan %d' % vlan_id)
+    console.expect(if_prompt)
+
+    # set it to access mode:
+    console.sendline('sw mode access')
+    console.expect(if_prompt)
+
+    # log out:
+    console.sendline('exit')
+    console.expect(config_prompt)
+    console.sendline('exit')
+    console.expect(main_prompt)
+    console.sendline('exit')
+    console.expect(pexpect.EOF)
     
-    # Expects that you send a comma separated list of ports
-    # A string for vlan_id
-    # And a bool for adding (True = adding, False = Removing)
-    if port_ids == "":
-       return
-    x=0
-    for port_id in port_ids.split(','):
-        if add:
-            port=int(port_id)
-            x=x+2**(24-port)
-        else:
-            pass
-
-    hexstr="%x"%x
-    hexstr=hexstr.zfill(6)
-    cmd='''snmpset -L n -v1 -cDell_Network_Manager 192.168.3.245 \
-dot1qVlanStaticEgressPorts.%s x '%s' \
-dot1qVlanStaticUntaggedPorts.%s x '%s' '''%(vlan_id,hexstr,vlan_id,hexstr)
-    print cmd
-    os.system(cmd)

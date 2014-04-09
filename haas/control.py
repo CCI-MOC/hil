@@ -186,25 +186,16 @@ def check_same_non_empty_list(ls):
 
 def deploy_group(group_name):
     group = get_entity_by_cond(Group,'group_name=="%s"'%group_name)
-    vm_name = group.vm.vm_name
     
-    vm_node = haas.headnode.HeadNode(vm_name)
-    
-    port_list = ""
-    for node in group.nodes:
-        port_list = port_list + str(node.nics[0].port.port_no)+","
-    
-    port_list = port_list[0:-1]
     vlan_id = group.vlans[0].vlan_id
     
+    vm_name = group.vm.vm_name
+    vm_node = haas.headnode.HeadNode(vm_name)
     vm_node.add_nic(vlan_id)
     vm_node.start()
-    
-    print vlan_id
-    print port_list
-    
-    dell.make_remove_vlans(str(vlan_id),True)
-    dell.edit_ports_on_vlan(port_list,str(vlan_id),True)
+   
+    for node in group.nodes:
+        dell.set_access_vlan(node.nics[0].port.port_no, vlan_id)
 
 def create_headnode():
     conn = haas.headnode.Connection()
