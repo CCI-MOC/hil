@@ -18,6 +18,7 @@ while True:
     password = getpass.getpass("Password: ")
     if auth(user_name,password):
         haas.control.login_user(user_name)
+        haas.control.set_active_switch()
         break
     print 'invalid user/password combination!'
 
