@@ -108,20 +108,20 @@ project at the same time.
 
 ###User operations:
     user_create                 <user_label> <password>
-    user_delete                <user_label>
+    user_delete                 <user_label>
  
     group_add_user              <group_label> <user_label> 
     group_add_network           <group_label> <network_label> 
 
     project_create              <project_label> <group_label>
-    project_delete             <project_label>
+    project_delete              <project_label>
  
     # create and delete logical networks
     network_create              <network_label> <group_label>
-    network_delete             <network_label>
+    network_delete              <network_label>
  
     headnode_create             <hn_label> <group_label>
-    headnode_delete            <hn_label>
+    headnode_delete             <hn_label>
     project_connect_headnode    <hn_label> <project_label>
     project_detach_headnode     <hn_label> <project_label>
  
@@ -140,7 +140,7 @@ project at the same time.
  
     # networking operations on a headnode
     headnode_create_hnic        <hn_label> <hnic_label> 
-    headnode_delete_hnic       <hn_label> <hnic_label>
+    headnode_delete_hnic        <hn_label> <hnic_label>
     headnode_connect_network    <hn_label> <hnic_label> <network>
     headnode_detach_network     <hn_label> <hnic_label> 
  
@@ -155,11 +155,11 @@ project at the same time.
 
     # operations to describe physical configuration of system to HaaS
     node_create                 <node_label>
-    node_delete                <node_label>
+    node_delete                 <node_label>
     node_create_nic             <node_label> <nic_label> <mac_addr>
-    node_delete_nic            <node_label> <nic_label> 
+    node_delete_nic             <node_label> <nic_label> 
     switch_create               <switch_label> <script> <number_ports>
-    switch_delete              <switch_label> 
+    switch_delete               <switch_label> 
     nic_connect_switch          <node_label> <nic_label> <switch_label> <port>
  
     # dump all information about the system
