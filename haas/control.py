@@ -1,10 +1,10 @@
 from model import *
 from haas.config import cfg
-import ConfigParser
+from haas.drivers.dell import *
 import haas.headnode
 import os
 import os.path
-import dell
+import sys
 import tabulate
 current_user = ""
 class_name={'group':Group,
@@ -15,14 +15,6 @@ class_name={'group':Group,
             'switch':Switch,
             'node':Node,
             'user':User}
-
-
-available_switches_table={'dell': dell,
-                          # More examples below...
-                          # 'cisco': cisco_snmp,
-                          # 'juniper': junip,
-                         }
-active_switch = None
 
 
 def show_table(table_name):
@@ -48,9 +40,6 @@ class NotExistError(Exception):
 class NotAvailableError(Exception):
     pass
 
-class BadConfigError(Exception):
-    pass
-    
 def query_db(classname):
     all=session.query(classname).all()
     table = [classname.meta]
@@ -196,19 +185,6 @@ def check_same_non_empty_list(ls):
         if ele != ls[0]: return False
     return ls[0]
 
-def set_active_switch():
-    """Sets the currently active network switch.
-
-    Assumption: A config file is present and contains exactly one active switch
-                attribute.
-    Raises: BadConfigError: If the active_switch option is not present.
-    """
-    global active_switch, available_switches_table
-    try:
-        active_switch_str = cfg.get('general', 'active_switch')
-    except ConfigParser.NoOptionError:
-        raise BadConfigError("No active_switch in the config file")
-    active_switch = available_switches_table[active_switch_str]
 
 def deploy_group(group_name):
     group = get_entity_by_cond(Group,'group_name=="%s"'%group_name)
@@ -219,13 +195,12 @@ def deploy_group(group_name):
     vm_node = haas.headnode.HeadNode(vm_name)
     vm_node.add_nic(vlan_id)
     vm_node.start()
-   
+
+    active_switch_str = cfg.get('general', 'active_switch')
+    active_switch = sys.modules['haas.drivers.' + active_switch_str]
+
     for node in group.nodes:
-        if not active_switch:
-            raise BadConfigError("Could not read active_switch from the config\
-                                  file")
-        else:
-            active_switch.set_access_vlan(node.nics[0].port.port_no, vlan_id)
+        active_switch.set_access_vlan(node.nics[0].port.port_no, vlan_id)
 
 def create_headnode():
     conn = haas.headnode.Connection()

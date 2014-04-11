@@ -10,6 +10,4 @@ pass = bar
 ip = 192.168.0.2
 
 [switch cisco]
-user = foo
-pass = bar
 ip = 192.168.0.3
