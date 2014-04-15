@@ -1,3 +1,6 @@
+[general]
+active_switch = dell
+
 [headnode]
 trunk_nic = eth0
 
@@ -5,3 +8,6 @@ trunk_nic = eth0
 user = foo
 pass = bar
 ip = 192.168.0.2
+
+[switch cisco]
+ip = 192.168.0.3
