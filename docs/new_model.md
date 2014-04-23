@@ -9,11 +9,15 @@ Each relationship requires a foreign key, however, you only have to declare in o
 
 Node
     id, label, available, project_label(foreign key, many to one mapping to project)
+    
+    
 Project
     id, label, deployed(boolean), group_label(foreign key, many to one mapping to group)
 
+
 Group
     id, label
+
 
 Users
     id, label(username), password, group_label(foreign key, many to many mapping to group)
