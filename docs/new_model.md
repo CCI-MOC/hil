@@ -11,6 +11,22 @@ Node
 
     id, label, available, project_label(foreign key, many to one mapping to project)
     
+Nic
+
+    id, label(ipmi, pxe, etc), mac_addr, node_label(f key, * to 1 mapping to node), port_label(f key, 1 to 1 mapping)
+
+
+Port
+
+    id, label, switch_label( f key, * 1 mapping to switch), port_no
+    
+Switch
+
+    id, switch_label, switch_model
+
+Vlan
+
+    id, label, available, nic_label(ipmi, pxe, etc), project_label(* to 1 mapping to project)
     
 Project
 
@@ -26,7 +42,7 @@ Users
 
     id, label(username), password, group_label(foreign key, many to many mapping to group)
 
-     
+
 
 
 
