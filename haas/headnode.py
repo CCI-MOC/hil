@@ -11,7 +11,20 @@ which are not are labeld as such (typically under the heading
 
 import uuid
 from subprocess import check_call as cmd
-from haas.config import get_value_from_config
+from haas.config import get_value_from_config, register_callback
+
+@register_callback
+def validate_config():
+    """ Returns True if the config file has valid data in the "headnode"
+        section, False (w/ the error string) otherwise.
+
+        This is a sample implementation; it just checks if the trunk_nic
+        is present.
+    """
+    trunk_nic = get_value_from_config('headnode', 'trunk_nic')
+    if not(trunk_nic):
+        return (False, "[Headnode]: Missing trunk_nic in the config file")
+    return (True, None)
 
 class Connection(object):
     """A connection to libvirtd"""

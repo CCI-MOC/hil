@@ -11,9 +11,21 @@ cfg = ConfigParser.RawConfigParser()
 
 mandatory_sections = ["general", "headnode"]
 available_sections = []
+available_callbacks = []
 
 class BadConfigError(Exception):
     pass
+
+def register_callback(callback_func):
+    """ Decorator function to register the validation functions of different
+        haas modules.
+    """
+    global available_callbacks
+
+    available_callbacks.append(callback_func)
+    def run_callback(*arg, **kwargs):
+        callback_func(*args, **kwargs)
+    return run_callback
 
 def is_valid_config(cfg):
     """ Returns true if the config object is valid, false (w/ the error string)
@@ -27,6 +39,12 @@ def is_valid_config(cfg):
     for section in mandatory_sections:
         if not(section in available_sections):
            return (False, "Missing mandatory \"" + section + "\" section")
+
+    for cbf in available_callbacks:
+        (is_valid, err_msg) = cbf()
+        if not(is_valid):
+            return (is_valid, err_msg)
+
     return (True, None)
 
 def get_value_from_config(section_name, option_name):
@@ -36,7 +54,7 @@ def get_value_from_config(section_name, option_name):
     value = None
     try:
         value = cfg.get(section_name, option_name)
-    except (NoSectionError, NoOptionError):
+    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
         return None
     return value
 

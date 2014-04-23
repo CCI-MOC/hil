@@ -8,7 +8,25 @@ import os
 import pexpect
 import re
 
-from haas.config import get_value_from_config
+from haas.config import get_value_from_config, register_callback
+
+@register_callback
+def validate_config():
+    """ Returns True if the config file has valid data, False (w/ the error
+        string) otherwise.
+
+        This is a sample implementation; it just checks if the ip address
+        is present and is in the correct format.
+        TODO: Add similar checks for other options for the Dell driver.
+    """
+    ip = get_value_from_config('switch dell', 'ip')
+    if not(ip):
+        return (False, "[Dell Driver]: Missing IP address in the config file")
+    ip_regex = r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+    if re.match(ip_regex, ip):
+        return (True, None)
+    else:
+        return (False, "[Dell Driver]: Invalid IP address: " + ip + " in the config file")
 
 def set_access_vlan(port, vlan_id):
     main_prompt = re.escape('console#')
