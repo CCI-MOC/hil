@@ -11,7 +11,7 @@ which are not are labeld as such (typically under the heading
 
 import uuid
 from subprocess import check_call as cmd
-from haas.config import cfg
+from haas.config import get_value_from_config
 
 class Connection(object):
     """A connection to libvirtd"""
@@ -89,7 +89,7 @@ class HeadNode(object):
         cmd(['virsh', 'destroy', self.name])
 
     def add_nic(self, vlan_id):
-        trunk_nic = cfg.get('headnode', 'trunk_nic')
+        trunk_nic = get_value_from_config('headnode', 'trunk_nic')
         bridge = 'br-vlan%d' % vlan_id
         vlan_nic = '%s.%d' % (trunk_nic, vlan_id)
         vlan_id = str(vlan_id)
@@ -103,7 +103,7 @@ class HeadNode(object):
 
     def delete(self):
         """Delete the vm, including associated storage"""
-        trunk_nic = cfg.get('headnode', 'trunk_nic')
+        trunk_nic = get_value_from_config('headnode', 'trunk_nic')
         cmd(['virsh', 'undefine', self.name, '--remove-all-storage'])
         for nic in self.nics:
             nic = str(nic)

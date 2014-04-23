@@ -8,7 +8,7 @@ import os
 import pexpect
 import re
 
-from haas.config import cfg
+from haas.config import get_value_from_config
 
 def set_access_vlan(port, vlan_id):
     main_prompt = re.escape('console#')
@@ -16,9 +16,9 @@ def set_access_vlan(port, vlan_id):
     if_prompt = re.escape('console(config-if)#')
 
     # load the configuration:
-    switch_ip = cfg.get('switch dell', 'ip')
-    switch_user = cfg.get('switch dell', 'user')
-    switch_pass = cfg.get('switch dell', 'pass')
+    switch_ip = get_value_from_config('switch dell', 'ip')
+    switch_user = get_value_from_config('switch dell', 'user')
+    switch_pass = get_value_from_config('switch dell', 'pass')
 
     # connect to the switch, and log in:
     console = pexpect.spawn('telnet ' + switch_ip)
