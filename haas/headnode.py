@@ -22,7 +22,7 @@ def validate_config():
         config, and if a trunk_nic attribute is present in it.
     """
     if not(cfg.has_section('headnode')):
-        return (True, None)
+        return (False, "[Headnode]: Missing mandatory \"headnode\" section")
     if not(cfg.has_option('headnode', 'trunk_nic')):
         return (False, "[Headnode]: Missing trunk_nic in the config file")
     return (True, None)

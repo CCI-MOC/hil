@@ -7,7 +7,6 @@ the long term we want to be using SNMP.
 import os
 import pexpect
 import re
-import socket
 
 from haas.config import cfg, register_callback, BadConfigError
 from haas.utils import is_valid_ip
