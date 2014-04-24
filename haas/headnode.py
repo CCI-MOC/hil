@@ -11,18 +11,19 @@ which are not are labeld as such (typically under the heading
 
 import uuid
 from subprocess import check_call as cmd
-from haas.config import get_value_from_config, register_callback
+from haas.config import cfg, register_callback
 
 @register_callback
 def validate_config():
     """ Returns True if the config file has valid data in the "headnode"
         section, False (w/ the error string) otherwise.
 
-        This is a sample implementation; it just checks if the trunk_nic
-        is present.
+        This implementation checks if a "headnode" section is present in the
+        config, and if a trunk_nic attribute is present in it.
     """
-    trunk_nic = get_value_from_config('headnode', 'trunk_nic')
-    if not(trunk_nic):
+    if not(cfg.has_section('headnode')):
+        return (True, None)
+    if not(cfg.has_option('headnode', 'trunk_nic')):
         return (False, "[Headnode]: Missing trunk_nic in the config file")
     return (True, None)
 
@@ -102,7 +103,7 @@ class HeadNode(object):
         cmd(['virsh', 'destroy', self.name])
 
     def add_nic(self, vlan_id):
-        trunk_nic = get_value_from_config('headnode', 'trunk_nic')
+        trunk_nic = cfg.get('headnode', 'trunk_nic')
         bridge = 'br-vlan%d' % vlan_id
         vlan_nic = '%s.%d' % (trunk_nic, vlan_id)
         vlan_id = str(vlan_id)
@@ -116,7 +117,7 @@ class HeadNode(object):
 
     def delete(self):
         """Delete the vm, including associated storage"""
-        trunk_nic = get_value_from_config('headnode', 'trunk_nic')
+        trunk_nic = cfg.get('headnode', 'trunk_nic')
         cmd(['virsh', 'undefine', self.name, '--remove-all-storage'])
         for nic in self.nics:
             nic = str(nic)

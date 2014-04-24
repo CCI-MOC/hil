@@ -1,5 +1,5 @@
 from model import *
-from haas.config import get_value_from_config
+from haas.config import cfg
 from haas.drivers.dell import *
 import haas.headnode
 import os
@@ -196,7 +196,7 @@ def deploy_group(group_name):
     vm_node.add_nic(vlan_id)
     vm_node.start()
 
-    active_switch_str = get_value_from_config('general', 'active_switch')
+    active_switch_str = cfg.get('general', 'active_switch')
     active_switch = sys.modules['haas.drivers.' + active_switch_str]
 
     for node in group.nodes:
