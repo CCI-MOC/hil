@@ -29,9 +29,13 @@ def is_valid_config():
 
         Assumptions: The config file has been loaded.
     """
-    global cfg
+    global available_callbacks
 
-    for cbf in available_callbacks:
+    # NOTE: Dynamic loading of modules can alter the global list asynchronously. 
+    #       We make a local copy here to avoid this from affecting the loop.
+    l_available_cbfs = available_callbacks[:]
+
+    for cbf in l_available_cbfs:
         (is_valid, err_msg) = cbf()
         if not(is_valid):
             raise BadConfigError(err_msg)
@@ -47,9 +51,8 @@ def load():
     If the configuration file is not available, this function will simply load
     an empty configuration (i.e. one with no options).
     """
-    global cfg, available_sections
+    global cfg
 
     cfg.read('haas.cfg')
-    available_sections = cfg.sections()
     if not(is_valid_config()):
         raise BadConfigError("Please check the config file.")

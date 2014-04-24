@@ -1,6 +1,5 @@
 from model import *
-from haas.config import cfg
-from haas.drivers.dell import *
+from haas.config import cfg, register_callback
 import haas.headnode
 import os
 import os.path
@@ -16,6 +15,25 @@ class_name={'group':Group,
             'node':Node,
             'user':User}
 
+@register_callback
+def validate_config():
+    """ Returns True if the config file has valid data, False (w/ the error
+        string) otherwise.
+
+        This  implementation checks for the presence of an active_switch
+        option in the general section of the config file. It then loads the
+        required driver module, and calls the driver's config validator
+        function.
+    """
+    if not(cfg.has_section('general')):
+        return (False, "[Control]: Missing mandatory \"general\" section.")
+    if not(cfg.has_option('general', 'active_switch')):
+        return (False, "[Control]: Missing mandatory \"active_switch\" option.")
+
+    active_switch_str = cfg.get('general', 'active_switch')
+    active_switch = __import__("haas.drivers." + active_switch_str, fromlist = ["*"])
+
+    return active_switch.validate_config()
 
 def show_table(table_name):
     if table_name not in class_name:
@@ -184,7 +202,6 @@ def check_same_non_empty_list(ls):
     for ele in ls:
         if ele != ls[0]: return False
     return ls[0]
-
 
 def deploy_group(group_name):
     group = get_entity_by_cond(Group,'group_name=="%s"'%group_name)
