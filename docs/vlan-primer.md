@@ -2,13 +2,33 @@ This document is a brief primer on 802.1q VLANs (Virtual LANs): what they are,
 how switches tend to deal with them, how Linux deals with them, and how the
 HaaS uses them.
 
+# Managed vs. Unmanaged Switches
+
+The primary function of an *unmanaged* switch is to connect several
+computers into a single network segment. This is similar to the purpose
+of a hub - which is in essence just a shared wire - except that it
+understand the ethernet protocol and thus does not have to send traffic
+to every machine. Instead it can only send traffic to the machines which
+need to see it. This improves performance somewhat, but for the most
+part does not affect usage of the device.
+
+For a managed switch, the basic purpose is the same. However, a managed
+switch provides additional capabilities, and typically can be configured
+via a web interface, serial console, or telnet or ssh.
+
+One piece of additional functionality provided by nearly all managed
+switches is support for VLANs, which are typically used to create
+logical networks within the switch - i.e. they allow the switch to be
+divided into isolated sections, which cannot communicate with one
+another.
+
 # What are VLANs?
 
 At a most basic level, a VLAN is simply a 12 bit tag in the header of an
-ethernet packet, which can be used by networking equipment.
-
-One typical use of VLANs is creating logical (virtual) networks, which can be
-physically located on the same switch, but still isolated from one another.
+ethernet packet, which can be used by networking equipment. Mostly this
+is used as described above - it provides both the switch and other
+devices with information about which logical network the packet belongs
+to.
 
 # How do switches deal with VLANs?
 
