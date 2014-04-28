@@ -15,6 +15,7 @@ class ConfigTest(unittest.TestCase):
         def validate():
             if not cfg.has_option('tests', 'example'):
                 return False, 'option "example" in section "tests" is missing.'
+            return True, None
 
         # Just create the file, we don't actually need to do anything to it.
         f = open('haas.cfg', 'w')
@@ -25,10 +26,11 @@ class ConfigTest(unittest.TestCase):
         """Ensure that a config with all required options is accepted."""
         @register_callback
         def validate():
-            if not cfg.has_option('tests', 'example'):
+            if not cfg.has_option('tests', 'example1'):
                 return False, 'option "example" in section "tests" is missing.'
+            return True, None
 
         with open('haas.cfg', 'w') as f:
             f.write('[tests]\n' +
-                    'example = foo\n')
+                    'example1 = foo\n')
         load()
