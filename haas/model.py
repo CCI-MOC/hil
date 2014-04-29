@@ -1,8 +1,14 @@
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker,backref
+from passlib.hash import sha512_crypt
 
 Base=declarative_base()
+
+user_groups = Table('user_groups', Base.metadata,
+                    Column('user_id', Integer, ForeignKey('users.id')),
+                    Column('group_id', Integer, ForeignKey('groups.id')))
+
 
 class Nic(Base):
     __tablename__ = 'nics'
@@ -29,24 +35,26 @@ class Node(Base):
     id            = Column(Integer,primary_key=True)
     label         = Column(String)
     available     = Column(Boolean)
-    project_label = Column(String,ForeignKey('groups.group_name'))
-    
-    
+    project_label = Column(String,ForeignKey('projects.label'))
+        
     #many to one mapping to project
     project       = relationship("Project",backref=backref('nodes',order_by=id))
-
-    
 
     def __init__(self, label, available = True):
         self.label   = label
         self.available = available
 
+    def __repr__(self):
+        return "Node<%r %r %r %r>"%(self.id, 
+                                    self.label,
+                                    self.available,
+                                    self.project_label if self.project else None)
     
 class Project(Base):
     __tablename__='projects'
     meta        = ["id", "label", "deployed", "group_label"]
     id          = Column(Integer, primary_key = True)
-    label       = Column(String, primary_key = True)
+    label       = Column(String)
     deployed    = Column(Boolean)
     group_label = Column(String,ForeignKey('groups.label'))
 
@@ -57,7 +65,11 @@ class Project(Base):
     def __init__(self, label):
         self.label = label
         self.deployed   = False
-
+    def __repr__(self):
+        return "Project<%r %r %r %r>"%(self.id,
+                                       self.label,
+                                       self.deployed,
+                                       self.group_label if self.group else None)
 
 class Vlan(Base):
     __tablename__ ='vlans'
@@ -65,13 +77,13 @@ class Vlan(Base):
     id            = Column(Integer,primary_key=True)
     label         = Column(String)
     available     = Column(Boolean)
-
+    nic_label     = Column(String)
     project_label = Column(String,ForeignKey('projects.label'))
     
     project         = relationship("Project",backref=backref('vlans',order_by=nic_label))
     def __init__(self,label, nic_label, available=True):
         self.label = label
-        self.nic_label = label
+        self.nic_label = nic.label
         self.available = available
 
 
@@ -79,6 +91,7 @@ class Port(Base):
     __tablename__ = 'ports'
     meta          = ["id","label", "switch_label","port#"]
     id            = Column(Integer,primary_key=True)
+    label         = Column(String)
     port_no       = Column(Integer)
     switch_label  = Column(Integer,ForeignKey('switches.label'))
 
@@ -107,6 +120,13 @@ class User(Base):
     label       = Column(String)  #username
     hashed_password    = Column(String)
     
+    #many to many User<->Group
+    """
+    alice = User('alice', 'alice')
+    g1    = Group('g1')
+    alice.groups.append(g1)
+    """
+    groups      = relationship('Group', secondary = user_groups, backref = 'users' )
     def __init__(self, label, password):
         self.label = label
         self.set_password(password)
@@ -117,8 +137,37 @@ class User(Base):
     def set_password(self, password):
         self.hashed_password = sha512_crypt.encrypt(password)
     
+    def __repr__(self):
+        return "User<%r %r %r %r>"%(self.id,
+                                    self.label,
+                                    self.hashed_password,
+                                    self.groups)
+    
+class Group(Base):
+    __tablename__ = 'groups'
+    meta          = ["id", "label"]
+    id            = Column(Integer, primary_key = True)
+    label         = Column(String)
+    
+    def __init__(self, label):
+        self.label = label
+    
+    def __repr__(self):
+        return 'Group<%r %r>'%(self.id,
+                               self.label)
         
 engine=create_engine('sqlite:///haas.db',echo=False)
 Base.metadata.create_all(engine)
 Session=sessionmaker(bind=engine)
 session=Session()
+
+"""
+alice = User('alice','alice')
+bob   = User('bob','bob')
+admin = Group('admin')
+student = Group('student')
+alice.groups.append(admin)
+alice.groups.append(student)
+session.add(alice)
+print session.query(User).all()
+"""
