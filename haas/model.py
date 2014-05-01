@@ -38,7 +38,7 @@ class Nic(Base):
         self.label     = label
         self.mac_addr  = mac_addr
     def __repr__(self):
-        return 'Nic<%r %r %r %r %r>'%(self.id
+        return 'Nic<%r %r %r %r %r>'%(self.id,
                                       self.label,
                                       self.mac_addr,
                                       self.port_label if self.port else None,
@@ -138,7 +138,7 @@ class Switch(Base):
         self.label = label
         self.model = model
     def __repr__(self):
-        return 'Switch<%r %r %r>'%(self.id
+        return 'Switch<%r %r %r>'%(self.id,
                                    self.label,
                                    self.model)
 
@@ -219,7 +219,7 @@ class Hnic(Base):
         self.mac_addr = mac_addr
 
     def __repr__(self):
-        return "Hnic<%r %r %r %r>"%(self.id
+        return "Hnic<%r %r %r %r>"%(self.id,
                                     self.label,
                                     self.mac_addr,
                                     self.headnode_label if self.headnode else None)
