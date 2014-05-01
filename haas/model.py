@@ -2,6 +2,7 @@ from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker,backref
 from passlib.hash import sha512_crypt
+import haas_dao
 
 Base=declarative_base()
 Session = sessionmaker()
@@ -17,6 +18,7 @@ def init_db(create=False):
     if create:
         Base.metadata.create_all(engine)
     Session.configure(bind=engine)
+    haas_dao.init_session(Session())
 
 
 
