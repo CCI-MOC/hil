@@ -18,7 +18,7 @@ def init_db(create=False):
     if create:
         Base.metadata.create_all(engine)
     Session.configure(bind=engine)
-    haas_dao.init_session(Session())
+
 
 
 
