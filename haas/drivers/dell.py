@@ -11,10 +11,6 @@ import re
 from haas.config import cfg
 
 def set_access_vlan(port, vlan_id):
-    main_prompt = re.escape('console#')
-    config_prompt = re.escape('console(config)#')
-    if_prompt = re.escape('console(config-if)#')
-
     # load the configuration:
     switch_ip = cfg.get('switch dell', 'ip')
     switch_user = cfg.get('switch dell', 'user')
@@ -26,7 +22,21 @@ def set_access_vlan(port, vlan_id):
     console.sendline(switch_user)
     console.expect('Password:')
     console.sendline(switch_pass)
-    console.expect(main_prompt)
+
+    #Regex to handle different prompt at switch 
+    console.expect('[\r|\n]+[\w|\d|\s|\W|\D|\S|-|!|@|$|%|^|&|#]+[.]*#')
+    cmdPrompt = console.after
+    cmdPrompt = cmdPrompt.strip(' \r\n\t')
+    print('shellprompt ' + cmdPrompt)
+
+    main_prompt = cmdPrompt
+    #:-1 omits the last hash character
+    config_prompt = main_prompt[:-1] + '(config)#'
+    if_prompt = main_prompt[:-1] + '(config-if)#'
+    
+    main_prompt = re.escape(main_prompt)
+    config_prompt = re.escape(config_prompt)
+    if_prompt = re.escape(if_prompt)    
 
     # select the right interface:
     console.sendline('config')
