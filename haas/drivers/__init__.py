@@ -1,8 +1,8 @@
 """Network switch drivers for the HaaS.
 
 This package provides HaaS drivers for various network switches. The
-functions in the top-level module are no-ops, but serve to document the
-interface shared by all of the drivers.
+functions in the top-level module should not be used; they only exist
+as a place to document the interface shared by all of the drivers.
 """
 
 def set_access_vlan(port_id, vlan_id):
