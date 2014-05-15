@@ -1,59 +1,62 @@
 
     user_create  <user_label> <password>
-    [POST]   /user  {label:'alice',password:'alice'}
+    [PUT]   /user/alice  {password:'alice'}
     [DELETE] /user/alice
 
 
     group_add_user    <group_label> <user_label>
-    group_add_netowrk <group_label> <network_label>
-    [POST] /group/students/user {label:'alice'}
-    [POST] /group/students/network {label:'vlan101'}
+    group_add_network <group_label> <network_label>
+    [PUT] /students/user/alice
+    [PUT] /students/network/vlan101
 
 
     project_create   <project_label><group_label>
     project_delete   <project_label>
-    [POST] /project {label:'project1',group_label:'student'}
-    [DELETE] /project/project1
+    [PUT] /students/project/project1
+    [DELETE] /students/project/project1
 
 
     network_create              <network_label> <group_label>
     network_delete              <network_label>
-    [POST] /network {label:'vlan101',group_label:'student'}
-    [DELETE] /network/vlan101
+    [PUT] /students/network/vlan101
+    [DELETE] /students/network/vlan101
     
     
     
     headnode_create <hn_label> <group_label>
     headnode_delete <hn_label>
-    [POST] /headnode {label:'vm1',group_label:'student'}
-    [DELETE] /headnode/vm1
+    [PUT] /students/headnode/vm1
+    [DELETE] /students/headnode/vm1
 
     project_connect_headnode <hn_label> <project_label>
     project_detach_headnode <hn_label> <project_label>
-    [POST] /project/project1/headnode {label:'vm1'}
-    [DELETE] /project/project1/headnode/vm1
+    #need a <group_label> ?
+    [PUT] /students/project1/headnode/vm1
+    [DELETE] /students/project/project1/headnode/vm1
 
 
     project_connect_node        <project_label> <node_label> 
     project_detach_node         <project_label> <node_label>
-    [POST] /project/project1/node {label:'node1'}
-    [DELETE] /project/project1/node/node1
+    [PUT] /students/project/project1/node/n1
+    [DELETE] /students/project/project1/node/n1
 
 
     project_connect_network     <project_label> <network_label>
     project_detach_network      <project_label> <network_label>
     project deploy              <project_label>
+    #add a <group_label>?
+    [PUT]   /students/project/project1/network/vlan1
+    [DELETE] /students/project/project1/network/vlan1
     
-    [POST]   /project/network {label:'vlan101'}
-    [DELETE] /project/network/vlan101
+    #more on the deploy later
     [PUT]    /project/project1 {deployed:True}
 
 
     node_connect_network        <node_label> <nic_label> <network_label>
     node_detach_network         <node_label> <nic_label>
 
-    [POST]   /network/vlan101/node {label:'node1',nic_label:'ipmi'}
-    [DELETE] /network/vlan101/node/node1
+    [PUT]   /students/network/vlan101/node/n1 {nic_label:'ipmi'}
+    [DELETE] /students/network/vlan101/node/n1
 
 
 
@@ -61,9 +64,9 @@
     headnode_delete_hnic        <hn_label> <hnic_label>
     headnode_connect_network    <hn_label> <hnic_label> <network>
     headnode_detach_network     <hn_label> <hnic_label>
-    [POST]   /headnode/vm1/hnic {label:'ipmi'}
+    [PUT]   /headnode/vm1/hnic {label:'ipmi'}
     [DELETE] /headnode/vm1/hnic/ipmi
-    [POST]   /headnode/vm1/network {label:'ipmi',network_label:'vlan101'}
+    [PUT]   /headnode/vm1/network/ipmi {network_label:'vlan101'}
     [DELETE] /headnode/vm1/network/ipmi
 
 
