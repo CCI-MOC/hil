@@ -2,7 +2,6 @@ from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker,backref
 from passlib.hash import sha512_crypt
-import haas_dao
 
 Base=declarative_base()
 Session = sessionmaker()
