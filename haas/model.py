@@ -24,6 +24,11 @@ def init_db(create=False):
 
 class Nic(Base):
     __tablename__ = 'nics'
+    # The "meta" attribute is for the benefit of the cli, which uses it to
+    # display column names. There's probably a better way to do this, but the
+    # intent going forward is for the cli to be talking to the rest api, rather
+    # than this module, so let's not bother for now, and just remember to remove
+    # this (as well as the same attribute in other classes) when we can.
     meta      = ["id", "label", "mac_addr", "node_label", "port_label"]
     id        = Column(Integer, primary_key = True)
     label     = Column(String)
