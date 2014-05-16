@@ -1,5 +1,5 @@
 from sqlalchemy import *
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import relationship, sessionmaker,backref
 from passlib.hash import sha512_crypt
 
@@ -19,9 +19,21 @@ def init_db(create=False):
     Session.configure(bind=engine)
 
 
+class Model(Base):
+    """All of our database models are descendants of this class.
+
+    Its main purpose is to reduce boilerplate by doing things such as
+    auto-generating table names.
+    """
+    __abstract__ = True
+
+    @declared_attr
+    def __tablename__(cls):
+        """Automatically generate the table name."""
+        return cls.__name__.lower()
 
 
-class Nic(Base):
+class Nic(Model):
     __tablename__ = 'nics'
     # The "meta" attribute is for the benefit of the cli, which uses it to
     # display column names. There's probably a better way to do this, but the
@@ -50,8 +62,7 @@ class Nic(Base):
                                       self.port_label if self.port else None,
                                       self.node_label if self.node else None)
             
-class Node(Base):
-    __tablename__='nodes'
+class Node(Model):
 
     meta          = ["id","label","available","project"]
     id            = Column(Integer,primary_key=True)
@@ -72,8 +83,7 @@ class Node(Base):
                                     self.available,
                                     self.project_label if self.project else None)
     
-class Project(Base):
-    __tablename__='projects'
+class Project(Model):
     meta        = ["id", "label", "deployed", "group_label"]
     id          = Column(Integer, primary_key = True)
     label       = Column(String)
@@ -93,8 +103,7 @@ class Project(Base):
                                        self.deployed,
                                        self.group_label if self.group else None)
 
-class Vlan(Base):
-    __tablename__ ='vlans'
+class Vlan(Model):
     meta          = ["id", "label", "available", "nic_label", "project_label"]
     id            = Column(Integer,primary_key=True)
     label         = Column(String)
@@ -114,8 +123,7 @@ class Vlan(Base):
                                        self.nic_label,
                                        self.project_label if self.project else None)
 
-class Port(Base):
-    __tablename__ = 'ports'
+class Port(Model):
     meta          = ["id","label", "switch_label","port#"]
     id            = Column(Integer,primary_key=True)
     label         = Column(String)
@@ -133,8 +141,7 @@ class Port(Base):
                                     self.port_no,
                                     self.switch_label if self.switch else None)
 
-class Switch(Base):
-    __tablename__ = 'switches'
+class Switch(Model):
     meta          = ["id","label", "model"]
     id            = Column(Integer,primary_key=True)
     label         = Column(String)
@@ -148,8 +155,7 @@ class Switch(Base):
                                    self.label,
                                    self.model)
 
-class User(Base):
-    __tablename__ = 'users'
+class User(Model):
     meta        = ["id", "label", "hashed_password"]
     id          = Column(Integer, primary_key = True)
     label       = Column(String)  #username
@@ -178,8 +184,7 @@ class User(Base):
                                     self.hashed_password,
                                     self.groups)
     
-class Group(Base):
-    __tablename__ = 'groups'
+class Group(Model):
     meta          = ["id", "label"]
     id            = Column(Integer, primary_key = True)
     label         = Column(String)
@@ -191,8 +196,7 @@ class Group(Base):
         return 'Group<%r %r>'%(self.id,
                                self.label)
 
-class Headnode(Base):
-    __tablename__ = 'headnodes'
+class Headnode(Model):
     meta          = ["id","label","available", "project_label"]
     id            = Column(Integer, primary_key = True)
     label         = Column(String)
@@ -210,8 +214,7 @@ class Headnode(Base):
                                      self.available,
                                      self.label,
                                      self.project_label if self.project else None)
-class Hnic(Base):
-    __tablename__  = 'hnics'
+class Hnic(Model):
     meta           = ["id", "label","mac_addr","headnode_label" ]
     id             = Column(Integer, primary_key = True)
     label          = Column(String)
