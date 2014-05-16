@@ -1,0 +1,5 @@
+create_user zhaoliang 101
+create_node 1
+create_node 2
+create_vlan 101
+create_group alice_group

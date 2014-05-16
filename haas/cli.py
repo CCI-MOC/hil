@@ -193,6 +193,7 @@ def show_table(table_name):
     """show [ group | vm | port | nic | vlan | switch | node | user ]"""
     control.show_table(table_name)
 
+
 @command('help')
 def usage():
     print "------- commands --------"
