@@ -35,13 +35,10 @@ def set_access_vlan(port, vlan_id):
 
     main_prompt = cmdPrompt
     #:-1 omits the last hash character
-    config_prompt = main_prompt[:-1] + '(config)#'
-    if_prompt = main_prompt[:-1] + '(config-if)#'
-    
+    config_prompt = re.escape(main_prompt[:-1] + '(config)#')
+    if_prompt = re.escape(main_prompt[:-1] + '(config-if)#')
     main_prompt = re.escape(main_prompt)
-    config_prompt = re.escape(config_prompt)
-    if_prompt = re.escape(if_prompt)    
-
+    
     # select the right interface:
     console.sendline('config')
     console.expect(config_prompt)
