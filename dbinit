@@ -1,0 +1,13 @@
+create_node 0
+create_node 1
+create_nic 0 00:11:22:33:44:55 pxe
+create_nic 1 00:11:22:33:44:56 pxe
+add_nic 0 0
+add_nic 1 1
+create_switch 0 dell
+create_port 0 0 5
+create_port 1 0 6
+connect_nic 0 0
+connect_nic 1 1
+create_user alice alice
+

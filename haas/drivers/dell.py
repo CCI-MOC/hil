@@ -24,7 +24,11 @@ def set_access_vlan(port, vlan_id):
     console.sendline(switch_pass)
 
     #Regex to handle different prompt at switch 
-    console.expect('[\r|\n]+[\w|\d|\s|\W|\D|\S|-|!|@|$|%|^|&|#]+[.]*#')
+    #[\r\n]+ will handle any newline
+    #.+ will handle any character after newline 
+    #[.]* will handle end dots if any
+    # this sequence terminates with #
+    console.expect(r'[\r\n]+.+#')
     cmdPrompt = console.after
     cmdPrompt = cmdPrompt.strip(' \r\n\t')
     print('shellprompt ' + cmdPrompt)
