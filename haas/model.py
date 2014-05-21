@@ -2,13 +2,14 @@ from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import relationship, sessionmaker,backref
 from passlib.hash import sha512_crypt
+from haas.config import cfg
 
 Base=declarative_base()
 Session = sessionmaker()
 
 user_groups = Table('user_groups', Base.metadata,
-                    Column('user_id', Integer, ForeignKey('users.id')),
-                    Column('group_id', Integer, ForeignKey('groups.id')))
+                    Column('user_id', Integer, ForeignKey('user.id')),
+                    Column('group_id', Integer, ForeignKey('group.id')))
 
 
 def init_db(create=False):
@@ -45,8 +46,8 @@ class Nic(Model):
     label     = Column(String)
     mac_addr  = Column(String)
 
-    port_label   = Column(Integer,ForeignKey('ports.label'))
-    node_label   = Column(Integer,ForeignKey('nodes.label'))
+    port_label   = Column(Integer,ForeignKey('port.label'))
+    node_label   = Column(Integer,ForeignKey('node.label'))
     
     # One to one mapping port
     port      = relationship("Port",backref=backref('nic',uselist=False))
@@ -68,7 +69,7 @@ class Node(Model):
     id            = Column(Integer,primary_key=True)
     label         = Column(String)
     available     = Column(Boolean)
-    project_label = Column(String,ForeignKey('projects.label'))
+    project_label = Column(String,ForeignKey('project.label'))
         
     #many to one mapping to project
     project       = relationship("Project",backref=backref('nodes',order_by=id))
@@ -88,11 +89,11 @@ class Project(Model):
     id          = Column(Integer, primary_key = True)
     label       = Column(String)
     deployed    = Column(Boolean)
-    group_label = Column(String,ForeignKey('groups.label'))
+    group_label = Column(String,ForeignKey('group.label'))
 
 
     #Many to one mapping to User
-    group       = relationship("Group",backref=backref('groups',order_by=label))
+    group       = relationship("Group",backref=backref('group',order_by=label))
 
     def __init__(self, label):
         self.label = label
@@ -109,7 +110,7 @@ class Vlan(Model):
     label         = Column(String)
     available     = Column(Boolean)
     nic_label     = Column(String)
-    project_label = Column(String,ForeignKey('projects.label'))
+    project_label = Column(String,ForeignKey('project.label'))
     
     project         = relationship("Project",backref=backref('vlans',order_by=nic_label))
     def __init__(self,label, nic_label, available=True):
@@ -128,7 +129,7 @@ class Port(Model):
     id            = Column(Integer,primary_key=True)
     label         = Column(String)
     port_no       = Column(Integer)
-    switch_label  = Column(Integer,ForeignKey('switches.label'))
+    switch_label  = Column(Integer,ForeignKey('switch.label'))
 
     switch        = relationship("Switch",backref=backref('ports',order_by=label))
 
@@ -167,7 +168,7 @@ class User(Model):
     g1    = Group('g1')
     alice.groups.append(g1)
     """
-    groups      = relationship('Group', secondary = user_groups, backref = 'users' )
+    groups      = relationship('Group', secondary = user_groups, backref = 'user' )
     def __init__(self, label, password):
         self.label = label
         self.set_password(password)
@@ -202,7 +203,7 @@ class Headnode(Model):
     label         = Column(String)
     available     = Column(Boolean)
     
-    project_label = Column(String, ForeignKey('projects.label'))
+    project_label = Column(String, ForeignKey('project.label'))
     project       = relationship("Project", backref = backref('headnode',uselist = False))
 
     def __init__(self, label, available = True):
@@ -219,7 +220,7 @@ class Hnic(Model):
     id             = Column(Integer, primary_key = True)
     label          = Column(String)
     mac_addr       = Column(String)
-    headnode_label = Column(String, ForeignKey('headnodes.label'))
+    headnode_label = Column(String, ForeignKey('headnode.label'))
 
     headnode       = relationship("Headnode", backref = backref('hnics',order_by=label))
 
