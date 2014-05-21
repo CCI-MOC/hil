@@ -21,4 +21,4 @@ def hello():
 if __name__ == '__main__':
     config.load()
     model.init_db(create=True)
-    app.run()
+    app.run(debug=True)
