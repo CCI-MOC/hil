@@ -1,9 +1,10 @@
 from model import *
-import haas.config
+from haas.config import cfg
+from haas.drivers.dell import *
 import haas.headnode
 import os
 import os.path
-import dell
+import sys
 import tabulate
 current_user = ""
 class_name={'group':Group,
@@ -38,7 +39,7 @@ class NotExistError(Exception):
 
 class NotAvailableError(Exception):
     pass
-    
+
 def query_db(classname):
     all=session.query(classname).all()
     table = [classname.meta]
@@ -184,18 +185,25 @@ def check_same_non_empty_list(ls):
         if ele != ls[0]: return False
     return ls[0]
 
+
 def deploy_group(group_name):
     group = get_entity_by_cond(Group,'group_name=="%s"'%group_name)
-    
+    # get vlan id and label
     vlan_id = group.vlans[0].vlan_id
+    vlan_name = group.vlans[0].nic_name
     
     vm_name = group.vm.vm_name
     vm_node = haas.headnode.HeadNode(vm_name)
     vm_node.add_nic(vlan_id)
     vm_node.start()
-   
+    
+    active_switch_str = cfg.get('general', 'active_switch')
+    active_switch = sys.modules['haas.drivers.' + active_switch_str]
+    # based on nic label fetch the matching nic
     for node in group.nodes:
-        dell.set_access_vlan(node.nics[0].port.port_no, vlan_id)
+        for nic in node.nics:
+            if nic.name == vlan_name:
+                active_switch.set_access_vlan(nic.port.port_no, vlan_id)
 
 def create_headnode():
     conn = haas.headnode.Connection()
