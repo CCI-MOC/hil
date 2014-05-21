@@ -29,15 +29,13 @@ def set_access_vlan(port, vlan_id):
     #[.]* will handle end dots if any
     # this sequence terminates with #
     console.expect(r'[\r\n]+.+#')
-    cmdPrompt = console.after
-    cmdPrompt = cmdPrompt.strip(' \r\n\t')
-    print('shellprompt ' + cmdPrompt)
-
-    main_prompt = cmdPrompt
+    cmd_prompt = console.after
+    cmd_prompt = cmd_prompt.strip(' \r\n\t')
+    
     #:-1 omits the last hash character
-    config_prompt = re.escape(main_prompt[:-1] + '(config)#')
-    if_prompt = re.escape(main_prompt[:-1] + '(config-if)#')
-    main_prompt = re.escape(main_prompt)
+    config_prompt = re.escape(cmd_prompt[:-1] + '(config)#')
+    if_prompt = re.escape(cmd_prompt[:-1] + '(config-if)#')
+    main_prompt = re.escape(cmd_prompt)
     
     # select the right interface:
     console.sendline('config')
