@@ -1,58 +1,51 @@
 """This is the HaaS API server - it provides the HaaS's rest api.
 
-The api server is meant to be run as a stand-alone command, e.g:
+This module only marshalls between HTTP and the routines in haas.api; it doesn't
+directly ipmlement the semantics of the API.
 
-    python -m haas.api_server
+To start the server, or the module can be run as a script, e.g. (from the root
+of the source tree):
 
-This is all WIP, of course.
+    python haas/api_server.py
+
+Right now the server is always run in debug mode, which isn't safe for
+production use. When we get close to release-quality we'll have to change this.
 """
 
 from flask import Flask, request
-from haas import config, model
+from haas import config, model, api
+
+
+def api_function(f):
+    def wrapped(*args, **kwargs):
+        try:
+            resp = f(*args, **kwargs)
+        except api.APIError as e:
+            # Right now we're always returning 400 (Bad Request). This probably
+            # isn't actually the right thing to do.
+            #
+            # Additionally, we're getting deprecation errors about the use of
+            # the message attribute. TODO: figure out what the right way to do
+            # this is.
+            return e.message, 400
+        # TODO: catch other exceptions, log them, and return some 5xx error code.
+        if not resp:
+            return ''
+    return wrapped
+
 
 
 app = Flask(__name__)
 
 
-@app.route('/')
-def hello():
-    return 'Hello, HaaS!'
-
-
 @app.route('/user/<username>', methods=['PUT', 'DELETE'])
+@api_function
 def user(username):
-    """Handle create/modify/delete user commands.
-
-    * A delete request will delete a user. If the user does not exists, a 404
-      http status code will be returned.
-    * A put request will create a user if it does not exist, and set the user's
-      password otherwise.
-
-    Right now the client doesn't get any feedback as to whether the user already
-    exists or not. I don't really like the way this works right now, will have
-    to sit down and come up with a proper design.
-    """
-    # It would be nice to have two separate functions for this. All the examples
-    # in the flask docs use a simple if/else like below for this kind of thing,
-    # however.
-    db = model.Session()
-    user = db.query(model.User).filter_by(label = username).first()
-
+    """Handle create/delete user commands. """
     if request.method == 'PUT':
-        password = request.form['password']
-        if not user:
-            user = model.User(username, password)
-        else:
-            user.set_password(password)
-        db.add(user)
+        return api.user_create(username, request.form['password'])
     else: # DELETE
-        if not user:
-            return 'No such user', 404
-        else:
-            db.delete(user)
-
-    db.commit()
-    return ''
+        return api.user_delete(username)
 
 
 if __name__ == '__main__':
