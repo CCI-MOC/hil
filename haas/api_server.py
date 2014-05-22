@@ -17,6 +17,12 @@ from haas import config, model, api
 
 
 def api_function(f):
+    """A decorator which adds some error handling.
+
+    If the function decorated with `api_function` raises an exception of type
+    `api.APIError`, the error will be reported to the client, whereas other
+    exceptions (being indications of a bug in the HaaS) will not be.
+    """
     def wrapped(*args, **kwargs):
         try:
             resp = f(*args, **kwargs)
