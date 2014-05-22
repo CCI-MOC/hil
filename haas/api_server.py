@@ -28,7 +28,6 @@ def api_function(f):
             # the message attribute. TODO: figure out what the right way to do
             # this is.
             return e.message, 400
-        # TODO: catch other exceptions, log them, and return some 5xx error code.
         if not resp:
             return ''
     return wrapped
