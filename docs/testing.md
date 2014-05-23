@@ -12,3 +12,5 @@ file, `test-requirements.txt`. To install them, execute:
 To run all of the tests, execute:
 
     nosetests haas/_tests/*.py
+
+[1]: https://pypi.python.org/pypi/nose/1.3.3
