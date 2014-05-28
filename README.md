@@ -38,6 +38,8 @@ production ready yet.
 # Hacking
 
 This project is part of the larger Massachusetts Open Cloud, for list
-of authors, description of the team, workflow, ... look [here] (https://github.com/CCI-MOC/moc-public/blob/master/README.md)
+of authors, description of the team, workflow, ... look [here][1]
 
 There's some assorted documentation in the `doc/` directory.
+
+[1]: https://github.com/CCI-MOC/moc-public/blob/master/README.md

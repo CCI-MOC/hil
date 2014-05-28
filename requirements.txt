@@ -1,5 +1,6 @@
 flask
 sqlalchemy
 Flask-HTTPAuth
+passlib
 pexpect
 tabulate
