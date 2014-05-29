@@ -20,21 +20,51 @@ class NotFoundError(APIError):
 class DuplicateError(APIError):
     """An exception indicating that a given resource already exists.""" 
 
+
+def _assert_absent(session, cls, name):
+    """Raises a DuplicateError if the given object is already in the database.
+
+    This is useful for most of the *_create functions.
+
+    Arguments:
+
+    session - a sqlaclhemy session to use.
+    cls - the class of the object to query.
+    name - the name of the object in question.
+    """
+    obj = session.query(cls).filter_by(label = name).first()
+    if obj:
+        raise DuplicateError(cls.__name__ + ': ' + name)
+
+
+def _must_find(session, cls, name):
+    """Raises a NotFoundError if the given object doesn't exist in the datbase.
+    Otherwise returns the object 
+
+    This is useful for most of the *_destroy functions.
+
+    Arguments:
+
+    session - a sqlaclhemy session to use.
+    cls - the class of the object to query.
+    name - the name of the object in question.
+    """
+    obj = session.query(cls).filter_by(label = name).first()
+    if not obj:
+        raise NotFoundError(cls.__name__ + ': ' + name)
+
+
 def user_create(username, password):
     """Create user `username`.
 
     If the user already exists, a DuplicateError will be raised.
     """
     db = model.Session()
-    # XXX: This works, but we should probably have the database do the heavy
-    # lifting, i.e. try to create a user, and if we get an IntegretyError from
-    # sqlalchemy, then pass on the error.
-    user = db.query(model.User).filter_by(label = username).first()
-    if user:
-        raise DuplicateError(username)
+    _assert_absent(db, model.User, username)
     user = model.User(username, password)
     db.add(user)
     db.commit()
+
 
 def user_destroy(username):
     """Delete user `username`
@@ -42,9 +72,7 @@ def user_destroy(username):
     If the user does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
-    user = db.query(model.User).filter_by(label = username).first()
-    if not user:
-        raise NotFoundError(username)
+    user = _must_find(db, model.User, username)
     db.delete(user)
     db.commit()
 
@@ -58,12 +86,7 @@ def group_create(groupname):
     If the group already exists, a DuplicateError will be raised.
     """
     db = model.Session()
-    # XXX: This works, but we should probably have the database do the heavy
-    # lifting, i.e. try to create a user, and if we get an IntegretyError from
-    # sqlalchemy, then pass on the error.
-    group = db.query(model.Group).filter_by(label = groupname).first()
-    if group:
-        raise DuplicateError(groupname)
+    _assert_absent(db, model.Group, groupname)
     group = model.Group(groupname)
     db.add(group)
     db.commit()
@@ -75,9 +98,7 @@ def group_destroy(groupname):
     If the group does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
-    group = db.query(model.Group).filter_by(label = groupname).first()
-    if not group:
-        raise NotFoundError(groupname)
+    group = _must_find(db, model.Group, groupname)
     db.delete(group)
     db.commit()
 
@@ -88,13 +109,9 @@ def group_add_user(groupname, username):
     If the group or user does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
-    user = db.query(model.User).filter_by(label = username).first()
-    if not user:
-        raise NotFoundError(username)
-    group = db.query(model.Group).filter_by(label = groupname).first()
-    if not group:
-        raise NotFoundError(groupname)
-    if user.groups(group): # if user was already added to group
+    user = _must_find(db, model.User, username)
+    group = _must_find(db, model.Group, groupname)
+    if user.groups(group): 
         raise DuplicateError(username)
     user.groups.append(group)
     db.commit()
@@ -106,13 +123,9 @@ def group_remove_user(groupname, username):
     If the group or user does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
-    user = db.query(model.User).filter_by(label = username).first()
-    if not user:
-        raise NotFoundError(username)
-    group = db.query(model.Group).filter_by(label = groupname).first()
-    if not group:
-        raise NotFoundError(groupname)
-    if not user.groups(user): # if user isn't a part of the group
+    user = _must_find(db, model.User, username)
+    group = _must_find(db, model.Group, groupname)
+    if not user.groups(user): 
         raise NotFoundError(username)    
     user.groups.remove(group)
     db.commit()
@@ -124,13 +137,9 @@ def group_connect_project(groupname, projectname):
     If the group or project does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
-    project = db.query(model.Project).filter_by(label = projectname).first()
-    if not project:
-        raise NotFoundError(projectname)
-    group = db.query(model.Group).filter_by(label = groupname).first()
-    if not group:
-        raise NotFoundError(groupname)
-    if group.projects(project): # if project was already added to group
+    project = _must_find(db, model.Project, projectname)
+    group = _must_find(db, model.Group, groupname)
+    if group.projects(project): 
         raise DuplicateError(projectname)
     project.group.append(group)
     db.commit()
@@ -142,13 +151,9 @@ def group_detach_project(groupname, projectname):
     If the group or project does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
-    project = db.query(model.Project).filter_by(label = projectname).first()
-    if not project:
-        raise NotFoundError(projectname)
-    group = db.query(model.Group).filter_by(label = groupname).first()
-    if not group:
-        raise NotFoundError(groupname)
-    if not group.projects(project): # if project isn't a part of the group
+    project = _must_find(db, model.Project, projectname)
+    group = _must_find(db, model.Group, groupname)
+    if not group.projects(project): 
         raise NotFoundError(projectname)
     project.group.remove(group)
     db.commit()
@@ -163,12 +168,7 @@ def project_create(projectname):
     If the project already exists, a DuplicateError will be raised.
     """
     db = model.Session()
-    # XXX: This works, but we should probably have the database do the heavy
-    # lifting, i.e. try to create a user, and if we get an IntegretyError from
-    # sqlalchemy, then pass on the error.
-    project = db.query(model.Project).filter_by(label = projectname).first()
-    if project:
-        raise DuplicateError(projectname)
+    _assert_absent(db, model.Project, projectname)
     project = model.Project(projectname)
     db.add(project)
     db.commit()
@@ -180,9 +180,7 @@ def project_destroy(projectname):
     If the project does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
-    project = db.query(model.Project).filter_by(label = projectname).first()
-    if not project:
-        raise NotFoundError(projectname)
+    project = _must_find(db, model.Project, projectname)
     db.delete(project)
     db.commit()
 
@@ -193,13 +191,9 @@ def project_connect_node(projectname, nodename):
     If the node or project does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
-    project = db.query(model.Project).filter_by(label = projectname).first()
-    if not project:
-        raise NotFoundError(projectname)
-    node = db.query(model.Node).filter_by(label = nodename).first()
-    if not node:
-        raise NotFoundError(nodename)
-    if node.projects(project): # if project was already added to node
+    project = _must_find(db, model.Project, projectname)
+    node = _must_find(db, model.Node, nodename)
+    if node.projects(project): 
         raise DuplicateError(projectname)
     project.node.append(node)
     db.commit()
@@ -211,13 +205,9 @@ def project_detach_node(projectname, nodename):
     If the node or project does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
-    project = db.query(model.Project).filter_by(label = projectname).first()
-    if not project:
-        raise NotFoundError(projectname)
-    node = db.query(model.Node).filter_by(label = nodename).first()
-    if not node:
-        raise NotFoundError(nodename)
-    if not node.projects(project): # if project isn't a part of the node
+    project = _must_find(db, model.Project, projectname)
+    node = _must_find(db, model.Node, nodename)
+    if not node.projects(project): 
         raise NotFoundError(projectname)
     project.node.remove(node)
     db.commit()
@@ -229,13 +219,9 @@ def project_connect_network(projectname, networkname):
     If the network or project does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
-    project = db.query(model.Project).filter_by(label = projectname).first()
-    if not project:
-        raise NotFoundError(projectname)
-    network = db.query(model.Network).filter_by(label = networkname).first()
-    if not network:
-        raise NotFoundError(networkname)
-    if network.projects(project): # if project was already added to network
+    project = _must_find(db, model.Project, projectname)
+    network = _must_find(db, model.Network, networkname)
+    if network.projects(project): 
         raise DuplicateError(projectname)
     project.network.append(network)
     db.commit()
@@ -247,13 +233,9 @@ def project_detach_network(projectname, networkname):
     If the network or project does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
-    project = db.query(model.Project).filter_by(label = projectname).first()
-    if not project:
-        raise NotFoundError(projectname)
-    network = db.query(model.Network).filter_by(label = networkname).first()
-    if not network:
-        raise NotFoundError(networkname)
-    if not network.projects(project): # if project isn't a part of the network
+    project = _must_find(db, model.Project, projectname)
+    network = _must_find(db, model.Network, networkname)
+    if not network.projects(project): 
         raise NotFoundError(projectname)
     project.network.remove(network)
     db.commit()
@@ -268,12 +250,7 @@ def node_create(nodename):
     If the node already exists, a DuplicateError will be raised.
     """
     db = model.Session()
-    # XXX: This works, but we should probably have the database do the heavy
-    # lifting, i.e. try to create a user, and if we get an IntegretyError from
-    # sqlalchemy, then pass on the error.
-    node = db.query(model.Node).filter_by(label = nodename).first()
-    if node:
-        raise DuplicateError(nodename)
+    _assert_absent(db, model.Node, nodename)
     node = model.Node(nodename)
     db.add(node)
     db.commit()
@@ -285,9 +262,7 @@ def node_destroy(nodename):
     If the node does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
-    node = db.query(model.Node).filter_by(label = nodename).first()
-    if not node:
-        raise NotFoundError(nodename)
+    node = _must_find(db, model.Node, nodename)
     db.delete(node)
     db.commit()
 
@@ -301,12 +276,7 @@ def network_create(networkname):
     If the network already exists, a DuplicateError will be raised.
     """
     db = model.Session()
-    # XXX: This works, but we should probably have the database do the heavy
-    # lifting, i.e. try to create a user, and if we get an IntegretyError from
-    # sqlalchemy, then pass on the error.
-    network = db.query(model.Network).filter_by(label = networkname).first()
-    if network:
-        raise DuplicateError(networkname)
+    _assert_absent(db, model.Network, networkname)
     network = model.Network(networkname)
     db.add(network)
     db.commit()
@@ -318,9 +288,7 @@ def network_destroy(networkname):
     If the network does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
-    network = db.query(model.Network).filter_by(label = networkname).first()
-    if not network:
-        raise NotFoundError(networkname)
+    network = _must_find(db, model.Network, networkname)
     db.delete(network)
     db.commit()
 
