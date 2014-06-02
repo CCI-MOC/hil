@@ -21,39 +21,6 @@ class DuplicateError(APIError):
     """An exception indicating that a given resource already exists.""" 
 
 
-def _assert_absent(session, cls, name):
-    """Raises a DuplicateError if the given object is already in the database.
-
-    This is useful for most of the *_create functions.
-
-    Arguments:
-
-    session - a sqlaclhemy session to use.
-    cls - the class of the object to query.
-    name - the name of the object in question.
-    """
-    obj = session.query(cls).filter_by(label = name).first()
-    if obj:
-        raise DuplicateError(cls.__name__ + ': ' + name)
-
-
-def _must_find(session, cls, name):
-    """Raises a NotFoundError if the given object doesn't exist in the datbase.
-    Otherwise returns the object 
-
-    This is useful for most of the *_destroy functions.
-
-    Arguments:
-
-    session - a sqlaclhemy session to use.
-    cls - the class of the object to query.
-    name - the name of the object in question.
-    """
-    obj = session.query(cls).filter_by(label = name).first()
-    if not obj:
-        raise NotFoundError(cls.__name__ + ': ' + name)
-
-
 def user_create(username, password):
     """Create user `username`.
 
@@ -292,3 +259,34 @@ def network_destroy(networkname):
     db.delete(network)
     db.commit()
 
+def _assert_absent(session, cls, name):
+    """Raises a DuplicateError if the given object is already in the database.
+
+    This is useful for most of the *_create functions.
+
+    Arguments:
+
+    session - a sqlaclhemy session to use.
+    cls - the class of the object to query.
+    name - the name of the object in question.
+    """
+    obj = session.query(cls).filter_by(label = name).first()
+    if obj:
+        raise DuplicateError(cls.__name__ + ': ' + name)
+
+
+def _must_find(session, cls, name):
+    """Raises a NotFoundError if the given object doesn't exist in the datbase.
+    Otherwise returns the object 
+
+    This is useful for most of the *_destroy functions.
+
+    Arguments:
+
+    session - a sqlaclhemy session to use.
+    cls - the class of the object to query.
+    name - the name of the object in question.
+    """
+    obj = session.query(cls).filter_by(label = name).first()
+    if not obj:
+        raise NotFoundError(cls.__name__ + ': ' + name)

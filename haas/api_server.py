@@ -46,7 +46,7 @@ app = Flask(__name__)
 @app.route('/user/<username>', methods=['PUT', 'DELETE'])
 @api_function
 def user(username):
-    """Handle create/delete user commands. """
+    """Handle create/delete user commands."""
     if request.method == 'PUT':
         return api.user_create(username, request.form['password'])
     else: # DELETE
