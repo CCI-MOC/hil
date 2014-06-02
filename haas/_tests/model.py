@@ -30,11 +30,25 @@ class ModelInsertTest(ModelTest):
         db.commit()
 
 
+class NicInsertTest(ModelInsertTest):
+
+    def test_insert(self):
+        nic = Nic('ipmi', '00:11:22:33:44:55')
+        self.insert(nic)
+
+
 class UserInsertTest(ModelInsertTest):
 
     def test_insert(self):
         user = User('bob', 'secret')
         self.insert(user)
+
+
+class SwitchInsertTest(ModelInsertTest):
+
+    def test_insert(self):
+        sw = Switch('dev-switch', 'acme_corp')
+        self.insert(sw)
 
 
 class UserMethodTest(ModelTest):
