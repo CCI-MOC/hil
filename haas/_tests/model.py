@@ -20,6 +20,23 @@ uri = sqlite:///:memory:
         config.load()
         init_db(create=True)
 
+class ModelInsertTest(ModelTest):
+    """A base class for testing insertion of objects into the database."""
+
+    def insert(self, obj):
+        """Attempts to insert the object into the database."""
+        db = Session()
+        db.add(obj)
+        db.commit()
+
+
+class UserInsertTest(ModelInsertTest):
+
+    def test_insert(self):
+        user = User('bob', 'secret')
+        self.insert(user)
+
+
 class UserMethodTest(ModelTest):
     """Tests the User class's logic which is independent from the database. """
 
