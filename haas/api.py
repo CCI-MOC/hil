@@ -152,6 +152,22 @@ def project_delete(projectname):
     db.commit()
 
 
+def project_deploy(projectname):
+    """Deploy project 'projectname'
+
+    If the project does not exist, a NotFoundError will be raised.
+
+    TODO: there are other possible errors, document them and how they are
+    handled.
+    """
+    db = model.Session()
+    project = _must_find(db, model.Project, projectname)
+    if project.headnode:
+        project.headnode.create()
+        project.headnode.start()
+    else:
+        pass # TODO: at least log this, if not throw an error.
+
 def project_connect_node(projectname, nodename):
     """Add a project 'projectname' to an existing node
     
