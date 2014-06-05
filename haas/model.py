@@ -2,6 +2,7 @@ from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import relationship, sessionmaker,backref
 from passlib.hash import sha512_crypt
+from subprocess import check_call
 from haas.config import cfg
 
 Base=declarative_base()
@@ -195,6 +196,21 @@ class Headnode(Model):
     def __init__(self, label, available = True):
         self.label  = label
         self.available = available
+
+    def create(self):
+        """Creates the vm within libvirt, by cloning the base image.
+
+        The vm is not started at this time.
+        """
+        check_call(['virt-clone', '-o', 'base-headnode', '-n', self._vmname(), '--auto-clone'])
+
+    def start(self):
+        """Powers on the vm, which must have been previously created."""
+        check_call(['virsh', 'start', self._vmname()])
+
+    def _vmname(self):
+        """Returns the name (as recognized by libvirt) of this vm."""
+        return 'headnode-%d' % self.id
 
     def __repr__(self):
         return 'Headnode<%r %r %r %r>'%(self.id,
