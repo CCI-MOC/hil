@@ -36,12 +36,6 @@ class Model(Base):
 
 class Nic(Model):
     __tablename__ = 'nics'
-    # The "meta" attribute is for the benefit of the cli, which uses it to
-    # display column names. There's probably a better way to do this, but the
-    # intent going forward is for the cli to be talking to the rest api, rather
-    # than this module, so let's not bother for now, and just remember to remove
-    # this (as well as the same attribute in other classes) when we can.
-    meta      = ["id", "label", "mac_addr", "node_label", "port_label"]
     id        = Column(Integer, primary_key = True)
     label     = Column(String)
     mac_addr  = Column(String)
@@ -65,7 +59,6 @@ class Nic(Model):
             
 class Node(Model):
 
-    meta          = ["id","label","available","project"]
     id            = Column(Integer,primary_key=True)
     label         = Column(String)
     available     = Column(Boolean)
@@ -85,7 +78,6 @@ class Node(Model):
                                     self.project_label if self.project else None)
     
 class Project(Model):
-    meta        = ["id", "label", "deployed", "group_label"]
     id          = Column(Integer, primary_key = True)
     label       = Column(String)
     deployed    = Column(Boolean)
@@ -105,7 +97,6 @@ class Project(Model):
                                        self.group_label if self.group else None)
 
 class Vlan(Model):
-    meta          = ["id", "label", "available", "nic_label", "project_label"]
     id            = Column(Integer,primary_key=True)
     label         = Column(String)
     available     = Column(Boolean)
@@ -125,7 +116,6 @@ class Vlan(Model):
                                        self.project_label if self.project else None)
 
 class Port(Model):
-    meta          = ["id","label", "switch_label","port#"]
     id            = Column(Integer,primary_key=True)
     label         = Column(String)
     port_no       = Column(Integer)
@@ -143,7 +133,6 @@ class Port(Model):
                                     self.switch_label if self.switch else None)
 
 class Switch(Model):
-    meta          = ["id","label", "model"]
     id            = Column(Integer,primary_key=True)
     label         = Column(String)
     model         = Column(String)
@@ -157,7 +146,6 @@ class Switch(Model):
                                    self.model)
 
 class User(Model):
-    meta        = ["id", "label", "hashed_password"]
     id          = Column(Integer, primary_key = True)
     label       = Column(String)  #username
     hashed_password    = Column(String)
@@ -186,7 +174,6 @@ class User(Model):
                                     self.groups)
     
 class Group(Model):
-    meta          = ["id", "label"]
     id            = Column(Integer, primary_key = True)
     label         = Column(String)
     
@@ -198,7 +185,6 @@ class Group(Model):
                                self.label)
 
 class Headnode(Model):
-    meta          = ["id","label","available", "project_label"]
     id            = Column(Integer, primary_key = True)
     label         = Column(String)
     available     = Column(Boolean)
@@ -216,7 +202,6 @@ class Headnode(Model):
                                      self.label,
                                      self.project_label if self.project else None)
 class Hnic(Model):
-    meta           = ["id", "label","mac_addr","headnode_label" ]
     id             = Column(Integer, primary_key = True)
     label          = Column(String)
     mac_addr       = Column(String)
