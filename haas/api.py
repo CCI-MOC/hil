@@ -290,3 +290,4 @@ def _must_find(session, cls, name):
     obj = session.query(cls).filter_by(label = name).first()
     if not obj:
         raise NotFoundError(cls.__name__ + ': ' + name)
+    return obj
