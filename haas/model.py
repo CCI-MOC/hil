@@ -197,7 +197,7 @@ class Headnode(Model):
         self.available = available
 
     def __repr__(self):
-        return 'Headnode<%r %r %r>'%(self.id,
+        return 'Headnode<%r %r %r %r>'%(self.id,
                                      self.available,
                                      self.label,
                                      self.project_label if self.project else None)
