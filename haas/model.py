@@ -12,13 +12,18 @@ user_groups = Table('user_groups', Base.metadata,
                     Column('group_id', Integer, ForeignKey('group.id')))
 
 
-def init_db(create=False):
-    uri = cfg.get('database', 'uri')
+def init_db(create=False, uri=None):
+    """Read config file and start up the DB connection.
+    create: Pushes a new schema to your DB
+    uri:    DB connection URI. If "None", pull from the config file"""
+
+    if uri == None:
+        uri = cfg.get('database', 'uri')
+
     engine = create_engine(uri)
     if create:
         Base.metadata.create_all(engine)
     Session.configure(bind=engine)
-
 
 class Model(Base):
     """All of our database models are descendants of this class.
@@ -33,7 +38,6 @@ class Model(Base):
         """Automatically generate the table name."""
         return cls.__name__.lower()
 
-
 class Nic(Model):
     __tablename__ = 'nics'
     id        = Column(Integer, primary_key = True)
@@ -42,11 +46,11 @@ class Nic(Model):
 
     port_label   = Column(Integer,ForeignKey('port.label'))
     node_label   = Column(Integer,ForeignKey('node.label'))
-    
+
     # One to one mapping port
     port      = relationship("Port",backref=backref('nic',uselist=False))
-    node      = relationship("Node",backref=backref('nics',order_by=label)) 
-    
+    node      = relationship("Node",backref=backref('nics',order_by=label))
+
     def __init__(self,label, mac_addr):
         self.label     = label
         self.mac_addr  = mac_addr
@@ -56,14 +60,14 @@ class Nic(Model):
                                       self.mac_addr,
                                       self.port_label if self.port else None,
                                       self.node_label if self.node else None)
-            
+
 class Node(Model):
 
     id            = Column(Integer,primary_key=True)
     label         = Column(String)
     available     = Column(Boolean)
     project_label = Column(String,ForeignKey('project.label'))
-        
+
     #many to one mapping to project
     project       = relationship("Project",backref=backref('nodes',order_by=id))
 
@@ -72,11 +76,11 @@ class Node(Model):
         self.available = available
 
     def __repr__(self):
-        return "Node<%r %r %r %r>"%(self.id, 
+        return "Node<%r %r %r %r>"%(self.id,
                                     self.label,
                                     self.available,
                                     self.project_label if self.project else None)
-    
+
 class Project(Model):
     id          = Column(Integer, primary_key = True)
     label       = Column(String)
@@ -102,7 +106,7 @@ class Vlan(Model):
     available     = Column(Boolean)
     nic_label     = Column(String)
     project_label = Column(String,ForeignKey('project.label'))
-    
+
     project         = relationship("Project",backref=backref('vlans',order_by=nic_label))
     def __init__(self,label, nic_label, available=True):
         self.label = label
@@ -149,7 +153,7 @@ class User(Model):
     id          = Column(Integer, primary_key = True)
     label       = Column(String)  #username
     hashed_password    = Column(String)
-    
+
     #many to many User<->Group
     """
     alice = User('alice', 'alice')
@@ -160,35 +164,34 @@ class User(Model):
     def __init__(self, label, password):
         self.label = label
         self.set_password(password)
-    
+
     def verify_password(self, password):
         return sha512_crypt.verify(password, self.hashed_password)
-    
+
     def set_password(self, password):
         self.hashed_password = sha512_crypt.encrypt(password)
-    
+
     def __repr__(self):
         return "User<%r %r %r %r>"%(self.id,
                                     self.label,
                                     self.hashed_password,
                                     self.groups)
-    
+
 class Group(Model):
     id            = Column(Integer, primary_key = True)
     label         = Column(String)
-    
+
     def __init__(self, label):
         self.label = label
-    
+
     def __repr__(self):
         return 'Group<%r %r>'%(self.id,
                                self.label)
-
 class Headnode(Model):
     id            = Column(Integer, primary_key = True)
     label         = Column(String)
     available     = Column(Boolean)
-    
+
     project_label = Column(String, ForeignKey('project.label'))
     project       = relationship("Project", backref = backref('headnode',uselist = False))
 
