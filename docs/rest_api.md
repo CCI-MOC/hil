@@ -43,13 +43,12 @@
 
     project_connect_network     <project_label> <network_label>
     project_detach_network      <project_label> <network_label>
-    project deploy              <project_label>
     #add a <group_label>?
     [PUT]   /students/project/project1/network/vlan1
     [DELETE] /students/project/project1/network/vlan1
     
-    #more on the deploy later
-    [PUT]    /project/project1 {deployed:True}
+    project_deploy              <project_label>
+    [POST]    /project/project1/deploy
 
 
     node_connect_network        <node_label> <nic_label> <network_label>
