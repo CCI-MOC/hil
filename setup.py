@@ -8,5 +8,6 @@ setup(name='haas',
       version='1.0',
       url='https://github.com/CCI-MOC/moc-public',
       packages=find_packages(),
+      scripts=['scripts/haas'],
       install_requires=requirements,
       )
