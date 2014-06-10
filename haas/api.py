@@ -259,7 +259,7 @@ def headnode_delete(nodename):
     If the node does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
-    headnode = _must_find(db, model.headnode, nodename)
+    headnode = _must_find(db, model.Headnode, nodename)
     db.delete(headnode)
     db.commit()
 
