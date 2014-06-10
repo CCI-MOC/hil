@@ -234,6 +234,38 @@ def node_delete(nodename):
     db.commit()
 
 
+                            # Head Node Code #
+                            ##################
+def headnode_create(nodename, projectname):
+    """Create head node 'nodename'.
+
+    If the node already exists, a DuplicateError will be raised.
+    """
+    db = model.Session()
+    _assert_absent(db, model.Headnode, nodename)
+    headnode = model.Headnode(nodename)
+
+    ## look for group, if it exists assign it
+    project = _must_find(db, model.Project, projectname)
+    headnode.project = project 
+
+    db.add(headnode)
+    db.commit()
+
+
+def headnode_delete(nodename):
+    """Delete node 'nodename'
+
+    If the node does not exist, a NotFoundError will be raised.
+    """
+    db = model.Session()
+    headnode = _must_find(db, model.Headnode, nodename)
+    db.delete(headnode)
+    db.commit()
+
+
+
+
                             # Network Code #
                             ################
 
