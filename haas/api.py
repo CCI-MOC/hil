@@ -236,7 +236,7 @@ def node_delete(nodename):
 
                             # Head Node Code #
                             ##################
-def head_node_create(nodename, projectname):
+def headnode_create(nodename, projectname):
     """Create head node 'nodename'.
 
     If the node already exists, a DuplicateError will be raised.
@@ -253,14 +253,14 @@ def head_node_create(nodename, projectname):
     db.commit()
 
 
-def head_node_delete(nodename):
+def headnode_delete(nodename):
     """Delete node 'nodename'
 
     If the node does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
-    Headnode = _must_find(db, model.Headnode, nodename)
-    db.delete(Headnode)
+    headnode = _must_find(db, model.headnode, nodename)
+    db.delete(headnode)
     db.commit()
 
 
