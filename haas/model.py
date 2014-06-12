@@ -13,9 +13,10 @@ user_groups = Table('user_groups', Base.metadata,
 
 
 def init_db(create=False, uri=None):
-    """Read config file and start up the DB connection.
+    """Start up the DB connection.
     create: Pushes a new schema to your DB
-    uri:    DB connection URI. If "None", pull from the config file"""
+    uri:    DB connection URI. If "None", pull from the config file
+    """
 
     if uri == None:
         uri = cfg.get('database', 'uri')
