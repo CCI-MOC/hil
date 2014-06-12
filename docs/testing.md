@@ -14,7 +14,7 @@ Functional tests verify higher levels of functionality and integration. This
 might include calling not only user_create() and user_delete(), but also
 changing the password, adding a user to a group, and so forth. The intention
 is to ensure particular user stories function as they are supposed to,
-and ensure that scenarios which shouldn''t happen don''t.
+and ensure that scenarios which shouldn't happen don't.
 
 Integration tests exercise the entire stack, from the highest level API to
 the lowest level driver. These tests will likely require physical switch
