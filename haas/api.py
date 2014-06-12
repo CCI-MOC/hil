@@ -211,7 +211,7 @@ def project_detach_network(projectname, networkname):
                             # Node Code #
                             #############
 
-def node_create(nodename):
+def node_register(nodename):
     """Create node 'nodename'.
 
     If the node already exists, a DuplicateError will be raised.
