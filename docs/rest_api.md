@@ -5,6 +5,7 @@
   `foo_create <foo> <bar> {baz=<bar>}` is a shorthand for
   `foo_create <foo> <bar> <group_label> {baz=<bar>, group=<group_label>)`.
 
+Full Api spec:
 
     user_create  <user_label> <password>
     user_delete  <user_label>
@@ -28,9 +29,8 @@
     network_delete              <network_label>
     [PUT] /network/<network_label>
     [DELETE] /students/network/vlan101
-    
-    
-    
+
+
     headnode_create <hn_label>
     headnode_delete <hn_label>
     [PUT] /headnode/<hn_label>
@@ -40,7 +40,6 @@
     project_detach_headnode <project_label> <hn_label>
     [POST] /project/<project_label>/connect_headnode {headnode=<hn_label>}
     [POST] /project/<project_label>/detach_headnode {headnode=<hn_label>}
-
 
     project_connect_node        <project_label> <node_label> 
     project_detach_node         <project_label> <node_label>
