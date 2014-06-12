@@ -44,7 +44,8 @@ To run all tests, from the HaaS root directory run:
 
 To run just a subset of them, specify a particular file or directory:
 
-    py.test tests/unit py.test tests/unit/api.py
+    py.test tests/unit
+    py.test tests/unit/api.py
 
 # Test structure
 
