@@ -154,11 +154,11 @@ project at the same time.
 ###Additional administrator operations:
 
     # operations to describe physical configuration of system to HaaS
-    node_create                 <node_label>
+    node_register                 <node_label>
     node_delete                 <node_label>
-    node_create_nic             <node_label> <nic_label> <mac_addr>
+    node_register_nic             <node_label> <nic_label> <mac_addr>
     node_delete_nic             <node_label> <nic_label> 
-    switch_create               <switch_label> <script> <number_ports>
+    switch_register               <switch_label> <script> <number_ports>
     switch_delete               <switch_label> 
     nic_connect_switch          <node_label> <nic_label> <switch_label> <port>
  

@@ -13,13 +13,19 @@ user_groups = Table('user_groups', Base.metadata,
                     Column('group_id', Integer, ForeignKey('group.id')))
 
 
-def init_db(create=False):
-    uri = cfg.get('database', 'uri')
+def init_db(create=False, uri=None):
+    """Start up the DB connection.
+    create: Pushes a new schema to your DB
+    uri:    DB connection URI. If "None", pull from the config file
+    """
+
+    if uri == None:
+        uri = cfg.get('database', 'uri')
+
     engine = create_engine(uri)
     if create:
         Base.metadata.create_all(engine)
     Session.configure(bind=engine)
-
 
 class Model(Base):
     """All of our database models are descendants of this class.
@@ -33,7 +39,6 @@ class Model(Base):
     def __tablename__(cls):
         """Automatically generate the table name."""
         return cls.__name__.lower()
-
 
 class Nic(Model):
     __tablename__ = 'nics'
@@ -184,7 +189,6 @@ class Group(Model):
     def __repr__(self):
         return 'Group<%r %r>'%(self.id,
                                self.label)
-
 class Headnode(Model):
     id            = Column(Integer, primary_key = True)
     label         = Column(String)

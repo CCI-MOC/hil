@@ -5,3 +5,4 @@ passlib
 pexpect
 tabulate
 requests
+pytest
