@@ -15,6 +15,19 @@ def cmd(f):
     return f
 
 
+def check_status_code(response):
+    if response.status_code < 200 or response.status_code >= 300:
+        sys.stderr.write('Unexpected status code: %d\n' % response.status_code)
+        sys.stderr.write('Response text:\n')
+        sys.stderr.write(response.text)
+
+def object_url(typename, objname):
+    url = cfg.get('client', 'endpoint') + '/'
+    url += typename + '/'
+    url += urllib.quote(objname)
+    return url
+
+
 @cmd
 def serve(*args):
     """Start the HaaS API server."""
@@ -26,12 +39,15 @@ def serve(*args):
 @cmd
 def user_create(username, password, *args):
     """Create a user"""
-    url = cfg.get('client', 'endpoint') + '/user/' + urllib.quote(username, safe='')
-    r = requests.put(url, data={'password': password})
-    if r.status_code < 200 or r.status_code >= 300:
-        sys.stderr.write('Unexpected status code: %d\n' % r.status_code)
-        sys.stderr.write('Response text:\n')
-        sys.stderr.write(r.text)
+    url = object_url('user', username)
+    check_status_code(requests.put(url, data={'password': password}))
+
+
+@cmd
+def project_deploy(projectname):
+    """Deploy a project"""
+    url = object_url('project', projectname)
+    check_status_code(requests.post(url))
 
 
 def usage():
