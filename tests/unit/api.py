@@ -1,8 +1,9 @@
 """Unit tests for api.py"""
 
-from haas import model, config, api
-from haas.test_common import newDB,releaseDB
+from haas import model, api
+from haas.test_common import newDB, releaseDB
 import pytest
+
 
 class TestUserApi:
     """Tests for the haas.api.user_create function."""
