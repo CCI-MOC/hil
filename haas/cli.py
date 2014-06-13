@@ -2,6 +2,8 @@
 from haas import config
 from haas.config import cfg
 
+import logging
+
 import sys
 import urllib
 import requests
@@ -67,6 +69,7 @@ def main():
     There is a script located at ${source_tree}/scripts/haas, which invokes
     this function.
     """
+    logging.basicConfig(level=logging.DEBUG)
     config.load()
     if len(sys.argv) < 2 or sys.argv[1] not in commands:
         usage()
