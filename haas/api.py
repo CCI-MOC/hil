@@ -78,7 +78,7 @@ def group_add_user(groupname, username):
     db = model.Session()
     user = _must_find(db, model.User, username)
     group = _must_find(db, model.Group, groupname)
-    if user.groups(group):
+    if group in user.groups:
         raise DuplicateError(username)
     user.groups.append(group)
     db.commit()
@@ -92,7 +92,7 @@ def group_remove_user(groupname, username):
     db = model.Session()
     user = _must_find(db, model.User, username)
     group = _must_find(db, model.Group, groupname)
-    if not user.groups(user):
+    if group not in user.groups:
         raise NotFoundError(username)
     user.groups.remove(group)
     db.commit()
