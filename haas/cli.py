@@ -8,10 +8,12 @@ import requests
 
 commands = {}
 
+
 def cmd(f):
     """A decorator, which resgisters it's argument as a command."""
     commands[f.__name__] = f
     return f
+
 
 @cmd
 def serve(*args):
@@ -19,6 +21,7 @@ def serve(*args):
     from haas import model, api_server
     model.init_db()
     api_server.app.run(debug=True)
+
 
 @cmd
 def user_create(username, password, *args):
@@ -30,6 +33,7 @@ def user_create(username, password, *args):
         sys.stderr.write('Response text:\n')
         sys.stderr.write(r.text)
 
+
 def usage():
     """Display a summary of the arguments accepted by the CLI."""
     # TODO: We should fetch the arguments and include them in the message
@@ -39,11 +43,12 @@ def usage():
     for name in commands.keys():
         sys.stderr.write('    %s # %s\n' % (name, commands[name].__doc__))
 
+
 def main():
     """Entry point to the CLI.
 
-    There is a script located at ${source_tree}/scripts/haas, which invokes this
-    function.
+    There is a script located at ${source_tree}/scripts/haas, which invokes
+    this function.
     """
     config.load()
     if len(sys.argv) < 2 or sys.argv[1] not in commands:
