@@ -21,6 +21,7 @@ def check_status_code(response):
         sys.stderr.write('Response text:\n')
         sys.stderr.write(response.text)
 
+
 def object_url(typename, objname):
     url = cfg.get('client', 'endpoint') + '/'
     url += typename + '/'
