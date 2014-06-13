@@ -41,7 +41,7 @@ def usage():
 
 def main():
     """Entry point to the CLI.
-    
+
     There is a script located at ${source_tree}/scripts/haas, which invokes this
     function.
     """
