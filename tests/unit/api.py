@@ -5,6 +5,25 @@ from haas.test_common import newDB, releaseDB
 import pytest
 
 
+class TestCleanReturn:
+    """Test that various api calls exit cleanly in the trivial case."""
+
+    def test_group_add_user(self):
+        db = newDB()
+        api.user_create('alice', 'secret')
+        api.group_create('acme-corp')
+        api.group_add_user('acme-corp', 'alice')
+        releaseDB(db)
+
+    def test_group_remove_user(self):
+        db = newDB()
+        api.user_create('alice', 'secret')
+        api.group_create('acme-corp')
+        api.group_add_user('acme-corp', 'alice')
+        api.group_remove_user('acme-corp', 'alice')
+        releaseDB(db)
+
+
 class TestUserApi:
     """Tests for the haas.api.user_create function."""
 
