@@ -58,8 +58,8 @@ Full Api spec:
     node_connect_network        <node_label> <nic_label> <network_label>
     node_detach_network         <node_label> <nic_label>
 
-    [POST] /node/<node_label>/connect_network {network=<network_label>, nic=<nic_label>}
-    [POST] /node/<node_label>/detach_network {nic=<nic_label>}
+    [POST] /node/<node_label>/nic/<nic_label>/connect_network {network=<network_label>}
+    [POST] /node/<node_label>/nic/<nic_label>/detach_network {network=<network_label>}
 
 
     headnode_create_hnic        <hn_label> <hnic_label> 
@@ -69,5 +69,5 @@ Full Api spec:
 
     [PUT]   /headnode/<hn_label>/hnic/<hnic_label>
     [DELETE] /headnode/<hn_label>/hnic/<hnic_label>
-    [POST] /headnode/<hn_label>/connect_network {network=<network_label>, nic=<hnic_label>}
-    [POST] /headnode/<hn_label>/detach_network {nic=<hnic_label>}
+    [POST] /headnode/<hn_label>/hnic/<hnic_label>/connect_network {network=<network_label>}
+    [POST] /headnode/<hn_label>/hnic/<hnic_label>/detach_network {network=<network_label>}
