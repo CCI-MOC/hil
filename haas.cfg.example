@@ -4,6 +4,9 @@ active_switch = dell
 [headnode]
 trunk_nic = eth0
 
+[client]
+endpoint = http://127.0.0.1:5000
+
 [database]
 uri = sqlite:///haas.db
 
