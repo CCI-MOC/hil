@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship, sessionmaker,backref
 from passlib.hash import sha512_crypt
 from subprocess import check_call
 from haas.config import cfg
+from haas.dev_support import no_dry_run
 
 Base=declarative_base()
 Session = sessionmaker()
@@ -201,6 +202,7 @@ class Headnode(Model):
         self.label  = label
         self.available = available
 
+    @no_dry_run
     def create(self):
         """Creates the vm within libvirt, by cloning the base image.
 
@@ -208,6 +210,7 @@ class Headnode(Model):
         """
         check_call(['virt-clone', '-o', 'base-headnode', '-n', self._vmname(), '--auto-clone'])
 
+    @no_dry_run
     def start(self):
         """Powers on the vm, which must have been previously created."""
         check_call(['virsh', 'start', self._vmname()])
