@@ -4,3 +4,4 @@ Flask-HTTPAuth
 passlib
 pexpect
 tabulate
+pytest
