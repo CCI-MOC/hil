@@ -1,6 +1,6 @@
 # Overview
 
-Testing for HaaS is done using [pytest](http://pytest.org/). All tests
+Testing for HaaS is done using [pytest][1]. All tests
 are placed in the "tests" subdirectory, which has 3 directories: unit,
 functional and integration.
 
@@ -47,6 +47,20 @@ To run just a subset of them, specify a particular file or directory:
     py.test tests/unit
     py.test tests/unit/api.py
 
+# Code Coverage
+
+The pytest-cov plugin (included in requirements.txt) allows us to
+generate reports indicating what code is/is not executed by our tests.
+the most basic usage is:
+
+    py.test --cov haas tests/
+
+You can get information on which specific lines were not executed via:
+
+    py.test --cov-report term-missing --cov haas tests/
+
+More information is available on the projects [PyPI page][2].
+
 # Test structure
 
 Tests are kept in the `tests` directory, which is further organized into
@@ -56,3 +70,6 @@ For each file in the haas code, there should be a file with the same name in
 the unit directory. Within those files, classes \(class names **must** begin
 with "Test"\) can be used to organize tests into functional areas. Function
 names must also begin with "test". See tests/unit/api.py for examples.
+
+[1]: http://pytest.org/
+[2]: https://pypi.python.org/pypi/pytest-cov
