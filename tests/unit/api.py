@@ -57,6 +57,18 @@ class TestGroup:
         assert project in group.projects
         releaseDB(db)
 
+    def test_group_detach_project(self):
+        db = newDB()
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen')
+        api.group_connect_project('acme-corp', 'anvil-nextgen')
+        api.group_detach_project('acme-corp', 'anvil-nextgen')
+        group = api._must_find(db, model.Group, 'acme-corp')
+        project = api._must_find(db, model.Project, 'anvil-nextgen')
+        assert project.group is not group
+        assert project not in group.projects
+        releaseDB(db)
+
     # Error handling tests:
     def test_duplicate_group_create(self):
         db = newDB()
@@ -81,6 +93,15 @@ class TestGroup:
         api.group_create('acme-corp')
         with pytest.raises(api.NotFoundError):
             api.group_remove_user('acme-corp', 'alice')
+        releaseDB(db)
+
+    def test_duplicate_group_connect_project(self):
+        db = newDB()
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen')
+        api.group_connect_project('acme-corp', 'anvil-nextgen')
+        with pytest.raises(api.DuplicateError):
+            api.group_connect_project('acme-corp', 'anvil-nextgen')
         releaseDB(db)
 
 
