@@ -5,8 +5,8 @@ from haas.test_common import newDB, releaseDB
 import pytest
 
 
-class TestCleanReturn:
-    """Test that various api calls exit cleanly in the trivial case."""
+class TestGroup:
+    """Tests for the haas.api.group_* functions."""
 
     def test_group_add_user(self):
         db = newDB()
@@ -24,8 +24,8 @@ class TestCleanReturn:
         releaseDB(db)
 
 
-class TestUserApi:
-    """Tests for the haas.api.user_create function."""
+class TestUser:
+    """Tests for the haas.api.user_* functions."""
 
     def test_new_user(self):
         db = newDB()
