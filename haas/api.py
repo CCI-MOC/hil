@@ -120,9 +120,9 @@ def group_detach_project(groupname, projectname):
     db = model.Session()
     project = _must_find(db, model.Project, projectname)
     group = _must_find(db, model.Group, groupname)
-    if not group.projects(project):
+    if project not in group.projects:
         raise NotFoundError(projectname)
-    project.group.remove(group)
+    project.group = None
     db.commit()
 
 
