@@ -90,7 +90,7 @@ class Project(Model):
 
 
     #Many to one mapping to User
-    group       = relationship("Group",backref=backref('group',order_by=label))
+    group       = relationship("Group",backref=backref('projects',order_by=label))
 
     def __init__(self, label):
         self.label = label

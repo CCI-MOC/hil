@@ -106,9 +106,9 @@ def group_connect_project(groupname, projectname):
     db = model.Session()
     project = _must_find(db, model.Project, projectname)
     group = _must_find(db, model.Group, groupname)
-    if group.projects(project):
+    if project in group.projects:
         raise DuplicateError(projectname)
-    project.group.append(group)
+    group.projects.append(project)
     db.commit()
 
 
