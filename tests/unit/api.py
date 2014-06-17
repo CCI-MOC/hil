@@ -190,6 +190,16 @@ class TestProject:
         assert node.project is not project
         releaseDB(db)
 
+    # checks for errors:
+    def test_bad_project_detach_node(self):
+        """Tests that removing a node from a project it's not in fails."""
+        db = newDB()
+        api.project_create('anvil-nextgen')
+        api.node_register('node-99')
+        with pytest.raises(api.NotFoundError):
+            api.project_detach_node('anvil-nextgen', 'node-99')
+        releaseDB(db)
+
 
 class TestNode:
     """Tests for the haas.api.node_* functions."""
@@ -207,3 +217,22 @@ class TestNode:
         with pytest.raises(api.NotFoundError):
             api._must_find(db, model.Node, 'node-99')
         releaseDB(db)
+
+
+class TestHeadnode:
+    """Tests for the haas.api.node_* functions."""
+
+    def test_headnode_create(self):
+        db = newDB()
+        api.project_create('anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen')
+        api._must_find(db, model.Headnode, 'hn-0')
+        releaseDB(db)
+
+    def test_headnode_delete(self):
+        db = newDB()
+        api.project_create('anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_delete('hn-0')
+        with pytest.raises(api.NotFoundError):
+            api._must_find(db, model.Headnode, 'hn-0')
