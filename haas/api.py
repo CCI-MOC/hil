@@ -160,9 +160,7 @@ def project_connect_node(projectname, nodename):
     db = model.Session()
     project = _must_find(db, model.Project, projectname)
     node = _must_find(db, model.Node, nodename)
-    if node.projects(project):
-        raise DuplicateError(projectname)
-    project.node.append(node)
+    project.nodes.append(node)
     db.commit()
 
 
