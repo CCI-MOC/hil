@@ -172,9 +172,9 @@ def project_detach_node(projectname, nodename):
     db = model.Session()
     project = _must_find(db, model.Project, projectname)
     node = _must_find(db, model.Node, nodename)
-    if not node.projects(project):
+    if node not in project.nodes:
         raise NotFoundError(projectname)
-    project.node.remove(node)
+    project.nodes.remove(node)
     db.commit()
 
 
