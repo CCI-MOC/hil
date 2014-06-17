@@ -161,7 +161,7 @@ class User(Model):
     g1    = Group('g1')
     alice.groups.append(g1)
     """
-    groups      = relationship('Group', secondary = user_groups, backref = 'user' )
+    groups      = relationship('Group', secondary = user_groups, backref = 'users' )
     def __init__(self, label, password):
         self.label = label
         self.set_password(password)
