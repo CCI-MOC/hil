@@ -178,6 +178,18 @@ class TestProject:
         assert node.project is project
         releaseDB(db)
 
+    def test_project_detach_node(self):
+        db = newDB()
+        api.project_create('anvil-nextgen')
+        api.node_register('node-99')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.project_detach_node('anvil-nextgen', 'node-99')
+        project = api._must_find(db, model.Project, 'anvil-nextgen')
+        node = api._must_find(db, model.Node, 'node-99')
+        assert node not in project.nodes
+        assert node.project is not project
+        releaseDB(db)
+
 
 class TestNode:
     """Tests for the haas.api.node_* functions."""
