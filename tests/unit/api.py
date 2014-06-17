@@ -46,6 +46,17 @@ class TestGroup:
             api._must_find(db, model.Group, 'acme-corp')
         releaseDB(db)
 
+    def test_group_connect_project(self):
+        db = newDB()
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen')
+        api.group_connect_project('acme-corp', 'anvil-nextgen')
+        group = api._must_find(db, model.Group, 'acme-corp')
+        project = api._must_find(db, model.Project, 'anvil-nextgen')
+        assert project.group is group
+        assert project in group.projects
+        releaseDB(db)
+
     # Error handling tests:
     def test_duplicate_group_create(self):
         db = newDB()
