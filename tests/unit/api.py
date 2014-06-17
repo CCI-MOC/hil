@@ -38,12 +38,38 @@ class TestGroup:
         assert user not in group.users
         releaseDB(db)
 
+    def test_group_delete(self):
+        db = newDB()
+        api.group_create('acme-corp')
+        api.group_delete('acme-corp')
+        with pytest.raises(api.NotFoundError):
+            api._must_find(db, model.Group, 'acme-corp')
+        releaseDB(db)
+
     # Error handling tests:
     def test_duplicate_group_create(self):
         db = newDB()
         api.group_create('acme-corp')
         with pytest.raises(api.DuplicateError):
             api.group_create('acme-corp')
+        releaseDB(db)
+
+    def test_duplicate_group_add_user(self):
+        db = newDB()
+        api.user_create('alice', 'secret')
+        api.group_create('acme-corp')
+        api.group_add_user('acme-corp', 'alice')
+        with pytest.raises(api.DuplicateError):
+            api.group_add_user('acme-corp', 'alice')
+        releaseDB(db)
+
+    def test_bad_group_remove_user(self):
+        """Tests that removing a user from a group they're not in fails."""
+        db = newDB()
+        api.user_create('alice', 'secret')
+        api.group_create('acme-corp')
+        with pytest.raises(api.NotFoundError):
+            api.group_remove_user('acme-corp', 'alice')
         releaseDB(db)
 
 
