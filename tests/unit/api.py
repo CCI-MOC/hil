@@ -8,11 +8,22 @@ import pytest
 class TestGroup:
     """Tests for the haas.api.group_* functions."""
 
+    # Several basic tests, functions should succeed in trivial cases.
+    def test_group_create(self):
+        db = newDB()
+        api.group_create('acme-corp')
+        api._must_find(db, model.Group, 'acme-corp')
+        releaseDB(db)
+
     def test_group_add_user(self):
         db = newDB()
         api.user_create('alice', 'secret')
         api.group_create('acme-corp')
         api.group_add_user('acme-corp', 'alice')
+        user = api._must_find(db, model.User, 'alice')
+        group = api._must_find(db, model.Group, 'acme-corp')
+        assert group in user.groups
+        assert user in group.users
         releaseDB(db)
 
     def test_group_remove_user(self):
@@ -21,6 +32,18 @@ class TestGroup:
         api.group_create('acme-corp')
         api.group_add_user('acme-corp', 'alice')
         api.group_remove_user('acme-corp', 'alice')
+        user = api._must_find(db, model.User, 'alice')
+        group = api._must_find(db, model.Group, 'acme-corp')
+        assert group not in user.groups
+        assert user not in group.users
+        releaseDB(db)
+
+    # Error handling tests:
+    def test_duplicate_group_create(self):
+        db = newDB()
+        api.group_create('acme-corp')
+        with pytest.raises(api.DuplicateError):
+            api.group_create('acme-corp')
         releaseDB(db)
 
 
