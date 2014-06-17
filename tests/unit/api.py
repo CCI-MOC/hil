@@ -104,6 +104,14 @@ class TestGroup:
             api.group_connect_project('acme-corp', 'anvil-nextgen')
         releaseDB(db)
 
+    def test_bad_group_detach_project(self):
+        db = newDB()
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen')
+        with pytest.raises(api.NotFoundError):
+            api.group_detach_project('acme-corp', 'anvil-nextgen')
+        releaseDB(db)
+
 
 class TestUser:
     """Tests for the haas.api.user_* functions."""
@@ -139,4 +147,51 @@ class TestUser:
         api.user_delete('bob')
         with pytest.raises(api.NotFoundError):
             api.user_delete('bob')
+        releaseDB(db)
+
+
+class TestProject:
+    """Tests for the haas.api.project_* functions."""
+
+    def test_project_create(self):
+        db = newDB()
+        api.project_create('anvil-nextgen')
+        api._must_find(db, model.Project, 'anvil-nextgen')
+        releaseDB(db)
+
+    def test_project_delete(self):
+        db = newDB()
+        api.project_create('anvil-nextgen')
+        api.project_delete('anvil-nextgen')
+        with pytest.raises(api.NotFoundError):
+            api._must_find(db, model.Project, 'anvil-nextgen')
+        releaseDB(db)
+
+    def test_project_connect_node(self):
+        db = newDB()
+        api.project_create('anvil-nextgen')
+        api.node_register('node-99')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        project = api._must_find(db, model.Project, 'anvil-nextgen')
+        node = api._must_find(db, model.Node, 'node-99')
+        assert node in project.nodes
+        assert node.project is project
+        releaseDB(db)
+
+
+class TestNode:
+    """Tests for the haas.api.node_* functions."""
+
+    def test_node_register(self):
+        db = newDB()
+        api.node_register('node-99')
+        api._must_find(db, model.Node, 'node-99')
+        releaseDB(db)
+
+    def test_node_delete(self):
+        db = newDB()
+        api.node_register('node-99')
+        api.node_delete('node-99')
+        with pytest.raises(api.NotFoundError):
+            api._must_find(db, model.Node, 'node-99')
         releaseDB(db)
