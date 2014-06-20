@@ -36,6 +36,7 @@ def api_function(f):
             return e.message, 400
         if not resp:
             return ''
+    wrapped.__name__ = f.__name__
     return wrapped
 
 
@@ -51,6 +52,11 @@ def user(username):
         return api.user_create(username, request.form['password'])
     else: # DELETE
         return api.user_delete(username)
+
+@app.route('/project/<projectname>/deploy', methods=['POST'])
+@api_function
+def project_deploy(projectname):
+    api.project_deploy(projectname)
 
 
 if __name__ == '__main__':

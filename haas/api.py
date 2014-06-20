@@ -18,7 +18,7 @@ class NotFoundError(APIError):
     """An exception indicating that a given resource does not exist."""
 
 class DuplicateError(APIError):
-    """An exception indicating that a given resource already exists.""" 
+    """An exception indicating that a given resource already exists."""
 
 
 def user_create(username, password):
@@ -72,13 +72,13 @@ def group_delete(groupname):
 
 def group_add_user(groupname, username):
     """Add a group to a user
-    
+
     If the group or user does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
     user = _must_find(db, model.User, username)
     group = _must_find(db, model.Group, groupname)
-    if user.groups(group): 
+    if group in user.groups:
         raise DuplicateError(username)
     user.groups.append(group)
     db.commit()
@@ -86,43 +86,43 @@ def group_add_user(groupname, username):
 
 def group_remove_user(groupname, username):
     """Remove a group from a user
-    
+
     If the group or user does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
     user = _must_find(db, model.User, username)
     group = _must_find(db, model.Group, groupname)
-    if not user.groups(user): 
-        raise NotFoundError(username)    
+    if group not in user.groups:
+        raise NotFoundError(username)
     user.groups.remove(group)
     db.commit()
 
 
 def group_connect_project(groupname, projectname):
     """Add a project 'projectname' to an existing group
-    
+
     If the group or project does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
     project = _must_find(db, model.Project, projectname)
     group = _must_find(db, model.Group, groupname)
-    if group.projects(project): 
+    if project in group.projects:
         raise DuplicateError(projectname)
-    project.group.append(group)
+    group.projects.append(project)
     db.commit()
 
 
 def group_detach_project(groupname, projectname):
     """Remove a project 'projectname' from an existing group
-    
+
     If the group or project does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
     project = _must_find(db, model.Project, projectname)
     group = _must_find(db, model.Group, groupname)
-    if not group.projects(project): 
+    if project not in group.projects:
         raise NotFoundError(projectname)
-    project.group.remove(group)
+    project.group = None
     db.commit()
 
 
@@ -152,43 +152,57 @@ def project_delete(projectname):
     db.commit()
 
 
+def project_deploy(projectname):
+    """Deploy project 'projectname'
+
+    If the project does not exist, a NotFoundError will be raised.
+
+    TODO: there are other possible errors, document them and how they are
+    handled.
+    """
+    db = model.Session()
+    project = _must_find(db, model.Project, projectname)
+    if project.headnode:
+        project.headnode.create()
+        project.headnode.start()
+    else:
+        pass # TODO: at least log this, if not throw an error.
+
 def project_connect_node(projectname, nodename):
     """Add a project 'projectname' to an existing node
-    
+
     If the node or project does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
     project = _must_find(db, model.Project, projectname)
     node = _must_find(db, model.Node, nodename)
-    if node.projects(project): 
-        raise DuplicateError(projectname)
-    project.node.append(node)
+    project.nodes.append(node)
     db.commit()
 
 
 def project_detach_node(projectname, nodename):
     """Remove a project 'projectname' from an existing node
-    
+
     If the node or project does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
     project = _must_find(db, model.Project, projectname)
     node = _must_find(db, model.Node, nodename)
-    if not node.projects(project): 
+    if node not in project.nodes:
         raise NotFoundError(projectname)
-    project.node.remove(node)
+    project.nodes.remove(node)
     db.commit()
 
 
 def project_connect_network(projectname, networkname):
     """Add a project 'projectname' to an existing network
-    
+
     If the network or project does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
     project = _must_find(db, model.Project, projectname)
     network = _must_find(db, model.Network, networkname)
-    if network.projects(project): 
+    if network.projects(project):
         raise DuplicateError(projectname)
     project.network.append(network)
     db.commit()
@@ -196,13 +210,13 @@ def project_connect_network(projectname, networkname):
 
 def project_detach_network(projectname, networkname):
     """Remove a project 'projectname' from an existing network
-    
+
     If the network or project does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
     project = _must_find(db, model.Project, projectname)
     network = _must_find(db, model.Network, networkname)
-    if not network.projects(project): 
+    if not network.projects(project):
         raise NotFoundError(projectname)
     project.network.remove(network)
     db.commit()
@@ -247,7 +261,7 @@ def headnode_create(nodename, projectname):
 
     ## look for group, if it exists assign it
     project = _must_find(db, model.Project, projectname)
-    headnode.project = project 
+    headnode.project = project
 
     db.add(headnode)
     db.commit()
@@ -309,7 +323,7 @@ def _assert_absent(session, cls, name):
 
 def _must_find(session, cls, name):
     """Raises a NotFoundError if the given object doesn't exist in the datbase.
-    Otherwise returns the object 
+    Otherwise returns the object
 
     This is useful for most of the *_delete functions.
 

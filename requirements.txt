@@ -4,4 +4,6 @@ Flask-HTTPAuth
 passlib
 pexpect
 tabulate
+requests
 pytest
+pytest-cov

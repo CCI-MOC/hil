@@ -2,7 +2,9 @@ from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import relationship, sessionmaker,backref
 from passlib.hash import sha512_crypt
+from subprocess import check_call
 from haas.config import cfg
+from haas.dev_support import no_dry_run
 
 Base=declarative_base()
 Session = sessionmaker()
@@ -90,7 +92,7 @@ class Project(Model):
 
 
     #Many to one mapping to User
-    group       = relationship("Group",backref=backref('group',order_by=label))
+    group       = relationship("Group",backref=backref('projects',order_by=label))
 
     def __init__(self, label):
         self.label = label
@@ -161,7 +163,7 @@ class User(Model):
     g1    = Group('g1')
     alice.groups.append(g1)
     """
-    groups      = relationship('Group', secondary = user_groups, backref = 'user' )
+    groups      = relationship('Group', secondary = user_groups, backref = 'users' )
     def __init__(self, label, password):
         self.label = label
         self.set_password(password)
@@ -199,6 +201,23 @@ class Headnode(Model):
     def __init__(self, label, available = True):
         self.label  = label
         self.available = available
+
+    @no_dry_run
+    def create(self):
+        """Creates the vm within libvirt, by cloning the base image.
+
+        The vm is not started at this time.
+        """
+        check_call(['virt-clone', '-o', 'base-headnode', '-n', self._vmname(), '--auto-clone'])
+
+    @no_dry_run
+    def start(self):
+        """Powers on the vm, which must have been previously created."""
+        check_call(['virsh', 'start', self._vmname()])
+
+    def _vmname(self):
+        """Returns the name (as recognized by libvirt) of this vm."""
+        return 'headnode-%d' % self.id
 
     def __repr__(self):
         return 'Headnode<%r %r %r %r>'%(self.id,
