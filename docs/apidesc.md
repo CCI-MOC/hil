@@ -1,40 +1,9 @@
 #HaaS API
 
-Eventually this will be the final documentation for the API, for now,
-it has additional information to give context for the conversation.
-We first discuss the original API, then the proposed API.
-
-##Original API
-Current interface, grew organically:
-
-    group create <group_name>
-    node create <node_id>
-    node add <node_id> <group_name>
-    nic create <nic_id> <mac_addr> <name>
-    nic connect <nic_id> <port_id>
-    nic add <nic_id> <node_id>
-    switch create <switch_id> <script>
-    port create <port_id> <switch_id> <port_no>
-    vlan create <vlan_id>
-    vlan connect <vlan_id> <group_name> <nic_name>
-    headnode create
-    headnode attach <vm_name> <group_name>
-    group deploy <group_name>
-    user create <user name> <password>
-    show all
-    show [ group | vm | port | nic | vlan | switch | node | user ]
-    help
-    exit
-
-Not clear what was atomic, synchronization model, and there were a
-series of inconsistencies, and we don't have model of permissions...
-
-##Proposed API
-
 First describe the main objects, the users and security model, then
 then the actual API.
 
-###Objects on the (new model) are:
+##Objects on the (new model) are:
 
 * user - a user, with password and login, can belong to multiple groups
 * group - owner of a set of projects, has zero or more users in the
@@ -80,7 +49,7 @@ resources. The system will return an error if a second user tries to
 create an object with an already existing label. The one exception is
 NICs, where the label is unique only on a per-node basis. 
 
-### Permissions users and synchronization mechanisms/assumptions
+## Permissions users and synchronization mechanisms/assumptions
 
 Users will belong to one or more groups that own projects.  One
 special group is the "admin" group that: 1) is responsible for
@@ -106,7 +75,7 @@ changes to a project so that two users are not modifying the same
 project at the same time. 
 
 
-###User operations:
+##User operations:
     user_create                 <user_label> <password>
     user_delete                 <user_label>
  
@@ -151,7 +120,7 @@ project at the same time.
     help
     exit
 
-###Additional administrator operations:
+##Additional administrator operations:
 
     # operations to describe physical configuration of system to HaaS
     node_register                 <node_label>
@@ -173,30 +142,7 @@ project at the same time.
     unblock_users
 
 
-###Summary of Changes
-
-* added concepts of projects AND groups, one for users, other for all other
-  resources
-* all create operations of logical entities assign them to a group. 
-* commands start with the name of the containing object
-  e.g., node add -> group connect node 
-* consistent naming, i.e., connect/disconnect rather than
-  attach/add/...
-* vlan -> network
-* hide internal numbers, e.g. vlan_id, ... instead use lables
-* got rid of operations on group of objects, i.e., vlan connect
-  operated on all nics with label, which would have forced us to do
-  bizzare work if a new nic got added with same label
-* connect all words in command with "_" since could be function name
-* headnode create specifies a vm_label
-* call string names everywhere
-* got rid port_id and port_no, always identify port as a switch and
-  port number relative to that switch, like nics on a node
-* give access to networks, attach things, ... by "connect" operations,
-  e.g. connect a network to a group, connect a nic to a port, connect
-  a nic to a network, connect a user to a group
-
-###Notes:
+##Notes:
 * network has to be connected to a group before it can be connected 
   to a node in the group, i.e, an group A can give group B access to
   network, group B users can then connect network to nodes in their group
