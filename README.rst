@@ -48,3 +48,34 @@ of authors, description of the team, workflow, ... look here_
 There's some assorted documentation in the `doc/` directory.
 
 .. _here: https://github.com/CCI-MOC/moc-public/blob/master/README.md
+
+**Getting Started**
+===================
+
+
+First, set up a clean test environment::
+
+  virtualenv .venv
+
+You only need do this once ever, most likely.  (Note that Git will ignore this
+directory.)  Next, each time you start working, enter the environment with::
+
+  source .venv/bin/activate
+
+This assumes that you are using the bash shell.  For other shells, see the
+other files in the directory ``.venv/bin``. Then, once you are ready to test
+the *haas* code, run::
+
+  pip install -e .
+
+Now ``haas`` will be in your path, and you can run it.  However, if you are
+running a Debian Wheezy system (among possibly others), you will get the
+following error::
+
+  AttributeError: 'NoneType' object has no attribute 'skip_requirements_regex'
+
+To fix this, run::
+
+  pip install --upgrade pip
+
+You only need to do this once.
