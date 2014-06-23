@@ -1,6 +1,6 @@
 """This module provides the HaaS service's public API.
 
-haas.api_server translates between this and HTTP.
+haas.server translates between this and HTTP.
 
 TODO: Spec out and document what sanitization is required.
 """

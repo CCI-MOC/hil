@@ -3,13 +3,7 @@
 This module only marshalls between HTTP and the routines in haas.api; it doesn't
 directly ipmlement the semantics of the API.
 
-To start the server, or the module can be run as a script, e.g. (from the root
-of the source tree):
-
-    python haas/api_server.py
-
-Right now the server is always run in debug mode, which isn't safe for
-production use. When we get close to release-quality we'll have to change this.
+To start the server, invoke `haas serve` from the command line.
 """
 
 from flask import Flask, request

@@ -34,9 +34,9 @@ def object_url(typename, objname):
 @cmd
 def serve(*args):
     """Start the HaaS API server."""
-    from haas import model, api_server
+    from haas import model, server
     model.init_db()
-    api_server.app.run(debug=True)
+    server.app.run(debug=True)
 
 
 @cmd
