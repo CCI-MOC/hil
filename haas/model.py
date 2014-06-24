@@ -28,6 +28,7 @@ def init_db(create=False, uri=None):
         Base.metadata.create_all(engine)
     Session.configure(bind=engine)
 
+
 class Model(Base):
     """All of our database models are descendants of this class.
 
@@ -35,134 +36,93 @@ class Model(Base):
     auto-generating table names.
     """
     __abstract__ = True
+    id = Column(Integer, primary_key=True)
+    label = Column(String, unique=True)
+
+    def __repr__(self):
+        return '%s<%r>' % (self.__class__.__name__, self.label)
 
     @declared_attr
     def __tablename__(cls):
         """Automatically generate the table name."""
         return cls.__name__.lower()
 
+
 class Nic(Model):
-    __tablename__ = 'nics'
-    id        = Column(Integer, primary_key = True)
-    label     = Column(String)
     mac_addr  = Column(String)
 
-    port_label   = Column(Integer,ForeignKey('port.label'))
-    node_label   = Column(Integer,ForeignKey('node.label'))
+    port_id   = Column(Integer,ForeignKey('port.id'))
+    node_id   = Column(Integer,ForeignKey('node.id'))
 
     # One to one mapping port
     port      = relationship("Port",backref=backref('nic',uselist=False))
-    node      = relationship("Node",backref=backref('nics',order_by=label))
+    node      = relationship("Node",backref=backref('nics'))
 
     def __init__(self,label, mac_addr):
         self.label     = label
         self.mac_addr  = mac_addr
-    def __repr__(self):
-        return 'Nic<%r %r %r %r %r>'%(self.id,
-                                      self.label,
-                                      self.mac_addr,
-                                      self.port_label if self.port else None,
-                                      self.node_label if self.node else None)
+
 
 class Node(Model):
-
-    id            = Column(Integer,primary_key=True)
-    label         = Column(String)
     available     = Column(Boolean)
-    project_label = Column(String,ForeignKey('project.label'))
+    project_id    = Column(Integer,ForeignKey('project.id'))
 
     #many to one mapping to project
-    project       = relationship("Project",backref=backref('nodes',order_by=id))
+    project       = relationship("Project",backref=backref('nodes'))
 
     def __init__(self, label, available = True):
         self.label   = label
         self.available = available
 
-    def __repr__(self):
-        return "Node<%r %r %r %r>"%(self.id,
-                                    self.label,
-                                    self.available,
-                                    self.project_label if self.project else None)
 
 class Project(Model):
-    id          = Column(Integer, primary_key = True)
-    label       = Column(String)
     deployed    = Column(Boolean)
-    group_label = Column(String,ForeignKey('group.label'))
+    group_id    = Column(String,ForeignKey('group.id'))
 
 
     #Many to one mapping to User
-    group       = relationship("Group",backref=backref('projects',order_by=label))
+    group       = relationship("Group",backref=backref('projects'))
 
     def __init__(self, label):
         self.label = label
         self.deployed   = False
-    def __repr__(self):
-        return "Project<%r %r %r %r>"%(self.id,
-                                       self.label,
-                                       self.deployed,
-                                       self.group_label if self.group else None)
+
 
 class Vlan(Model):
-    id            = Column(Integer,primary_key=True)
-    label         = Column(String)
     available     = Column(Boolean)
     nic_label     = Column(String)
-    project_label = Column(String,ForeignKey('project.label'))
+    project_id    = Column(String,ForeignKey('project.id'))
 
-    project         = relationship("Project",backref=backref('vlans',order_by=nic_label))
+    project         = relationship("Project",backref=backref('vlans'))
+
     def __init__(self,label, nic_label, available=True):
         self.label = label
         self.nic_label = nic.label
         self.available = available
-    def __repr__(self):
-        return 'Vlan<%r %r %r %r %r>'%(self.id,
-                                       self.label,
-                                       self.available,
-                                       self.nic_label,
-                                       self.project_label if self.project else None)
+
 
 class Port(Model):
-    id            = Column(Integer,primary_key=True)
-    label         = Column(String)
     port_no       = Column(Integer)
-    switch_label  = Column(Integer,ForeignKey('switch.label'))
+    switch_id     = Column(Integer,ForeignKey('switch.id'))
 
-    switch        = relationship("Switch",backref=backref('ports',order_by=label))
+    switch        = relationship("Switch",backref=backref('ports'))
 
     def __init__(self,label, port_no):
         self.label   = label
         self.port_no   = port_no
-    def __repr__(self):
-        return 'Port<%r %r %r %r>'%(self,id,
-                                    self.label,
-                                    self.port_no,
-                                    self.switch_label if self.switch else None)
+
 
 class Switch(Model):
-    id            = Column(Integer,primary_key=True)
-    label         = Column(String)
     model         = Column(String)
 
     def __init__(self,label,model):
         self.label = label
         self.model = model
-    def __repr__(self):
-        return 'Switch<%r %r %r>'%(self.id,
-                                   self.label,
-                                   self.model)
+
 
 class User(Model):
-    id          = Column(Integer, primary_key = True)
-    label       = Column(String)  #username
     hashed_password    = Column(String)
 
-    #many to many User<->Group
-    """
-    alice = User('alice', 'alice')
-    g1    = Group('g1')
-    alice.groups.append(g1)
-    """
     groups      = relationship('Group', secondary = user_groups, backref = 'users' )
     def __init__(self, label, password):
         self.label = label
@@ -174,28 +134,17 @@ class User(Model):
     def set_password(self, password):
         self.hashed_password = sha512_crypt.encrypt(password)
 
-    def __repr__(self):
-        return "User<%r %r %r %r>"%(self.id,
-                                    self.label,
-                                    self.hashed_password,
-                                    self.groups)
 
 class Group(Model):
-    id            = Column(Integer, primary_key = True)
-    label         = Column(String)
 
     def __init__(self, label):
         self.label = label
 
-    def __repr__(self):
-        return 'Group<%r %r>'%(self.id,
-                               self.label)
+
 class Headnode(Model):
-    id            = Column(Integer, primary_key = True)
-    label         = Column(String)
     available     = Column(Boolean)
 
-    project_label = Column(String, ForeignKey('project.label'))
+    project_id    = Column(String, ForeignKey('project.id'))
     project       = relationship("Project", backref = backref('headnode',uselist = False))
 
     def __init__(self, label, available = True):
@@ -219,35 +168,13 @@ class Headnode(Model):
         """Returns the name (as recognized by libvirt) of this vm."""
         return 'headnode-%d' % self.id
 
-    def __repr__(self):
-        return 'Headnode<%r %r %r %r>'%(self.id,
-                                     self.available,
-                                     self.label,
-                                     self.project_label if self.project else None)
-class Hnic(Model):
-    id             = Column(Integer, primary_key = True)
-    label          = Column(String)
-    mac_addr       = Column(String)
-    headnode_label = Column(String, ForeignKey('headnode.label'))
 
-    headnode       = relationship("Headnode", backref = backref('hnics',order_by=label))
+class Hnic(Model):
+    mac_addr       = Column(String)
+    headnode_id    = Column(String, ForeignKey('headnode.id'))
+
+    headnode       = relationship("Headnode", backref = backref('hnics'))
 
     def __init__(self, label, mac_addr):
         self.label = label
         self.mac_addr = mac_addr
-
-    def __repr__(self):
-        return "Hnic<%r %r %r %r>"%(self.id,
-                                    self.label,
-                                    self.mac_addr,
-                                    self.headnode_label if self.headnode else None)
-"""
-alice = User('alice','alice')
-bob   = User('bob','bob')
-admin = Group('admin')
-student = Group('student')
-alice.groups.append(admin)
-alice.groups.append(student)
-session.add(alice)
-print session.query(User).all()
-"""
