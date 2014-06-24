@@ -67,8 +67,8 @@ Full Api spec:
 
     node_register_nic <node_id> <nic_id> <mac_addr>
     node_delete_nic   <node_id> <nic_id>
-    [PUT]    /headnode/<hn_id>/hnic/<hnic_id> {mac_addr=<mac_addr}
-    [DELETE] /headnode/<hn_id>/hnic/<hnic_id>
+    [PUT]    /node/<node_id>/nic/<nic_id> {mac_addr=<mac_addr>}
+    [DELETE] /node/<node_id>/nic/<nic_id>
 
     switch_register  <switch_id> <driver> <num_ports>
     switch_delete    <switch_id>
