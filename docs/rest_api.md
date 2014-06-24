@@ -3,59 +3,59 @@
 
 Full Api spec:
 
-    user_create  <user_label> <password>
-    user_delete  <user_label>
-    [PUT]    /user/<user_label> {password=<password>}
-    [DELETE] /user/<user_label>
+    user_create  <user_id> <password>
+    user_delete  <user_id>
+    [PUT]    /user/<user_id> {password=<password>}
+    [DELETE] /user/<user_id>
 
-    group_add_user    <group_label> <user_label>
-    group_add_network <group_label> <network_label>
-    [POST] /group/<group_label>/add_user {user=<user_label>}
-    [POST] /group/<group_label>/add_network {network=<network_label>}
+    group_add_user    <group_id> <user_id>
+    group_add_network <group_id> <network_id>
+    [POST] /group/<group_id>/add_user {user=<user_id>}
+    [POST] /group/<group_id>/add_network {network=<network_id>}
 
-    project_create <project_label> <group_label>
-    project_delete <project_label>
-    [PUT]    /project/<project_label> {group=<group_label>}
-    [DELETE] /project/<project_label>
+    project_create <project_id> <group_id>
+    project_delete <project_id>
+    [PUT]    /project/<project_id> {group=<group_id>}
+    [DELETE] /project/<project_id>
 
-    network_create <network_label> <group_label>
-    network_delete <network_label>
-    [PUT]    /network/<network_label> {group=<group_label>}
-    [DELETE] /network/<network_label>
+    network_create <network_id> <group_id>
+    network_delete <network_id>
+    [PUT]    /network/<network_id> {group=<group_id>}
+    [DELETE] /network/<network_id>
 
-    headnode_create <hn_label> <group_label>
-    headnode_delete <hn_label>
-    [PUT]    /headnode/<hn_label> {group=<group_label>}
-    [DELETE] /headnode/<hn_label>
+    headnode_create <hn_id> <group_id>
+    headnode_delete <hn_id>
+    [PUT]    /headnode/<hn_id> {group=<group_id>}
+    [DELETE] /headnode/<hn_id>
 
-    project_connect_headnode <project_label> <hn_label>
-    project_detach_headnode  <project_label> <hn_label>
-    [POST] /project/<project_label>/connect_headnode {headnode=<hn_label>}
-    [POST] /project/<project_label>/detach_headnode {headnode=<hn_label>}
+    project_connect_headnode <project_id> <hn_id>
+    project_detach_headnode  <project_id> <hn_id>
+    [POST] /project/<project_id>/connect_headnode {headnode=<hn_id>}
+    [POST] /project/<project_id>/detach_headnode {headnode=<hn_id>}
 
-    project_connect_node <project_label> <node_label>
-    project_detach_node  <project_label> <node_label>
-    [POST] /project/<project_label>/connect_node {node=<node_label>}
-    [POST] /project/<project_label>/detach_node {node=<node_label>}
+    project_connect_node <project_id> <node_id>
+    project_detach_node  <project_id> <node_id>
+    [POST] /project/<project_id>/connect_node {node=<node_id>}
+    [POST] /project/<project_id>/detach_node {node=<node_id>}
 
-    project_connect_network <project_label> <network_label>
-    project_detach_network  <project_label> <network_label>
-    project_deploy          <project_label>
-    [POST] /project/<project_label>/connect_network {network=<network_label>}
-    [POST] /project/<project_label>/detach_network {network=<network_label>}
-    [POST] /project/<project_label>/deploy
+    project_connect_network <project_id> <network_id>
+    project_detach_network  <project_id> <network_id>
+    project_deploy          <project_id>
+    [POST] /project/<project_id>/connect_network {network=<network_id>}
+    [POST] /project/<project_id>/detach_network {network=<network_id>}
+    [POST] /project/<project_id>/deploy
 
-    node_connect_network <node_label> <nic_label> <network_label>
-    node_detach_network  <node_label> <nic_label>
-    [POST] /node/<node_label>/nic/<nic_label>/connect_network {network=<network_label>}
-    [POST] /node/<node_label>/nic/<nic_label>/detach_network {network=<network_label>}
+    node_connect_network <node_id> <nic_id> <network_id>
+    node_detach_network  <node_id> <nic_id>
+    [POST] /node/<node_id>/nic/<nic_id>/connect_network {network=<network_id>}
+    [POST] /node/<node_id>/nic/<nic_id>/detach_network {network=<network_id>}
 
-    headnode_create_hnic     <hn_label> <hnic_label>
-    headnode_delete_hnic     <hn_label> <hnic_label>
-    [PUT]    /headnode/<hn_label>/hnic/<hnic_label>
-    [DELETE] /headnode/<hn_label>/hnic/<hnic_label>
+    headnode_create_hnic <headnode_id> <hnic_id>
+    headnode_delete_hnic <headnode_id> <hnic_id>
+    [PUT]    /headnode/<hn_id>/hnic/<hnic_id>
+    [DELETE] /headnode/<hn_id>/hnic/<hnic_id>
 
-    headnode_connect_network <hn_label> <hnic_label> <network_label>
-    headnode_detach_network  <hn_label> <hnic_label>
-    [POST]   /headnode/<hn_label>/hnic/<hnic_label>/connect_network {network=<network_label>}
-    [POST]   /headnode/<hn_label>/hnic/<hnic_label>/detach_network {network=<network_label>}
+    headnode_connect_network <hn_id> <hnic_id> <network_id>
+    headnode_detach_network  <hn_id> <hnic_id> <network_id>
+    [POST] /headnode/<hn_id>/hnic/<hnic_id>/connect_network {network=<network_id>}
+    [POST] /headnode/<hn_id>/hnic/<hnic_id>/detach_network {network=<network_id>}
