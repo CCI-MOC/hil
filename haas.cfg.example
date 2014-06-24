@@ -1,19 +1,50 @@
+# This is an example configuration file for HaaS. The HaaS will read its
+# configuration from a file called ``haas.cfg``, in the current working
+# directory. To get started, you may simply copy this file, and modify as
+# needed.
+#
+# If you're using this locally and not actually deploying changes, this file can
+# be used as-is. Otherwise, you'll likely need to adjust the settings for your
+# particular configuration.
+#
+# the options under [client] are required for making client-side requests with
+# the cli tool (anything but haas serve). Switch specific options are mandatory
+# if and only if that switch driver is in use. The database section is needed to
+# run the server at all, while the remaining options can be ommited if
+# project_deploy is never invoked (or the dry_run option is enabled).
+
 [general]
+# The driver to use for the network switch. The value must be the name of one of
+# the modules in haas.drivers:
 active_switch = dell
 
 [headnode]
+# The trunked network interface on the host. This is the nic that the VMs will
+# be bridged to to gain access to their networks.
 trunk_nic = eth0
 
 [client]
+# The http endpoint that the client should talk to 
 endpoint = http://127.0.0.1:5000
 
 [database]
+# A SQLAlchemy database URI, specifying the database for the server to connect to.
 uri = sqlite:///haas.db
 
 [switch dell]
+# Settings specific to the dell powerconnect driver. Other switches might have
+# sections for their own options.
+
+# The ip address that the switch's console is listening on.
+ip = 192.168.0.2
+# Login credetials, fairly self-explanatory:
 user = foo
 pass = bar
-ip = 192.168.0.2
 
-[switch cisco]
-ip = 192.168.0.3
+# A handful of functions which touch external state (start vms, communicate with
+# swithces...) can be disabled for development purposes. When this is done, the
+# calls to the function will be logged, but not actually executed. to do this,
+# uncomment the following:
+#
+#[devel]
+#dry_run=
