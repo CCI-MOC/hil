@@ -59,3 +59,24 @@ Full Api spec:
     headnode_detach_network  <hn_id> <hnic_id> <network_id>
     [POST] /headnode/<hn_id>/hnic/<hnic_id>/connect_network {network=<network_id>}
     [POST] /headnode/<hn_id>/hnic/<hnic_id>/detach_network {network=<network_id>}
+
+    node_register <node_id>
+    node_delete   <node_id>
+    [PUT]    /node/<node_id>
+    [DELETE] /node/<node_id>
+
+    node_register_nic <node_id> <nic_id> <mac_addr>
+    node_delete_nic   <node_id> <nic_id>
+    [PUT]    /headnode/<hn_id>/hnic/<hnic_id> {mac_addr=<mac_addr}
+    [DELETE] /headnode/<hn_id>/hnic/<hnic_id>
+
+    switch_register  <switch_id> <driver> <num_ports>
+    switch_delete    <switch_id>
+    [PUT]    /switch/<switch_id> {driver=<driver>, num_ports=<num_ports>}
+    [DELETE] /switch/<switch_id>
+
+    #### TODO FIXME:  Specify the remaining ones
+    nic_connect_switch <node_id> <nic_id> <switch_id> <port>
+    import_vlan <network_id> <vlan_id>
+    block_user <user_id>
+    unblock_user <user_id>
