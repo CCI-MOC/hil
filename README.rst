@@ -62,8 +62,8 @@ Next, each time you start working, enter the environment::
 
   source .venv/bin/activate
 
-The first time you enter the environment, install the *haas* code and all its
-dependencies into the virtual environment::
+The first time you enter the environment, install the ``haas`` code and all
+its dependencies into the virtual environment::
 
   pip install -e .
 
