@@ -1,9 +1,5 @@
 
 * `{foo=bar, baz=quux}` denotes http form data (in the body of the request).
-* All *_create operations, with the exception of users and groups, have an
-  implicit group field to their request payload. i.e.
-  `foo_create <foo> <bar> {baz=<bar>}` is a shorthand for
-  `foo_create <foo> <bar> <group_label> {baz=<bar>, group=<group_label>)`.
 
 Full Api spec:
 
@@ -17,19 +13,19 @@ Full Api spec:
     [POST] /group/<group_label>/add_user {user=<user_label>}
     [POST] /group/<group_label>/add_network {network=<network_label>}
 
-    project_create <project_label>
+    project_create <project_label> <group_label>
     project_delete <project_label>
-    [PUT]    /project/<project_label>
+    [PUT]    /project/<project_label> {group=<group_label>}
     [DELETE] /project/<project_label>
 
-    network_create <network_label>
+    network_create <network_label> <group_label>
     network_delete <network_label>
-    [PUT]    /network/<network_label>
+    [PUT]    /network/<network_label> {group=<group_label>}
     [DELETE] /network/<network_label>
 
-    headnode_create <hn_label>
+    headnode_create <hn_label> <group_label>
     headnode_delete <hn_label>
-    [PUT]    /headnode/<hn_label>
+    [PUT]    /headnode/<hn_label> {group=<group_label>}
     [DELETE] /headnode/<hn_label>
 
     project_connect_headnode <project_label> <hn_label>
