@@ -53,29 +53,25 @@ There's some assorted documentation in the `doc/` directory.
 ===================
 
 
-First, set up a clean test environment::
+The first time you start working in the repository, set up a clean test
+environment::
 
   virtualenv .venv
 
-You only need do this once ever, most likely.  (Note that Git will ignore this
-directory.)  Next, each time you start working, enter the environment with::
+Next, each time you start working, enter the environment::
 
   source .venv/bin/activate
 
-This assumes that you are using the bash shell.  For other shells, see the
-other files in the directory ``.venv/bin``. Then, once you are ready to test
-the *haas* code, run::
+Then, each time you want to test the *haas* code, install it into the virtual
+environment::
 
   pip install -e .
 
-Now ``haas`` will be in your path, and you can run it.  However, if you are
-running a Debian Wheezy system (among possibly others), you will get the
-following error::
+On systems with older versions of ``pip``, such as Debian Wheezy and Ubuntu
+12.04, this install will fail with the following error::
 
   AttributeError: 'NoneType' object has no attribute 'skip_requirements_regex'
 
-To fix this, run::
+Fix this by upgrading ``pip`` within the virtual environment::
 
   pip install --upgrade pip
-
-You only need to do this once.
