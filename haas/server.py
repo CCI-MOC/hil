@@ -52,6 +52,13 @@ def user(username):
 def project_deploy(projectname):
     api.project_deploy(projectname)
 
+@app.route('/headnode/<name>', methods=['PUT', 'DELETE'])
+@api_function
+def headnode(name):
+    if request.method == 'PUT':
+        return api.headnode_create(name, request.form['group'])
+    else: # DELETE
+        return api.headnode_delete(name)
 
 if __name__ == '__main__':
     config.load()
