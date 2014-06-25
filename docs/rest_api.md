@@ -14,8 +14,10 @@ Full Api spec:
 
 
     group_add_user    <group_label> <user_label>
+    group_remove_user <group_label> <user_label>
     group_add_network <group_label> <network_label>
     [POST] /group/<group_label>/add_user {user=<user_label>}
+    [POST] /group/<group_label>/remove_user {user=<user_label>}
     [POST] /group/<group_label>/add_network {network=<network_label>}
 
 

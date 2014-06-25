@@ -47,6 +47,20 @@ def user_create(username, password, *args):
 
 
 @cmd
+def group_add_user(groupname, username):
+    """Add user to group."""
+    url = object_url('group', groupname) + '/add_user'
+    check_status_code(requests.post(url, data={'user': username}))
+
+
+@cmd
+def group_remove_user(groupname, username):
+    """Remove user from group."""
+    url = object_url('group', groupname) + '/remove_user'
+    check_status_code(requests.post(url, data={'user': username}))
+
+
+@cmd
 def project_deploy(projectname):
     """Deploy a project"""
     url = object_url('project', projectname)

@@ -47,10 +47,23 @@ def user(username):
     else: # DELETE
         return api.user_delete(username)
 
+
 @app.route('/project/<projectname>/deploy', methods=['POST'])
 @api_function
 def project_deploy(projectname):
     api.project_deploy(projectname)
+
+
+@app.route('/group/<groupname>/add_user', methods=['POST'])
+@api_function
+def group_add_user(groupname):
+    return api.group_add_user(groupname, request.form['user'])
+
+
+@app.route('/group/<groupname>/remove_user', methods=['POST'])
+@api_function
+def group_remove_user(groupname):
+    return api.group_remove_user(groupname, request.form['user'])
 
 
 if __name__ == '__main__':
