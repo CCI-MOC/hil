@@ -174,6 +174,13 @@ class TestNode:
         api._must_find(db, model.Node, 'node-99')
         releaseDB(db)
 
+    def test_duplicate_node_register(self):
+        db = newDB()
+        api.node_register('node-99')
+        with pytest.raises(api.DuplicateError):
+            api.node_register('node-99')
+        releaseDB(db)
+
     def test_node_delete(self):
         db = newDB()
         api.node_register('node-99')
