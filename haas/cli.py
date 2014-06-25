@@ -52,6 +52,18 @@ def project_deploy(projectname):
     url = object_url('project', projectname)
     check_status_code(requests.post(url))
 
+@cmd
+def headnode_create(hn_name, group):
+    """Create a headnode"""
+    url = object_url('headnode', hn_name)
+    check_status_code(requests.put(url, data={'group': group}))
+
+@cmd
+def headnode_delete(hn_name):
+    """Delete a headnode"""
+    url = object_url('headnode', hn_name)
+    check_status_code(requests.delete(url))
+
 
 def usage():
     """Display a summary of the arguments accepted by the CLI."""
