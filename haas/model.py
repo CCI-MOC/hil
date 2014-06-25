@@ -84,9 +84,8 @@ class Node(Model):
 class Project(Model):
     deployed    = Column(Boolean)
 
-    group_id = Column(Integer, ForeignKey('group.id'))
+    group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
     group = relationship("Group", backref=backref("project_list"))
-
 
     def __init__(self, group, label):
         self.group = group
@@ -101,7 +100,7 @@ class Vlan(Model):
     project_id    = Column(String,ForeignKey('project.id'))
     project       = relationship("Project",backref=backref('vlans'))
 
-    group_id = Column(Integer, ForeignKey('group.id'))
+    group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
     group = relationship("Group", backref=backref("vlan_list"))
 
     def __init__(self, group, label, nic_label, available=True):
@@ -119,9 +118,7 @@ class Port(Model):
     group_id = Column(Integer, ForeignKey('group.id'))
     group = relationship("Group", backref=backref("port_list"))
 
-
-    def __init__(self, group, label, port_no):
-        self.group = group
+    def __init__(self, label, port_no):
         self.label   = label
         self.port_no   = port_no
 
@@ -137,7 +134,8 @@ class Switch(Model):
 class User(Model):
     hashed_password    = Column(String)
 
-    groups      = relationship('Group', secondary = user_groups, backref = 'users' )
+    groups      = relationship('Group', secondary = user_groups, backref = 'users')
+
     def __init__(self, label, password):
         self.label = label
         self.set_password(password)
@@ -161,9 +159,8 @@ class Headnode(Model):
     project_id    = Column(String, ForeignKey('project.id'))
     project       = relationship("Project", backref = backref('headnode',uselist = False))
 
-    group_id = Column(Integer, ForeignKey('group.id'))
+    group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
     group = relationship("Group", backref=backref("hn_list"))
-
 
     def __init__(self, group, label, available = True):
         self.group = group
@@ -193,7 +190,7 @@ class Hnic(Model):
     headnode_id    = Column(String, ForeignKey('headnode.id'))
     headnode       = relationship("Headnode", backref = backref('hnics'))
 
-    group_id = Column(Integer, ForeignKey('group.id'))
+    group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
     group = relationship("Group", backref=backref("hnic_list"))
 
     def __init__(self, group, label, mac_addr):
