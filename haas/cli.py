@@ -3,7 +3,7 @@ from haas import config
 from haas.config import cfg
 
 import logging
-
+import inspect
 import sys
 import urllib
 import requests
@@ -32,7 +32,7 @@ def object_url(typename, objname):
 
 
 @cmd
-def serve(*args):
+def serve():
     """Start the HaaS API server."""
     from haas import model, server
     model.init_db()
@@ -40,27 +40,30 @@ def serve(*args):
 
 
 @cmd
-def user_create(username, password, *args):
-    """Create a user"""
+def user_create(username, password):
+    """Create a user <username> with password <password>."""
     url = object_url('user', username)
     check_status_code(requests.put(url, data={'password': password}))
 
 
 @cmd
-def project_deploy(projectname):
-    """Deploy a project"""
-    url = object_url('project', projectname)
+def project_deploy(project):
+    """Deploy the project named <project>"""
+    url = object_url('project', project)
     check_status_code(requests.post(url))
 
 
 def usage():
     """Display a summary of the arguments accepted by the CLI."""
-    # TODO: We should fetch the arguments and include them in the message
-    # somehow.
-    sys.stderr.write('Usage: %s <command> <args...>\n\n' % sys.argv[0])
+    sys.stderr.write('Usage: %s <command>\n\n' % sys.argv[0])
     sys.stderr.write('Where <command> is one of:\n\n')
     for name in commands.keys():
-        sys.stderr.write('    %s # %s\n' % (name, commands[name].__doc__))
+        # For each command, print out a summary including the name, arguments,
+        # and the docstring (as a #comment).
+        func = commands[name]
+        args, _, _, _ = inspect.getargspec(func)
+        args = map(lambda name: '<%s>' % name, args)
+        sys.stderr.write('    %s %s # %s\n' % (name, ' '.join(args), func.__doc__))
 
 
 def main():
