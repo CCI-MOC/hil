@@ -47,6 +47,7 @@ class Model(Base):
         """Automatically generate the table name."""
         return cls.__name__.lower()
 
+
 class Nic(Model):
     mac_addr  = Column(String)
 
@@ -66,8 +67,6 @@ class Nic(Model):
         self.mac_addr  = mac_addr
 
 
-
-## This does not inherit from resource, because it does not necessarily have a group.
 class Node(Model):
     available     = Column(Boolean)
     project_id    = Column(Integer,ForeignKey('project.id'))
