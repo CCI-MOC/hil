@@ -224,14 +224,14 @@ class TestHeadnode:
 
     def test_headnode_create(self):
         db = newDB()
-        api.project_create('anvil-nextgen')
+        api.group_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen')
         api._must_find(db, model.Headnode, 'hn-0')
         releaseDB(db)
 
     def test_headnode_delete(self):
         db = newDB()
-        api.project_create('anvil-nextgen')
+        api.group_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen')
         api.headnode_delete('hn-0')
         with pytest.raises(api.NotFoundError):

@@ -250,7 +250,7 @@ def node_delete(nodename):
 
                             # Head Node Code #
                             ##################
-def headnode_create(nodename, projectname):
+def headnode_create(nodename, groupname):
     """Create head node 'nodename'.
 
     If the node already exists, a DuplicateError will be raised.
@@ -260,8 +260,8 @@ def headnode_create(nodename, projectname):
     headnode = model.Headnode(nodename)
 
     ## look for group, if it exists assign it
-    project = _must_find(db, model.Project, projectname)
-    headnode.project = project
+    project = _must_find(db, model.Group, groupname)
+    headnode.group = groupname
 
     db.add(headnode)
     db.commit()
