@@ -58,7 +58,11 @@ class Nic(Model):
     port      = relationship("Port",backref=backref('nic',uselist=False))
     node      = relationship("Node",backref=backref('nics'))
 
-    def __init__(self,label, mac_addr):
+    group_id = Column(Integer, ForeignKey('group.id'))
+    group = relationship("Group", backref=backref("nic_list"))
+
+
+    def __init__(self, label, mac_addr):
         self.label     = label
         self.mac_addr  = mac_addr
 
@@ -66,9 +70,11 @@ class Nic(Model):
 class Node(Model):
     available     = Column(Boolean)
     project_id    = Column(Integer,ForeignKey('project.id'))
-
     #many to one mapping to project
     project       = relationship("Project",backref=backref('nodes'))
+
+    group_id = Column(Integer, ForeignKey('group.id'))
+    group = relationship("Group", backref=backref("node_list"))
 
     def __init__(self, label, available = True):
         self.label   = label
@@ -77,13 +83,12 @@ class Node(Model):
 
 class Project(Model):
     deployed    = Column(Boolean)
-    group_id    = Column(String,ForeignKey('group.id'))
 
+    group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
+    group = relationship("Group", backref=backref("project_list"))
 
-    #Many to one mapping to User
-    group       = relationship("Group",backref=backref('projects'))
-
-    def __init__(self, label):
+    def __init__(self, group, label):
+        self.group = group
         self.label = label
         self.deployed   = False
 
@@ -91,11 +96,15 @@ class Project(Model):
 class Vlan(Model):
     available     = Column(Boolean)
     nic_label     = Column(String)
+
     project_id    = Column(String,ForeignKey('project.id'))
+    project       = relationship("Project",backref=backref('vlans'))
 
-    project         = relationship("Project",backref=backref('vlans'))
+    group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
+    group = relationship("Group", backref=backref("vlan_list"))
 
-    def __init__(self,label, nic_label, available=True):
+    def __init__(self, group, label, nic_label, available=True):
+        self.group = group
         self.label = label
         self.nic_label = nic.label
         self.available = available
@@ -104,10 +113,12 @@ class Vlan(Model):
 class Port(Model):
     port_no       = Column(Integer)
     switch_id     = Column(Integer,ForeignKey('switch.id'))
-
     switch        = relationship("Switch",backref=backref('ports'))
 
-    def __init__(self,label, port_no):
+    group_id = Column(Integer, ForeignKey('group.id'))
+    group = relationship("Group", backref=backref("port_list"))
+
+    def __init__(self, label, port_no):
         self.label   = label
         self.port_no   = port_no
 
@@ -123,7 +134,8 @@ class Switch(Model):
 class User(Model):
     hashed_password    = Column(String)
 
-    groups      = relationship('Group', secondary = user_groups, backref = 'users' )
+    groups      = relationship('Group', secondary = user_groups, backref = 'users')
+
     def __init__(self, label, password):
         self.label = label
         self.set_password(password)
@@ -147,7 +159,11 @@ class Headnode(Model):
     project_id    = Column(String, ForeignKey('project.id'))
     project       = relationship("Project", backref = backref('headnode',uselist = False))
 
-    def __init__(self, label, available = True):
+    group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
+    group = relationship("Group", backref=backref("hn_list"))
+
+    def __init__(self, group, label, available = True):
+        self.group = group
         self.label  = label
         self.available = available
 
@@ -172,9 +188,12 @@ class Headnode(Model):
 class Hnic(Model):
     mac_addr       = Column(String)
     headnode_id    = Column(String, ForeignKey('headnode.id'))
-
     headnode       = relationship("Headnode", backref = backref('hnics'))
 
-    def __init__(self, label, mac_addr):
+    group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
+    group = relationship("Group", backref=backref("hnic_list"))
+
+    def __init__(self, group, label, mac_addr):
+        self.group = group
         self.label = label
         self.mac_addr = mac_addr
