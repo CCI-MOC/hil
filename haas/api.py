@@ -108,8 +108,7 @@ def project_create(projectname, groupname):
     db = model.Session()
     _assert_absent(db, model.Project, projectname)
     group = _must_find(db, model.Group, groupname)
-    project = model.Project(projectname)
-    project.group = group
+    project = model.Project(group, projectname)
     db.add(project)
     db.commit()
 
@@ -233,8 +232,7 @@ def headnode_create(nodename, groupname):
     _assert_absent(db, model.Headnode, nodename)
     group = _must_find(db, model.Group, groupname)
 
-    headnode = model.Headnode(nodename)
-    headnode.group = group
+    headnode = model.Headnode(group, nodename)
 
     db.add(headnode)
     db.commit()

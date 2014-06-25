@@ -62,7 +62,7 @@ class Nic(Model):
     group = relationship("Group", backref=backref("nic_list"))
 
 
-    def __init__(self,label, mac_addr):
+    def __init__(self, label, mac_addr):
         self.label     = label
         self.mac_addr  = mac_addr
 
@@ -88,7 +88,8 @@ class Project(Model):
     group = relationship("Group", backref=backref("project_list"))
 
 
-    def __init__(self, label):
+    def __init__(self, group, label):
+        self.group = group
         self.label = label
         self.deployed   = False
 
@@ -103,7 +104,8 @@ class Vlan(Model):
     group_id = Column(Integer, ForeignKey('group.id'))
     group = relationship("Group", backref=backref("vlan_list"))
 
-    def __init__(self,label, nic_label, available=True):
+    def __init__(self, group, label, nic_label, available=True):
+        self.group = group
         self.label = label
         self.nic_label = nic.label
         self.available = available
@@ -118,7 +120,8 @@ class Port(Model):
     group = relationship("Group", backref=backref("port_list"))
 
 
-    def __init__(self,label, port_no):
+    def __init__(self, group, label, port_no):
+        self.group = group
         self.label   = label
         self.port_no   = port_no
 
@@ -162,7 +165,8 @@ class Headnode(Model):
     group = relationship("Group", backref=backref("hn_list"))
 
 
-    def __init__(self, label, available = True):
+    def __init__(self, group, label, available = True):
+        self.group = group
         self.label  = label
         self.available = available
 
@@ -192,6 +196,7 @@ class Hnic(Model):
     group_id = Column(Integer, ForeignKey('group.id'))
     group = relationship("Group", backref=backref("hnic_list"))
 
-    def __init__(self, label, mac_addr):
+    def __init__(self, group, label, mac_addr):
+        self.group = group
         self.label = label
         self.mac_addr = mac_addr
