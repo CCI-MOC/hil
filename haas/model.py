@@ -47,7 +47,6 @@ class Model(Base):
         """Automatically generate the table name."""
         return cls.__name__.lower()
 
-
 class Nic(Model):
     mac_addr  = Column(String)
 
@@ -58,17 +57,25 @@ class Nic(Model):
     port      = relationship("Port",backref=backref('nic',uselist=False))
     node      = relationship("Node",backref=backref('nics'))
 
+    group_id = Column(Integer, ForeignKey('group.id'))
+    group = relationship("Group", backref=backref("nic_list"))
+
+
     def __init__(self,label, mac_addr):
         self.label     = label
         self.mac_addr  = mac_addr
 
 
+
+## This does not inherit from resource, because it does not necessarily have a group.
 class Node(Model):
     available     = Column(Boolean)
     project_id    = Column(Integer,ForeignKey('project.id'))
-
     #many to one mapping to project
     project       = relationship("Project",backref=backref('nodes'))
+
+    group_id = Column(Integer, ForeignKey('group.id'))
+    group = relationship("Group", backref=backref("node_list"))
 
     def __init__(self, label, available = True):
         self.label   = label
@@ -77,11 +84,10 @@ class Node(Model):
 
 class Project(Model):
     deployed    = Column(Boolean)
-    group_id    = Column(String,ForeignKey('group.id'))
 
+    group_id = Column(Integer, ForeignKey('group.id'))
+    group = relationship("Group", backref=backref("project_list"))
 
-    #Many to one mapping to User
-    group       = relationship("Group",backref=backref('projects'))
 
     def __init__(self, label):
         self.label = label
@@ -91,9 +97,12 @@ class Project(Model):
 class Vlan(Model):
     available     = Column(Boolean)
     nic_label     = Column(String)
-    project_id    = Column(String,ForeignKey('project.id'))
 
-    project         = relationship("Project",backref=backref('vlans'))
+    project_id    = Column(String,ForeignKey('project.id'))
+    project       = relationship("Project",backref=backref('vlans'))
+
+    group_id = Column(Integer, ForeignKey('group.id'))
+    group = relationship("Group", backref=backref("vlan_list"))
 
     def __init__(self,label, nic_label, available=True):
         self.label = label
@@ -104,8 +113,11 @@ class Vlan(Model):
 class Port(Model):
     port_no       = Column(Integer)
     switch_id     = Column(Integer,ForeignKey('switch.id'))
-
     switch        = relationship("Switch",backref=backref('ports'))
+
+    group_id = Column(Integer, ForeignKey('group.id'))
+    group = relationship("Group", backref=backref("port_list"))
+
 
     def __init__(self,label, port_no):
         self.label   = label
@@ -147,6 +159,10 @@ class Headnode(Model):
     project_id    = Column(String, ForeignKey('project.id'))
     project       = relationship("Project", backref = backref('headnode',uselist = False))
 
+    group_id = Column(Integer, ForeignKey('group.id'))
+    group = relationship("Group", backref=backref("hn_list"))
+
+
     def __init__(self, label, available = True):
         self.label  = label
         self.available = available
@@ -172,8 +188,10 @@ class Headnode(Model):
 class Hnic(Model):
     mac_addr       = Column(String)
     headnode_id    = Column(String, ForeignKey('headnode.id'))
-
     headnode       = relationship("Headnode", backref = backref('hnics'))
+
+    group_id = Column(Integer, ForeignKey('group.id'))
+    group = relationship("Group", backref=backref("hnic_list"))
 
     def __init__(self, label, mac_addr):
         self.label = label
