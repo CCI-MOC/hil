@@ -53,6 +53,15 @@ def project_deploy(projectname):
     api.project_deploy(projectname)
 
 
+@app.route('/network/<networkname>', methods=['PUT', 'DELETE'])
+@api_function
+def network(networkname):
+    """Handle create/delete network commands."""
+    if request.method == 'PUT':
+        return api.network_create(username, request.form['group'])
+    else: # DELETE
+        return api.network_delete(username)
+
 if __name__ == '__main__':
     config.load()
     model.init_db(create=True)
