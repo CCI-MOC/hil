@@ -47,6 +47,12 @@ def user_create(username, password, *args):
 
 
 @cmd
+def user_delete(username):
+    url = object_url('user', username)
+    check_status_code(requests.delete(url))
+
+
+@cmd
 def project_deploy(projectname):
     """Deploy a project"""
     url = object_url('project', projectname)
