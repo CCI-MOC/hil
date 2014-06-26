@@ -50,7 +50,38 @@ def user_create(username, password):
 def project_deploy(project):
     """Deploy the project named <project>"""
     url = object_url('project', project)
+
+@cmd
+def group_add_user(group, user):
+    """Add <user> to <group>."""
+    url = object_url('group', group) + '/add_user'
+    check_status_code(requests.post(url, data={'user': user}))
+
+
+@cmd
+def group_remove_user(group, user):
+    """Remove <user> from <group>."""
+    url = object_url('group', group) + '/remove_user'
+    check_status_code(requests.post(url, data={'user': user}))
+
+
+@cmd
+def user_delete(user):
+    url = object_url('user', user)
+    check_status_code(requests.delete(url))
+
+
+@cmd
+def project_deploy(project):
+    """Deploy <project>"""
+    url = object_url('project', project) + '/deploy'
     check_status_code(requests.post(url))
+
+@cmd
+def node_register(node):
+    """Register a node named <node>"""
+    url = object_url('node', node)
+    check_status_code(requests.put(url))
 
 
 def usage():

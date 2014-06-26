@@ -97,46 +97,18 @@ def group_remove_user(groupname, username):
     user.groups.remove(group)
     db.commit()
 
-
-def group_connect_project(groupname, projectname):
-    """Add a project 'projectname' to an existing group
-
-    If the group or project does not exist, a NotFoundError will be raised.
-    """
-    db = model.Session()
-    project = _must_find(db, model.Project, projectname)
-    group = _must_find(db, model.Group, groupname)
-    if project in group.projects:
-        raise DuplicateError(projectname)
-    group.projects.append(project)
-    db.commit()
-
-
-def group_detach_project(groupname, projectname):
-    """Remove a project 'projectname' from an existing group
-
-    If the group or project does not exist, a NotFoundError will be raised.
-    """
-    db = model.Session()
-    project = _must_find(db, model.Project, projectname)
-    group = _must_find(db, model.Group, groupname)
-    if project not in group.projects:
-        raise NotFoundError(projectname)
-    project.group = None
-    db.commit()
-
-
                             # Project Code #
                             ################
 
-def project_create(projectname):
+def project_create(projectname, groupname):
     """Create project 'projectname'.
 
     If the project already exists, a DuplicateError will be raised.
     """
     db = model.Session()
     _assert_absent(db, model.Project, projectname)
-    project = model.Project(projectname)
+    group = _must_find(db, model.Group, groupname)
+    project = model.Project(group, projectname)
     db.add(project)
     db.commit()
 
@@ -250,18 +222,17 @@ def node_delete(nodename):
 
                             # Head Node Code #
                             ##################
-def headnode_create(nodename, projectname):
+def headnode_create(nodename, groupname):
     """Create head node 'nodename'.
 
     If the node already exists, a DuplicateError will be raised.
     """
     db = model.Session()
-    _assert_absent(db, model.Headnode, nodename)
-    headnode = model.Headnode(nodename)
 
-    ## look for group, if it exists assign it
-    project = _must_find(db, model.Project, projectname)
-    headnode.project = project
+    _assert_absent(db, model.Headnode, nodename)
+    group = _must_find(db, model.Group, groupname)
+
+    headnode = model.Headnode(group, nodename)
 
     db.add(headnode)
     db.commit()
@@ -283,14 +254,16 @@ def headnode_delete(nodename):
                             # Network Code #
                             ################
 
-def network_create(networkname):
+def network_create(networkname, groupname):
     """Create network 'networkname'.
 
     If the network already exists, a DuplicateError will be raised.
     """
     db = model.Session()
     _assert_absent(db, model.Network, networkname)
+    group = _must_find(db, model.Group, groupname)
     network = model.Network(networkname)
+    network.group = group
     db.add(network)
     db.commit()
 
@@ -304,6 +277,9 @@ def network_delete(networkname):
     network = _must_find(db, model.Network, networkname)
     db.delete(network)
     db.commit()
+
+    # Helper functions #
+    ####################
 
 def _assert_absent(session, cls, name):
     """Raises a DuplicateError if the given object is already in the database.
