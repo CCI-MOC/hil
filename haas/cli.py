@@ -58,6 +58,12 @@ def project_deploy(projectname):
     url = object_url('project', projectname)
     check_status_code(requests.post(url))
 
+@cmd
+def node_register(nodename):
+    """Register a node"""
+    url = object_url('node', nodename)
+    check_status_code(requests.put(url))
+
 
 def usage():
     """Display a summary of the arguments accepted by the CLI."""
