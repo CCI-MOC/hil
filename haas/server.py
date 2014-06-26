@@ -59,6 +59,16 @@ def node_register(nodename):
 def project_deploy(projectname):
     api.project_deploy(projectname)
 
+@app.route('/hnic/<hnicname>', methods=['PUT', 'DELETE'])
+@api_function
+def hnic(hnicname):
+    """Handle create/delete hnic commands."""
+    if request.method == 'PUT':
+        return api.headnode_create_hnic(request.form['headnode'],
+                                        hnicname,
+                                        request.form['macaddr'])
+    else: # DELETE
+        return api.headnode_delete_hnic(hnicname)
 
 @app.route('/group/<groupname>/add_user', methods=['POST'])
 @api_function

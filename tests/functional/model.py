@@ -101,8 +101,10 @@ class TestHnic(InsertTest):
 
     def test_insert(self):
         group = Group('acme_corp')
-        self.insert(Hnic(group, 'storage', '00:11:22:33:44:55'))
+        hn = Headnode(group, 'hn-0')
+        self.insert(Hnic(group, hn, 'storage', '00:11:22:33:44:55'))
 
     def test_repr(self):
         group = Group('acme_corp')
-        print(Hnic(group, 'storage', '00:11:22:33:44:55'))
+        hn = Headnode(group, 'hn-0')
+        print(Hnic(group, hn, 'storage', '00:11:22:33:44:55'))
