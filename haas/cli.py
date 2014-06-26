@@ -3,7 +3,7 @@ from haas import config
 from haas.config import cfg
 
 import logging
-
+import inspect
 import sys
 import urllib
 import requests
@@ -32,7 +32,7 @@ def object_url(typename, objname):
 
 
 @cmd
-def serve(*args):
+def serve():
     """Start the HaaS API server."""
     from haas import model, server
     model.init_db()
@@ -40,53 +40,61 @@ def serve(*args):
 
 
 @cmd
-def user_create(username, password, *args):
-    """Create a user"""
+def user_create(username, password):
+    """Create a user <username> with password <password>."""
     url = object_url('user', username)
     check_status_code(requests.put(url, data={'password': password}))
 
 
 @cmd
-def group_add_user(groupname, username):
-    """Add user to group."""
-    url = object_url('group', groupname) + '/add_user'
-    check_status_code(requests.post(url, data={'user': username}))
+def project_deploy(project):
+    """Deploy the project named <project>"""
+    url = object_url('project', project)
+
+@cmd
+def group_add_user(group, user):
+    """Add <user> to <group>."""
+    url = object_url('group', group) + '/add_user'
+    check_status_code(requests.post(url, data={'user': user}))
 
 
 @cmd
-def group_remove_user(groupname, username):
-    """Remove user from group."""
-    url = object_url('group', groupname) + '/remove_user'
-    check_status_code(requests.post(url, data={'user': username}))
+def group_remove_user(group, user):
+    """Remove <user> from <group>."""
+    url = object_url('group', group) + '/remove_user'
+    check_status_code(requests.post(url, data={'user': user}))
 
 
 @cmd
-def user_delete(username):
-    url = object_url('user', username)
+def user_delete(user):
+    url = object_url('user', user)
     check_status_code(requests.delete(url))
 
 
 @cmd
-def project_deploy(projectname):
-    """Deploy a project"""
-    url = object_url('project', projectname) + '/deploy'
+def project_deploy(project):
+    """Deploy <project>"""
+    url = object_url('project', project) + '/deploy'
     check_status_code(requests.post(url))
 
 @cmd
-def node_register(nodename):
-    """Register a node"""
-    url = object_url('node', nodename)
+def node_register(node):
+    """Register a node named <node>"""
+    url = object_url('node', node)
     check_status_code(requests.put(url))
 
 
 def usage():
     """Display a summary of the arguments accepted by the CLI."""
-    # TODO: We should fetch the arguments and include them in the message
-    # somehow.
-    sys.stderr.write('Usage: %s <command> <args...>\n\n' % sys.argv[0])
+    sys.stderr.write('Usage: %s <command>\n\n' % sys.argv[0])
     sys.stderr.write('Where <command> is one of:\n\n')
     for name in commands.keys():
-        sys.stderr.write('    %s # %s\n' % (name, commands[name].__doc__))
+        # For each command, print out a summary including the name, arguments,
+        # and the docstring (as a #comment).
+        func = commands[name]
+        args, _, _, _ = inspect.getargspec(func)
+        args = map(lambda name: '<%s>' % name, args)
+        sys.stderr.write('    %s %s # %s\n' % (name, ' '.join(args), func.__doc__))
 
 
 def main():
