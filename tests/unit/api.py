@@ -140,7 +140,7 @@ class TestProject:
         assert node.project is project
         releaseDB(db)
 
-    def test_project_connect_node_pnotexist(self):
+    def test_project_connect_node_project_nexist(self):
         """Tests that connecting a node to a nonexistent project fails"""
         db = newDB()
         api.node_register('node-99')
@@ -148,7 +148,7 @@ class TestProject:
             api.project_connect_node('anvil-nextgen', 'node-99')
         releaseDB(db)
 
-    def test_project_connect_node_nnotexist(self):
+    def test_project_connect_node_node_nexist(self):
         """Tests that connecting a nonexistent node to a projcet fails"""
         db = newDB()
         api.group_create('acme-corp')
@@ -180,7 +180,7 @@ class TestProject:
             api.project_detach_node('anvil-nextgen', 'node-99')
         releaseDB(db)
 
-    def test_project_detach_node_pnotexist(self):
+    def test_project_detach_node_project_nexist(self):
         """Tests that removing a node from a nonexistent project fails."""
         db = newDB()
         api.node_register('node-99')
@@ -188,7 +188,7 @@ class TestProject:
             api.project_detach_node('anvil-nextgen', 'node-99')
         releaseDB(db)
 
-    def test_project_detach_node_nnotexist(self):
+    def test_project_detach_node_node_nexist(self):
         """Tests that removing a nonexistent node from a project fails."""
         db = newDB()
         api.group_create('acme-corp')
