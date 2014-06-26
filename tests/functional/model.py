@@ -69,10 +69,12 @@ class TestNode(InsertTest):
 class TestProject(InsertTest):
 
     def test_insert(self):
-        self.insert(Project('manhattan'))
+        group = Group('acme_corp')
+        self.insert(Project(group, 'manhattan'))
 
     def test_repr(self):
-        print(Project('node-99'))
+        group = Group('acme_corp')
+        print(Project(group, 'node-99'))
 
 
 class TestSwitch(InsertTest):
@@ -87,16 +89,20 @@ class TestSwitch(InsertTest):
 class TestHeadnode(InsertTest):
 
     def test_insert(self):
-        self.insert(Headnode('hn-example'))
+        group = Group('acme_corp')
+        self.insert(Headnode(group, 'hn-example'))
 
     def test_repr(self):
-        print(Headnode('hn-example'))
+        group = Group('acme_corp')
+        print(Headnode(group, 'hn-example'))
 
 
 class TestHnic(InsertTest):
 
     def test_insert(self):
-        self.insert(Hnic('storage', '00:11:22:33:44:55'))
+        group = Group('acme_corp')
+        self.insert(Hnic(group, 'storage', '00:11:22:33:44:55'))
 
     def test_repr(self):
-        print(Hnic('storage', '00:11:22:33:44:55'))
+        group = Group('acme_corp')
+        print(Hnic(group, 'storage', '00:11:22:33:44:55'))
