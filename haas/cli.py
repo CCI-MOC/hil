@@ -64,6 +64,18 @@ def node_register(nodename):
     url = object_url('node', nodename)
     check_status_code(requests.put(url))
 
+@cmd
+def headnode_create_hnic(headnode, hnic, macaddr):
+    """Create a NIC with the given MAC address on the given headnode"""
+    url = object_url('hnic', hnic)
+    check_status_code(requests.put(url, data={'headnode':headnode,
+                                              'macaddr':macaddr}))
+
+@cmd
+def headnode_delete_hnic(hnic):
+    """Delete a NIC on a headnode"""
+    url = object_url('hnic', hnic)
+    check_status_code(requests.delte(url))
 
 def usage():
     """Display a summary of the arguments accepted by the CLI."""
