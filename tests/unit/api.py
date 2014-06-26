@@ -140,6 +140,23 @@ class TestProject:
         assert node.project is project
         releaseDB(db)
 
+    def test_project_connect_node_pnotexist(self):
+        """Tests that connecting a node to a nonexistent project fails"""
+        db = newDB()
+        api.node_register('node-99')
+        with pytest.raises(api.NotFoundError):
+            api.project_connect_node('anvil-nextgen', 'node-99')
+        releaseDB(db)
+
+    def test_project_connect_node_nnotexist(self):
+        """Tests that connecting a nonexistent node to a projcet fails"""
+        db = newDB()
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        with pytest.raises(api.NotFoundError):
+            api.project_connect_node('anvil-nextgen', 'node-99')
+        releaseDB(db)
+
     def test_project_detach_node(self):
         db = newDB()
         api.group_create('acme-corp')
@@ -153,13 +170,29 @@ class TestProject:
         assert node.project is not project
         releaseDB(db)
 
-    # checks for errors:
-    def test_bad_project_detach_node(self):
+    def test_project_detach_node_notattached(self):
         """Tests that removing a node from a project it's not in fails."""
         db = newDB()
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
         api.node_register('node-99')
+        with pytest.raises(api.NotFoundError):
+            api.project_detach_node('anvil-nextgen', 'node-99')
+        releaseDB(db)
+
+    def test_project_detach_node_pnotexist(self):
+        """Tests that removing a node from a nonexistent project fails."""
+        db = newDB()
+        api.node_register('node-99')
+        with pytest.raises(api.NotFoundError):
+            api.project_detach_node('anvil-nextgen', 'node-99')
+        releaseDB(db)
+
+    def test_project_detach_node_nnotexist(self):
+        """Tests that removing a nonexistent node from a project fails."""
+        db = newDB()
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
         with pytest.raises(api.NotFoundError):
             api.project_detach_node('anvil-nextgen', 'node-99')
         releaseDB(db)
