@@ -48,6 +48,12 @@ def user(username):
         return api.user_delete(username)
 
 
+@app.route('/node/<nodename>', methods=['PUT'])
+@api_function
+def node_register(nodename):
+    return api.node_register(nodename)
+
+
 @app.route('/project/<projectname>/deploy', methods=['POST'])
 @api_function
 def project_deploy(projectname):

@@ -61,10 +61,22 @@ def group_remove_user(groupname, username):
 
 
 @cmd
+def user_delete(username):
+    url = object_url('user', username)
+    check_status_code(requests.delete(url))
+
+
+@cmd
 def project_deploy(projectname):
     """Deploy a project"""
-    url = object_url('project', projectname)
+    url = object_url('project', projectname) + '/deploy'
     check_status_code(requests.post(url))
+
+@cmd
+def node_register(nodename):
+    """Register a node"""
+    url = object_url('node', nodename)
+    check_status_code(requests.put(url))
 
 
 def usage():
