@@ -44,6 +44,11 @@ def user_create(username, password, *args):
     """Create a user"""
     url = object_url('user', username)
     check_status_code(requests.put(url, data={'password': password}))
+    
+@cmd
+def user_delete(username):
+    url = object_url('user', username)
+    check_status_code(requests.delete(url))
 
 
 @cmd
@@ -59,12 +64,16 @@ def group_remove_user(groupname, username):
     url = object_url('group', groupname) + '/remove_user'
     check_status_code(requests.post(url, data={'user': username}))
 
+@cmd
+def project_create(projectname, *args):
+    """Create a project"""
+    url = object_url('project', projectname)
+    check_status_code(requests.put(url, data={'password': password}))
 
 @cmd
-def user_delete(username):
-    url = object_url('user', username)
+def project_delete(projectname):
+    url = object_url('project', projectname)
     check_status_code(requests.delete(url))
-
 
 @cmd
 def project_deploy(projectname):
