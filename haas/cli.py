@@ -55,7 +55,7 @@ def user_delete(username):
 @cmd
 def project_deploy(projectname):
     """Deploy a project"""
-    url = object_url('project', projectname)
+    url = object_url('project', projectname) + '/deploy'
     check_status_code(requests.post(url))
 
 @cmd
