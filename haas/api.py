@@ -262,7 +262,7 @@ def network_create(networkname, groupname):
     db = model.Session()
     _assert_absent(db, model.Network, networkname)
     group = _must_find(db, model.Group, groupname)
-    network = model.Network(group, networkname, "FIXME")
+    network = model.Network(group, networkname)
     db.add(network)
     db.commit()
 

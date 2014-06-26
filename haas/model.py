@@ -95,7 +95,6 @@ class Project(Model):
 
 class Network(Model):
     available     = Column(Boolean)
-    nic_label     = Column(String)
 
     project_id    = Column(String,ForeignKey('project.id'))
     project       = relationship("Project",backref=backref('networks'))
@@ -103,10 +102,9 @@ class Network(Model):
     group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
     group = relationship("Group", backref=backref("network_list"))
 
-    def __init__(self, group, label, nic_label, available=True):
+    def __init__(self, group, label, available=True):
         self.group = group
         self.label = label
-        self.nic_label = nic_label
         self.available = available
 
 
