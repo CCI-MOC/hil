@@ -53,6 +53,17 @@ def project_deploy(projectname):
     api.project_deploy(projectname)
 
 
+@app.route('/project/<projectname>/connect_node', methods=['POST'])
+@api_function
+def project_connect_node(projectname):
+    return api.project_connect_node(projectname, request.form['node'])
+
+@app.route('/project/<projectname>/detach_node', methods=['POST'])
+@api_function
+def project_detach_node(projectname):
+    return api.project_detach_node(projectname, request.form['node'])
+
+
 if __name__ == '__main__':
     config.load()
     model.init_db(create=True)
