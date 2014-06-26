@@ -53,6 +53,20 @@ def user_delete(username):
 
 
 @cmd
+def group_create(groupname):
+    """Create a group"""
+    url = object_url('group', groupname)
+    check_status_code(requests.put(url))
+
+
+@cmd
+def group_delete(groupname):
+    """Delete a group"""
+    url = object_url('group', groupname)
+    check_status_code(requests.delete(url))
+
+
+@cmd
 def project_deploy(projectname):
     """Deploy a project"""
     url = object_url('project', projectname) + '/deploy'
@@ -87,3 +101,4 @@ def main():
         usage()
     else:
         commands[sys.argv[1]](*sys.argv[2:])
+

@@ -47,6 +47,15 @@ def user(username):
     else: # DELETE
         return api.user_delete(username)
 
+@app.route('/group/<groupname>', methods=['PUT', 'DELETE'])
+@api_function
+def group(groupname):
+    """Handle create/delete group commands."""
+    if request.method == 'PUT':
+        return api.group_create(groupname)
+    else: # DELETE
+        return api.group_delete(groupname)    
+
 @app.route('/node/<nodename>', methods=['PUT'])
 @api_function
 def node_register(nodename):
