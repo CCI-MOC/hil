@@ -52,6 +52,18 @@ def project_deploy(projectname):
     url = object_url('project', projectname)
     check_status_code(requests.post(url))
 
+@cmd
+def project_connect_node(projectname, nodename):
+    """Connect a node to a project"""
+    url = object_url('project', projectname) + '/connect_node'
+    check_stats_code(requests.post(url, data={'node': nodename}))
+
+@cmd
+def project_detach_node(projectname, nodename):
+    """Detach a node from a project"""
+    url = object_url('project', projectname) + '/detach_node'
+    check_stats_code(requests.post(url, data={'node': nodename}))
+
 
 def usage():
     """Display a summary of the arguments accepted by the CLI."""
