@@ -87,6 +87,17 @@ def project_deploy(project):
 
 
 @cmd
+def project_connect_node(projectname, nodename):
+    """Connect a node to a project"""
+    url = object_url('project', projectname) + '/connect_node'
+    check_stats_code(requests.post(url, data={'node': nodename}))
+
+@cmd
+def project_detach_node(projectname, nodename):
+    """Detach a node from a project"""
+    url = object_url('project', projectname) + '/detach_node'
+    check_stats_code(requests.post(url, data={'node': nodename}))
+
 def node_register(node):
     """Register a node named <node>"""
     url = object_url('node', node)
