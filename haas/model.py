@@ -94,18 +94,15 @@ class Project(Model):
 
 
 class Network(Model):
-    available     = Column(Boolean)
-
     project_id    = Column(String,ForeignKey('project.id'))
     project       = relationship("Project",backref=backref('networks'))
 
     group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
     group = relationship("Group", backref=backref("network_list"))
 
-    def __init__(self, group, label, available=True):
+    def __init__(self, group, label):
         self.group = group
         self.label = label
-        self.available = available
 
 
 class Port(Model):
