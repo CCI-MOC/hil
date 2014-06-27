@@ -58,7 +58,7 @@ def node_register(nodename):
 def project(projectname):
     """Handle create/delete project commands."""
     if request.method == 'PUT':
-        return api.project_create(projectname, request.form['groupname'])
+        return api.project_create(projectname, request.form['group'])
     else: # DELETE
         return api.project_delete(projectname)
 
