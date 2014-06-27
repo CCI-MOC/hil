@@ -47,13 +47,13 @@ def user_create(username, password):
 
 @cmd
 def network_create(network, group):
-    """Create a network"""
+    """Create a <network> belonging to a <group>"""
     url = object_url('network', network)
     check_status_code(requests.put(url, data={'group': group}))
 
 @cmd
 def network_delete(network):
-    """Delete a network"""
+    """Delete a <network>"""
     url = object_url('network', network)
     check_status_code(requests.delete(url))
 
