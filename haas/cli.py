@@ -85,14 +85,14 @@ def node_register(node):
 
 @cmd
 def headnode_create_hnic(headnode, hnic, macaddr):
-    """Create a NIC with the given MAC address on the given headnode"""
+    """Create a NIC named <hnic> with the MAC address <macaddr> on a <headnode>"""
     url = object_url('hnic', hnic)
     check_status_code(requests.put(url, data={'headnode':headnode,
                                               'macaddr':macaddr}))
 
 @cmd
 def headnode_delete_hnic(hnic):
-    """Delete a NIC on a headnode"""
+    """Delete a NIC on a headnode, named <hnic>"""
     url = object_url('hnic', hnic)
     check_status_code(requests.delte(url))
 
