@@ -248,8 +248,30 @@ def headnode_delete(nodename):
     db.delete(headnode)
     db.commit()
 
+def headnode_create_hnic(nodename, hnic_name, macaddr):
+    """Create hnic attached to given headnode
 
+    If the node does not exist, a NotFoundError will be raised.
 
+    If there is already an hnic with that name, a DuplicateError will be raised.
+    """
+    db = model.Session()
+    headnode = _must_find(db, model.Headnode, nodename)
+    group = headnode.group
+    _assert_absent(db, model.Hnic, hnic_name)
+    hnic = model.Hnic(group, headnode, hnic_name, macaddr)
+    db.add(hnic)
+    db.commit()
+
+def headnode_delete_hnic(hnic_name):
+    """Delete hnic with given name.
+
+    If the hnic does not exist, a NotFoundError will be raised.
+    """
+    db = model.Session()
+    hnic = _must_find(db, model.Hnic, hnic_name)
+    db.delete(hnic)
+    db.commit()
 
                             # Network Code #
                             ################
