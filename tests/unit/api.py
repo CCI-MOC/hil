@@ -207,6 +207,13 @@ class TestNode:
         api._must_find(db, model.Node, 'node-99')
         releaseDB(db)
 
+    def test_duplicate_node_register(self):
+        db = newDB()
+        api.node_register('node-99')
+        with pytest.raises(api.DuplicateError):
+            api.node_register('node-99')
+        releaseDB(db)
+
     def test_node_delete(self):
         db = newDB()
         api.node_register('node-99')
@@ -233,3 +240,52 @@ class TestHeadnode:
         api.headnode_delete('hn-0')
         with pytest.raises(api.NotFoundError):
             api._must_find(db, model.Headnode, 'hn-0')
+
+    def test_headnode_create_hnic_success(self):
+        db = newDB()
+        api.group_create('anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
+        nic = api._must_find(db, model.Hnic, 'hn-0-eth0')
+        assert nic.headnode.label == 'hn-0'
+        assert nic.group.label == 'anvil-nextgen'
+        releaseDB(db)
+
+    def test_headnode_create_hnic_no_headnode(self):
+        db = newDB()
+        with pytest.raises(api.NotFoundError):
+            api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
+        releaseDB(db)
+
+    def test_headnode_create_hnic_duplicate_hnic(self):
+        db = newDB()
+        api.group_create('anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
+        with pytest.raises(api.DuplicateError):
+            api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:15')
+        releaseDB(db)
+
+    def test_headnode_delete_hnic_success(self):
+        db = newDB()
+        api.group_create('anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
+        api.headnode_delete_hnic('hn-0-eth0')
+        api._assert_absent(db, model.Hnic, 'hn-0-eth0')
+        hn = api._must_find(db, model.Headnode, 'hn-0')
+        releaseDB(db)
+
+    def test_headnode_delete_hnic_hnic_nexist(self):
+        db = newDB()
+        api.group_create('anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen')
+        with pytest.raises(api.NotFoundError):
+            api.headnode_delete_hnic('hn-0-eth0')
+        releaseDB(db)
+
+    def test_headnode_delete_hnic_headnode_nexist(self):
+        db = newDB()
+        with pytest.raises(api.NotFoundError):
+            api.headnode_delete_hnic('hn-0-eth0')
+        releaseDB(db)
