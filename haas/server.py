@@ -59,6 +59,7 @@ def node_register(nodename):
 def project_deploy(projectname):
     api.project_deploy(projectname)
 
+
 @app.route('/hnic/<hnicname>', methods=['PUT', 'DELETE'])
 @api_function
 def hnic(hnicname):
@@ -69,6 +70,17 @@ def hnic(hnicname):
                                         request.form['macaddr'])
     else: # DELETE
         return api.headnode_delete_hnic(hnicname)
+
+
+@app.route('/group/<groupname>', methods=['PUT', 'DELETE'])
+@api_function
+def group(groupname):
+    """Handle create/delete group commands."""
+    if request.method == 'PUT':
+        return api.group_create(groupname)
+    else: # DELETE
+        return api.group_delete(groupname)    
+
 
 @app.route('/group/<groupname>/add_user', methods=['POST'])
 @api_function

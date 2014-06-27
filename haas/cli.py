@@ -47,11 +47,6 @@ def user_create(username, password):
 
 
 @cmd
-def project_deploy(project):
-    """Deploy the project named <project>"""
-    url = object_url('project', project)
-
-@cmd
 def group_add_user(group, user):
     """Add <user> to <group>."""
     url = object_url('group', group) + '/add_user'
@@ -72,16 +67,31 @@ def user_delete(user):
 
 
 @cmd
+def group_create(groupname):
+    """Create a group"""
+    url = object_url('group', groupname)
+    check_status_code(requests.put(url))
+
+
+@cmd
+def group_delete(groupname):
+    """Delete a group"""
+    url = object_url('group', groupname)
+    check_status_code(requests.delete(url))
+
+
 def project_deploy(project):
     """Deploy <project>"""
     url = object_url('project', project) + '/deploy'
     check_status_code(requests.post(url))
+
 
 @cmd
 def node_register(node):
     """Register a node named <node>"""
     url = object_url('node', node)
     check_status_code(requests.put(url))
+
 
 @cmd
 def headnode_create_hnic(headnode, hnic, macaddr):
@@ -95,6 +105,7 @@ def headnode_delete_hnic(hnic):
     """Delete a NIC on a headnode"""
     url = object_url('hnic', hnic)
     check_status_code(requests.delte(url))
+
 
 def usage():
     """Display a summary of the arguments accepted by the CLI."""
@@ -121,3 +132,4 @@ def main():
         usage()
     else:
         commands[sys.argv[1]](*sys.argv[2:])
+
