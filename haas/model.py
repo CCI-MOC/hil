@@ -93,20 +93,18 @@ class Project(Model):
         self.deployed   = False
 
 
-class Vlan(Model):
+class Network(Model):
     available     = Column(Boolean)
-    nic_label     = Column(String)
 
     project_id    = Column(String,ForeignKey('project.id'))
-    project       = relationship("Project",backref=backref('vlans'))
+    project       = relationship("Project",backref=backref('networks'))
 
     group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
-    group = relationship("Group", backref=backref("vlan_list"))
+    group = relationship("Group", backref=backref("network_list"))
 
-    def __init__(self, group, label, nic_label, available=True):
+    def __init__(self, group, label, available=True):
         self.group = group
         self.label = label
-        self.nic_label = nic.label
         self.available = available
 
 

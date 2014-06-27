@@ -50,6 +50,19 @@ def user_create(username, password):
     """Create a user <username> with password <password>."""
     url = object_url('user', username)
     check_status_code(requests.put(url, data={'password': password}))
+
+@cmd
+def network_create(network, group):
+    """Create a <network> belonging to a <group>"""
+    url = object_url('network', network)
+    check_status_code(requests.put(url, data={'group': group}))
+
+@cmd
+def network_delete(network):
+    """Delete a <network>"""
+    url = object_url('network', network)
+    check_status_code(requests.delete(url))
+
     
 @cmd
 def user_delete(username):
