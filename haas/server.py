@@ -53,11 +53,29 @@ def user(username):
 def node_register(nodename):
     return api.node_register(nodename)
 
+@app.route('/project/<projectname>', methods=['PUT', 'DELETE'])
+@api_function
+def project(projectname):
+    """Handle create/delete project commands."""
+    if request.method == 'PUT':
+        return api.project_create(projectname, request.form['group'])
+    else: # DELETE
+        return api.project_delete(projectname)
 
 @app.route('/project/<projectname>/deploy', methods=['POST'])
 @api_function
 def project_deploy(projectname):
     api.project_deploy(projectname)
+
+
+@app.route('/headnode/<name>', methods=['PUT', 'DELETE'])
+@api_function
+def headnode(name):
+    if request.method == 'PUT':
+        return api.headnode_create(name, request.form['group'])
+    else: # DELETE
+        return api.headnode_delete(name)
+
 
 @app.route('/hnic/<hnicname>', methods=['PUT', 'DELETE'])
 @api_function
@@ -69,6 +87,17 @@ def hnic(hnicname):
                                         request.form['macaddr'])
     else: # DELETE
         return api.headnode_delete_hnic(hnicname)
+
+
+@app.route('/group/<groupname>', methods=['PUT', 'DELETE'])
+@api_function
+def group(groupname):
+    """Handle create/delete group commands."""
+    if request.method == 'PUT':
+        return api.group_create(groupname)
+    else: # DELETE
+        return api.group_delete(groupname)    
+
 
 @app.route('/group/<groupname>/add_user', methods=['POST'])
 @api_function
@@ -90,6 +119,17 @@ def network(networkname):
         return api.network_create(username, request.form['group'])
     else: # DELETE
         return api.network_delete(username)
+
+@app.route('/project/<projectname>/connect_node', methods=['POST'])
+@api_function
+def project_connect_node(projectname):
+    return api.project_connect_node(projectname, request.form['node'])
+
+@app.route('/project/<projectname>/detach_node', methods=['POST'])
+@api_function
+def project_detach_node(projectname):
+    return api.project_detach_node(projectname, request.form['node'])
+
 
 if __name__ == '__main__':
     config.load()
