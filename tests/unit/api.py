@@ -226,20 +226,45 @@ class TestNode:
 class TestHeadnode:
     """Tests for the haas.api.node_* functions."""
 
-    def test_headnode_create(self):
+    def test_headnode_create_success(self):
         db = newDB()
         api.group_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen')
-        api._must_find(db, model.Headnode, 'hn-0')
+        hn = api._must_find(db, model.Headnode, 'hn-0')
+        assert hn.group.label == 'anvil-nextgen'
         releaseDB(db)
 
-    def test_headnode_delete(self):
+    def test_headnode_create_badgroup(self):
+        """Tests that creating a headnode with a nonexistent group fails"""
+        db = newDB()
+        with pytest.raises(api.NotFoundError):
+            api.headnode_create('hn-0', 'anvil-nextgen')
+        releaseDB(db)
+
+    def test_headnode_create_duplicate(self):
+        """Tests that creating a headnode with a duplicate name fails"""
+        db = newDB()
+        api.group_create('anvil-nextgen')
+        api.group_create('anvil-oldtimer')
+        api.headnode_create('hn-0', 'anvil-nextgen')
+        with pytest.raises(api.DuplicateError):
+            api.headnode_create('hn-0', 'anvil-oldtimer')
+        releaseDB(db)
+
+    def test_headnode_delete_success(self):
         db = newDB()
         api.group_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen')
         api.headnode_delete('hn-0')
+        api._assert_absent(db, model.Headnode, 'hn-0')
+        releaseDB(db)
+
+    def test_headnode_delete_nonexistent(self):
+        """Tests that deleting a nonexistent headnode fails"""
+        db = newDB()
         with pytest.raises(api.NotFoundError):
-            api._must_find(db, model.Headnode, 'hn-0')
+            api.headnode_delete('hn-0')
+        releaseDB(db)
 
     def test_headnode_create_hnic_success(self):
         db = newDB()

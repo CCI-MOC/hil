@@ -68,6 +68,15 @@ def project_deploy(projectname):
     api.project_deploy(projectname)
 
 
+@app.route('/headnode/<name>', methods=['PUT', 'DELETE'])
+@api_function
+def headnode(name):
+    if request.method == 'PUT':
+        return api.headnode_create(name, request.form['group'])
+    else: # DELETE
+        return api.headnode_delete(name)
+
+
 @app.route('/hnic/<hnicname>', methods=['PUT', 'DELETE'])
 @api_function
 def hnic(hnicname):

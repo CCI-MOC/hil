@@ -102,6 +102,18 @@ def project_deploy(project):
 
 
 @cmd
+def headnode_create(hn_name, group):
+    """Create a headnode <hn_name> belonging to <group>"""
+    url = object_url('headnode', hn_name)
+    check_status_code(requests.put(url, data={'group': group}))
+
+@cmd
+def headnode_delete(hn_name):
+    """Delete the headnode <hn_name>"""
+    url = object_url('headnode', hn_name)
+    check_status_code(requests.delete(url))
+
+@cmd
 def project_connect_node(projectname, nodename):
     """Connect a node to a project"""
     url = object_url('project', projectname) + '/connect_node'
@@ -113,6 +125,7 @@ def project_detach_node(projectname, nodename):
     url = object_url('project', projectname) + '/detach_node'
     check_stats_code(requests.post(url, data={'node': nodename}))
 
+@cmd
 def node_register(node):
     """Register a node named <node>"""
     url = object_url('node', node)
