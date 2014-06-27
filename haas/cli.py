@@ -68,7 +68,7 @@ def group_remove_user(groupname, username):
 def project_create(projectname, *args):
     """Create a project"""
     url = object_url('project', projectname)
-    check_status_code(requests.put(url, data={'password': password}))
+    check_status_code(requests.put(url, data={'groupname': groupname}))
 
 @cmd
 def project_delete(projectname):

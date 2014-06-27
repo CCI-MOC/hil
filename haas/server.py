@@ -53,12 +53,12 @@ def user(username):
 def node_register(nodename):
     return api.node_register(nodename)
 
-@app.route('/project/<projectname>/<groupname>', methods=['PUT', 'DELETE'])
+@app.route('/project/<projectname>', methods=['PUT', 'DELETE'])
 @api_function
 def project(projectname):
     """Handle create/delete project commands."""
     if request.method == 'PUT':
-        return api.project_create(projectname, groupname)
+        return api.project_create(projectname, request.form['groupname'])
     else: # DELETE
         return api.project_delete(projectname, groupname)
 
