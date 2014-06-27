@@ -116,9 +116,9 @@ def group_remove_user(groupname):
 def network(networkname):
     """Handle create/delete network commands."""
     if request.method == 'PUT':
-        return api.network_create(username, request.form['group'])
+        return api.network_create(networkname, request.form['group'])
     else: # DELETE
-        return api.network_delete(username)
+        return api.network_delete(networkname)
 
 @app.route('/project/<projectname>/connect_node', methods=['POST'])
 @api_function
