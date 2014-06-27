@@ -53,6 +53,14 @@ def user(username):
 def node_register(nodename):
     return api.node_register(nodename)
 
+@app.route('/project/<projectname>', methods=['PUT', 'DELETE'])
+@api_function
+def project(projectname):
+    """Handle create/delete project commands."""
+    if request.method == 'PUT':
+        return api.project_create(projectname, request.form['group'])
+    else: # DELETE
+        return api.project_delete(projectname)
 
 @app.route('/project/<projectname>/deploy', methods=['POST'])
 @api_function
@@ -68,6 +76,7 @@ def headnode(name):
     else: # DELETE
         return api.headnode_delete(name)
 
+
 @app.route('/hnic/<hnicname>', methods=['PUT', 'DELETE'])
 @api_function
 def hnic(hnicname):
@@ -79,6 +88,17 @@ def hnic(hnicname):
     else: # DELETE
         return api.headnode_delete_hnic(hnicname)
 
+
+@app.route('/group/<groupname>', methods=['PUT', 'DELETE'])
+@api_function
+def group(groupname):
+    """Handle create/delete group commands."""
+    if request.method == 'PUT':
+        return api.group_create(groupname)
+    else: # DELETE
+        return api.group_delete(groupname)    
+
+
 @app.route('/group/<groupname>/add_user', methods=['POST'])
 @api_function
 def group_add_user(groupname):
@@ -89,6 +109,17 @@ def group_add_user(groupname):
 @api_function
 def group_remove_user(groupname):
     return api.group_remove_user(groupname, request.form['user'])
+
+
+@app.route('/project/<projectname>/connect_node', methods=['POST'])
+@api_function
+def project_connect_node(projectname):
+    return api.project_connect_node(projectname, request.form['node'])
+
+@app.route('/project/<projectname>/detach_node', methods=['POST'])
+@api_function
+def project_detach_node(projectname):
+    return api.project_detach_node(projectname, request.form['node'])
 
 
 if __name__ == '__main__':
