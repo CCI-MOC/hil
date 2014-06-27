@@ -314,6 +314,12 @@ def switch_register(name, driver):
     db.add(switch)
     db.commit()
 
+def switch_delete(name):
+    db = model.Session()
+    switch = _must_find(db, model.Switch, name)
+    db.delete(switch)
+    db.commit()
+
     # Helper functions #
     ####################
 
