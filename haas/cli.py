@@ -24,10 +24,10 @@ def check_status_code(response):
         sys.stderr.write(response.text)
 
 
-def object_url(typename, objname):
-    url = cfg.get('client', 'endpoint') + '/'
-    url += typename + '/'
-    url += urllib.quote(objname)
+def object_url(*args):
+    url = cfg.get('client', 'endpoint')
+    for arg in args:
+        url += '/' + urllib.quote(arg)
     return url
 
 
@@ -60,14 +60,14 @@ def user_delete(username):
 @cmd
 def group_add_user(group, user):
     """Add <user> to <group>."""
-    url = object_url('group', group) + '/add_user'
+    url = object_url('group', group, 'add_user')
     check_status_code(requests.post(url, data={'user': user}))
 
 
 @cmd
 def group_remove_user(group, user):
     """Remove <user> from <group>."""
-    url = object_url('group', group) + '/remove_user'
+    url = object_url('group', group, 'remove_user')
     check_status_code(requests.post(url, data={'user': user}))
 
 @cmd
@@ -97,7 +97,7 @@ def group_delete(groupname):
 
 def project_deploy(project):
     """Deploy <project>"""
-    url = object_url('project', project) + '/deploy'
+    url = object_url('project', project, 'deploy')
     check_status_code(requests.post(url))
 
 
@@ -116,13 +116,13 @@ def headnode_delete(hn_name):
 @cmd
 def project_connect_node(projectname, nodename):
     """Connect a node to a project"""
-    url = object_url('project', projectname) + '/connect_node'
+    url = object_url('project', projectname, 'connect_node')
     check_stats_code(requests.post(url, data={'node': nodename}))
 
 @cmd
 def project_detach_node(projectname, nodename):
     """Detach a node from a project"""
-    url = object_url('project', projectname) + '/detach_node'
+    url = object_url('project', projectname, 'detach_node')
     check_stats_code(requests.post(url, data={'node': nodename}))
 
 @cmd
