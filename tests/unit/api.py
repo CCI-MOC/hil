@@ -256,3 +256,34 @@ class TestHeadnode:
         with pytest.raises(api.NotFoundError):
             api.headnode_delete_hnic('hn-0-eth0')
         releaseDB(db)
+
+
+class TestSwitch:
+    """Tests for the haas.api.switch_* functions."""
+
+    def test_switch_register_success(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api._must_find(db, model.Switch, 'bait-and')
+        releaseDB(db)
+
+    def test_duplicate_switch_register(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        with pytest.raises(api.DuplicateError):
+            api.switch_register('bait-and', 'falling')
+        releaseDB(db)
+
+    def test_switch_delete(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api.switch_delete('bait-and')
+        with pytest.raises(api.NotFoundError):
+            api._must_find(db, model.Switch, 'bait-and')
+        releaseDB(db)
+
+    def test_swtich_delete_nexist(self):
+        db = newDB()
+        with pytest.raises(api.NotFoundError):
+            api.switch_delete('bait_and')
+        releaseDB(db)
