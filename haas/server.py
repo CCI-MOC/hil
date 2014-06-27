@@ -60,7 +60,7 @@ def project(projectname):
     if request.method == 'PUT':
         return api.project_create(projectname, request.form['groupname'])
     else: # DELETE
-        return api.project_delete(projectname, groupname)
+        return api.project_delete(projectname)
 
 @app.route('/project/<projectname>/deploy', methods=['POST'])
 @api_function
