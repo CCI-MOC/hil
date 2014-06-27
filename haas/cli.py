@@ -96,6 +96,18 @@ def headnode_delete_hnic(hnic):
     url = object_url('hnic', hnic)
     check_status_code(requests.delte(url))
 
+@cmd
+def switch_register(name, driver):
+        """Register a switch using driver <driver> under the name <name>."""
+        url = object_url('switch', name)
+        check_status_code(requests.put(url, data={'driver': driver}))
+
+@cmd
+def switch_delete(name):
+    """Delete the switch named <name>"""
+    url = object_url('switch', name)
+    check_status_code(requests.delete(url))
+
 def usage():
     """Display a summary of the arguments accepted by the CLI."""
     sys.stderr.write('Usage: %s <command>\n\n' % sys.argv[0])
