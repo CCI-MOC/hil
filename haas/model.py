@@ -105,6 +105,22 @@ class Network(Model):
         self.label = label
 
 
+class Vlan(Model):
+    """A VLAN
+
+    This is used to track which vlan numbers are available; when a Network is
+    created, it must allocate a Vlan, to ensure that:
+
+    1. The VLAN number it is using is unique, and
+    2. The VLAN number is actually allocated to the HaaS; on some deployments we
+       may have specific vlan numbers that we are allowed to use.
+    """
+    vlan_no = Column(Integer, nullable=False)
+
+    network_id = Column(Integer,ForeignKey('network.id'))
+    network = relationship('Network', backref=backref('vlan'))
+
+
 class Port(Model):
     port_no       = Column(Integer)
     switch_id     = Column(Integer,ForeignKey('switch.id'))
