@@ -38,6 +38,12 @@ def serve():
     model.init_db()
     server.app.run(debug=True)
 
+@cmd
+def init_db():
+    """Initialize the database"""
+    from haas import model
+    model.init_db(create=True)
+
 
 @cmd
 def user_create(username, password):
