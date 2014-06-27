@@ -187,13 +187,14 @@ class Headnode(Model):
 
 class Hnic(Model):
     mac_addr       = Column(String)
-    headnode_id    = Column(String, ForeignKey('headnode.id'))
+    headnode_id    = Column(String, ForeignKey('headnode.id'), nullable=False)
     headnode       = relationship("Headnode", backref = backref('hnics'))
 
     group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
     group = relationship("Group", backref=backref("hnic_list"))
 
-    def __init__(self, group, label, mac_addr):
+    def __init__(self, group, headnode, label, mac_addr):
+        self.headnode = headnode
         self.group = group
         self.label = label
         self.mac_addr = mac_addr
