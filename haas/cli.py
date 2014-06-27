@@ -79,13 +79,13 @@ def project_deploy(project):
 
 @cmd
 def headnode_create(hn_name, group):
-    """Create a headnode"""
+    """Create a headnode <hn_name> belonging to <group>"""
     url = object_url('headnode', hn_name)
     check_status_code(requests.put(url, data={'group': group}))
 
 @cmd
 def headnode_delete(hn_name):
-    """Delete a headnode"""
+    """Delete the headnode <hn_name>"""
     url = object_url('headnode', hn_name)
     check_status_code(requests.delete(url))
 
