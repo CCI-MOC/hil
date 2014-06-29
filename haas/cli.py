@@ -23,7 +23,8 @@ def check_status_code(response):
         sys.stderr.write('Response text:\n')
         sys.stderr.write(response.text)
 
-
+# TODO: This function's name is no longer very accurate.  As soon as it is
+# safe, we should change it to something more generic.
 def object_url(*args):
     url = cfg.get('client', 'endpoint')
     for arg in args:
