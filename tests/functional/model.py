@@ -116,3 +116,12 @@ class TestVlan(InsertTest):
 
     def test_repr(self):
         print(Vlan(102))
+
+class TestNetwork(InsertTest):
+
+    def test_insert(self):
+        network = Network(Group('acme_corp'), Vlan(102), 'hammernet')
+        self.insert(network)
+
+    def test_repr(InsertTest):
+        print(Network(Group('acme_corp'), Vlan(102), 'hammernet'))

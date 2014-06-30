@@ -20,6 +20,9 @@ class NotFoundError(APIError):
 class DuplicateError(APIError):
     """An exception indicating that a given resource already exists."""
 
+class AllocationError(APIError):
+    """An exception indicating resource exhaustion."""
+
 
 def user_create(username, password):
     """Create user `username`.
@@ -280,11 +283,16 @@ def network_create(networkname, groupname):
     """Create network 'networkname'.
 
     If the network already exists, a DuplicateError will be raised.
+    If the network cannot be allocated (due to resource exhaustion), an
+    AllocationError will be raised.
     """
     db = model.Session()
     _assert_absent(db, model.Network, networkname)
     group = _must_find(db, model.Group, groupname)
-    network = model.Network(group, networkname)
+    vlan = db.query(model.Vlan).filter_by(available=True).first()
+    if vlan is None:
+        raise AllocationError('No more networks')
+    network = model.Network(group, vlan, networkname)
     db.add(network)
     db.commit()
 

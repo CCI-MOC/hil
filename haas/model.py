@@ -94,13 +94,18 @@ class Project(Model):
 
 
 class Network(Model):
+    """A link-layer network."""
     project_id    = Column(String,ForeignKey('project.id'))
-    project       = relationship("Project",backref=backref('networks'))
+    group_id      = Column(Integer, ForeignKey('group.id'), nullable=False)
+    vlan_no       = Column(Integer, ForeignKey('vlan.vlan_no'), nullable=False)
 
-    group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
+    project = relationship("Project",backref=backref('networks'))
     group = relationship("Group", backref=backref("network_list"))
 
-    def __init__(self, group, label):
+    def __init__(self, group, vlan, label):
+        assert vlan.available
+        vlan.available = False
+        self.vlan_no = vlan.vlan_no
         self.group = group
         self.label = label
 
@@ -116,12 +121,11 @@ class Vlan(Model):
        may have specific vlan numbers that we are allowed to use.
     """
     vlan_no = Column(Integer, nullable=False)
-
-    network_id = Column(Integer,ForeignKey('network.id'))
-    network = relationship('Network', backref=backref('vlan'))
+    available = Column(Boolean, nullable=False)
 
     def __init__(self, vlan_no):
         self.vlan_no = vlan_no
+        self.available = True
 
 
 class Port(Model):
