@@ -322,6 +322,7 @@ class TestNetwork:
 
     def test_network_create_success(self):
         db = newDB()
+        api.vlan_register('102')
         api.group_create('anvil-nextgen')
         api.network_create('hammernet', 'anvil-nextgen')
         net = api._must_find(db, model.Network, 'hammernet')
@@ -338,6 +339,7 @@ class TestNetwork:
     def test_network_create_duplicate(self):
         """Tests that creating a network with a duplicate name fails"""
         db = newDB()
+        api.vlan_register('102')
         api.group_create('anvil-nextgen')
         api.group_create('anvil-oldtimer')
         api.network_create('hammernet', 'anvil-nextgen')
@@ -347,6 +349,7 @@ class TestNetwork:
 
     def test_network_delete_success(self):
         db = newDB()
+        api.vlan_register('102')
         api.group_create('anvil-nextgen')
         api.network_create('hammernet', 'anvil-nextgen')
         api.network_delete('hammernet')
