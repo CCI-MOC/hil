@@ -120,6 +120,9 @@ class Vlan(Model):
     network_id = Column(Integer,ForeignKey('network.id'))
     network = relationship('Network', backref=backref('vlan'))
 
+    def __init__(self, vlan_no):
+        self.vlan_no = vlan_no
+
 
 class Port(Model):
     port_no       = Column(Integer)
