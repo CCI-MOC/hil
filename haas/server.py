@@ -77,16 +77,17 @@ def headnode(name):
         return api.headnode_delete(name)
 
 
-@app.route('/hnic/<hnicname>', methods=['PUT', 'DELETE'])
+@app.route('/headnode/<headnodename>/hnic/<hnicname>', methods=['PUT', 'DELETE'])
 @api_function
-def hnic(hnicname):
+def hnic(headnodename, hnicname):
     """Handle create/delete hnic commands."""
     if request.method == 'PUT':
-        return api.headnode_create_hnic(request.form['headnode'],
+        return api.headnode_create_hnic(headnodename,
                                         hnicname,
                                         request.form['macaddr'])
     else: # DELETE
-        return api.headnode_delete_hnic(hnicname)
+        return api.headnode_delete_hnic(headnodename,
+                                        hnicname)
 
 
 @app.route('/group/<groupname>', methods=['PUT', 'DELETE'])
