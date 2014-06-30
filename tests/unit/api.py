@@ -296,7 +296,7 @@ class TestHeadnode:
         api.group_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
-        api.headnode_delete_hnic('hn-0-eth0')
+        api.headnode_delete_hnic('hn-0', 'hn-0-eth0')
         api._assert_absent(db, model.Hnic, 'hn-0-eth0')
         hn = api._must_find(db, model.Headnode, 'hn-0')
         releaseDB(db)
@@ -306,11 +306,11 @@ class TestHeadnode:
         api.group_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen')
         with pytest.raises(api.NotFoundError):
-            api.headnode_delete_hnic('hn-0-eth0')
+            api.headnode_delete_hnic('hn-0', 'hn-0-eth0')
         releaseDB(db)
 
     def test_headnode_delete_hnic_headnode_nexist(self):
         db = newDB()
         with pytest.raises(api.NotFoundError):
-            api.headnode_delete_hnic('hn-0-eth0')
+            api.headnode_delete_hnic('hn-0', 'hn-0-eth0')
         releaseDB(db)

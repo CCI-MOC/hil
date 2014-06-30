@@ -86,7 +86,8 @@ def hnic(headnodename, hnicname):
                                         hnicname,
                                         request.form['macaddr'])
     else: # DELETE
-        return api.headnode_delete_hnic(hnicname)
+        return api.headnode_delete_hnic(headnodename,
+                                        hnicname)
 
 
 @app.route('/group/<groupname>', methods=['PUT', 'DELETE'])

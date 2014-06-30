@@ -263,13 +263,20 @@ def headnode_create_hnic(nodename, hnic_name, macaddr):
     db.add(hnic)
     db.commit()
 
-def headnode_delete_hnic(hnic_name):
+def headnode_delete_hnic(nodename, hnic_name):
     """Delete hnic with given name.
 
     If the hnic does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
     hnic = _must_find(db, model.Hnic, hnic_name)
+    if hnic.headnode.label != nodename:
+        # We raise a NotFoundError for the following reason: Hnic's SHOULD
+        # belong to headnodes, and thus we SHOULD be doing a search of the
+        # hnics belonging to the given headnode.  (In that situation, we will
+        # honestly get a NotFoundError.)  We aren't right now, because
+        # currently Hnic's labels are globally unique.
+        raise NotFoundError("Hnic: " + hnic_name)
     db.delete(hnic)
     db.commit()
 
