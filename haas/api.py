@@ -20,6 +20,12 @@ class NotFoundError(APIError):
 class DuplicateError(APIError):
     """An exception indicating that a given resource already exists."""
 
+class AllocationError(APIError):
+    """An exception indicating resource exhaustion."""
+
+class BadArgumentError(APIError):
+    """An exception indicating an invalid request on the part of the user."""
+
 
 def user_create(username, password):
     """Create user `username`.
@@ -287,11 +293,16 @@ def network_create(networkname, groupname):
     """Create network 'networkname'.
 
     If the network already exists, a DuplicateError will be raised.
+    If the network cannot be allocated (due to resource exhaustion), an
+    AllocationError will be raised.
     """
     db = model.Session()
     _assert_absent(db, model.Network, networkname)
     group = _must_find(db, model.Group, groupname)
-    network = model.Network(group, networkname)
+    vlan = db.query(model.Vlan).filter_by(available=True).first()
+    if vlan is None:
+        raise AllocationError('No more networks')
+    network = model.Network(group, vlan, networkname)
     db.add(network)
     db.commit()
 
@@ -303,7 +314,26 @@ def network_delete(networkname):
     """
     db = model.Session()
     network = _must_find(db, model.Network, networkname)
+    vlan = db.query(model.Vlan).filter_by(vlan_no=network.vlan_no).one()
+    vlan.available = True
     db.delete(network)
+    db.commit()
+
+def vlan_register(vlan):
+    """Registers the vlan with vlan number `vlan`.
+
+    Note that vlan should be a *string*, not a number. It is intended to be
+    pulled right from the HTTP request; this function will validate the
+    argument.
+    """
+    try:
+        vlan_no = int(vlan)
+    except Exception:
+        raise BadArgumentError('vlan:%s' % vlan)
+    if vlan_no < 1 or vlan_no > 4096:
+        raise BadArgumentError('vlan out of range: %d', vlan_no)
+    db = model.Session()
+    db.add(model.Vlan(vlan_no))
     db.commit()
 
     # Helper functions #

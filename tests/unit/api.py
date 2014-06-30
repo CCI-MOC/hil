@@ -341,10 +341,13 @@ class TestNetwork:
 
     def test_network_create_success(self):
         db = newDB()
+        api.vlan_register('102')
         api.group_create('anvil-nextgen')
         api.network_create('hammernet', 'anvil-nextgen')
         net = api._must_find(db, model.Network, 'hammernet')
         assert net.group.label == 'anvil-nextgen'
+        vlan = api._must_find(db, model.Vlan, '102')
+        assert not vlan.available
         releaseDB(db)
 
     def test_network_create_badgroup(self):
@@ -357,6 +360,7 @@ class TestNetwork:
     def test_network_create_duplicate(self):
         """Tests that creating a network with a duplicate name fails"""
         db = newDB()
+        api.vlan_register('102')
         api.group_create('anvil-nextgen')
         api.group_create('anvil-oldtimer')
         api.network_create('hammernet', 'anvil-nextgen')
@@ -366,10 +370,13 @@ class TestNetwork:
 
     def test_network_delete_success(self):
         db = newDB()
+        api.vlan_register('102')
         api.group_create('anvil-nextgen')
         api.network_create('hammernet', 'anvil-nextgen')
         api.network_delete('hammernet')
         api._assert_absent(db, model.Network, 'hammernet')
+        vlan = api._must_find(db, model.Vlan, '102')
+        assert vlan.available
         releaseDB(db)
 
     def test_network_delete_nonexistent(self):
@@ -379,3 +386,40 @@ class TestNetwork:
             api.network_delete('hammernet')
         releaseDB(db)
 
+    def test_network_basic_vlan_leak(self):
+        db = newDB()
+        api.group_create('acme_corp')
+        api.vlan_register('102')
+        api.network_create('hammernet', 'acme_corp')
+        api.network_delete('hammernet')
+        # For this to work, the vlan will need to have been released:
+        api.network_create('sledge', 'acme_corp')
+        releaseDB(db)
+
+    def test_network_no_duplicates(self):
+        db = newDB()
+        api.group_create('acme_corp')
+        api.vlan_register('102')
+        api.network_create('hammernet', 'acme_corp')
+        with pytest.raises(api.AllocationError):
+            api.network_create('sledge', 'acme_corp')
+        releaseDB(db)
+
+class TestVlan:
+
+    def test_vlan_register_success(self):
+        db = newDB()
+        api.vlan_register('102')
+        vlan = api._must_find(db, model.Vlan, '102')
+        assert vlan.vlan_no == 102
+        assert vlan.available
+        releaseDB(db)
+
+    def test_vlan_register_bad_number(self):
+        """Test various bad inputs."""
+        db = newDB()
+        inputs = ['5000', 'aleph0', '4.2', '-21', 'PI', 'infinity', 'NaN']
+        for input in inputs:
+            with pytest.raises(api.BadArgumentError):
+                api.vlan_register(input)
+        releaseDB(db)
