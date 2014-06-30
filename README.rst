@@ -75,3 +75,23 @@ On systems with older versions of ``pip``, such as Debian Wheezy and Ubuntu
 Fix this by upgrading ``pip`` within the virtual environment::
 
   pip install --upgrade pip
+
+
+**Testing the HaaS**
+====================
+
+
+Now the ``haas`` executable should be in your path.  First initialize the
+database with the required tables, with ``haas init_db``.  Then run the server
+with ``haas serve``.  Finally, see ``haas help`` for the various API commands
+one can test.  Here is an example session, testing ``headnode_delete_hnic``::
+
+  haas group_create gp
+  haas headnode_create hn gp
+  haas headnode_create_hnic hn hn-eth0 DE:AD:BE:EF:20:12
+  haas headnode_delete_hnic hn hn-eth0
+
+
+Additionally, after each commit, run the automated test suite with ``py.test
+tests``.  This will do only the most basic level of testing.  For additional
+features, including coverage reporting, see ``docs/testing.md``
