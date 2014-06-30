@@ -386,6 +386,25 @@ class TestNetwork:
             api.network_delete('hammernet')
         releaseDB(db)
 
+    def test_network_basic_vlan_leak(self):
+        db = newDB()
+        api.group_create('acme_corp')
+        api.vlan_register('102')
+        api.network_create('hammernet', 'acme_corp')
+        api.network_delete('hammernet')
+        # For this to work, the vlan will need to have been released:
+        api.network_create('sledge', 'acme_corp')
+        releaseDB(db)
+
+    def test_network_no_duplicates(self):
+        db = newDB()
+        api.group_create('acme_corp')
+        api.vlan_register('102')
+        api.network_create('hammernet', 'acme_corp')
+        with pytest.raises(api.AllocationError):
+            api.network_create('sledge', 'acme_corp')
+        releaseDB(db)
+
 class TestVlan:
 
     def test_vlan_register_success(self):
