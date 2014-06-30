@@ -23,11 +23,12 @@ def check_status_code(response):
         sys.stderr.write('Response text:\n')
         sys.stderr.write(response.text)
 
-
-def object_url(typename, objname):
-    url = cfg.get('client', 'endpoint') + '/'
-    url += typename + '/'
-    url += urllib.quote(objname)
+# TODO: This function's name is no longer very accurate.  As soon as it is
+# safe, we should change it to something more generic.
+def object_url(*args):
+    url = cfg.get('client', 'endpoint')
+    for arg in args:
+        url += '/' + urllib.quote(arg)
     return url
 
 
@@ -50,6 +51,19 @@ def user_create(username, password):
     """Create a user <username> with password <password>."""
     url = object_url('user', username)
     check_status_code(requests.put(url, data={'password': password}))
+
+@cmd
+def network_create(network, group):
+    """Create a <network> belonging to a <group>"""
+    url = object_url('network', network)
+    check_status_code(requests.put(url, data={'group': group}))
+
+@cmd
+def network_delete(network):
+    """Delete a <network>"""
+    url = object_url('network', network)
+    check_status_code(requests.delete(url))
+
     
 @cmd
 def user_delete(username):
@@ -60,14 +74,14 @@ def user_delete(username):
 @cmd
 def group_add_user(group, user):
     """Add <user> to <group>."""
-    url = object_url('group', group) + '/add_user'
+    url = object_url('group', group, 'add_user')
     check_status_code(requests.post(url, data={'user': user}))
 
 
 @cmd
 def group_remove_user(group, user):
     """Remove <user> from <group>."""
-    url = object_url('group', group) + '/remove_user'
+    url = object_url('group', group, 'remove_user')
     check_status_code(requests.post(url, data={'user': user}))
 
 @cmd
@@ -97,7 +111,7 @@ def group_delete(groupname):
 
 def project_deploy(project):
     """Deploy <project>"""
-    url = object_url('project', project) + '/deploy'
+    url = object_url('project', project, 'deploy')
     check_status_code(requests.post(url))
 
 
@@ -116,13 +130,13 @@ def headnode_delete(hn_name):
 @cmd
 def project_connect_node(projectname, nodename):
     """Connect a node to a project"""
-    url = object_url('project', projectname) + '/connect_node'
+    url = object_url('project', projectname, 'connect_node')
     check_stats_code(requests.post(url, data={'node': nodename}))
 
 @cmd
 def project_detach_node(projectname, nodename):
     """Detach a node from a project"""
-    url = object_url('project', projectname) + '/detach_node'
+    url = object_url('project', projectname, 'detach_node')
     check_stats_code(requests.post(url, data={'node': nodename}))
 
 @cmd
@@ -131,17 +145,16 @@ def node_register(node):
     url = object_url('node', node)
     check_status_code(requests.put(url))
 
-
 @cmd
 def headnode_create_hnic(headnode, hnic, macaddr):
     """Create a NIC with the given MAC address on the given headnode"""
-    url = object_url('headnode', headnode) + '/hnic/' + hnic
+    url = object_url('headnode', headnode, 'hnic', hnic)
     check_status_code(requests.put(url, data={'macaddr':macaddr}))
 
 @cmd
 def headnode_delete_hnic(headnode, hnic):
     """Delete a NIC on a headnode"""
-    url = object_url('headnode', headnode) + '/hnic/' + hnic
+    url = object_url('headnode', headnode, 'hnic', hnic)
     check_status_code(requests.delete(url))
 
 

@@ -266,6 +266,7 @@ class TestHeadnode:
             api.headnode_delete('hn-0')
         releaseDB(db)
 
+
     def test_headnode_create_hnic_success(self):
         db = newDB()
         api.group_create('anvil-nextgen')
@@ -333,3 +334,48 @@ class TestHeadnode:
         with pytest.raises(api.NotFoundError):
             api.headnode_delete_hnic('hn-1', 'hn-0-eth0')
         releaseDB(db)
+
+
+class TestNetwork:
+    """Tests for the haas.api.network_* functions."""
+
+    def test_network_create_success(self):
+        db = newDB()
+        api.group_create('anvil-nextgen')
+        api.network_create('hammernet', 'anvil-nextgen')
+        net = api._must_find(db, model.Network, 'hammernet')
+        assert net.group.label == 'anvil-nextgen'
+        releaseDB(db)
+
+    def test_network_create_badgroup(self):
+        """Tests that creating a network with a nonexistent group fails"""
+        db = newDB()
+        with pytest.raises(api.NotFoundError):
+            api.network_create('hammernet', 'anvil-nextgen')
+        releaseDB(db)
+
+    def test_network_create_duplicate(self):
+        """Tests that creating a network with a duplicate name fails"""
+        db = newDB()
+        api.group_create('anvil-nextgen')
+        api.group_create('anvil-oldtimer')
+        api.network_create('hammernet', 'anvil-nextgen')
+        with pytest.raises(api.DuplicateError):
+            api.network_create('hammernet', 'anvil-oldtimer')
+        releaseDB(db)
+
+    def test_network_delete_success(self):
+        db = newDB()
+        api.group_create('anvil-nextgen')
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.network_delete('hammernet')
+        api._assert_absent(db, model.Network, 'hammernet')
+        releaseDB(db)
+
+    def test_network_delete_nonexistent(self):
+        """Tests that deleting a nonexistent network fails"""
+        db = newDB()
+        with pytest.raises(api.NotFoundError):
+            api.network_delete('hammernet')
+        releaseDB(db)
+
