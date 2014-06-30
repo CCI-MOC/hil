@@ -92,6 +92,6 @@ one can test.  Here is an example session, testing ``headnode_delete_hnic``::
   haas headnode_delete_hnic hn hn-eth0
 
 
-Additionally, after each commit, run the automated test suite with ``py.test
+Additionally, before each commit, run the automated test suite with ``py.test
 tests``.  This will do only the most basic level of testing.  For additional
 features, including coverage reporting, see ``docs/testing.md``
