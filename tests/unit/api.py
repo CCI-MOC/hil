@@ -314,3 +314,22 @@ class TestHeadnode:
         with pytest.raises(api.NotFoundError):
             api.headnode_delete_hnic('hn-0', 'hn-0-eth0')
         releaseDB(db)
+
+    def test_headnode_delete_hnic_wrong_headnode(self):
+        db = newDB()
+        api.group_create('anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-1', 'anvil-nextgen')
+        api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
+        with pytest.raises(api.NotFoundError):
+            api.headnode_delete_hnic('hn-1', 'hn-0-eth0')
+        releaseDB(db)
+
+    def test_headnode_delete_hnic_wrong_nexist_headnode(self):
+        db = newDB()
+        api.group_create('anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
+        with pytest.raises(api.NotFoundError):
+            api.headnode_delete_hnic('hn-1', 'hn-0-eth0')
+        releaseDB(db)
