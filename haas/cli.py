@@ -145,19 +145,17 @@ def node_register(node):
     url = object_url('node', node)
     check_status_code(requests.put(url))
 
-
 @cmd
 def headnode_create_hnic(headnode, hnic, macaddr):
-    """Create a NIC named <hnic> with the MAC address <macaddr> on a <headnode>"""
-    url = object_url('hnic', hnic)
-    check_status_code(requests.put(url, data={'headnode':headnode,
-                                              'macaddr':macaddr}))
+    """Create a NIC with the given MAC address on the given headnode"""
+    url = object_url('headnode', headnode, 'hnic', hnic)
+    check_status_code(requests.put(url, data={'macaddr':macaddr}))
 
 @cmd
-def headnode_delete_hnic(hnic):
-    """Delete a NIC on a headnode, named <hnic>"""
-    url = object_url('hnic', hnic)
-    check_status_code(requests.delte(url))
+def headnode_delete_hnic(headnode, hnic):
+    """Delete a NIC on a headnode"""
+    url = object_url('headnode', headnode, 'hnic', hnic)
+    check_status_code(requests.delete(url))
 
 
 def usage():
