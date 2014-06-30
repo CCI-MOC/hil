@@ -327,6 +327,8 @@ class TestNetwork:
         api.network_create('hammernet', 'anvil-nextgen')
         net = api._must_find(db, model.Network, 'hammernet')
         assert net.group.label == 'anvil-nextgen'
+        vlan = api._must_find(db, model.Vlan, '102')
+        assert not vlan.available
         releaseDB(db)
 
     def test_network_create_badgroup(self):
@@ -354,6 +356,8 @@ class TestNetwork:
         api.network_create('hammernet', 'anvil-nextgen')
         api.network_delete('hammernet')
         api._assert_absent(db, model.Network, 'hammernet')
+        vlan = api._must_find(db, model.Vlan, '102')
+        assert vlan.available
         releaseDB(db)
 
     def test_network_delete_nonexistent(self):
