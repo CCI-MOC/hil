@@ -108,3 +108,20 @@ class TestHnic(InsertTest):
         group = Group('acme_corp')
         hn = Headnode(group, 'hn-0')
         print(Hnic(group, hn, 'storage', '00:11:22:33:44:55'))
+
+class TestVlan(InsertTest):
+
+    def test_insert(self):
+        self.insert(Vlan(102))
+
+    def test_repr(self):
+        print(Vlan(102))
+
+class TestNetwork(InsertTest):
+
+    def test_insert(self):
+        network = Network(Group('acme_corp'), Vlan(102), 'hammernet')
+        self.insert(network)
+
+    def test_repr(InsertTest):
+        print(Network(Group('acme_corp'), Vlan(102), 'hammernet'))
