@@ -126,6 +126,9 @@ class Vlan(Model):
     def __init__(self, vlan_no):
         self.vlan_no = vlan_no
         self.available = True
+        # XXX: This is pretty gross; it arguably doesn't even make sense for
+        # Vlan to have a label, but we need to do some refactoring for that.
+        self.label = str(vlan_no)
 
 
 class Port(Model):

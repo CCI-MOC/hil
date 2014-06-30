@@ -360,3 +360,23 @@ class TestNetwork:
             api.network_delete('hammernet')
         releaseDB(db)
 
+class TestVlan:
+
+    def test_vlan_register_success(self):
+        db = newDB()
+        api.vlan_register('102')
+        vlan = api._must_find(db, model.Vlan, '102')
+        assert vlan.vlan_no == 102
+        assert vlan.available
+        releaseDB(db)
+
+    def test_vlan_register_bad_number(self):
+        """Test various bad inputs."""
+        db = newDB()
+        inputs = ['5000', 'aleph0', '4.2', '-21', 'PI', 'infinity', 'NaN']
+        # I'm not immediately sure what error this should be (we probably need
+        # to invent one), but it's definitely the client's fault.
+        for input in inputs:
+            with pytest.raises(api.APIError):
+                api.vlan_register(input)
+        releaseDB(db)

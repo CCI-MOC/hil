@@ -307,6 +307,14 @@ def network_delete(networkname):
     db.delete(network)
     db.commit()
 
+def vlan_register(vlan_id):
+    """Registers the vlan with id `vlan_id`.
+
+    Note that vlan_id should be a *string*, not a number. It is intended to be
+    pulled right from the HTTP request; this function will validate the
+    argument.
+    """
+
     # Helper functions #
     ####################
 
