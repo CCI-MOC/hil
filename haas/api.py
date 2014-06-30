@@ -23,6 +23,9 @@ class DuplicateError(APIError):
 class AllocationError(APIError):
     """An exception indicating resource exhaustion."""
 
+class BadArgumentError(APIError):
+    """An exception indicating an invalid request on the part of the user."""
+
 
 def user_create(username, password):
     """Create user `username`.
@@ -307,13 +310,22 @@ def network_delete(networkname):
     db.delete(network)
     db.commit()
 
-def vlan_register(vlan_id):
-    """Registers the vlan with id `vlan_id`.
+def vlan_register(vlan):
+    """Registers the vlan with vlan number `vlan`.
 
-    Note that vlan_id should be a *string*, not a number. It is intended to be
+    Note that vlan should be a *string*, not a number. It is intended to be
     pulled right from the HTTP request; this function will validate the
     argument.
     """
+    try:
+        vlan_no = int(vlan)
+    except Exception:
+        raise BadArgumentError('vlan:%s' % vlan)
+    if vlan_no < 1 or vlan_no > 4096:
+        raise BadArgumentError('vlan out of range: %d', vlan_no)
+    db = model.Session()
+    db.add(model.Vlan(vlan_no))
+    db.commit()
 
     # Helper functions #
     ####################
