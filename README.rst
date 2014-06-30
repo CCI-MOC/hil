@@ -81,10 +81,13 @@ Fix this by upgrading ``pip`` within the virtual environment::
 ====================
 
 
-Now the ``haas`` executable should be in your path.  First initialize the
-database with the required tables, with ``haas init_db``.  Then run the server
-with ``haas serve``.  Finally, see ``haas help`` for the various API commands
-one can test.  Here is an example session, testing ``headnode_delete_hnic``::
+Now the ``haas`` executable should be in your path.  First, create a
+configuration file by copying ``haas.cfg.example`` to ``haas.cfg``, and
+editing it as appropriate.  (You will probably want to edit it.)  Then
+initialize the database with the required tables, with ``haas init_db``.  Run
+the server with ``haas serve``.  Finally, see ``haas help`` for the various
+API commands one can test.  Here is an example session, testing
+``headnode_delete_hnic``::
 
   haas group_create gp
   haas headnode_create hn gp
