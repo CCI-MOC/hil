@@ -307,6 +307,8 @@ def network_delete(networkname):
     """
     db = model.Session()
     network = _must_find(db, model.Network, networkname)
+    vlan = db.query(model.Vlan).filter_by(vlan_no=network.vlan_no).one()
+    vlan.available = True
     db.delete(network)
     db.commit()
 
