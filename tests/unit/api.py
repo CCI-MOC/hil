@@ -374,9 +374,7 @@ class TestVlan:
         """Test various bad inputs."""
         db = newDB()
         inputs = ['5000', 'aleph0', '4.2', '-21', 'PI', 'infinity', 'NaN']
-        # I'm not immediately sure what error this should be (we probably need
-        # to invent one), but it's definitely the client's fault.
         for input in inputs:
-            with pytest.raises(api.APIError):
+            with pytest.raises(api.BadArgumentError):
                 api.vlan_register(input)
         releaseDB(db)
