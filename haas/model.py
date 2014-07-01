@@ -209,8 +209,11 @@ class Headnode(Model):
 
 class Hnic(Model):
     mac_addr       = Column(String)
-    headnode_id    = Column(String, ForeignKey('headnode.id'), nullable=False)
+    headnode_id    = Column(Integer, ForeignKey('headnode.id'), nullable=False)
+    network_id     = Column(Integer, ForeignKey('network.id'))
+
     headnode       = relationship("Headnode", backref = backref('hnics'))
+    network        = relationship("Network", backref=backref('hnics'))
 
     group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
     group = relationship("Group", backref=backref("hnic_list"))

@@ -257,6 +257,10 @@ def node_detach_network(node_label, nic_label):
     node = _must_find(db, model.Node, node_label)
     nic = _must_find(db, model.Nic, nic_label)
 
+    if nic.node is not node:
+        raise NotFoundError('nic %s on node %s' % (nic_label, node_label))
+
+
     nic.network = None
     db.commit()
 
@@ -318,6 +322,47 @@ def headnode_delete_hnic(nodename, hnic_name):
         # currently Hnic's labels are globally unique.
         raise NotFoundError("Hnic: " + hnic_name)
     db.delete(hnic)
+    db.commit()
+
+def headnode_connect_network(node_label, nic_label, network_label):
+    """Connect a headnode's NIC to a network"""
+    # XXX: This is flagrantly copy/pasted from node_connect network. I feel a
+    # little bad about myself, and we should fix this. same goes for
+    # *_detach_network.
+    db = model.Session()
+
+    headnode = _must_find(db, model.Node, node_label)
+    hnic = _must_find(db, model.Hnic, nic_label)
+    network = _must_find(db, model.Network, network_label)
+
+    if hnic.headnode is not headnode:
+        # XXX: This is arguably misleading at present, but soon we'll want to
+        # have nics namespaced by their nodes, so this is what we want in the
+        # long term. We should adjust the models such that nic labels are
+        # private to a node.
+        raise NotFoundError('hnic %s on headnode %s' % (nic_label, node_label))
+
+    if hnic.network:
+        # The nic is already part of a network; report an error to the user.
+        raise BusyError('hnic %s on headnode %s is already part of a network' %
+                (nic_label, node_label))
+    hnic.network = network
+    db.commit()
+
+def node_detach_network(node_label, nic_label):
+    """Detach a heanode's nic from its network (if any).
+
+    If the nic is not already a member of a network, this function does nothing.
+    """
+    db = model.Session()
+
+    headnode = _must_find(db, model.Headnode, node_label)
+    hnic = _must_find(db, model.Hnic, nic_label)
+
+    if hnic.headnode is not headnode:
+        raise NotFoundError('hnic %s on headnode %s' % (nic_label, node_label))
+
+    hnic.network = None
     db.commit()
 
                             # Network Code #
