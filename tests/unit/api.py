@@ -429,3 +429,34 @@ class TestVlan:
         api.vlan_register('102')
         with pytest.raises(api.DuplicateError):
             api.vlan_register('102')
+
+    def test_vlan_delete_success(self):
+        db = newDB()
+        api.vlan_register('103')
+        api.vlan_delete('103')
+        releaseDB(db)
+
+    def test_vlan_delete_nonexistent(self):
+        """Tests that deleting a never-created vlan fails"""
+        db = newDB()
+        with pytest.raises(api.NotFoundError):
+            api.vlan_delete('103')
+        releaseDB(db)
+
+    def test_vlan_delete_deleted(self):
+        """Tests that deleting an already-deleted vlan fails"""
+        db = newDB()
+        api.vlan_register('103')
+        api.vlan_delete('103')
+        with pytest.raises(api.NotFoundError):
+            api.vlan_delete('103')
+        releaseDB(db)
+
+    def test_vlan_delete_bad_number(self):
+        """Test various bad inputs to vlan_delete"""
+        db = newDB()
+        inputs = ['5000', 'aleph0', '4.2', '-21', 'PI', 'infinity', 'NaN']
+        for input in inputs:
+            with pytest.raises(api.BadArgumentError):
+                api.vlan_delete(input)
+        releaseDB(db)

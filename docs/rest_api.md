@@ -77,6 +77,11 @@ Full Api spec:
     [PUT]    /switch/<switch_label> {driver=<driver>, num_ports=<num_ports>}
     [DELETE] /switch/<switch_label>
 
+    vlan_register <vlan_id>
+    vlan_delete   <vlan_id>
+    [PUT]    /vlan/<vlan_id>
+    [DELETE] /vlan/<vlan_id>
+
     #### TODO FIXME:  Specify the remaining ones
     nic_connect_switch <node_label> <nic_label> <switch_label> <port>
     import_vlan <network_label> <vlan_label>
