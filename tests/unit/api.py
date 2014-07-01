@@ -424,6 +424,12 @@ class TestVlan:
                 api.vlan_register(input)
         releaseDB(db)
 
+    def test_duplicate_vlan_register(self):
+        db = newDB()
+        api.vlan_register('102')
+        with pytest.raises(api.DuplicateError):
+            api.vlan_register('102')
+
     def test_vlan_delete_success(self):
         db = newDB()
         api.vlan_register('103')

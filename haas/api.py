@@ -333,6 +333,7 @@ def vlan_register(vlan):
     if vlan_no < 1 or vlan_no > 4096:
         raise BadArgumentError('vlan out of range: %d', vlan_no)
     db = model.Session()
+    _assert_absent(db, model.Vlan, str(vlan_no))
     db.add(model.Vlan(vlan_no))
     db.commit()
 
