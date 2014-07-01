@@ -225,6 +225,40 @@ def node_delete(nodename):
     db.delete(node)
     db.commit()
 
+def node_connect_network(node_label, nic_label, network_label):
+    """Connect a physical NIC to a network"""
+    db = model.Session()
+
+    node = _must_find(db, model.Node, node_label)
+    nic = _must_find(db, model.Nic, nic_label)
+    network = _must_find(db, model.Network, network_label)
+
+    if nic.node is not node:
+        # XXX: This is arguably misleading at present, but soon we'll want to
+        # have nics namespaced by their nodes, so this is what we want in the
+        # long term. We should adjust the models such that nic labels are
+        # private to a node.
+        raise NotFoundError('nic %s on node %s' % (nic_label, node_label))
+
+    if nic.network:
+        # The nic is already part of a network; report an error to the user.
+        raise BusyError('nic %s on node %s is already part of a network' %
+                (nic_label, node_label))
+    nic.network = network
+    db.commit()
+
+def node_detach_network(node_label, nic_label):
+    """Detach a physical nic from its network (if any).
+
+    If the nic is not already a member of a network, this function does nothing.
+    """
+    db = model.Session()
+
+    node = _must_find(db, model.Node, node_label)
+    nic = _must_find(db, model.Nic, nic_label)
+
+    nic.network = None
+    db.commit()
 
                             # Head Node Code #
                             ##################

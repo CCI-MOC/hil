@@ -53,8 +53,9 @@ class Nic(Model):
 
     port_id   = Column(Integer,ForeignKey('port.id'))
     node_id   = Column(Integer,ForeignKey('node.id'))
+    network_id = Column(Integer, ForeignKey('network.id'))
 
-    # One to one mapping port
+    network   = relationship("Network", backref=backref('nics'))
     port      = relationship("Port",backref=backref('nic',uselist=False))
     node      = relationship("Node",backref=backref('nics'))
 
