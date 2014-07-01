@@ -131,6 +131,15 @@ def project_connect_node(projectname):
 def project_detach_node(projectname):
     return api.project_detach_node(projectname, request.form['node'])
 
+@app.route('/vlan/<vlan_id>', methods=['PUT', 'DELETE'])
+@api_function
+def vlan(vlan_id):
+    """Handle register/delete vlan commands."""
+    if request.method == 'PUT':
+        return api.vlan_register(vlan_id)
+    else: # DELETE
+        return api.vlan_delete(vlan_id)
+
 
 if __name__ == '__main__':
     config.load()
