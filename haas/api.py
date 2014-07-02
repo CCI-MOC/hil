@@ -20,6 +20,12 @@ class NotFoundError(APIError):
 class DuplicateError(APIError):
     """An exception indicating that a given resource already exists."""
 
+class AllocationError(APIError):
+    """An exception indicating resource exhaustion."""
+
+class BadArgumentError(APIError):
+    """An exception indicating an invalid request on the part of the user."""
+
 
 def user_create(username, password):
     """Create user `username`.
@@ -263,13 +269,20 @@ def headnode_create_hnic(nodename, hnic_name, macaddr):
     db.add(hnic)
     db.commit()
 
-def headnode_delete_hnic(hnic_name):
+def headnode_delete_hnic(nodename, hnic_name):
     """Delete hnic with given name.
 
     If the hnic does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
     hnic = _must_find(db, model.Hnic, hnic_name)
+    if hnic.headnode.label != nodename:
+        # We raise a NotFoundError for the following reason: Hnic's SHOULD
+        # belong to headnodes, and thus we SHOULD be doing a search of the
+        # hnics belonging to the given headnode.  (In that situation, we will
+        # honestly get a NotFoundError.)  We aren't right now, because
+        # currently Hnic's labels are globally unique.
+        raise NotFoundError("Hnic: " + hnic_name)
     db.delete(hnic)
     db.commit()
 
@@ -280,12 +293,16 @@ def network_create(networkname, groupname):
     """Create network 'networkname'.
 
     If the network already exists, a DuplicateError will be raised.
+    If the network cannot be allocated (due to resource exhaustion), an
+    AllocationError will be raised.
     """
     db = model.Session()
     _assert_absent(db, model.Network, networkname)
     group = _must_find(db, model.Group, groupname)
-    network = model.Network(networkname)
-    network.group = group
+    vlan = db.query(model.Vlan).filter_by(available=True).first()
+    if vlan is None:
+        raise AllocationError('No more networks')
+    network = model.Network(group, vlan, networkname)
     db.add(network)
     db.commit()
 
@@ -297,6 +314,8 @@ def network_delete(networkname):
     """
     db = model.Session()
     network = _must_find(db, model.Network, networkname)
+    vlan = db.query(model.Vlan).filter_by(vlan_no=network.vlan_no).one()
+    vlan.available = True
     db.delete(network)
     db.commit()
 
@@ -314,14 +333,55 @@ def switch_register(name, driver):
     db.add(switch)
     db.commit()
 
+
 def switch_delete(name):
     db = model.Session()
     switch = _must_find(db, model.Switch, name)
     db.delete(switch)
     db.commit()
 
+
+def vlan_register(vlan):
+    """Registers the vlan with vlan number `vlan`.
+
+    Note that vlan should be a *string*, not a number. It is intended to be
+    pulled right from the HTTP request; this function will validate the
+    argument.
+    """
+    try:
+        vlan_no = int(vlan)
+    except Exception:
+        raise BadArgumentError('vlan:%s' % vlan)
+    if vlan_no < 1 or vlan_no > 4096:
+        raise BadArgumentError('vlan out of range: %d', vlan_no)
+    db = model.Session()
+    _assert_absent(db, model.Vlan, str(vlan_no))
+    db.add(model.Vlan(vlan_no))
+    db.commit()
+
+
+def vlan_delete(vlan):
+    """Deletes the vlan with vlan number `vlan`.
+
+    Note that vlan should be a *string*, not a number. It is intended to be
+    pulled right from the HTTP request; this function will validate the
+    argument.
+    """
+    try:
+        vlan_no = int(vlan)
+    except Exception:
+        raise BadArgumentError('vlan:%s' % vlan)
+    if vlan_no < 1 or vlan_no > 4096:
+        raise BadArgumentError('vlan out of range: %d', vlan_no)
+
+    db = model.Session()
+    db.delete(_must_find(db, model.Vlan, str(vlan_no)))
+    db.commit()
+
+
     # Helper functions #
     ####################
+
 
 def _assert_absent(session, cls, name):
     """Raises a DuplicateError if the given object is already in the database.

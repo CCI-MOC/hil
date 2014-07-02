@@ -23,11 +23,12 @@ def check_status_code(response):
         sys.stderr.write('Response text:\n')
         sys.stderr.write(response.text)
 
-
-def object_url(typename, objname):
-    url = cfg.get('client', 'endpoint') + '/'
-    url += typename + '/'
-    url += urllib.quote(objname)
+# TODO: This function's name is no longer very accurate.  As soon as it is
+# safe, we should change it to something more generic.
+def object_url(*args):
+    url = cfg.get('client', 'endpoint')
+    for arg in args:
+        url += '/' + urllib.quote(arg)
     return url
 
 
@@ -38,6 +39,12 @@ def serve():
     model.init_db()
     server.app.run(debug=True)
 
+@cmd
+def init_db():
+    """Initialize the database"""
+    from haas import model
+    model.init_db(create=True)
+
 
 @cmd
 def user_create(username, password):
@@ -45,37 +52,92 @@ def user_create(username, password):
     url = object_url('user', username)
     check_status_code(requests.put(url, data={'password': password}))
 
+@cmd
+def network_create(network, group):
+    """Create a <network> belonging to a <group>"""
+    url = object_url('network', network)
+    check_status_code(requests.put(url, data={'group': group}))
 
 @cmd
-def project_deploy(project):
-    """Deploy the project named <project>"""
-    url = object_url('project', project)
+def network_delete(network):
+    """Delete a <network>"""
+    url = object_url('network', network)
+    check_status_code(requests.delete(url))
+
+    
+@cmd
+def user_delete(username):
+    url = object_url('user', username)
+    check_status_code(requests.delete(url))
+
 
 @cmd
 def group_add_user(group, user):
     """Add <user> to <group>."""
-    url = object_url('group', group) + '/add_user'
+    url = object_url('group', group, 'add_user')
     check_status_code(requests.post(url, data={'user': user}))
 
 
 @cmd
 def group_remove_user(group, user):
     """Remove <user> from <group>."""
-    url = object_url('group', group) + '/remove_user'
+    url = object_url('group', group, 'remove_user')
     check_status_code(requests.post(url, data={'user': user}))
+
+@cmd
+def project_create(projectname, group, *args):
+    """Create a project"""
+    url = object_url('project', projectname)
+    check_status_code(requests.put(url, data={'group': group}))
+
+@cmd
+def project_delete(projectname):
+    url = object_url('project', projectname)
+    check_status_code(requests.delete(url))
+
+@cmd
+def group_create(groupname):
+    """Create a group"""
+    url = object_url('group', groupname)
+    check_status_code(requests.put(url))
 
 
 @cmd
-def user_delete(user):
-    url = object_url('user', user)
+def group_delete(groupname):
+    """Delete a group"""
+    url = object_url('group', groupname)
     check_status_code(requests.delete(url))
 
 
-@cmd
 def project_deploy(project):
     """Deploy <project>"""
-    url = object_url('project', project) + '/deploy'
+    url = object_url('project', project, 'deploy')
     check_status_code(requests.post(url))
+
+
+@cmd
+def headnode_create(hn_name, group):
+    """Create a headnode <hn_name> belonging to <group>"""
+    url = object_url('headnode', hn_name)
+    check_status_code(requests.put(url, data={'group': group}))
+
+@cmd
+def headnode_delete(hn_name):
+    """Delete the headnode <hn_name>"""
+    url = object_url('headnode', hn_name)
+    check_status_code(requests.delete(url))
+
+@cmd
+def project_connect_node(projectname, nodename):
+    """Connect a node to a project"""
+    url = object_url('project', projectname, 'connect_node')
+    check_stats_code(requests.post(url, data={'node': nodename}))
+
+@cmd
+def project_detach_node(projectname, nodename):
+    """Detach a node from a project"""
+    url = object_url('project', projectname, 'detach_node')
+    check_stats_code(requests.post(url, data={'node': nodename}))
 
 @cmd
 def node_register(node):
@@ -86,15 +148,28 @@ def node_register(node):
 @cmd
 def headnode_create_hnic(headnode, hnic, macaddr):
     """Create a NIC with the given MAC address on the given headnode"""
-    url = object_url('hnic', hnic)
-    check_status_code(requests.put(url, data={'headnode':headnode,
-                                              'macaddr':macaddr}))
+    url = object_url('headnode', headnode, 'hnic', hnic)
+    check_status_code(requests.put(url, data={'macaddr':macaddr}))
 
 @cmd
-def headnode_delete_hnic(hnic):
+def headnode_delete_hnic(headnode, hnic):
     """Delete a NIC on a headnode"""
-    url = object_url('hnic', hnic)
-    check_status_code(requests.delte(url))
+    url = object_url('headnode', headnode, 'hnic', hnic)
+    check_status_code(requests.delete(url))
+
+@cmd
+def vlan_register(vlan_id):
+    """Register existence of VLAN number <vlan_id>"""
+    url = object_url('vlan', vlan_id)
+    check_status_code(requests.put(url))
+
+@cmd
+def vlan_delete(vlan_id):
+    """Delete VLAN number <vlan_id>"""
+    url = object_url('vlan', vlan_id)
+    check_status_code(requests.delete(url))
+
+
 
 @cmd
 def switch_register(name, driver):
@@ -133,3 +208,4 @@ def main():
         usage()
     else:
         commands[sys.argv[1]](*sys.argv[2:])
+

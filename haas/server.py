@@ -53,22 +53,52 @@ def user(username):
 def node_register(nodename):
     return api.node_register(nodename)
 
+@app.route('/project/<projectname>', methods=['PUT', 'DELETE'])
+@api_function
+def project(projectname):
+    """Handle create/delete project commands."""
+    if request.method == 'PUT':
+        return api.project_create(projectname, request.form['group'])
+    else: # DELETE
+        return api.project_delete(projectname)
 
 @app.route('/project/<projectname>/deploy', methods=['POST'])
 @api_function
 def project_deploy(projectname):
     api.project_deploy(projectname)
 
-@app.route('/hnic/<hnicname>', methods=['PUT', 'DELETE'])
+
+@app.route('/headnode/<name>', methods=['PUT', 'DELETE'])
 @api_function
-def hnic(hnicname):
+def headnode(name):
+    if request.method == 'PUT':
+        return api.headnode_create(name, request.form['group'])
+    else: # DELETE
+        return api.headnode_delete(name)
+
+
+@app.route('/headnode/<headnodename>/hnic/<hnicname>', methods=['PUT', 'DELETE'])
+@api_function
+def hnic(headnodename, hnicname):
     """Handle create/delete hnic commands."""
     if request.method == 'PUT':
-        return api.headnode_create_hnic(request.form['headnode'],
+        return api.headnode_create_hnic(headnodename,
                                         hnicname,
                                         request.form['macaddr'])
     else: # DELETE
-        return api.headnode_delete_hnic(hnicname)
+        return api.headnode_delete_hnic(headnodename,
+                                        hnicname)
+
+
+@app.route('/group/<groupname>', methods=['PUT', 'DELETE'])
+@api_function
+def group(groupname):
+    """Handle create/delete group commands."""
+    if request.method == 'PUT':
+        return api.group_create(groupname)
+    else: # DELETE
+        return api.group_delete(groupname)    
+
 
 @app.route('/group/<groupname>/add_user', methods=['POST'])
 @api_function
@@ -88,6 +118,35 @@ def switch(switchname):
         return api.switch_register(switchname, request.form['driver'])
     else: # DELETE
         return api.switch_delete(switchname)
+
+
+@app.route('/network/<networkname>', methods=['PUT', 'DELETE'])
+@api_function
+def network(networkname):
+    """Handle create/delete network commands."""
+    if request.method == 'PUT':
+        return api.network_create(networkname, request.form['group'])
+    else: # DELETE
+        return api.network_delete(networkname)
+
+@app.route('/project/<projectname>/connect_node', methods=['POST'])
+@api_function
+def project_connect_node(projectname):
+    return api.project_connect_node(projectname, request.form['node'])
+
+@app.route('/project/<projectname>/detach_node', methods=['POST'])
+@api_function
+def project_detach_node(projectname):
+    return api.project_detach_node(projectname, request.form['node'])
+
+@app.route('/vlan/<vlan_id>', methods=['PUT', 'DELETE'])
+@api_function
+def vlan(vlan_id):
+    """Handle register/delete vlan commands."""
+    if request.method == 'PUT':
+        return api.vlan_register(vlan_id)
+    else: # DELETE
+        return api.vlan_delete(vlan_id)
 
 
 if __name__ == '__main__':

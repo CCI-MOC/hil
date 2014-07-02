@@ -14,14 +14,14 @@ then the actual API.
   project. Has one or more  NICs attached to it.   
 * headnode   - a controlling machine for a project, today a VM, assigned
   to one project  
-* NIC - network card, identified by a user-specified label (e.g.,
-  PXE, ipmi, user1, silly) will have a visible ethernet mac address
-  (or equivalent unique number for other network types), and is always
-  part of one node and connected to at most one port.
+* NIC - network card, identified by a user-specified label (e.g., PXE, ipmi,
+  user1, silly) will have a visible ethernet mac address (or equivalent unique
+  number for other network types), and is always part of one node and
+  connected to at most one port.
 * HNIC - headnode network card, identified by a user-specified label (e.g.,
-  PXE, ipmi, user1, silly) will have a visible ethernet mac address
-  (or equivalent unique number for other network types), and is always
-  part of one headnode.
+  PXE, ipmi, user1, silly) will have a visible ethernet mac address (or
+  equivalent unique number for other network types), and is always part of one
+  headnode.
 * switch - a physical network switch, note not visible to
   users, just admins, has one or more ports
 * port - a port on a switch to which NICs can be connected.
@@ -41,13 +41,12 @@ it from all the group's networks.  Similarly we won't when deleting a
 project, in turn free the nodes and delete the headnodes.  It will be
 the user/higher level tools' responsibility.  
 
-Most objects are identified by "labels" that are globally unique,
-e.g., nodes, networks, groups, users, headnodes.  While we may
-eventually change this, it seems a reasonable limitation for now that
-simplifies the implementation and will allow potential sharing of
-resources. The system will return an error if a second user tries to
-create an object with an already existing label. The one exception is
-NICs, where the label is unique only on a per-node basis. 
+Most objects are identified by "labels" that are globally unique, e.g., nodes,
+networks, groups, users, headnodes.  While we may eventually change this, it
+seems a reasonable limitation for now that simplifies the implementation and
+will allow potential sharing of resources. The system will return an error if
+a second user tries to create an object with an already existing label. The
+one exception is NICs, where the label is unique only on a per-node basis.
 
 ## Permissions users and synchronization mechanisms/assumptions
 
@@ -79,8 +78,8 @@ project at the same time.
     user_create                 <user_label> <password>
     user_delete                 <user_label>
  
-    group_add_user              <group_label> <user_label> 
-    group_add_network           <group_label> <network_label> 
+    group_add_user              <group_label> <user_label>
+    group_add_network           <group_label> <network_label>
 
     project_create              <project_label> <group_label>
     project_delete              <project_label>
@@ -95,8 +94,8 @@ project at the same time.
     project_detach_headnode     <hn_label> <project_label>
  
     # allocate/deallocate node to a project
-    project_connect_node        <project_label> <node_label> 
-    project_detach_node         <project_label> <node_label> 
+    project_connect_node        <project_label> <node_label>
+    project_detach_node         <project_label> <node_label>
  
     # networking operations on a project
     project_connect_network     <project_label> <network_label>
@@ -105,13 +104,13 @@ project at the same time.
  
     # networking operations on a physical node
     node_connect_network        <node_label> <nic_label> <network_label>
-    node_detach_network         <node_label> <nic_label> 
+    node_detach_network         <node_label> <nic_label>
  
     # networking operations on a headnode
-    headnode_create_hnic        <hn_label> <hnic_label> 
+    headnode_create_hnic        <hn_label> <hnic_label>
     headnode_delete_hnic        <hn_label> <hnic_label>
     headnode_connect_network    <hn_label> <hnic_label> <network>
-    headnode_detach_network     <hn_label> <hnic_label> 
+    headnode_detach_network     <hn_label> <hnic_label>
  
     # query interface, limited for users to resources 
     # that are free, or that groups belonging to user own
@@ -123,19 +122,21 @@ project at the same time.
 ##Additional administrator operations:
 
     # operations to describe physical configuration of system to HaaS
-    node_register                 <node_label>
-    node_delete                 <node_label>
-    node_register_nic             <node_label> <nic_label> <mac_addr>
-    node_delete_nic             <node_label> <nic_label> 
-    switch_register               <switch_label> <script> <number_ports>
-    switch_delete               <switch_label> 
-    nic_connect_switch          <node_label> <nic_label> <switch_label> <port>
+    node_register      <node_label>
+    node_delete        <node_label>
+    vlan_register      <vlan_id>
+    vlan_delete        <vlan_id>
+    node_register_nic  <node_label> <nic_label> <mac_addr>
+    node_delete_nic    <node_label> <nic_label>
+    switch_register    <switch_label> <script> <number_ports>
+    switch_delete      <switch_label>
+    nic_connect_switch <node_label> <nic_label> <switch_label> <port>
  
     # dump all information about the system
     show all
 
     #import a vlan (e.g., public VLAN) into the system
-    import_vlan <network_label> <vlan_id>
+    import_vlan <network_label> <vlan_label>
 
     # block and unblock users without admin privileges
     block_users
