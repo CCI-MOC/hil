@@ -477,6 +477,7 @@ def vlan_register(vlan):
     db.add(model.Vlan(vlan_no))
     db.commit()
 
+
 def vlan_delete(vlan):
     """Deletes the vlan with vlan number `vlan`.
 
@@ -494,7 +495,6 @@ def vlan_delete(vlan):
     db = model.Session()
     db.delete(_must_find(db, model.Vlan, str(vlan_no)))
     db.commit()
-
 
 
                             # Switch code #
@@ -603,6 +603,7 @@ def port_detach_nic(switch_name, port_name):
 
     # Helper functions #
     ####################
+
 
 def _assert_absent(session, cls, name):
     """Raises a DuplicateError if the given object is already in the database.
