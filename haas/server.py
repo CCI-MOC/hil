@@ -164,6 +164,28 @@ def project_detach_network(projectname):
     return api.project_detach_network(projectname, request.form['network'])
 
 
+@app.route('/node/<node>/nic/<nic>/connect_network', methods=['POST'])
+@api_function
+def node_connect_network(node, nic):
+    return api.node_connect_network(node, nic, request.form['network'])
+
+@app.route('/node/<node>/nic/<nic>/detach_network', methods=['POST'])
+@api_function
+def node_detach_network(node, nic):
+    return api.node_detach_network(node, nic)
+
+@app.route('/headnode/<headnode>/hnic/<hnic>/connect_network', methods=['POST'])
+@api_function
+def headnode_connect_network(headnode, hnic):
+    return api.headnode_connect_network(headnode, hnic, request.form['network'])
+
+@app.route('/headnode/<headnode>/hnic/<hnic>/detach_network', methods=['POST'])
+@api_function
+def headnode_detach_network(headnode, hnic):
+    return api.headnode_detach_network(headnode, hnic)
+
+
+
 @app.route('/vlan/<vlan_id>', methods=['PUT', 'DELETE'])
 @api_function
 def vlan(vlan_id):

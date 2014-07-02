@@ -205,6 +205,29 @@ def vlan_delete(vlan_id):
     url = object_url('vlan', vlan_id)
     check_status_code(requests.delete(url))
 
+@cmd
+def node_connect_network(node, nic, network):
+    """Connect <node> to <network> on given <nic>"""
+    url = object_url('node', node, 'nic', nic, 'connect_network')
+    check_status_code(requests.post(url, data={'network':network}))
+
+@cmd
+def node_detach_network(node, nic):
+    """Detach <node> from the network on given <nic>"""
+    url = object_url('node', node, 'nic', nic, 'detach_network')
+    check_status_code(requests.post(url))
+
+@cmd
+def headnode_connect_network(headnode, hnic, network):
+    """Connect <headnode> to <network> on given <hnic>"""
+    url = object_url('headnode', headnode, 'hnic', hnic, 'connect_network')
+    check_status_code(requests.post(url, data={'network':network}))
+
+@cmd
+def headnode_detach_network(headnode, hnic):
+    """Detach <headnode> from the network on given <hnic>"""
+    url = object_url('headnode', headnode, 'hnic', hnic, 'detach_network')
+    check_status_code(requests.post(url))
 
 
 def usage():
