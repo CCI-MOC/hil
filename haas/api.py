@@ -180,9 +180,9 @@ def project_connect_network(projectname, networkname):
     db = model.Session()
     project = _must_find(db, model.Project, projectname)
     network = _must_find(db, model.Network, networkname)
-    if network.projects(project):
-        raise DuplicateError(projectname)
-    project.network.append(network)
+    if network in project.networks:
+        raise DuplicateError(networkname)
+    project.networks.append(network)
     db.commit()
 
 
@@ -194,9 +194,9 @@ def project_detach_network(projectname, networkname):
     db = model.Session()
     project = _must_find(db, model.Project, projectname)
     network = _must_find(db, model.Network, networkname)
-    if not network.projects(project):
-        raise NotFoundError(projectname)
-    project.network.remove(network)
+    if network not in project.networks:
+        raise NotFoundError(networkname)
+    project.networks.remove(network)
     db.commit()
 
 

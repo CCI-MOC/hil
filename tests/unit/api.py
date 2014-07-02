@@ -198,6 +198,34 @@ class TestProject:
         releaseDB(db)
 
 
+    def test_project_connect_network_success(self):
+        db = newDB()
+        api.vlan_register('101')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.network_create('hammernet', 'acme-code')
+        api.project_connect_network('anvil-nextgen', 'hammernet')
+        network = api._must_find(db, model.Network, 'hammernet')
+        project = api._must_find(db, model.Project, 'anvil-nextgen')
+        assert network in project.networks
+        assert network.project is project
+        releaseDB(db)
+
+    def test_project_detach_network_success(self):
+        db = newDB()
+        api.vlan_register('101')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.network_create('hammernet', 'acme-code')
+        api.project_connect_network('anvil-nextgen', 'hammernet')
+        api.project_detach_network('anvil-nextgen', 'hammernet')
+        network = api._must_find(db, model.Network, 'hammernet')
+        project = api._must_find(db, model.Project, 'anvil-nextgen')
+        assert network not in project.networks
+        assert network.project is not project
+        releaseDB(db)
+
+
 class TestNode:
     """Tests for the haas.api.node_* functions."""
 
