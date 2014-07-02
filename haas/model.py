@@ -217,3 +217,16 @@ class Hnic(Model):
         self.group = group
         self.label = label
         self.mac_addr = mac_addr
+
+    @no_dry_run
+    def create(self):
+        trunk_nic = cfg.get('headnode', 'trunk_nic')
+        vlan_no = str(self.network.vlan_no)
+        bridge = 'br-vlan%s' % vlan_no
+        vlan_nic = '%s.%s' % (trunk_nic, vlan_no)
+        check_call(['brctl', 'addbr', bridge])
+        check_call(['vconfig', 'add', trunk_nic, vlan_no])
+        check_call(['brctl', 'addif', bridge, vlan_nic])
+        check_call(['ifconfig', bridge, 'up', 'promisc'])
+        check_call(['ifconfig', vlan_nic, 'up', 'promisc'])
+        check_call(['virsh', 'attach-interface', self.headnode._vmname(), 'bridge', bridge, '--config'])

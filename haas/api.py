@@ -4,8 +4,10 @@ haas.server translates between this and HTTP.
 
 TODO: Spec out and document what sanitization is required.
 """
+import sys
 
 import model
+from haas.config import cfg
 
 class APIError(Exception):
     """An exception indicating an error that should be reported to the user.
@@ -138,10 +140,21 @@ def project_deploy(projectname):
     TODO: there are other possible errors, document them and how they are
     handled.
     """
+    # XXX: we'd like to be picking up the driver automatically, but apparently
+    # the solution we were using for this in the old implementation was only
+    # working by chance. grr.
+    import haas.drivers.dell as driver
     db = model.Session()
     project = _must_find(db, model.Project, projectname)
+
+    for net in project.networks:
+        for nic in net.nics:
+            driver.set_access_vlan(int(nic.port.label), net.vlan_no)
+
     if project.headnode:
         project.headnode.create()
+        for hnic in project.headnode.hnics:
+            hnic.create()
         project.headnode.start()
     else:
         pass # TODO: at least log this, if not throw an error.

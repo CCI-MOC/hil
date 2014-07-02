@@ -13,6 +13,9 @@ import re
 
 from haas.config import cfg
 
+from haas.dev_support import no_dry_run
+
+@no_dry_run
 def set_access_vlan(port, vlan_id):
     main_prompt = re.escape('console#')
     config_prompt = re.escape('console(config)#')
