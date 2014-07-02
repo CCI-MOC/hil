@@ -143,11 +143,11 @@ class Port(Model):
 
 
 class Switch(Model):
-    model         = Column(String)
+    driver = Column(String)
 
-    def __init__(self,label,model):
+    def __init__(self, label, driver):
         self.label = label
-        self.model = model
+        self.driver = driver
 
 
 class User(Model):
