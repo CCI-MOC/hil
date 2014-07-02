@@ -52,17 +52,15 @@ class Nic(Model):
     mac_addr  = Column(String)
 
     port_id   = Column(Integer,ForeignKey('port.id'))
-    node_id   = Column(Integer,ForeignKey('node.id'))
+    node_id   = Column(Integer,ForeignKey('node.id'), nullable=False)
+    network_id = Column(Integer, ForeignKey('network.id'))
 
-    # One to one mapping port
+    network   = relationship("Network", backref=backref('nics'))
     port      = relationship("Port",backref=backref('nic',uselist=False))
     node      = relationship("Node",backref=backref('nics'))
 
-    group_id = Column(Integer, ForeignKey('group.id'))
-    group = relationship("Group", backref=backref("nic_list"))
-
-
-    def __init__(self, label, mac_addr):
+    def __init__(self, node, label, mac_addr):
+        self.node      = node
         self.label     = label
         self.mac_addr  = mac_addr
 
@@ -132,16 +130,13 @@ class Vlan(Model):
 
 
 class Port(Model):
-    port_no       = Column(Integer)
-    switch_id     = Column(Integer,ForeignKey('switch.id'))
+    switch_id     = Column(Integer,ForeignKey('switch.id'), nullable=False)
     switch        = relationship("Switch",backref=backref('ports'))
 
-    group_id = Column(Integer, ForeignKey('group.id'))
-    group = relationship("Group", backref=backref("port_list"))
-
-    def __init__(self, label, port_no):
+    def __init__(self, switch, label):
+        self.switch = switch
         self.label   = label
-        self.port_no   = port_no
+
 
 
 class Switch(Model):
@@ -208,8 +203,11 @@ class Headnode(Model):
 
 class Hnic(Model):
     mac_addr       = Column(String)
-    headnode_id    = Column(String, ForeignKey('headnode.id'), nullable=False)
+    headnode_id    = Column(Integer, ForeignKey('headnode.id'), nullable=False)
+    network_id     = Column(Integer, ForeignKey('network.id'))
+
     headnode       = relationship("Headnode", backref = backref('hnics'))
+    network        = relationship("Network", backref=backref('hnics'))
 
     group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
     group = relationship("Group", backref=backref("hnic_list"))

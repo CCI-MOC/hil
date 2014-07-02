@@ -53,6 +53,18 @@ def user(username):
 def node_register(nodename):
     return api.node_register(nodename)
 
+@app.route('/node/<nodename>/nic/<nicname>', methods=['PUT', 'DELETE'])
+@api_function
+def nic(nodename, nicname):
+    """Handle create/delete nic commands."""
+    if request.method == 'PUT':
+        return api.node_register_nic(nodename,
+                                     nicname,
+                                     request.form['macaddr'])
+    else: # DELETE
+        return api.node_delete_nic(nodename,
+                                   nicname)
+
 @app.route('/project/<projectname>', methods=['PUT', 'DELETE'])
 @api_function
 def project(projectname):
@@ -119,6 +131,26 @@ def switch(switchname):
     else: # DELETE
         return api.switch_delete(switchname)
 
+@app.route('/switch/<switch>/port/<port>', methods=['PUT', 'DELETE'])
+@api_function
+def port(switch, port):
+    if request.method == 'PUT':
+        return api.port_register(switch, port)
+    else: # DELETE
+        return api.port_delete(switch, port)
+
+@app.route('/switch/<switch>/port/<port>/connect_nic', methods=['POST'])
+@api_function
+def port_connect_nic(switch, port):
+    return api.port_connect_nic(switch,
+                                port,
+                                request.form['node'],
+                                request.form['nic'])
+
+@app.route('/switch/<switch>/port/<port>/detach_nic', methods=['POST'])
+@api_function
+def port_detach_nic(switch, port):
+    return api.port_detach_nic(switch, port)
 
 @app.route('/network/<networkname>', methods=['PUT', 'DELETE'])
 @api_function
@@ -138,6 +170,50 @@ def project_connect_node(projectname):
 @api_function
 def project_detach_node(projectname):
     return api.project_detach_node(projectname, request.form['node'])
+
+@app.route('/project/<projectname>/connect_headnode', methods=['POST'])
+@api_function
+def project_connect_headnode(projectname):
+    return api.project_connect_headnode(projectname, request.form['headnode'])
+
+@app.route('/project/<projectname>/detach_headnode', methods=['POST'])
+@api_function
+def project_detach_headnode(projectname):
+    return api.project_detach_headnode(projectname, request.form['headnode'])
+
+@app.route('/project/<projectname>/connect_network', methods=['POST'])
+@api_function
+def project_connect_network(projectname):
+    return api.project_connect_network(projectname, request.form['network'])
+
+@app.route('/project/<projectname>/detach_network', methods=['POST'])
+@api_function
+def project_detach_network(projectname):
+    return api.project_detach_network(projectname, request.form['network'])
+
+
+@app.route('/node/<node>/nic/<nic>/connect_network', methods=['POST'])
+@api_function
+def node_connect_network(node, nic):
+    return api.node_connect_network(node, nic, request.form['network'])
+
+@app.route('/node/<node>/nic/<nic>/detach_network', methods=['POST'])
+@api_function
+def node_detach_network(node, nic):
+    return api.node_detach_network(node, nic)
+
+@app.route('/headnode/<headnode>/hnic/<hnic>/connect_network', methods=['POST'])
+@api_function
+def headnode_connect_network(headnode, hnic):
+    return api.headnode_connect_network(headnode, hnic, request.form['network'])
+
+@app.route('/headnode/<headnode>/hnic/<hnic>/detach_network', methods=['POST'])
+@api_function
+def headnode_detach_network(headnode, hnic):
+    return api.headnode_detach_network(headnode, hnic)
+
+
+
 
 @app.route('/vlan/<vlan_id>', methods=['PUT', 'DELETE'])
 @api_function

@@ -50,7 +50,7 @@ Full Api spec:
     node_connect_network <node_label> <nic_label> <network_label>
     node_detach_network  <node_label> <nic_label>
     [POST] /node/<node_label>/nic/<nic_label>/connect_network {network=<network_label>}
-    [POST] /node/<node_label>/nic/<nic_label>/detach_network {network=<network_label>}
+    [POST] /node/<node_label>/nic/<nic_label>/detach_network
 
     headnode_create_hnic <headnode_label> <hnic_label>
     headnode_delete_hnic <headnode_label> <hnic_label>
@@ -58,9 +58,9 @@ Full Api spec:
     [DELETE] /headnode/<hn_label>/hnic/<hnic_label>
 
     headnode_connect_network <hn_label> <hnic_label> <network_label>
-    headnode_detach_network  <hn_label> <hnic_label> <network_label>
+    headnode_detach_network  <hn_label> <hnic_label>
     [POST] /headnode/<hn_label>/hnic/<hnic_label>/connect_network {network=<network_label>}
-    [POST] /headnode/<hn_label>/hnic/<hnic_label>/detach_network {network=<network_label>}
+    [POST] /headnode/<hn_label>/hnic/<hnic_label>/detach_network
 
     node_register <node_label>
     node_delete   <node_label>
@@ -72,18 +72,26 @@ Full Api spec:
     [PUT]    /node/<node_label>/nic/<nic_label> {mac_addr=<mac_addr>}
     [DELETE] /node/<node_label>/nic/<nic_label>
 
-    switch_register  <switch_label> <driver> <num_ports>
+    switch_register  <switch_label> <driver>
     switch_delete    <switch_label>
-    [PUT]    /switch/<switch_label> {driver=<driver>, num_ports=<num_ports>}
+    [PUT]    /switch/<switch_label> {driver=<driver>}
     [DELETE] /switch/<switch_label>
+
+    port_register  <switch_label> <port_no>
+    port_delete    <switch_label> <port_no>
+    [PUT]    /switch/<switch_label>/port/<port_no>
+    [DELETE] /switch/<switch_label>/port/<port_no>
 
     vlan_register <vlan_id>
     vlan_delete   <vlan_id>
     [PUT]    /vlan/<vlan_id>
     [DELETE] /vlan/<vlan_id>
 
-    #### TODO FIXME:  Specify the remaining ones
-    nic_connect_switch <node_label> <nic_label> <switch_label> <port>
+    port_connect_nic <switch_label> <port_no> <node_label> <nic_label>
+    port_detach_nic  <switch_label> <port_no>
+    [POST] /switch/<switch_label>/port/<port_no>/connect_nic
+    [POST] /switch/<switch_label>/port/<port_no>/detach_nic
+
     import_vlan <network_label> <vlan_label>
     block_user <user_label>
     unblock_user <user_label>

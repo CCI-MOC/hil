@@ -128,22 +128,58 @@ def headnode_delete(hn_name):
     check_status_code(requests.delete(url))
 
 @cmd
-def project_connect_node(projectname, nodename):
-    """Connect a node to a project"""
-    url = object_url('project', projectname, 'connect_node')
-    check_stats_code(requests.post(url, data={'node': nodename}))
+def project_connect_node(project, node):
+    """Connect <node> to <project>"""
+    url = object_url('project', project, 'connect_node')
+    check_status_code(requests.post(url, data={'node': node}))
 
 @cmd
-def project_detach_node(projectname, nodename):
-    """Detach a node from a project"""
-    url = object_url('project', projectname, 'detach_node')
-    check_stats_code(requests.post(url, data={'node': nodename}))
+def project_detach_node(project, node):
+    """Detach <node> from <project>"""
+    url = object_url('project', project, 'detach_node')
+    check_status_code(requests.post(url, data={'node': node}))
+
+@cmd
+def project_connect_headnode(project, headnode):
+    """Connect <headnode> to <project>"""
+    url = object_url('project', project, 'connect_headnode')
+    check_status_code(requests.post(url, data={'headnode': headnode}))
+
+@cmd
+def project_detach_headnode(project, headnode):
+    """Detach <headnode> from <project>"""
+    url = object_url('project', project, 'detach_headnode')
+    check_status_code(requests.post(url, data={'headnode': headnode}))
+
+@cmd
+def project_connect_network(project, network):
+    """Connect <network> to <project>"""
+    url = object_url('project', project, 'connect_network')
+    check_status_code(requests.post(url, data={'network': network}))
+
+@cmd
+def project_detach_network(project, network):
+    """Detach <network> from <project>"""
+    url = object_url('project', project, 'detach_network')
+    check_status_code(requests.post(url, data={'network': network}))
 
 @cmd
 def node_register(node):
     """Register a node named <node>"""
     url = object_url('node', node)
     check_status_code(requests.put(url))
+
+@cmd
+def node_register_nic(node, nic, macaddr):
+    """Register existence of a NIC with the given MAC address on the given node"""
+    url = object_url('node', node, 'nic', nic)
+    check_status_code(requests.put(url, data={'macaddr':macaddr}))
+
+@cmd
+def node_delete_nic(node, nic):
+    """Delete a NIC on a node"""
+    url = object_url('node', node, 'nic', nic)
+    check_status_code(requests.delete(url))
 
 @cmd
 def headnode_create_hnic(headnode, hnic, macaddr):
@@ -169,6 +205,29 @@ def vlan_delete(vlan_id):
     url = object_url('vlan', vlan_id)
     check_status_code(requests.delete(url))
 
+@cmd
+def node_connect_network(node, nic, network):
+    """Connect <node> to <network> on given <nic>"""
+    url = object_url('node', node, 'nic', nic, 'connect_network')
+    check_status_code(requests.post(url, data={'network':network}))
+
+@cmd
+def node_detach_network(node, nic):
+    """Detach <node> from the network on given <nic>"""
+    url = object_url('node', node, 'nic', nic, 'detach_network')
+    check_status_code(requests.post(url))
+
+@cmd
+def headnode_connect_network(headnode, hnic, network):
+    """Connect <headnode> to <network> on given <hnic>"""
+    url = object_url('headnode', headnode, 'hnic', hnic, 'connect_network')
+    check_status_code(requests.post(url, data={'network':network}))
+
+@cmd
+def headnode_detach_network(headnode, hnic):
+    """Detach <headnode> from the network on given <hnic>"""
+    url = object_url('headnode', headnode, 'hnic', hnic, 'detach_network')
+    check_status_code(requests.post(url))
 
 
 @cmd
@@ -182,6 +241,30 @@ def switch_delete(name):
     """Delete the switch named <name>"""
     url = object_url('switch', name)
     check_status_code(requests.delete(url))
+
+@cmd
+def port_register(switch, port):
+    """Register a <port> on a <switch>"""
+    url = object_url('switch', switch, 'port', port)
+    check_status_code(requests.put(url))
+
+@cmd
+def port_delete(switch, port):
+    """Delete a <port> on a <switch>"""
+    url = object_url('switch', switch, 'port', port)
+    check_status_code(requests.delete(url))
+
+@cmd
+def port_connect_nic(switch, port, node, nic):
+    """Connect a <port> on a <switch> to a <nic> on a <node>"""
+    url = object_url('switch', switch, 'port', port, 'connect_nic')
+    check_status_code(requests.post(url, data={'node': node, 'nic': nic}))
+
+@cmd
+def port_detach_nic(switch, port):
+    """Detach a <port> on a <switch> from whatever's connected to it"""
+    url = object_url('switch', switch, 'port', port, 'detach_nic')
+    check_status_code(requests.post(url))
 
 def usage():
     """Display a summary of the arguments accepted by the CLI."""

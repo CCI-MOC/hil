@@ -130,7 +130,10 @@ project at the same time.
     node_delete_nic    <node_label> <nic_label>
     switch_register    <switch_label> <script> <number_ports>
     switch_delete      <switch_label>
-    nic_connect_switch <node_label> <nic_label> <switch_label> <port>
+    port_register      <switch_label> <port_no>
+    port_delete        <switch_label> <port_no>
+    port_connect_nic   <switch_label> <port_no> <node_label> <nic_label>
+    port_detach_nic    <switch_label> <port_no>
  
     # dump all information about the system
     show all
