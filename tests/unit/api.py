@@ -491,3 +491,19 @@ class TestSwitch:
         with pytest.raises(api.NotFoundError):
             api.switch_delete('bait_and')
         releaseDB(db)
+
+class TestPort:
+    """Tests for the haas.api.port_* functions."""
+
+    def test_port_register_success(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api.port_register('bait-and', '3')
+        releaseDB(db)
+
+    def test_port_delete_success(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api.port_register('bait-and', '3')
+        api.port_delete('bait-and', '3')
+        releaseDB(db)
