@@ -222,6 +222,68 @@ class TestNode:
             api._must_find(db, model.Node, 'node-99')
         releaseDB(db)
 
+    def test_node_register_nic(self):
+        db = newDB()
+        api.node_register('compute-01')
+        api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
+        nic = api._must_find(db, model.Nic, '01-eth0')
+        assert nic.node.label == 'compute-01'
+        releaseDB(db)
+
+    def test_node_register_nic_no_node(self):
+        db = newDB()
+        with pytest.raises(api.NotFoundError):
+            api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
+        releaseDB(db)
+
+    def test_node_register_nic_duplicate_nic(self):
+        db = newDB()
+        api.node_register('compute-01')
+        api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
+        nic = api._must_find(db, model.Nic, '01-eth0')
+        with pytest.raises(api.DuplicateError):
+            api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:15')
+        releaseDB(db)
+
+    def test_node_delete_nic_success(self):
+        db = newDB()
+        api.node_register('compute-01')
+        api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
+        api.node_delete_nic('compute-01', '01-eth0')
+        api._assert_absent(db, model.Nic, '01-eth0')
+        api._must_find(db, model.Node, 'compute-01')
+        releaseDB(db)
+
+    def test_node_delete_nic_nic_nexist(self):
+        db = newDB()
+        api.node_register('compute-01')
+        with pytest.raises(api.NotFoundError):
+            api.node_delete_nic('compute-01', '01-eth0')
+        releaseDB(db)
+
+    def test_node_delete_nic_node_nexist(self):
+        db = newDB()
+        with pytest.raises(api.NotFoundError):
+            api.node_delete_nic('compute-01', '01-eth0')
+        releaseDB(db)
+
+    def test_node_delete_nic_wrong_node(self):
+        db = newDB()
+        api.node_register('compute-01')
+        api.node_register('compute-02')
+        api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
+        with pytest.raises(api.NotFoundError):
+            api.node_delete_nic('compute-02', '01-eth0')
+        releaseDB(db)
+
+    def test_node_delete_nic_wrong_nexist_node(self):
+        db = newDB()
+        api.node_register('compute-01')
+        api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
+        with pytest.raises(api.NotFoundError):
+            api.node_delete_nic('compute-02', '01-eth0')
+        releaseDB(db)
+
 
 class TestHeadnode:
     """Tests for the haas.api.node_* functions."""

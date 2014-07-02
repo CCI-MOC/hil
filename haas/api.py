@@ -225,6 +225,39 @@ def node_delete(nodename):
     db.delete(node)
     db.commit()
 
+def node_register_nic(nodename, nic_name, macaddr):
+    """Register exitence of nic attached to given node
+
+    If the node does not exist, a NotFoundError will be raised.
+
+    If there is already an nic with that name, a DuplicateError will be raised.
+    """
+    db = model.Session()
+    node = _must_find(db, model.Node, nodename)
+    group = node.group
+    _assert_absent(db, model.Nic, nic_name)
+    nic = model.Nic(node, nic_name, macaddr)
+    db.add(nic)
+    db.commit()
+
+def node_delete_nic(nodename, nic_name):
+    """Delete nic with given name.
+
+    If the nic does not exist, a NotFoundError will be raised.
+    """
+    db = model.Session()
+    nic = _must_find(db, model.Nic, nic_name)
+    if nic.node.label != nodename:
+        # We raise a NotFoundError for the following reason: Nic's SHOULD
+        # belong to nodes, and thus we SHOULD be doing a search of the nics
+        # belonging to the given node.  (In that situation, we will honestly
+        # get a NotFoundError.)  We aren't right now, because currently Nic's
+        # labels are globally unique.
+        raise NotFoundError("Nic: " + nic_name)
+    db.delete(nic)
+    db.commit()
+
+
 def node_connect_network(node_label, nic_label, network_label):
     """Connect a physical NIC to a network"""
     db = model.Session()
