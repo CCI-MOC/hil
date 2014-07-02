@@ -112,11 +112,19 @@ class TestUser:
 class TestProjectCreateDelete:
     """Tests for the haas.api.project_* functions."""
 
-    def test_project_create(self):
+    def test_project_create_success(self):
         db = newDB()
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
         api._must_find(db, model.Project, 'anvil-nextgen')
+        releaseDB(db)
+
+    def test_project_create_duplicate(self):
+        db = newDB()
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        with pytest.raises(api.DuplicateError):
+            api.project_create('anvil-nextgen', 'acme-corp')
         releaseDB(db)
 
     def test_project_delete(self):
@@ -126,6 +134,12 @@ class TestProjectCreateDelete:
         api.project_delete('anvil-nextgen')
         with pytest.raises(api.NotFoundError):
             api._must_find(db, model.Project, 'anvil-nextgen')
+        releaseDB(db)
+
+    def test_project_delete_nexist(self):
+        db = newDB()
+        with pytest.raises(api.NotFoundError):
+            api.project_delete('anvil-nextgen')
         releaseDB(db)
 
 class TestProjectConnectDetachNode:
