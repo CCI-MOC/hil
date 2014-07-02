@@ -319,6 +319,7 @@ def network_delete(networkname):
     db.delete(network)
     db.commit()
 
+
 def vlan_register(vlan):
     """Registers the vlan with vlan number `vlan`.
 
@@ -353,6 +354,28 @@ def vlan_delete(vlan):
 
     db = model.Session()
     db.delete(_must_find(db, model.Vlan, str(vlan_no)))
+    db.commit()
+
+
+
+                            # Switch code #
+                            ###############
+
+def switch_register(name, driver):
+    """Register the switch named `name`.
+
+    If the switch already exists, a DuplicateError will be raised.
+    """
+    db = model.Session()
+    _assert_absent(db, model.Switch, name)
+    switch = model.Switch(name, driver)
+    db.add(switch)
+    db.commit()
+
+def switch_delete(name):
+    db = model.Session()
+    switch = _must_find(db, model.Switch, name)
+    db.delete(switch)
     db.commit()
 
 
