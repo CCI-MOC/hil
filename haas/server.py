@@ -143,6 +143,27 @@ def project_connect_node(projectname):
 def project_detach_node(projectname):
     return api.project_detach_node(projectname, request.form['node'])
 
+@app.route('/project/<projectname>/connect_headnode', methods=['POST'])
+@api_function
+def project_connect_headnode(projectname):
+    return api.project_connect_headnode(projectname, request.form['headnode'])
+
+@app.route('/project/<projectname>/detach_headnode', methods=['POST'])
+@api_function
+def project_detach_headnode(projectname):
+    return api.project_detach_headnode(projectname, request.form['headnode'])
+
+@app.route('/project/<projectname>/connect_network', methods=['POST'])
+@api_function
+def project_connect_network(projectname):
+    return api.project_connect_network(projectname, request.form['network'])
+
+@app.route('/project/<projectname>/detach_network', methods=['POST'])
+@api_function
+def project_detach_network(projectname):
+    return api.project_detach_network(projectname, request.form['network'])
+
+
 @app.route('/vlan/<vlan_id>', methods=['PUT', 'DELETE'])
 @api_function
 def vlan(vlan_id):

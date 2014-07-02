@@ -128,16 +128,40 @@ def headnode_delete(hn_name):
     check_status_code(requests.delete(url))
 
 @cmd
-def project_connect_node(projectname, nodename):
-    """Connect a node to a project"""
-    url = object_url('project', projectname, 'connect_node')
-    check_stats_code(requests.post(url, data={'node': nodename}))
+def project_connect_node(project, node):
+    """Connect <node> to <project>"""
+    url = object_url('project', project, 'connect_node')
+    check_status_code(requests.post(url, data={'node': node}))
 
 @cmd
-def project_detach_node(projectname, nodename):
-    """Detach a node from a project"""
-    url = object_url('project', projectname, 'detach_node')
-    check_stats_code(requests.post(url, data={'node': nodename}))
+def project_detach_node(project, node):
+    """Detach <node> from <project>"""
+    url = object_url('project', project, 'detach_node')
+    check_status_code(requests.post(url, data={'node': node}))
+
+@cmd
+def project_connect_headnode(project, headnode):
+    """Connect <headnode> to <project>"""
+    url = object_url('project', project, 'connect_headnode')
+    check_status_code(requests.post(url, data={'headnode': headnode}))
+
+@cmd
+def project_detach_headnode(project, headnode):
+    """Detach <headnode> from <project>"""
+    url = object_url('project', project, 'detach_headnode')
+    check_status_code(requests.post(url, data={'headnode': headnode}))
+
+@cmd
+def project_connect_network(project, network):
+    """Connect <network> to <project>"""
+    url = object_url('project', project, 'connect_network')
+    check_status_code(requests.post(url, data={'network': network}))
+
+@cmd
+def project_detach_network(project, network):
+    """Detach <network> from <project>"""
+    url = object_url('project', project, 'detach_network')
+    check_status_code(requests.post(url, data={'network': network}))
 
 @cmd
 def node_register(node):
