@@ -109,7 +109,7 @@ class TestUser:
         releaseDB(db)
 
 
-class TestProject:
+class TestProjectCreateDelete:
     """Tests for the haas.api.project_* functions."""
 
     def test_project_create(self):
@@ -127,6 +127,8 @@ class TestProject:
         with pytest.raises(api.NotFoundError):
             api._must_find(db, model.Project, 'anvil-nextgen')
         releaseDB(db)
+
+class TestProjectConnectDetachNode:
 
     def test_project_connect_node(self):
         db = newDB()
@@ -198,6 +200,8 @@ class TestProject:
         releaseDB(db)
 
 
+class TestProjectConnectDetachHeadnode:
+
     def test_project_connect_headnode(self):
         db = newDB()
         api.group_create('acme-corp')
@@ -223,6 +227,9 @@ class TestProject:
         assert headnode.project is None
         releaseDB(db)
 
+
+
+class TestProjectConnectDetachNetwork:
 
     def test_project_connect_network_success(self):
         db = newDB()
@@ -252,7 +259,7 @@ class TestProject:
         releaseDB(db)
 
 
-class TestNode:
+class TestNodeRegisterDelete:
     """Tests for the haas.api.node_* functions."""
 
     def test_node_register(self):
@@ -275,6 +282,9 @@ class TestNode:
         with pytest.raises(api.NotFoundError):
             api._must_find(db, model.Node, 'node-99')
         releaseDB(db)
+
+
+class TestNodeRegisterDeleteNic:
 
     def test_node_register_nic(self):
         db = newDB()
@@ -339,6 +349,8 @@ class TestNode:
         releaseDB(db)
 
 
+class TestNodeConnectDetachNetwork:
+
     def test_node_connect_network_success(self):
         db = newDB()
         api.node_register('node-99')
@@ -375,8 +387,7 @@ class TestNode:
         releaseDB(db)
 
 
-class TestHeadnode:
-    """Tests for the haas.api.node_* functions."""
+class TestHeadnodeCreateDelete:
 
     def test_headnode_create_success(self):
         db = newDB()
@@ -418,6 +429,8 @@ class TestHeadnode:
             api.headnode_delete('hn-0')
         releaseDB(db)
 
+
+class TestHeadnodeCreateDeleteHnic:
 
     def test_headnode_create_hnic_success(self):
         db = newDB()
@@ -488,6 +501,8 @@ class TestHeadnode:
         releaseDB(db)
 
 
+class TestHeadnodeConnectDetachNetwork:
+
     def test_headnode_connect_network_success(self):
         db = newDB()
         api.vlan_register('101')
@@ -524,7 +539,7 @@ class TestHeadnode:
         releaseDB(db)
 
 
-class TestNetwork:
+class TestNetworkCreateDelete:
     """Tests for the haas.api.network_* functions."""
 
     def test_network_create_success(self):
@@ -593,7 +608,8 @@ class TestNetwork:
             api.network_create('sledge', 'acme_corp')
         releaseDB(db)
 
-class TestVlan:
+
+class TestVlanRegisterDelete:
 
     def test_vlan_register_success(self):
         db = newDB()
@@ -650,7 +666,7 @@ class TestVlan:
         releaseDB(db)
 
 
-class TestSwitch:
+class TestSwitchRegisterDelete:
     """Tests for the haas.api.switch_* functions."""
 
     def test_switch_register_success(self):
@@ -680,8 +696,8 @@ class TestSwitch:
             api.switch_delete('bait_and')
         releaseDB(db)
 
-class TestPort:
-    """Tests for the haas.api.port_* functions."""
+
+class TestPortRegisterDelete:
 
     def test_port_register_success(self):
         db = newDB()
@@ -695,6 +711,9 @@ class TestPort:
         api.port_register('bait-and', '3')
         api.port_delete('bait-and', '3')
         releaseDB(db)
+
+
+class TestPortConnectDetachNic:
 
     def test_port_connect_nic_success(self):
         db = newDB()
