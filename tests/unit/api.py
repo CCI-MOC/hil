@@ -214,6 +214,24 @@ class TestProjectConnectDetachHeadnode:
         assert headnode.project is project
         releaseDB(db)
 
+    def test_project_connect_headnode_project_nexist(self):
+        """Tests that connecting a headnode to a nonexistent project fails"""
+        db = newDB()
+        api.group_create('acme-corp')
+        api.headnode_create('hn-1', 'acme-corp')
+        with pytest.raises(api.NotFoundError):
+            api.project_connect_headnode('anvil-nextgen', 'hn-1')
+        releaseDB(db)
+
+    def test_project_connect_headnode_headnode_nexist(self):
+        """Tests that connecting a nonexistent headnode to a project fails"""
+        db = newDB()
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        with pytest.raises(api.NotFoundError):
+            api.project_connect_headnode('anvil-nextgen', 'hn-1')
+        releaseDB(db)
+
     def test_project_detach_headnode(self):
         db = newDB()
         api.group_create('acme-corp')
@@ -227,6 +245,33 @@ class TestProjectConnectDetachHeadnode:
         assert headnode.project is None
         releaseDB(db)
 
+    def test_project_detach_headnode_notattached(self):
+        """Tests that removing a headnode from a project it's not in fails."""
+        db = newDB()
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        api.headnode_create('hn-1', 'acme-corp')
+        with pytest.raises(api.NotFoundError):
+            api.project_detach_headnode('anvil-nextgen', 'hn-1')
+        releaseDB(db)
+
+    def test_project_detach_headnode_project_nexist(self):
+        """Tests that removing a node from a nonexistent project fails."""
+        db = newDB()
+        api.group_create('acme-corp')
+        api.headnode_create('hn-1', 'acme-corp')
+        with pytest.raises(api.NotFoundError):
+            api.project_detach_headnode('anvil-nextgen', 'hn-1')
+        releaseDB(db)
+
+    def test_project_detach_headnode_headnode_nexist(self):
+        """Tests that removing a nonexistent node from a project fails."""
+        db = newDB()
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        with pytest.raises(api.NotFoundError):
+            api.project_detach_headnode('anvil-nextgen', 'hn-1')
+        releaseDB(db)
 
 
 class TestProjectConnectDetachNetwork:
