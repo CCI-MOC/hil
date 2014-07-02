@@ -51,10 +51,12 @@ class TestGroup(InsertTest):
 class TestNic(InsertTest):
 
     def test_insert(self):
-        self.insert(Nic('ipmi', '00:11:22:33:44:55'))
+        node = Node('node-99')
+        self.insert(Nic(node, 'ipmi', '00:11:22:33:44:55'))
 
     def test_repr(self):
-        print(Nic('ipmi', '00:11:22:33:44:55'))
+        node = Node('node-99')
+        print(Nic(node, 'ipmi', '00:11:22:33:44:55'))
 
 
 class TestNode(InsertTest):

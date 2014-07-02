@@ -52,18 +52,15 @@ class Nic(Model):
     mac_addr  = Column(String)
 
     port_id   = Column(Integer,ForeignKey('port.id'))
-    node_id   = Column(Integer,ForeignKey('node.id'))
+    node_id   = Column(Integer,ForeignKey('node.id'), nullable=False)
     network_id = Column(Integer, ForeignKey('network.id'))
 
     network   = relationship("Network", backref=backref('nics'))
     port      = relationship("Port",backref=backref('nic',uselist=False))
     node      = relationship("Node",backref=backref('nics'))
 
-    group_id = Column(Integer, ForeignKey('group.id'))
-    group = relationship("Group", backref=backref("nic_list"))
-
-
-    def __init__(self, label, mac_addr):
+    def __init__(self, node, label, mac_addr):
+        self.node      = node
         self.label     = label
         self.mac_addr  = mac_addr
 
