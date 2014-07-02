@@ -198,6 +198,32 @@ class TestProject:
         releaseDB(db)
 
 
+    def test_project_connect_headnode(self):
+        db = newDB()
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        api.headnode_create('hn-1', 'acme-corp')
+        api.project_connect_headnode('anvil-nextgen', 'hn-1')
+        project = api._must_find(db, model.Project, 'anvil-nextgen')
+        headnode = api._must_find(db, model.Headnode, 'hn-1')
+        assert project.headnode is headnode
+        assert headnode.project is project
+        releaseDB(db)
+
+    def test_project_detach_headnode(self):
+        db = newDB()
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        api.headnode_create('hn-1', 'acme-corp')
+        api.project_connect_headnode('anvil-nextgen', 'hn-1')
+        api.project_detach_headnode('anvil-nextgen', 'hn-1')
+        project = api._must_find(db, model.Project, 'anvil-nextgen')
+        headnode = api._must_find(db, model.Headnode, 'hn-1')
+        assert project.headnode is None
+        assert headnode.project is None
+        releaseDB(db)
+
+
     def test_project_connect_network_success(self):
         db = newDB()
         api.vlan_register('101')

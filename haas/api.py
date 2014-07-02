@@ -172,6 +172,33 @@ def project_detach_node(projectname, nodename):
     db.commit()
 
 
+def project_connect_headnode(projectname, nodename):
+    """Add a project 'projectname' to an existing headnode
+
+    If the headnode or project does not exist, a NotFoundError will be raised.
+    """
+    db = model.Session()
+    project = _must_find(db, model.Project, projectname)
+    headnode = _must_find(db, model.Headnode, nodename)
+    if project.headnode is not None:
+        raise DuplicateError(nodename)
+    project.headnode = headnode
+    db.commit()
+
+def project_detach_headnode(projectname, nodename):
+    """Remove a project 'projectname' from an existing headnode
+
+    If the headnode or project does not exist, a NotFoundError will be raised.
+    """
+    db = model.Session()
+    project = _must_find(db, model.Project, projectname)
+    headnode = _must_find(db, model.Headnode, nodename)
+    if project.headnode is not headnode:
+        raise NotFoundError(nodename)
+    project.headnode = None
+    db.commit()
+
+
 def project_connect_network(projectname, networkname):
     """Add a project 'projectname' to an existing network
 
