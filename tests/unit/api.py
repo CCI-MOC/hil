@@ -289,6 +289,25 @@ class TestProjectConnectDetachNetwork:
         assert network.project is project
         releaseDB(db)
 
+    def test_project_connect_network_project_nexist(self):
+        """Tests that connecting a network to a nonexistent project fails"""
+        db = newDB()
+        api.vlan_register('101')
+        api.group_create('acme-code')
+        api.network_create('hammernet', 'acme-code')
+        with pytest.raises(api.NotFoundError):
+            api.project_connect_network('anvil-nextgen', 'hammernet')
+        releaseDB(db)
+
+    def test_project_connect_network_network_nexist(self):
+        """Tests that connecting a nonexistent network to a project fails"""
+        db = newDB()
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        with pytest.raises(api.NotFoundError):
+            api.project_connect_network('anvil-nextgen', 'hammernet')
+        releaseDB(db)
+
     def test_project_detach_network_success(self):
         db = newDB()
         api.vlan_register('101')
@@ -301,6 +320,36 @@ class TestProjectConnectDetachNetwork:
         project = api._must_find(db, model.Project, 'anvil-nextgen')
         assert network not in project.networks
         assert network.project is not project
+        releaseDB(db)
+
+    def test_project_detach_network_notattached(self):
+        """Tests that removing a network from a project it's not in fails."""
+        db = newDB()
+        api.vlan_register('101')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.network_create('hammernet', 'acme-code')
+        with pytest.raises(api.NotFoundError):
+            api.project_detach_network('anvil-nextgen', 'hammernet')
+        releaseDB(db)
+
+    def test_project_detach_network_project_nexist(self):
+        """Tests that removing a node from a nonexistent project fails."""
+        db = newDB()
+        api.vlan_register('101')
+        api.group_create('acme-code')
+        api.network_create('hammernet', 'acme-code')
+        with pytest.raises(api.NotFoundError):
+            api.project_detach_network('anvil-nextgen', 'hammernet')
+        releaseDB(db)
+
+    def test_project_detach_network_nexist(self):
+        """Tests that removing a nonexistent node from a project fails."""
+        db = newDB()
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        with pytest.raises(api.NotFoundError):
+            api.project_detach_network('anvil-nextgen', 'hammernet')
         releaseDB(db)
 
 
