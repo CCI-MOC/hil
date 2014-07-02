@@ -391,7 +391,7 @@ def headnode_connect_network(node_label, nic_label, network_label):
     # *_detach_network.
     db = model.Session()
 
-    headnode = _must_find(db, model.Node, node_label)
+    headnode = _must_find(db, model.Headnode, node_label)
     hnic = _must_find(db, model.Hnic, nic_label)
     network = _must_find(db, model.Network, network_label)
 
@@ -409,7 +409,7 @@ def headnode_connect_network(node_label, nic_label, network_label):
     hnic.network = network
     db.commit()
 
-def node_detach_network(node_label, nic_label):
+def headnode_detach_network(node_label, nic_label):
     """Detach a heanode's nic from its network (if any).
 
     If the nic is not already a member of a network, this function does nothing.
