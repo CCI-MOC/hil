@@ -130,24 +130,21 @@ class Vlan(Model):
 
 
 class Port(Model):
-    port_no       = Column(Integer)
-    switch_id     = Column(Integer,ForeignKey('switch.id'))
+    switch_id     = Column(Integer,ForeignKey('switch.id'), nullable=False)
     switch        = relationship("Switch",backref=backref('ports'))
 
-    group_id = Column(Integer, ForeignKey('group.id'))
-    group = relationship("Group", backref=backref("port_list"))
-
-    def __init__(self, label, port_no):
+    def __init__(self, switch, label):
+        self.switch = switch
         self.label   = label
-        self.port_no   = port_no
+
 
 
 class Switch(Model):
-    model         = Column(String)
+    driver = Column(String)
 
-    def __init__(self,label,model):
+    def __init__(self, label, driver):
         self.label = label
-        self.model = model
+        self.driver = driver
 
 
 class User(Model):

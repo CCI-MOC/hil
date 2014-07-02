@@ -123,6 +123,14 @@ def group_add_user(groupname):
 def group_remove_user(groupname):
     return api.group_remove_user(groupname, request.form['user'])
 
+@app.route('/switch/<switchname>', methods=['PUT', 'DELETE'])
+@api_function
+def switch(switchname):
+    if request.method == 'PUT':
+        return api.switch_register(switchname, request.form['driver'])
+    else: # DELETE
+        return api.switch_delete(switchname)
+
 
 @app.route('/network/<networkname>', methods=['PUT', 'DELETE'])
 @api_function

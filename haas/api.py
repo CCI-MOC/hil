@@ -458,6 +458,7 @@ def network_delete(networkname):
     db.delete(network)
     db.commit()
 
+
 def vlan_register(vlan):
     """Registers the vlan with vlan number `vlan`.
 
@@ -492,6 +493,60 @@ def vlan_delete(vlan):
 
     db = model.Session()
     db.delete(_must_find(db, model.Vlan, str(vlan_no)))
+    db.commit()
+
+
+
+                            # Switch code #
+                            ###############
+
+def switch_register(name, driver):
+    """Register the switch named `name`.
+
+    If the switch already exists, a DuplicateError will be raised.
+    """
+    db = model.Session()
+    _assert_absent(db, model.Switch, name)
+    switch = model.Switch(name, driver)
+    db.add(switch)
+    db.commit()
+
+def switch_delete(name):
+    db = model.Session()
+    switch = _must_find(db, model.Switch, name)
+    db.delete(switch)
+    db.commit()
+
+def port_register(switch_name, port_name):
+    """Register a port with name "port" on switch "switch".
+
+    Currently, this label both must be unique AND will generally have to be
+    decimal integers.  This is nonsense if there are multiple switches, but we
+    don't support that anyways.
+
+    If the port already exists, a DuplicateError will be raised.
+
+    If the switch does not exist, a NotFoundError will be raised.
+    """
+    db = model.Session()
+    switch = _must_find(db, model.Switch, switch_name)
+    _assert_absent(db, model.Port, port_name)
+    port = model.Port(switch, port_name)
+    db.add(port)
+    db.commit()
+
+def port_delete(switch_name, port_name):
+    """Delete a port with name "port" on switch "switch".
+
+    If the port does not exist, or if the switch does not exist, a
+    NotFoundError will be raised.
+    """
+    db = model.Session()
+    switch = _must_find(db, model.Switch, switch_name)
+    port = _must_find(db, model.Port, port_name)
+    if port.switch is not switch:
+        raise NotFoundError(port_name)
+    db.delete(port)
     db.commit()
 
 
