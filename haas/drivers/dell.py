@@ -17,10 +17,6 @@ from haas.dev_support import no_dry_run
 
 @no_dry_run
 def set_access_vlan(port, vlan_id):
-    main_prompt = re.escape('console#')
-    config_prompt = re.escape('console(config)#')
-    if_prompt = re.escape('console(config-if)#')
-
     # load the configuration:
     switch_ip = cfg.get('switch dell', 'ip')
     switch_user = cfg.get('switch dell', 'user')
@@ -32,8 +28,20 @@ def set_access_vlan(port, vlan_id):
     console.sendline(switch_user)
     console.expect('Password:')
     console.sendline(switch_pass)
-    console.expect(main_prompt)
 
+    #Regex to handle different prompt at switch 
+    #[\r\n]+ will handle any newline
+    #.+ will handle any character after newline 
+    # this sequence terminates with #
+    console.expect(r'[\r\n]+.+#')
+    cmd_prompt = console.after
+    cmd_prompt = cmd_prompt.strip(' \r\n\t')
+    
+    #:-1 omits the last hash character
+    config_prompt = re.escape(cmd_prompt[:-1] + '(config)#')
+    if_prompt = re.escape(cmd_prompt[:-1] + '(config-if)#')
+    main_prompt = re.escape(cmd_prompt)
+    
     # select the right interface:
     console.sendline('config')
     console.expect(config_prompt)
