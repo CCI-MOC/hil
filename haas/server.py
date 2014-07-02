@@ -53,6 +53,18 @@ def user(username):
 def node_register(nodename):
     return api.node_register(nodename)
 
+@app.route('/node/<nodename>/nic/<nicname>', methods=['PUT', 'DELETE'])
+@api_function
+def nic(nodename, nicname):
+    """Handle create/delete nic commands."""
+    if request.method == 'PUT':
+        return api.node_register_nic(nodename,
+                                     nicname,
+                                     request.form['macaddr'])
+    else: # DELETE
+        return api.node_delete_nic(nodename,
+                                   nicname)
+
 @app.route('/project/<projectname>', methods=['PUT', 'DELETE'])
 @api_function
 def project(projectname):

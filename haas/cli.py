@@ -146,6 +146,18 @@ def node_register(node):
     check_status_code(requests.put(url))
 
 @cmd
+def node_register_nic(node, nic, macaddr):
+    """Register existence of a NIC with the given MAC address on the given node"""
+    url = object_url('node', node, 'nic', nic)
+    check_status_code(requests.put(url, data={'macaddr':macaddr}))
+
+@cmd
+def node_delete_nic(node, nic):
+    """Delete a NIC on a node"""
+    url = object_url('node', node, 'nic', nic)
+    check_status_code(requests.delete(url))
+
+@cmd
 def headnode_create_hnic(headnode, hnic, macaddr):
     """Create a NIC with the given MAC address on the given headnode"""
     url = object_url('headnode', headnode, 'hnic', hnic)
