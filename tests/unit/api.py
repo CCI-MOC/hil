@@ -679,3 +679,38 @@ class TestSwitch:
         with pytest.raises(api.NotFoundError):
             api.switch_delete('bait_and')
         releaseDB(db)
+
+class TestPort:
+    """Tests for the haas.api.port_* functions."""
+
+    def test_port_register_success(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api.port_register('bait-and', '3')
+        releaseDB(db)
+
+    def test_port_delete_success(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api.port_register('bait-and', '3')
+        api.port_delete('bait-and', '3')
+        releaseDB(db)
+
+    def test_port_connect_nic_success(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api.port_register('bait-and', '3')
+        api.node_register('compute-01')
+        api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+        releaseDB(db)
+
+    def test_port_detach_nic_success(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api.port_register('bait-and', '3')
+        api.node_register('compute-01')
+        api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+        api.port_detach_nic('bait-and', '3')
+        releaseDB(db)

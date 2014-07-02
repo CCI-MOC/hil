@@ -131,6 +131,26 @@ def switch(switchname):
     else: # DELETE
         return api.switch_delete(switchname)
 
+@app.route('/switch/<switch>/port/<port>', methods=['PUT', 'DELETE'])
+@api_function
+def port(switch, port):
+    if request.method == 'PUT':
+        return api.port_register(switch, port)
+    else: # DELETE
+        return api.port_delete(switch, port)
+
+@app.route('/switch/<switch>/port/<port>/connect_nic', methods=['POST'])
+@api_function
+def port_connect_nic(switch, port):
+    return api.port_connect_nic(switch,
+                                port,
+                                request.form['node'],
+                                request.form['nic'])
+
+@app.route('/switch/<switch>/port/<port>/detach_nic', methods=['POST'])
+@api_function
+def port_detach_nic(switch, port):
+    return api.port_detach_nic(switch, port)
 
 @app.route('/network/<networkname>', methods=['PUT', 'DELETE'])
 @api_function
@@ -191,6 +211,7 @@ def headnode_connect_network(headnode, hnic):
 @api_function
 def headnode_detach_network(headnode, hnic):
     return api.headnode_detach_network(headnode, hnic)
+
 
 
 
