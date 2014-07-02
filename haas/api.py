@@ -550,6 +550,57 @@ def port_delete(switch_name, port_name):
     db.commit()
 
 
+def port_connect_nic(switch_name, port_name, node_name, nic_name):
+    """Connect a port on a switch to a nic on a node
+
+    If any of the four arguments does not exist, a NotFoundError will be
+    raised.
+
+    If the port or the nic are already connected to something, a
+    DuplicateError will be raised.
+    """
+    db = model.Session()
+
+    switch = _must_find(db, model.Switch, switch_name)
+    port = _must_find(db, model.Port, port_name)
+    if port.switch is not switch:
+        raise NotFoundError(port_name)
+
+    node = _must_find(db, model.Node, node_name)
+    nic = _must_find(db, model.Nic, nic_name)
+    if nic.node is not node:
+        raise NotFoundError(nic_name)
+
+    if nic.port is not None:
+        raise DuplicateError(nic_name)
+
+    if port.nic is not None:
+        raise DuplicateError(port_name)
+
+    nic.port = port
+    db.commit()
+
+def port_detach_nic(switch_name, port_name):
+    """Detach attached nic from a port
+
+    If the port or switch are not found, a NotFoundError will be raised.
+
+    If the port is not connected to anything, a NotFoundError will be raised.
+    """
+    db = model.Session()
+
+    switch = _must_find(db, model.Switch, switch_name)
+    port = _must_find(db, model.Port, port_name)
+    if port.switch is not switch:
+        raise NotFoundError(port_name)
+
+
+    if port.nic is None:
+        raise NotFoundError(port_name)
+
+    port.nic = None
+    db.commit()
+
     # Helper functions #
     ####################
 
