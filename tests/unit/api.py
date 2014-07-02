@@ -391,6 +391,12 @@ class TestNodeRegisterDelete:
             api._must_find(db, model.Node, 'node-99')
         releaseDB(db)
 
+    def test_node_delete_nexist(self):
+        db = newDB()
+        with pytest.raises(api.NotFoundError):
+            api.node_delete('node-99')
+        releaseDB(db)
+
 
 class TestNodeRegisterDeleteNic:
 
