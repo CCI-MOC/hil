@@ -1188,6 +1188,78 @@ class TestPortConnectDetachNic:
         api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
         releaseDB(db)
 
+    def test_port_connect_nic_no_such_switch(self):
+        db = newDB()
+        api.node_register('compute-01')
+        api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
+        with pytest.raises(api.NotFoundError):
+            api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+        releaseDB(db)
+
+    def test_port_connect_nic_no_such_port(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api.node_register('compute-01')
+        api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
+        with pytest.raises(api.NotFoundError):
+            api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+        releaseDB(db)
+
+    def test_port_connect_nic_no_such_node(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api.port_register('bait-and', '3')
+        with pytest.raises(api.NotFoundError):
+            api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+        releaseDB(db)
+
+    def test_port_connect_nic_no_such_nic(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api.port_register('bait-and', '3')
+        api.node_register('compute-01')
+        with pytest.raises(api.NotFoundError):
+            api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+        releaseDB(db)
+
+    def test_port_connect_nic_already_attached_to_same(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api.port_register('bait-and', '3')
+        api.node_register('compute-01')
+        api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+        with pytest.raises(api.DuplicateError):
+            api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+        releaseDB(db)
+
+    def test_port_connect_nic_nic_already_attached_differently(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api.switch_register('-eroo', 'big-iron')
+        api.port_register('bait-and', '3')
+        api.port_register('-eroo', '4')
+        api.node_register('compute-01')
+        api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+        with pytest.raises(api.DuplicateError):
+            api.port_connect_nic('-eroo', '4', 'compute-01', 'eth0')
+        releaseDB(db)
+
+    def test_port_connect_nic_port_already_attached_differently(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api.port_register('bait-and', '3')
+        api.node_register('compute-01')
+        api.node_register('compute-02')
+        api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.node_register_nic('compute-02', 'eth1', 'DE:AD:BE:EF:20:15')
+        api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+        with pytest.raises(api.DuplicateError):
+            api.port_connect_nic('bait-and', '3', 'compute-02', 'eth1')
+        releaseDB(db)
+
+
     def test_port_detach_nic_success(self):
         db = newDB()
         api.switch_register('bait-and', 'big-iron')
@@ -1197,3 +1269,27 @@ class TestPortConnectDetachNic:
         api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
         api.port_detach_nic('bait-and', '3')
         releaseDB(db)
+
+    def test_port_detach_nic_no_such_switch(self):
+        db = newDB()
+        with pytest.raises(api.NotFoundError):
+            api.port_detach_nic('bait-and', '3')
+        releaseDB(db)
+
+    def test_port_detach_nic_no_such_port(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        with pytest.raises(api.NotFoundError):
+            api.port_detach_nic('bait-and', '3')
+        releaseDB(db)
+
+    def test_port_detach_nic_not_attached(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api.port_register('bait-and', '3')
+        api.node_register('compute-01')
+        api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
+        with pytest.raises(api.NotFoundError):
+            api.port_detach_nic('bait-and', '3')
+        releaseDB(db)
+
