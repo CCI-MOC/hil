@@ -4,8 +4,6 @@ haas.server translates between this and HTTP.
 
 TODO: Spec out and document what sanitization is required.
 """
-import sys
-
 import model
 from haas.config import cfg
 
