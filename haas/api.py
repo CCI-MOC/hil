@@ -302,8 +302,9 @@ def node_connect_network(node_label, nic_label, network_label):
 
     if nic.network:
         # The nic is already part of a network; report an error to the user.
-        raise BusyError('nic %s on node %s is already part of a network' %
+        raise DuplicateError('nic %s on node %s is already part of a network' %
                 (nic_label, node_label))
+
     nic.network = network
     db.commit()
 
@@ -320,6 +321,8 @@ def node_detach_network(node_label, nic_label):
     if nic.node is not node:
         raise NotFoundError('nic %s on node %s' % (nic_label, node_label))
 
+    if nic.network is None:
+        raise NotFoundError('nic %s on node %s is not attached' % (nic_label, node_label))
 
     nic.network = None
     db.commit()
