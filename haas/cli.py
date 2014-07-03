@@ -270,13 +270,13 @@ def usage():
     """Display a summary of the arguments accepted by the CLI."""
     sys.stderr.write('Usage: %s <command>\n\n' % sys.argv[0])
     sys.stderr.write('Where <command> is one of:\n\n')
-    for name in commands.keys():
+    for name in sorted(commands.keys()):
         # For each command, print out a summary including the name, arguments,
         # and the docstring (as a #comment).
         func = commands[name]
         args, _, _, _ = inspect.getargspec(func)
         args = map(lambda name: '<%s>' % name, args)
-        sys.stderr.write('    %s %s # %s\n' % (name, ' '.join(args), func.__doc__))
+        sys.stderr.write('  %s %s\n      %s\n' % (name, ' '.join(args), func.__doc__))
 
 
 def main():
