@@ -1143,6 +1143,20 @@ class TestPortRegisterDelete:
         api.port_register('bait-and', '3')
         releaseDB(db)
 
+    def test_port_register_duplicate(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api.port_register('bait-and', '3')
+        with pytest.raises(api.DuplicateError):
+            api.port_register('bait-and', '3')
+        releaseDB(db)
+
+    def test_port_register_no_such_switch(self):
+        db = newDB()
+        with pytest.raises(api.NotFoundError):
+            api.port_register('bait-and', '3')
+        releaseDB(db)
+
     def test_port_delete_success(self):
         db = newDB()
         api.switch_register('bait-and', 'big-iron')
@@ -1150,6 +1164,18 @@ class TestPortRegisterDelete:
         api.port_delete('bait-and', '3')
         releaseDB(db)
 
+    def test_port_delete_no_such_port(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        with pytest.raises(api.NotFoundError):
+            api.port_delete('bait-and', '3')
+        releaseDB(db)
+
+    def test_port_delete_no_such_switch(self):
+        db = newDB()
+        with pytest.raises(api.NotFoundError):
+            api.port_delete('bait-and', '3')
+        releaseDB(db)
 
 class TestPortConnectDetachNic:
 
