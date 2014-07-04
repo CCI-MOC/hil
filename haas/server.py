@@ -8,7 +8,10 @@ To start the server, invoke `haas serve` from the command line.
 
 from flask import Flask, request
 from haas import config, model, api
+from functools import wraps
+import inspect
 
+app = Flask(__name__)
 
 def api_function(f):
     """A decorator which adds some error handling.
@@ -17,6 +20,7 @@ def api_function(f):
     `api.APIError`, the error will be reported to the client, whereas other
     exceptions (being indications of a bug in the HaaS) will not be.
     """
+    @wraps(f)
     def wrapped(*args, **kwargs):
         try:
             resp = f(*args, **kwargs)
@@ -30,22 +34,66 @@ def api_function(f):
             return e.message, 400
         if not resp:
             return ''
-    wrapped.__name__ = f.__name__
     return wrapped
 
+def make_rest_call(path, method, form_params, func):
+    """Generate a rest mapping to a python api call.
 
+    path - the url-path to map the function to. The format is the same as for
+           flask's router (e.g. app.route('/foo/<bar>/baz',...))
+    method - the HTTP methd for the api call
+    form_params - names of parameters to be extracted from the form data.
+    func - the underlying function call
 
-app = Flask(__name__)
+    Example
 
+    Given the function:
 
-@app.route('/user/<username>', methods=['PUT', 'DELETE'])
-@api_function
-def user(username):
-    """Handle create/delete user commands."""
-    if request.method == 'PUT':
-        return api.user_create(username, request.form['password'])
-    else: # DELETE
-        return api.user_delete(username)
+    def foo(bar, baz, quux):
+        pass
+
+    The following will invoke foo when a POST request to /some-url/*/*
+    occurs, with it's bar and baz arguments pulled from the url, and its
+    quux argument from the form data in the body.
+
+    make_rest_call('/some-url/<bar>/<baz>', 'POST', ['quux'], foo)
+
+    The generated http function will be returned, but typically there is no need
+    to do anything with it - make_rest_call will register the function with the
+    flask app itself.
+    """
+    argnames, _, _, _ = inspect.getargspec(func)
+    @app.route(path, methods=[method])
+    @wraps(func)
+    @api_function
+    def wrapped(*args, **kwargs):
+        positional_args = []
+        for name in argnames:
+            if name in kwargs:
+                positional_args.append(kwargs[name])
+                del kwargs[name]
+            else:
+                assert name in form_params
+                positional_args.append(request.form[name])
+        return func(*positional_args, **kwargs)
+    return wrapped
+
+calls = [
+    ('/user/<username>', 'PUT', ['password'], api.user_create),
+    ('/user/<username>', 'DELETE', [], api.user_delete),
+]
+
+for call in calls:
+    make_rest_call(*call)
+
+# @app.route('/user/<username>', methods=['PUT', 'DELETE'])
+# @api_function
+# def user(username):
+#     """Handle create/delete user commands."""
+#     if request.method == 'PUT':
+#         return api.user_create(username, request.form['password'])
+#     else: # DELETE
+#         return api.user_delete(username)
 
 
 @app.route('/node/<nodename>', methods=['PUT'])
