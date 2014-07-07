@@ -109,6 +109,7 @@ def group_delete(groupname):
     check_status_code(requests.delete(url))
 
 
+@cmd
 def project_deploy(project):
     """Deploy <project>"""
     url = object_url('project', project, 'deploy')

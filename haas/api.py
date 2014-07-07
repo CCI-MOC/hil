@@ -4,8 +4,9 @@ haas.server translates between this and HTTP.
 
 TODO: Spec out and document what sanitization is required.
 """
-
 import model
+from haas.config import cfg
+import importlib
 
 class APIError(Exception):
     """An exception indicating an error that should be reported to the user.
@@ -138,10 +139,20 @@ def project_deploy(projectname):
     TODO: there are other possible errors, document them and how they are
     handled.
     """
+    driver_name = cfg.get('general', 'active_switch')
+    driver = importlib.import_module('haas.drivers.' + driver_name)
+
     db = model.Session()
     project = _must_find(db, model.Project, projectname)
+
+    for net in project.networks:
+        for nic in net.nics:
+            driver.set_access_vlan(int(nic.port.label), net.vlan_no)
+
     if project.headnode:
         project.headnode.create()
+        for hnic in project.headnode.hnics:
+            hnic.create()
         project.headnode.start()
     else:
         pass # TODO: at least log this, if not throw an error.
@@ -456,6 +467,27 @@ def network_delete(networkname):
     vlan = db.query(model.Vlan).filter_by(vlan_no=network.vlan_no).one()
     vlan.available = True
     db.delete(network)
+    db.commit()
+
+                            # Switch code #
+                            ###############
+
+def switch_register(name, driver):
+    """Register the switch named `name`.
+
+    If the switch already exists, a DuplicateError will be raised.
+    """
+    db = model.Session()
+    _assert_absent(db, model.Switch, name)
+    switch = model.Switch(name, driver)
+    db.add(switch)
+    db.commit()
+
+
+def switch_delete(name):
+    db = model.Session()
+    switch = _must_find(db, model.Switch, name)
+    db.delete(switch)
     db.commit()
 
 
