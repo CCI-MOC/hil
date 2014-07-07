@@ -1,11 +1,11 @@
 """This module provides the HaaS service's public API.
 
-haas.server translates between this and HTTP.
-
 TODO: Spec out and document what sanitization is required.
 """
-import model
-from haas.config import cfg
+from haas import model
+from flask import Flask, request
+from functools import wraps
+import inspect
 
 class APIError(Exception):
     """An exception indicating an error that should be reported to the user.
@@ -27,6 +27,70 @@ class BadArgumentError(APIError):
     """An exception indicating an invalid request on the part of the user."""
 
 
+app = Flask(__name__)
+
+def api_function(f):
+    """A decorator which adds some error handling.
+
+    If the function decorated with `api_function` raises an exception of type
+    `api.APIError`, the error will be reported to the client, whereas other
+    exceptions (being indications of a bug in the HaaS) will not be.
+    """
+    @wraps(f)
+    def wrapped(*args, **kwargs):
+        try:
+            resp = f(*args, **kwargs)
+        except APIError as e:
+            # Right now we're always returning 400 (Bad Request). This probably
+            # isn't actually the right thing to do.
+            #
+            # Additionally, we're getting deprecation errors about the use of
+            # the message attribute. TODO: figure out what the right way to do
+            # this is.
+            return e.message, 400
+        if not resp:
+            return ''
+    return wrapped
+
+def rest_call(method, path):
+    """A decorator which generates a rest mapping to a python api call.
+
+    path - the url-path to map the function to. The format is the same as for
+           flask's router (e.g. app.route('/foo/<bar>/baz',...))
+    method - the HTTP method for the api call
+
+    Any parameters to the function not designated in the url will be pull from
+    the form data.
+
+    For example, given:
+
+        @rest_call('POST', '/some-url/<baz>/<bar>')
+        def foo(bar, baz, quux):
+            pass
+
+    When a POST request to /some-uril/*/* occurs, `foo` will be invoked with its
+    bar and baz arguments pulleed from the url, and its quux from the form data
+    in the body.
+    """
+    def wrapper(func):
+        argnames, _, _, _ = inspect.getargspec(func)
+        @app.route(path, methods=[method])
+        @wraps(func)
+        @api_function
+        def wrapped(*args, **kwargs):
+            positional_args = []
+            for name in argnames:
+                if name in kwargs:
+                    positional_args.append(kwargs[name])
+                    del kwargs[name]
+                else:
+                    positional_args.append(request.form[name])
+            return func(*positional_args, **kwargs)
+        return wrapped
+    return wrapper
+
+
+@rest_call('PUT', '/user/<username>')
 def user_create(username, password):
     """Create user `username`.
 
@@ -39,6 +103,7 @@ def user_create(username, password):
     db.commit()
 
 
+@rest_call('DELETE', '/user/<username>')
 def user_delete(username):
     """Delete user `username`
 
