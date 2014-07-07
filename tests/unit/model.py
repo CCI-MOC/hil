@@ -7,6 +7,8 @@
 # some point, which is definitely wrong. The test_repr methods are there just
 # to make sure it isn't throwing an exception.
 
+from abc import ABCMeta, abstractmethod
+
 from haas.model import *
 
 # There's probably a better way to do this
@@ -14,6 +16,15 @@ from haas.test_common import newDB, releaseDB
 
 class ModelTest:
     """Superclass with tests common to all models."""
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def sample_obj(self):
+        """returns a sample object, which can be used for various tests.
+
+        There aren't really any specific requirements for the object, just that
+        it be "valid."
+        """
 
     def test_repr(self):
         print(self.sample_obj())
