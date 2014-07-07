@@ -71,6 +71,9 @@ def rest_call(method, path):
     When a POST request to /some-uril/*/* occurs, `foo` will be invoked with its
     bar and baz arguments pulleed from the url, and its quux from the form data
     in the body.
+
+    The original function will not be modfied by the call; This way the test
+    suite doesn't have to deal with the things flask has done to it.
     """
     def wrapper(func):
         argnames, _, _, _ = inspect.getargspec(func)
@@ -86,7 +89,7 @@ def rest_call(method, path):
                 else:
                     positional_args.append(request.form[name])
             return func(*positional_args, **kwargs)
-        return wrapped
+        return func
     return wrapper
 
 
