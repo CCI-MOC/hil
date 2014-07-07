@@ -29,12 +29,12 @@ class BadArgumentError(APIError):
 
 app = Flask(__name__)
 
-def api_function(f):
+def handle_client_errors(f):
     """A decorator which adds some error handling.
 
-    If the function decorated with `api_function` raises an exception of type
-    `api.APIError`, the error will be reported to the client, whereas other
-    exceptions (being indications of a bug in the HaaS) will not be.
+    If the function decorated with `handle_client_errors` raises an exception
+    of type `APIError`, the error will be reported to the client, whereas
+    other exceptions (being indications of a bug in the HaaS) will not be.
     """
     @wraps(f)
     def wrapped(*args, **kwargs):
@@ -76,7 +76,7 @@ def rest_call(method, path):
         argnames, _, _, _ = inspect.getargspec(func)
         @app.route(path, methods=[method])
         @wraps(func)
-        @api_function
+        @handle_client_errors
         def wrapped(*args, **kwargs):
             positional_args = []
             for name in argnames:
