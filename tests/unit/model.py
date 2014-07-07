@@ -58,8 +58,7 @@ class TestGroup(ModelTest):
 class TestNic(ModelTest):
 
     def sample_obj(self):
-        node = Node('node-99')
-        return Nic(node, 'ipmi', '00:11:22:33:44:55')
+        return Nic(Node('node-99'), 'ipmi', '00:11:22:33:44:55')
 
 
 class TestNode(ModelTest):
@@ -71,8 +70,7 @@ class TestNode(ModelTest):
 class TestProject(ModelTest):
 
     def sample_obj(self):
-        group = Group('acme_corp')
-        return Project(group, 'manhattan')
+        return Project(Group('acme_corp'), 'manhattan')
 
 
 class TestSwitch(ModelTest):
@@ -84,16 +82,14 @@ class TestSwitch(ModelTest):
 class TestHeadnode(ModelTest):
 
     def sample_obj(self):
-        group = Group('acme_corp')
-        return Headnode(group, 'hn-example')
+        return Headnode(Group('acme_corp'), 'hn-example')
 
 
 class TestHnic(ModelTest):
 
     def sample_obj(self):
         group = Group('acme_corp')
-        hn = Headnode(group, 'hn-0')
-        return Hnic(group, hn, 'storage', '00:11:22:33:44:55')
+        return Hnic(group, Headnode(group, 'hn-0'), 'storage', '00:11:22:33:44:55')
 
 
 class TestVlan(ModelTest):
