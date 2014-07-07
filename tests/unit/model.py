@@ -24,6 +24,7 @@ class ModelTest:
         db.commit()
         releaseDB(db)
 
+
 class TestUsers(ModelTest):
     """Test user-related functionality"""
 
@@ -37,91 +38,60 @@ class TestUsers(ModelTest):
         releaseDB(db)
 
 
-class TestGroup(InsertTest):
+class TestGroup(ModelTest):
 
-    def test_insert(self):
-        self.insert(Group('moc-hackers'))
-
-    def test_repr(self):
-        print(Group('moc-hackers'))
+    def sample_obj(self):
+        return Group('moc-hackers')
 
 
-class TestNic(InsertTest):
+class TestNic(ModelTest):
 
-    def test_insert(self):
+    def sample_obj(self):
         node = Node('node-99')
-        self.insert(Nic(node, 'ipmi', '00:11:22:33:44:55'))
-
-    def test_repr(self):
-        node = Node('node-99')
-        print(Nic(node, 'ipmi', '00:11:22:33:44:55'))
+        return Nic(node, 'ipmi', '00:11:22:33:44:55')
 
 
-class TestNode(InsertTest):
+class TestNode(ModelTest):
 
-    def test_insert(self):
-        self.insert(Node('node-99'))
-
-    def test_repr(self):
-        print(Node('node-99'))
+    def sample_obj(self):
+        return Node('node-99')
 
 
-class TestProject(InsertTest):
+class TestProject(ModelTest):
 
-    def test_insert(self):
+    def sample_obj(self):
         group = Group('acme_corp')
-        self.insert(Project(group, 'manhattan'))
+        return Project(group, 'manhattan')
 
-    def test_repr(self):
+
+class TestSwitch(ModelTest):
+
+    def sample_obj(self):
+        return Switch('dev-switch', 'acme_corp')
+
+
+class TestHeadnode(ModelTest):
+
+    def sample_obj(self):
         group = Group('acme_corp')
-        print(Project(group, 'node-99'))
+        return Headnode(group, 'hn-example')
 
 
-class TestSwitch(InsertTest):
+class TestHnic(ModelTest):
 
-    def test_insert(self):
-        self.insert(Switch('dev-switch', 'acme_corp'))
-
-    def test_repr(self):
-        print(Switch('dev-switch', 'acme-corp'))
-
-
-class TestHeadnode(InsertTest):
-
-    def test_insert(self):
-        group = Group('acme_corp')
-        self.insert(Headnode(group, 'hn-example'))
-
-    def test_repr(self):
-        group = Group('acme_corp')
-        print(Headnode(group, 'hn-example'))
-
-
-class TestHnic(InsertTest):
-
-    def test_insert(self):
+    def sample_obj(self):
         group = Group('acme_corp')
         hn = Headnode(group, 'hn-0')
-        self.insert(Hnic(group, hn, 'storage', '00:11:22:33:44:55'))
+        return Hnic(group, hn, 'storage', '00:11:22:33:44:55')
 
-    def test_repr(self):
-        group = Group('acme_corp')
-        hn = Headnode(group, 'hn-0')
-        print(Hnic(group, hn, 'storage', '00:11:22:33:44:55'))
 
-class TestVlan(InsertTest):
+class TestVlan(ModelTest):
 
-    def test_insert(self):
-        self.insert(Vlan(102))
+    def sample_obj(self):
+        return Vlan(102)
 
-    def test_repr(self):
-        print(Vlan(102))
 
-class TestNetwork(InsertTest):
+class TestNetwork(ModelTest):
 
-    def test_insert(self):
-        network = Network(Group('acme_corp'), Vlan(102), 'hammernet')
-        self.insert(network)
-
-    def test_repr(InsertTest):
-        print(Network(Group('acme_corp'), Vlan(102), 'hammernet'))
+    def sample_obj(self):
+        return Network(Group('acme_corp'), Vlan(102), 'hammernet')
