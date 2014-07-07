@@ -12,31 +12,29 @@ from haas.model import *
 # There's probably a better way to do this
 from haas.test_common import newDB, releaseDB
 
+class ModelTest:
+    """Superclass with tests common to all models."""
 
-class InsertTest:
-    """Superclass for tests doing basic database insertions of one object."""
+    def test_repr(self):
+        print(self.sample_obj())
 
-    def insert(self, obj):
+    def test_insert(self):
         db = newDB()
-        db.add(obj)
+        db.add(self.sample_obj())
         db.commit()
         releaseDB(db)
 
-
-class TestUsers(InsertTest):
+class TestUsers(ModelTest):
     """Test user-related functionality"""
+
+    def sample_obj(self):
+        return User('bob', 'secret')
 
     def test_user_create_verify(self):
         db = newDB()
         user = User('bob', 'secret')
         assert user.verify_password('secret')
         releaseDB(db)
-
-    def test_user_insert(self):
-        self.insert(User('bob', 'secret'))
-
-    def test_repr(self):
-        print(User('bob', 'secret'))
 
 
 class TestGroup(InsertTest):
