@@ -6,6 +6,7 @@ TODO: Spec out and document what sanitization is required.
 """
 import model
 from haas.config import cfg
+import importlib
 
 class APIError(Exception):
     """An exception indicating an error that should be reported to the user.
@@ -138,10 +139,9 @@ def project_deploy(projectname):
     TODO: there are other possible errors, document them and how they are
     handled.
     """
-    # XXX: we'd like to be picking up the driver automatically, but apparently
-    # the solution we were using for this in the old implementation was only
-    # working by chance. grr.
-    import haas.drivers.dell as driver
+    driver_name = cfg.get('general', 'active_switch')
+    driver = importlib.import_module('haas.drivers.' + driver_name)
+
     db = model.Session()
     project = _must_find(db, model.Project, projectname)
 
