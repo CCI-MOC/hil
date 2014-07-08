@@ -121,6 +121,7 @@ def user_delete(username):
                             # Group Code #
                             ##############
 
+@rest_call('PUT', '/group/<groupname>')
 def group_create(groupname):
     """Create group 'groupname'.
 
@@ -133,6 +134,7 @@ def group_create(groupname):
     db.commit()
 
 
+@rest_call('DELETE', '/group/<groupname>')
 def group_delete(groupname):
     """Delete group 'groupname'
 
@@ -144,6 +146,7 @@ def group_delete(groupname):
     db.commit()
 
 
+@rest_call('POST', '/group/<groupname>/add_user')
 def group_add_user(groupname, username):
     """Add a group to a user
 
@@ -158,6 +161,7 @@ def group_add_user(groupname, username):
     db.commit()
 
 
+@rest_call('POST', '/group/<groupname>/remove_user')
 def group_remove_user(groupname, username):
     """Remove a group from a user
 
@@ -174,6 +178,7 @@ def group_remove_user(groupname, username):
                             # Project Code #
                             ################
 
+@rest_call('PUT', '/project/<projectname>')
 def project_create(projectname, groupname):
     """Create project 'projectname'.
 
@@ -187,6 +192,7 @@ def project_create(projectname, groupname):
     db.commit()
 
 
+@rest_call('DELETE', '/project/<projectname>')
 def project_delete(projectname):
     """Delete project 'projectname'
 
@@ -198,6 +204,7 @@ def project_delete(projectname):
     db.commit()
 
 
+@rest_call('POST', '/project/<projectname>/deploy')
 def project_deploy(projectname):
     """Deploy project 'projectname'
 
@@ -225,6 +232,8 @@ def project_deploy(projectname):
     else:
         pass # TODO: at least log this, if not throw an error.
 
+
+@rest_call('POST', '/project/<projectname>/connect_node')
 def project_connect_node(projectname, nodename):
     """Add a project 'projectname' to an existing node
 
@@ -237,6 +246,7 @@ def project_connect_node(projectname, nodename):
     db.commit()
 
 
+@rest_call('POST', '/project/<projectname>/detach_node')
 def project_detach_node(projectname, nodename):
     """Remove a project 'projectname' from an existing node
 
@@ -251,6 +261,8 @@ def project_detach_node(projectname, nodename):
     db.commit()
 
 
+
+@rest_call('POST', '/project/<projectname>/connect_headnode')
 def project_connect_headnode(projectname, nodename):
     """Add a project 'projectname' to an existing headnode
 
@@ -264,6 +276,8 @@ def project_connect_headnode(projectname, nodename):
     project.headnode = headnode
     db.commit()
 
+
+@rest_call('POST', '/project/<projectname>/detach_headnode')
 def project_detach_headnode(projectname, nodename):
     """Remove a project 'projectname' from an existing headnode
 
@@ -278,6 +292,7 @@ def project_detach_headnode(projectname, nodename):
     db.commit()
 
 
+@rest_call('POST', '/project/<projectname>/connect_network')
 def project_connect_network(projectname, networkname):
     """Add a project 'projectname' to an existing network
 
@@ -292,6 +307,7 @@ def project_connect_network(projectname, networkname):
     db.commit()
 
 
+@rest_call('POST', '/project/<projectname>/detach_network')
 def project_detach_network(projectname, networkname):
     """Remove a project 'projectname' from an existing network
 
@@ -309,6 +325,7 @@ def project_detach_network(projectname, networkname):
                             # Node Code #
                             #############
 
+@rest_call('PUT', '/node/<nodename>')
 def node_register(nodename):
     """Create node 'nodename'.
 
@@ -321,6 +338,7 @@ def node_register(nodename):
     db.commit()
 
 
+@rest_call('DELETE', '/node/<nodename>')
 def node_delete(nodename):
     """Delete node 'nodename'
 
@@ -331,6 +349,8 @@ def node_delete(nodename):
     db.delete(node)
     db.commit()
 
+
+@rest_call('PUT', '/node/<nodename>/nic/<nic_name>')
 def node_register_nic(nodename, nic_name, macaddr):
     """Register exitence of nic attached to given node
 
@@ -346,6 +366,8 @@ def node_register_nic(nodename, nic_name, macaddr):
     db.add(nic)
     db.commit()
 
+
+@rest_call('DELETE', '/node/<nodename>/nic/<nic_name>')
 def node_delete_nic(nodename, nic_name):
     """Delete nic with given name.
 
@@ -364,6 +386,7 @@ def node_delete_nic(nodename, nic_name):
     db.commit()
 
 
+@rest_call('POST', '/node/<node_label>/nic/<nic_label>/connect_network')
 def node_connect_network(node_label, nic_label, network_label):
     """Connect a physical NIC to a network"""
     db = model.Session()
@@ -386,6 +409,8 @@ def node_connect_network(node_label, nic_label, network_label):
     nic.network = network
     db.commit()
 
+
+@rest_call('POST', '/node/<node_label>/nic/<nic_label>/detach_network')
 def node_detach_network(node_label, nic_label):
     """Detach a physical nic from its network (if any).
 
@@ -405,6 +430,7 @@ def node_detach_network(node_label, nic_label):
 
                             # Head Node Code #
                             ##################
+@rest_call('PUT', '/headnode/<nodename>')
 def headnode_create(nodename, groupname):
     """Create head node 'nodename'.
 
@@ -421,6 +447,7 @@ def headnode_create(nodename, groupname):
     db.commit()
 
 
+@rest_call('DELETE', '/headnode/<nodename>')
 def headnode_delete(nodename):
     """Delete node 'nodename'
 
@@ -431,6 +458,8 @@ def headnode_delete(nodename):
     db.delete(headnode)
     db.commit()
 
+
+@rest_call('PUT', '/headnode/<nodename>/hnic/<hnic_name>')
 def headnode_create_hnic(nodename, hnic_name, macaddr):
     """Create hnic attached to given headnode
 
@@ -446,6 +475,8 @@ def headnode_create_hnic(nodename, hnic_name, macaddr):
     db.add(hnic)
     db.commit()
 
+
+@rest_call('DELETE', '/headnode/<nodename>/hnic/<hnic_name>')
 def headnode_delete_hnic(nodename, hnic_name):
     """Delete hnic with given name.
 
@@ -463,6 +494,8 @@ def headnode_delete_hnic(nodename, hnic_name):
     db.delete(hnic)
     db.commit()
 
+
+@rest_call('POST', '/headnode/<node_label>/hnic/<nic_label>/connect_network')
 def headnode_connect_network(node_label, nic_label, network_label):
     """Connect a headnode's NIC to a network"""
     # XXX: This is flagrantly copy/pasted from node_connect network. I feel a
@@ -488,6 +521,8 @@ def headnode_connect_network(node_label, nic_label, network_label):
     hnic.network = network
     db.commit()
 
+
+@rest_call('POST', '/headnode/<node_label>/hnic/<nic_label>/detach_network')
 def headnode_detach_network(node_label, nic_label):
     """Detach a heanode's nic from its network (if any).
 
@@ -507,6 +542,7 @@ def headnode_detach_network(node_label, nic_label):
                             # Network Code #
                             ################
 
+@rest_call('PUT', '/network/<networkname>')
 def network_create(networkname, groupname):
     """Create network 'networkname'.
 
@@ -525,6 +561,7 @@ def network_create(networkname, groupname):
     db.commit()
 
 
+@rest_call('DELETE', '/network/<networkname>')
 def network_delete(networkname):
     """Delete network 'networkname'
 
@@ -537,28 +574,8 @@ def network_delete(networkname):
     db.delete(network)
     db.commit()
 
-                            # Switch code #
-                            ###############
 
-def switch_register(name, driver):
-    """Register the switch named `name`.
-
-    If the switch already exists, a DuplicateError will be raised.
-    """
-    db = model.Session()
-    _assert_absent(db, model.Switch, name)
-    switch = model.Switch(name, driver)
-    db.add(switch)
-    db.commit()
-
-
-def switch_delete(name):
-    db = model.Session()
-    switch = _must_find(db, model.Switch, name)
-    db.delete(switch)
-    db.commit()
-
-
+@rest_call('PUT', '/vlan/<vlan>')
 def vlan_register(vlan):
     """Registers the vlan with vlan number `vlan`.
 
@@ -578,6 +595,7 @@ def vlan_register(vlan):
     db.commit()
 
 
+@rest_call('DELETE', '/vlan/<vlan>')
 def vlan_delete(vlan):
     """Deletes the vlan with vlan number `vlan`.
 
@@ -601,6 +619,7 @@ def vlan_delete(vlan):
                             # Switch code #
                             ###############
 
+@rest_call('PUT', '/switch/<name>')
 def switch_register(name, driver):
     """Register the switch named `name`.
 
@@ -612,12 +631,16 @@ def switch_register(name, driver):
     db.add(switch)
     db.commit()
 
+
+@rest_call('DELETE', '/switch/<name>')
 def switch_delete(name):
     db = model.Session()
     switch = _must_find(db, model.Switch, name)
     db.delete(switch)
     db.commit()
 
+
+@rest_call('PUT', '/switch/<switch_name>/port/<port_name>')
 def port_register(switch_name, port_name):
     """Register a port with name "port" on switch "switch".
 
@@ -636,6 +659,8 @@ def port_register(switch_name, port_name):
     db.add(port)
     db.commit()
 
+
+@rest_call('DELETE', '/switch/<switch_name>/port/<port_name>')
 def port_delete(switch_name, port_name):
     """Delete a port with name "port" on switch "switch".
 
@@ -651,6 +676,7 @@ def port_delete(switch_name, port_name):
     db.commit()
 
 
+@rest_call('POST', '/switch/<switch_name>/port/<port_name>/connect_nic')
 def port_connect_nic(switch_name, port_name, node_name, nic_name):
     """Connect a port on a switch to a nic on a node
 
@@ -681,6 +707,8 @@ def port_connect_nic(switch_name, port_name, node_name, nic_name):
     nic.port = port
     db.commit()
 
+
+@rest_call('POST', '/switch/<switch_name>/port/<port_name>/detach_nic')
 def port_detach_nic(switch_name, port_name):
     """Detach attached nic from a port
 
