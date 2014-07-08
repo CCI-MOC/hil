@@ -109,14 +109,22 @@ class TestUser:
         releaseDB(db)
 
 
-class TestProject:
+class TestProjectCreateDelete:
     """Tests for the haas.api.project_* functions."""
 
-    def test_project_create(self):
+    def test_project_create_success(self):
         db = newDB()
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
         api._must_find(db, model.Project, 'anvil-nextgen')
+        releaseDB(db)
+
+    def test_project_create_duplicate(self):
+        db = newDB()
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        with pytest.raises(api.DuplicateError):
+            api.project_create('anvil-nextgen', 'acme-corp')
         releaseDB(db)
 
     def test_project_delete(self):
@@ -127,6 +135,14 @@ class TestProject:
         with pytest.raises(api.NotFoundError):
             api._must_find(db, model.Project, 'anvil-nextgen')
         releaseDB(db)
+
+    def test_project_delete_nexist(self):
+        db = newDB()
+        with pytest.raises(api.NotFoundError):
+            api.project_delete('anvil-nextgen')
+        releaseDB(db)
+
+class TestProjectConnectDetachNode:
 
     def test_project_connect_node(self):
         db = newDB()
@@ -198,7 +214,7 @@ class TestProject:
         releaseDB(db)
 
 
-class TestNode:
+class TestNodeRegisterDelete:
     """Tests for the haas.api.node_* functions."""
 
     def test_node_register(self):
@@ -221,6 +237,15 @@ class TestNode:
         with pytest.raises(api.NotFoundError):
             api._must_find(db, model.Node, 'node-99')
         releaseDB(db)
+
+    def test_node_delete_nexist(self):
+        db = newDB()
+        with pytest.raises(api.NotFoundError):
+            api.node_delete('node-99')
+        releaseDB(db)
+
+
+class TestNodeRegisterDeleteNic:
 
     def test_node_register_nic(self):
         db = newDB()
@@ -285,6 +310,8 @@ class TestNode:
         releaseDB(db)
 
 
+class TestNodeConnectDetachNetwork:
+
     def test_node_connect_network_success(self):
         db = newDB()
         api.node_register('node-99')
@@ -294,12 +321,119 @@ class TestNode:
         api.project_create('anvil-nextgen', 'acme-code')
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.network_create('hammernet', 'anvil-nextgen')
+
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
         network = api._must_find(db, model.Network, 'hammernet')
         nic = api._must_find(db, model.Nic, '99-eth0')
         assert nic.network is network
         assert nic in network.nics
         releaseDB(db)
+
+    def test_node_connect_network_wrong_node_in_project(self):
+        db = newDB()
+        api.node_register('node-99')
+        api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
+        api.vlan_register('101')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.node_connect_network('node-99', '99-eth0', 'hammernet')
+        api.node_register('node-98') #added
+        api.project_connect_node('anvil-nextgen', 'node-98') #added
+
+        with pytest.raises(api.NotFoundError):
+            api.node_connect_network('node-98', '99-eth0', 'hammernet')
+        releaseDB(db)
+
+    def test_node_connect_network_wrong_node_not_in_project(self):
+        db = newDB()
+        api.node_register('node-99')
+        api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
+        api.vlan_register('101')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.node_register('node-98') # added
+
+        with pytest.raises(api.NotFoundError):
+            api.node_connect_network('node-98', '99-eth0', 'hammernet')
+        releaseDB(db)
+
+    def test_node_connect_network_no_such_node(self):
+        db = newDB()
+        api.node_register('node-99')
+        api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
+        api.vlan_register('101')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.network_create('hammernet', 'anvil-nextgen')
+
+        with pytest.raises(api.NotFoundError):
+            api.node_connect_network('node-98', '99-eth0', 'hammernet') # changed
+        releaseDB(db)
+
+    def test_node_connect_network_no_such_nic(self):
+        db = newDB()
+        api.node_register('node-99')
+#        api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
+        api.vlan_register('101')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.network_create('hammernet', 'anvil-nextgen')
+
+        with pytest.raises(api.NotFoundError):
+            api.node_connect_network('node-99', '99-eth0', 'hammernet')
+        releaseDB(db)
+
+    def test_node_connect_network_no_such_network(self):
+        db = newDB()
+        api.node_register('node-99')
+        api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
+        api.vlan_register('101')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+#        api.network_create('hammernet', 'anvil-nextgen')
+        with pytest.raises(api.NotFoundError):
+            api.node_connect_network('node-99', '99-eth0', 'hammernet')
+        releaseDB(db)
+
+    def test_node_connect_network_already_attached_to_same(self):
+        db = newDB()
+        api.node_register('node-99')
+        api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
+        api.vlan_register('101')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.node_connect_network('node-99', '99-eth0', 'hammernet') # added
+
+        with pytest.raises(api.DuplicateError):
+            api.node_connect_network('node-99', '99-eth0', 'hammernet')
+        releaseDB(db)
+
+    def test_node_connect_network_already_attached_differently(self):
+        db = newDB()
+        api.node_register('node-99')
+        api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
+        api.vlan_register('101')
+        api.vlan_register('102') # added
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.network_create('hammernet2', 'anvil-nextgen') #added
+        api.node_connect_network('node-99', '99-eth0', 'hammernet') # added
+
+        with pytest.raises(api.DuplicateError):
+            api.node_connect_network('node-99', '99-eth0', 'hammernet2')
+        releaseDB(db)
+
 
     def test_node_detach_network_success(self):
         db = newDB()
@@ -311,6 +445,7 @@ class TestNode:
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.network_create('hammernet', 'anvil-nextgen')
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
+
         api.node_detach_network('node-99', '99-eth0')
         network = api._must_find(db, model.Network, 'hammernet')
         nic = api._must_find(db, model.Nic, '99-eth0')
@@ -318,9 +453,85 @@ class TestNode:
         assert nic not in network.nics
         releaseDB(db)
 
+    def test_node_detach_network_not_attached(self):
+        db = newDB()
+        api.node_register('node-99')
+        api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
+        api.vlan_register('101')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.network_create('hammernet', 'anvil-nextgen')
+#        api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
-class TestHeadnode:
-    """Tests for the haas.api.node_* functions."""
+        with pytest.raises(api.NotFoundError):
+            api.node_detach_network('node-99', '99-eth0')
+        releaseDB(db)
+
+    def test_node_detach_network_wrong_node_in_project(self):
+        db = newDB()
+        api.node_register('node-99')
+        api.node_register('node-98') # added
+        api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
+        api.vlan_register('101')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.project_connect_node('anvil-nextgen', 'node-98') # added
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.node_connect_network('node-99', '99-eth0', 'hammernet')
+
+        with pytest.raises(api.NotFoundError):
+            api.node_detach_network('node-98', '99-eth0') # changed
+        releaseDB(db)
+
+    def test_node_detach_network_wrong_node_not_in_project(self):
+        db = newDB()
+        api.node_register('node-99')
+        api.node_register('node-98') # added
+        api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
+        api.vlan_register('101')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.node_connect_network('node-99', '99-eth0', 'hammernet')
+
+        with pytest.raises(api.NotFoundError):
+            api.node_detach_network('node-98', '99-eth0') # changed
+        releaseDB(db)
+
+    def test_node_detach_network_no_such_node(self):
+        db = newDB()
+        api.node_register('node-99')
+        api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
+        api.vlan_register('101')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.node_connect_network('node-99', '99-eth0', 'hammernet')
+
+        with pytest.raises(api.NotFoundError):
+            api.node_detach_network('node-98', '99-eth0') # changed
+        releaseDB(db)
+
+    def test_node_detach_network_no_such_nic(self):
+        db = newDB()
+        api.node_register('node-99')
+        api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
+        api.vlan_register('101')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.node_connect_network('node-99', '99-eth0', 'hammernet')
+
+        with pytest.raises(api.NotFoundError):
+            api.node_detach_network('node-99', '99-eth1') # changed
+        releaseDB(db)
+
+class TestHeadnodeCreateDelete:
 
     def test_headnode_create_success(self):
         db = newDB()
@@ -376,6 +587,8 @@ class TestHeadnode:
             api.headnode_delete('hn-0')
         releaseDB(db)
 
+
+class TestHeadnodeCreateDeleteHnic:
 
     def test_headnode_create_hnic_success(self):
         db = newDB()
@@ -452,6 +665,8 @@ class TestHeadnode:
         releaseDB(db)
 
 
+class TestHeadnodeConnectDetachNetwork:
+
     def test_headnode_connect_network_success(self):
         db = newDB()
         api.vlan_register('101')
@@ -460,12 +675,83 @@ class TestHeadnode:
         api.headnode_create('hn-0', 'anvil-nextgen')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
         api.network_create('hammernet', 'anvil-nextgen')
+
         api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
         network = api._must_find(db, model.Network, 'hammernet')
         hnic = api._must_find(db, model.Hnic, 'hn-0-eth0')
         assert hnic.network is network
         assert hnic in network.hnics
         releaseDB(db)
+
+    def test_headnode_connect_network_no_such_headnode(self):
+        db = newDB()
+        api.vlan_register('101')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
+        api.network_create('hammernet', 'anvil-nextgen')
+
+        with pytest.raises(api.NotFoundError):
+            api.headnode_connect_network('hn-1', 'hn-0-eth0', 'hammernet') # changed
+        releaseDB(db)
+
+    def test_headnode_connect_network_no_such_hnic(self):
+        db = newDB()
+        api.vlan_register('101')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
+        api.network_create('hammernet', 'anvil-nextgen')
+
+        with pytest.raises(api.NotFoundError):
+            api.headnode_connect_network('hn-0', 'hn-0-eth1', 'hammernet') # changed
+        releaseDB(db)
+
+    def test_headnode_connect_network_no_such_network(self):
+        db = newDB()
+        api.vlan_register('101')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
+        api.network_create('hammernet', 'anvil-nextgen')
+
+        with pytest.raises(api.NotFoundError):
+            api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet2') # changed
+        releaseDB(db)
+
+    def test_headnode_connect_network_already_attached_to_same(self):
+        db = newDB()
+        api.vlan_register('101')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet') # added
+
+        with pytest.raises(api.DuplicateError):
+            api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
+        releaseDB(db)
+
+    def test_headnode_connect_network_already_attached_differently(self):
+        db = newDB()
+        api.vlan_register('101')
+        api.vlan_register('102') # added
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.network_create('hammernet2', 'anvil-nextgen')
+        api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet') # added
+
+        with pytest.raises(api.DuplicateError):
+            api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet2') # changed
+        releaseDB(db)
+
 
     def test_headnode_detach_network_success(self):
         db = newDB()
@@ -476,6 +762,7 @@ class TestHeadnode:
         api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
         api.network_create('hammernet', 'anvil-nextgen')
         api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
+
         api.headnode_detach_network('hn-0', 'hn-0-eth0')
         network = api._must_find(db, model.Network, 'hammernet')
         hnic = api._must_find(db, model.Hnic, 'hn-0-eth0')
@@ -483,8 +770,50 @@ class TestHeadnode:
         assert hnic not in network.hnics
         releaseDB(db)
 
+    def test_headnode_detach_network_not_attached(self):
+        db = newDB()
+        api.vlan_register('101')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
+        api.network_create('hammernet', 'anvil-nextgen')
+#        api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
 
-class TestNetwork:
+        with pytest.raises(api.NotFoundError):
+            api.headnode_detach_network('hn-0', 'hn-0-eth0')
+        releaseDB(db)
+
+    def test_headnode_detach_network_no_such_headnode(self):
+        db = newDB()
+        api.vlan_register('101')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
+
+        with pytest.raises(api.NotFoundError):
+            api.headnode_detach_network('hn-1', 'hn-0-eth0') # changed
+        releaseDB(db)
+
+    def test_headnode_detach_network_no_such_hnic(self):
+        db = newDB()
+        api.vlan_register('101')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
+
+        with pytest.raises(api.NotFoundError):
+            api.headnode_detach_network('hn-0', 'hn-0-eth1') # changed
+        releaseDB(db)
+
+
+class TestNetworkCreateDelete:
     """Tests for the haas.api.network_* functions."""
 
     def test_network_create_success(self):
@@ -558,7 +887,8 @@ class TestNetwork:
             api.network_create('sledge', 'anvil-nextgen')
         releaseDB(db)
 
-class TestVlan:
+
+class TestVlanRegisterDelete:
 
     def test_vlan_register_success(self):
         db = newDB()
@@ -615,7 +945,7 @@ class TestVlan:
         releaseDB(db)
 
 
-class TestSwitch:
+class TestSwitchRegisterDelete:
     """Tests for the haas.api.switch_* functions."""
 
     def test_switch_register_success(self):
@@ -645,13 +975,27 @@ class TestSwitch:
             api.switch_delete('bait_and')
         releaseDB(db)
 
-class TestPort:
-    """Tests for the haas.api.port_* functions."""
+
+class TestPortRegisterDelete:
 
     def test_port_register_success(self):
         db = newDB()
         api.switch_register('bait-and', 'big-iron')
         api.port_register('bait-and', '3')
+        releaseDB(db)
+
+    def test_port_register_duplicate(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api.port_register('bait-and', '3')
+        with pytest.raises(api.DuplicateError):
+            api.port_register('bait-and', '3')
+        releaseDB(db)
+
+    def test_port_register_no_such_switch(self):
+        db = newDB()
+        with pytest.raises(api.NotFoundError):
+            api.port_register('bait-and', '3')
         releaseDB(db)
 
     def test_port_delete_success(self):
@@ -660,6 +1004,21 @@ class TestPort:
         api.port_register('bait-and', '3')
         api.port_delete('bait-and', '3')
         releaseDB(db)
+
+    def test_port_delete_no_such_port(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        with pytest.raises(api.NotFoundError):
+            api.port_delete('bait-and', '3')
+        releaseDB(db)
+
+    def test_port_delete_no_such_switch(self):
+        db = newDB()
+        with pytest.raises(api.NotFoundError):
+            api.port_delete('bait-and', '3')
+        releaseDB(db)
+
+class TestPortConnectDetachNic:
 
     def test_port_connect_nic_success(self):
         db = newDB()
@@ -670,6 +1029,78 @@ class TestPort:
         api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
         releaseDB(db)
 
+    def test_port_connect_nic_no_such_switch(self):
+        db = newDB()
+        api.node_register('compute-01')
+        api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
+        with pytest.raises(api.NotFoundError):
+            api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+        releaseDB(db)
+
+    def test_port_connect_nic_no_such_port(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api.node_register('compute-01')
+        api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
+        with pytest.raises(api.NotFoundError):
+            api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+        releaseDB(db)
+
+    def test_port_connect_nic_no_such_node(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api.port_register('bait-and', '3')
+        with pytest.raises(api.NotFoundError):
+            api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+        releaseDB(db)
+
+    def test_port_connect_nic_no_such_nic(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api.port_register('bait-and', '3')
+        api.node_register('compute-01')
+        with pytest.raises(api.NotFoundError):
+            api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+        releaseDB(db)
+
+    def test_port_connect_nic_already_attached_to_same(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api.port_register('bait-and', '3')
+        api.node_register('compute-01')
+        api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+        with pytest.raises(api.DuplicateError):
+            api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+        releaseDB(db)
+
+    def test_port_connect_nic_nic_already_attached_differently(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api.switch_register('-eroo', 'big-iron')
+        api.port_register('bait-and', '3')
+        api.port_register('-eroo', '4')
+        api.node_register('compute-01')
+        api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+        with pytest.raises(api.DuplicateError):
+            api.port_connect_nic('-eroo', '4', 'compute-01', 'eth0')
+        releaseDB(db)
+
+    def test_port_connect_nic_port_already_attached_differently(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api.port_register('bait-and', '3')
+        api.node_register('compute-01')
+        api.node_register('compute-02')
+        api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.node_register_nic('compute-02', 'eth1', 'DE:AD:BE:EF:20:15')
+        api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+        with pytest.raises(api.DuplicateError):
+            api.port_connect_nic('bait-and', '3', 'compute-02', 'eth1')
+        releaseDB(db)
+
+
     def test_port_detach_nic_success(self):
         db = newDB()
         api.switch_register('bait-and', 'big-iron')
@@ -679,3 +1110,27 @@ class TestPort:
         api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
         api.port_detach_nic('bait-and', '3')
         releaseDB(db)
+
+    def test_port_detach_nic_no_such_switch(self):
+        db = newDB()
+        with pytest.raises(api.NotFoundError):
+            api.port_detach_nic('bait-and', '3')
+        releaseDB(db)
+
+    def test_port_detach_nic_no_such_port(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        with pytest.raises(api.NotFoundError):
+            api.port_detach_nic('bait-and', '3')
+        releaseDB(db)
+
+    def test_port_detach_nic_not_attached(self):
+        db = newDB()
+        api.switch_register('bait-and', 'big-iron')
+        api.port_register('bait-and', '3')
+        api.node_register('compute-01')
+        api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
+        with pytest.raises(api.NotFoundError):
+            api.port_detach_nic('bait-and', '3')
+        releaseDB(db)
+
