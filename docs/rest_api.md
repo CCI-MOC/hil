@@ -10,41 +10,30 @@ Full Api spec:
 
     group_add_user    <group_label> <user_label>
     group_remove_user <group_label> <user_label>
-    group_add_network <group_label> <network_label>
     [POST] /group/<group_label>/add_user {user=<user_label>}
     [POST] /group/<group_label>/remove_user {user=<user_label>}
-    [POST] /group/<group_label>/add_network {network=<network_label>}
 
     project_create <project_label> <group_label>
     project_delete <project_label>
     [PUT]    /project/<project_label> {group=<group_label>}
     [DELETE] /project/<project_label>
 
-    network_create <network_label> <group_label>
+    network_create <network_label> <project_label>
     network_delete <network_label>
-    [PUT]    /network/<network_label> {group=<group_label>}
+    [PUT]    /network/<network_label> {project=<project_label>}
     [DELETE] /network/<network_label>
 
-    headnode_create <hn_label> <group_label>
+    headnode_create <hn_label> <project_label>
     headnode_delete <hn_label>
-    [PUT]    /headnode/<hn_label> {group=<group_label>}
+    [PUT]    /headnode/<hn_label> {project=<project_label>}
     [DELETE] /headnode/<hn_label>
-
-    project_connect_headnode <project_label> <hn_label>
-    project_detach_headnode  <project_label> <hn_label>
-    [POST] /project/<project_label>/connect_headnode {headnode=<hn_label>}
-    [POST] /project/<project_label>/detach_headnode {headnode=<hn_label>}
 
     project_connect_node <project_label> <node_label>
     project_detach_node  <project_label> <node_label>
     [POST] /project/<project_label>/connect_node {node=<node_label>}
     [POST] /project/<project_label>/detach_node {node=<node_label>}
 
-    project_connect_network <project_label> <network_label>
-    project_detach_network  <project_label> <network_label>
     project_deploy          <project_label>
-    [POST] /project/<project_label>/connect_network {network=<network_label>}
-    [POST] /project/<project_label>/detach_network {network=<network_label>}
     [POST] /project/<project_label>/deploy
 
     node_connect_network <node_label> <nic_label> <network_label>

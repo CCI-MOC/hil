@@ -4,8 +4,9 @@ haas.server translates between this and HTTP.
 
 TODO: Spec out and document what sanitization is required.
 """
-
 import model
+from haas.config import cfg
+import importlib
 
 class APIError(Exception):
     """An exception indicating an error that should be reported to the user.
@@ -138,10 +139,20 @@ def project_deploy(projectname):
     TODO: there are other possible errors, document them and how they are
     handled.
     """
+    driver_name = cfg.get('general', 'active_switch')
+    driver = importlib.import_module('haas.drivers.' + driver_name)
+
     db = model.Session()
     project = _must_find(db, model.Project, projectname)
+
+    for net in project.networks:
+        for nic in net.nics:
+            driver.set_access_vlan(int(nic.port.label), net.vlan_no)
+
     if project.headnode:
         project.headnode.create()
+        for hnic in project.headnode.hnics:
+            hnic.create()
         project.headnode.start()
     else:
         pass # TODO: at least log this, if not throw an error.
@@ -171,60 +182,6 @@ def project_detach_node(projectname, nodename):
     project.nodes.remove(node)
     db.commit()
 
-
-def project_connect_headnode(projectname, nodename):
-    """Add a project 'projectname' to an existing headnode
-
-    If the headnode or project does not exist, a NotFoundError will be raised.
-    """
-    db = model.Session()
-    project = _must_find(db, model.Project, projectname)
-    headnode = _must_find(db, model.Headnode, nodename)
-    if project.headnode is not None:
-        raise DuplicateError(nodename)
-    project.headnode = headnode
-    db.commit()
-
-def project_detach_headnode(projectname, nodename):
-    """Remove a project 'projectname' from an existing headnode
-
-    If the headnode or project does not exist, a NotFoundError will be raised.
-    """
-    db = model.Session()
-    project = _must_find(db, model.Project, projectname)
-    headnode = _must_find(db, model.Headnode, nodename)
-    if project.headnode is not headnode:
-        raise NotFoundError(nodename)
-    project.headnode = None
-    db.commit()
-
-
-def project_connect_network(projectname, networkname):
-    """Add a project 'projectname' to an existing network
-
-    If the network or project does not exist, a NotFoundError will be raised.
-    """
-    db = model.Session()
-    project = _must_find(db, model.Project, projectname)
-    network = _must_find(db, model.Network, networkname)
-    if network in project.networks:
-        raise DuplicateError(networkname)
-    project.networks.append(network)
-    db.commit()
-
-
-def project_detach_network(projectname, networkname):
-    """Remove a project 'projectname' from an existing network
-
-    If the network or project does not exist, a NotFoundError will be raised.
-    """
-    db = model.Session()
-    project = _must_find(db, model.Project, projectname)
-    network = _must_find(db, model.Network, networkname)
-    if network not in project.networks:
-        raise NotFoundError(networkname)
-    project.networks.remove(network)
-    db.commit()
 
 
                             # Node Code #
@@ -261,7 +218,6 @@ def node_register_nic(nodename, nic_name, macaddr):
     """
     db = model.Session()
     node = _must_find(db, model.Node, nodename)
-    group = node.group
     _assert_absent(db, model.Nic, nic_name)
     nic = model.Nic(node, nic_name, macaddr)
     db.add(nic)
@@ -329,7 +285,7 @@ def node_detach_network(node_label, nic_label):
 
                             # Head Node Code #
                             ##################
-def headnode_create(nodename, groupname):
+def headnode_create(nodename, projectname):
     """Create head node 'nodename'.
 
     If the node already exists, a DuplicateError will be raised.
@@ -337,9 +293,12 @@ def headnode_create(nodename, groupname):
     db = model.Session()
 
     _assert_absent(db, model.Headnode, nodename)
-    group = _must_find(db, model.Group, groupname)
+    project = _must_find(db, model.Project, projectname)
 
-    headnode = model.Headnode(group, nodename)
+    if project.headnode is not None:
+        raise DuplicateError('project %s already has a headnode' % (projectname))
+
+    headnode = model.Headnode(project, nodename)
 
     db.add(headnode)
     db.commit()
@@ -364,9 +323,8 @@ def headnode_create_hnic(nodename, hnic_name, macaddr):
     """
     db = model.Session()
     headnode = _must_find(db, model.Headnode, nodename)
-    group = headnode.group
     _assert_absent(db, model.Hnic, hnic_name)
-    hnic = model.Hnic(group, headnode, hnic_name, macaddr)
+    hnic = model.Hnic(headnode, hnic_name, macaddr)
     db.add(hnic)
     db.commit()
 
@@ -435,7 +393,7 @@ def headnode_detach_network(node_label, nic_label):
                             # Network Code #
                             ################
 
-def network_create(networkname, groupname):
+def network_create(networkname, projectname):
     """Create network 'networkname'.
 
     If the network already exists, a DuplicateError will be raised.
@@ -444,11 +402,11 @@ def network_create(networkname, groupname):
     """
     db = model.Session()
     _assert_absent(db, model.Network, networkname)
-    group = _must_find(db, model.Group, groupname)
+    project = _must_find(db, model.Project, projectname)
     vlan = db.query(model.Vlan).filter_by(available=True).first()
     if vlan is None:
         raise AllocationError('No more networks')
-    network = model.Network(group, vlan, networkname)
+    network = model.Network(project, vlan, networkname)
     db.add(network)
     db.commit()
 
@@ -463,6 +421,27 @@ def network_delete(networkname):
     vlan = db.query(model.Vlan).filter_by(vlan_no=network.vlan_no).one()
     vlan.available = True
     db.delete(network)
+    db.commit()
+
+                            # Switch code #
+                            ###############
+
+def switch_register(name, driver):
+    """Register the switch named `name`.
+
+    If the switch already exists, a DuplicateError will be raised.
+    """
+    db = model.Session()
+    _assert_absent(db, model.Switch, name)
+    switch = model.Switch(name, driver)
+    db.add(switch)
+    db.commit()
+
+
+def switch_delete(name):
+    db = model.Session()
+    switch = _must_find(db, model.Switch, name)
+    db.delete(switch)
     db.commit()
 
 

@@ -85,21 +85,16 @@ project at the same time.
     project_delete              <project_label>
  
     # create and delete logical networks
-    network_create              <network_label> <group_label>
+    network_create              <network_label> <project_label>
     network_delete              <network_label>
  
-    headnode_create             <hn_label> <group_label>
+    headnode_create             <hn_label> <project_label>
     headnode_delete             <hn_label>
-    project_connect_headnode    <hn_label> <project_label>
-    project_detach_headnode     <hn_label> <project_label>
  
     # allocate/deallocate node to a project
     project_connect_node        <project_label> <node_label>
     project_detach_node         <project_label> <node_label>
  
-    # networking operations on a project
-    project_connect_network     <project_label> <network_label>
-    project_detach_network      <project_label> <network_label>
     project deploy              <project_label>
  
     # networking operations on a physical node

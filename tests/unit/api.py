@@ -473,8 +473,7 @@ class TestNodeConnectDetachNetwork:
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.project_connect_node('anvil-nextgen', 'node-99')
-        api.network_create('hammernet', 'acme-code')
-        api.project_connect_network('anvil-nextgen', 'hammernet')
+        api.network_create('hammernet', 'anvil-nextgen')
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
         network = api._must_find(db, model.Network, 'hammernet')
         nic = api._must_find(db, model.Nic, '99-eth0')
@@ -594,8 +593,7 @@ class TestNodeConnectDetachNetwork:
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.project_connect_node('anvil-nextgen', 'node-99')
-        api.network_create('hammernet', 'acme-code')
-        api.project_connect_network('anvil-nextgen', 'hammernet')
+        api.network_create('hammernet', 'anvil-nextgen')
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
         api.node_detach_network('node-99', '99-eth0')
         network = api._must_find(db, model.Network, 'hammernet')
@@ -685,13 +683,14 @@ class TestHeadnodeCreateDelete:
 
     def test_headnode_create_success(self):
         db = newDB()
-        api.group_create('anvil-nextgen')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
         api.headnode_create('hn-0', 'anvil-nextgen')
         hn = api._must_find(db, model.Headnode, 'hn-0')
-        assert hn.group.label == 'anvil-nextgen'
+        assert hn.project.label == 'anvil-nextgen'
         releaseDB(db)
 
-    def test_headnode_create_badgroup(self):
+    def test_headnode_create_badproject(self):
         """Tests that creating a headnode with a nonexistent group fails"""
         db = newDB()
         with pytest.raises(api.NotFoundError):
@@ -701,16 +700,29 @@ class TestHeadnodeCreateDelete:
     def test_headnode_create_duplicate(self):
         """Tests that creating a headnode with a duplicate name fails"""
         db = newDB()
-        api.group_create('anvil-nextgen')
-        api.group_create('anvil-oldtimer')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.project_create('anvil-oldtimer', 'acme-code')
         api.headnode_create('hn-0', 'anvil-nextgen')
         with pytest.raises(api.DuplicateError):
             api.headnode_create('hn-0', 'anvil-oldtimer')
         releaseDB(db)
 
+    def test_headnode_create_second(self):
+        """Tests that creating a second headnode one one project fails"""
+        db = newDB()
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.headnode_create('hn-0', 'anvil-nextgen')
+        with pytest.raises(api.DuplicateError):
+            api.headnode_create('hn-1', 'anvil-nextgen')
+        releaseDB(db)
+
+
     def test_headnode_delete_success(self):
         db = newDB()
-        api.group_create('anvil-nextgen')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
         api.headnode_create('hn-0', 'anvil-nextgen')
         api.headnode_delete('hn-0')
         api._assert_absent(db, model.Headnode, 'hn-0')
@@ -728,12 +740,12 @@ class TestHeadnodeCreateDeleteHnic:
 
     def test_headnode_create_hnic_success(self):
         db = newDB()
-        api.group_create('anvil-nextgen')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
         api.headnode_create('hn-0', 'anvil-nextgen')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
         nic = api._must_find(db, model.Hnic, 'hn-0-eth0')
         assert nic.headnode.label == 'hn-0'
-        assert nic.group.label == 'anvil-nextgen'
         releaseDB(db)
 
     def test_headnode_create_hnic_no_headnode(self):
@@ -744,7 +756,8 @@ class TestHeadnodeCreateDeleteHnic:
 
     def test_headnode_create_hnic_duplicate_hnic(self):
         db = newDB()
-        api.group_create('anvil-nextgen')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
         api.headnode_create('hn-0', 'anvil-nextgen')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
         with pytest.raises(api.DuplicateError):
@@ -753,7 +766,8 @@ class TestHeadnodeCreateDeleteHnic:
 
     def test_headnode_delete_hnic_success(self):
         db = newDB()
-        api.group_create('anvil-nextgen')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
         api.headnode_create('hn-0', 'anvil-nextgen')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
         api.headnode_delete_hnic('hn-0', 'hn-0-eth0')
@@ -763,7 +777,8 @@ class TestHeadnodeCreateDeleteHnic:
 
     def test_headnode_delete_hnic_hnic_nexist(self):
         db = newDB()
-        api.group_create('anvil-nextgen')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
         api.headnode_create('hn-0', 'anvil-nextgen')
         with pytest.raises(api.NotFoundError):
             api.headnode_delete_hnic('hn-0', 'hn-0-eth0')
@@ -777,9 +792,11 @@ class TestHeadnodeCreateDeleteHnic:
 
     def test_headnode_delete_hnic_wrong_headnode(self):
         db = newDB()
-        api.group_create('anvil-nextgen')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.project_create('anvil-oldtimer', 'acme-code')
         api.headnode_create('hn-0', 'anvil-nextgen')
-        api.headnode_create('hn-1', 'anvil-nextgen')
+        api.headnode_create('hn-1', 'anvil-oldtimer')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
         with pytest.raises(api.NotFoundError):
             api.headnode_delete_hnic('hn-1', 'hn-0-eth0')
@@ -787,7 +804,8 @@ class TestHeadnodeCreateDeleteHnic:
 
     def test_headnode_delete_hnic_wrong_nexist_headnode(self):
         db = newDB()
-        api.group_create('anvil-nextgen')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
         api.headnode_create('hn-0', 'anvil-nextgen')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
         with pytest.raises(api.NotFoundError):
@@ -801,12 +819,10 @@ class TestHeadnodeConnectDetachNetwork:
         db = newDB()
         api.vlan_register('101')
         api.group_create('acme-code')
-        api.headnode_create('hn-0', 'acme-code')
-        api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
         api.project_create('anvil-nextgen', 'acme-code')
-        api.project_connect_headnode('anvil-nextgen', 'hn-0')
-        api.network_create('hammernet', 'acme-code')
-        api.project_connect_network('anvil-nextgen', 'hammernet')
+        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
+        api.network_create('hammernet', 'anvil-nextgen')
         api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
         network = api._must_find(db, model.Network, 'hammernet')
         hnic = api._must_find(db, model.Hnic, 'hn-0-eth0')
@@ -906,12 +922,10 @@ class TestHeadnodeConnectDetachNetwork:
         db = newDB()
         api.vlan_register('101')
         api.group_create('acme-code')
-        api.headnode_create('hn-0', 'acme-code')
-        api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
         api.project_create('anvil-nextgen', 'acme-code')
-        api.project_connect_headnode('anvil-nextgen', 'hn-0')
-        api.network_create('hammernet', 'acme-code')
-        api.project_connect_network('anvil-nextgen', 'hammernet')
+        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
+        api.network_create('hammernet', 'anvil-nextgen')
         api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
         api.headnode_detach_network('hn-0', 'hn-0-eth0')
         network = api._must_find(db, model.Network, 'hammernet')
@@ -983,16 +997,17 @@ class TestNetworkCreateDelete:
     def test_network_create_success(self):
         db = newDB()
         api.vlan_register('102')
-        api.group_create('anvil-nextgen')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
         api.network_create('hammernet', 'anvil-nextgen')
         net = api._must_find(db, model.Network, 'hammernet')
-        assert net.group.label == 'anvil-nextgen'
+        assert net.project.label == 'anvil-nextgen'
         vlan = api._must_find(db, model.Vlan, '102')
         assert not vlan.available
         releaseDB(db)
 
-    def test_network_create_badgroup(self):
-        """Tests that creating a network with a nonexistent group fails"""
+    def test_network_create_badproject(self):
+        """Tests that creating a network with a nonexistent project fails"""
         db = newDB()
         with pytest.raises(api.NotFoundError):
             api.network_create('hammernet', 'anvil-nextgen')
@@ -1002,8 +1017,9 @@ class TestNetworkCreateDelete:
         """Tests that creating a network with a duplicate name fails"""
         db = newDB()
         api.vlan_register('102')
-        api.group_create('anvil-nextgen')
-        api.group_create('anvil-oldtimer')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.project_create('anvil-oldtimer', 'acme-code')
         api.network_create('hammernet', 'anvil-nextgen')
         with pytest.raises(api.DuplicateError):
             api.network_create('hammernet', 'anvil-oldtimer')
@@ -1012,7 +1028,8 @@ class TestNetworkCreateDelete:
     def test_network_delete_success(self):
         db = newDB()
         api.vlan_register('102')
-        api.group_create('anvil-nextgen')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
         api.network_create('hammernet', 'anvil-nextgen')
         api.network_delete('hammernet')
         api._assert_absent(db, model.Network, 'hammernet')
@@ -1029,21 +1046,23 @@ class TestNetworkCreateDelete:
 
     def test_network_basic_vlan_leak(self):
         db = newDB()
-        api.group_create('acme_corp')
         api.vlan_register('102')
-        api.network_create('hammernet', 'acme_corp')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.network_create('hammernet', 'anvil-nextgen')
         api.network_delete('hammernet')
         # For this to work, the vlan will need to have been released:
-        api.network_create('sledge', 'acme_corp')
+        api.network_create('sledge', 'anvil-nextgen')
         releaseDB(db)
 
     def test_network_no_duplicates(self):
         db = newDB()
-        api.group_create('acme_corp')
         api.vlan_register('102')
-        api.network_create('hammernet', 'acme_corp')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.network_create('hammernet', 'anvil-nextgen')
         with pytest.raises(api.AllocationError):
-            api.network_create('sledge', 'acme_corp')
+            api.network_create('sledge', 'anvil-nextgen')
         releaseDB(db)
 
 

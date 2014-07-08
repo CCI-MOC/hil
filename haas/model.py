@@ -71,9 +71,6 @@ class Node(Model):
     #many to one mapping to project
     project       = relationship("Project",backref=backref('nodes'))
 
-    group_id = Column(Integer, ForeignKey('group.id'))
-    group = relationship("Group", backref=backref("node_list"))
-
     def __init__(self, label, available = True):
         self.label   = label
         self.available = available
@@ -83,7 +80,7 @@ class Project(Model):
     deployed    = Column(Boolean)
 
     group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
-    group = relationship("Group", backref=backref("project_list"))
+    group = relationship("Group", backref=backref("projects"))
 
     def __init__(self, group, label):
         self.group = group
@@ -93,18 +90,16 @@ class Project(Model):
 
 class Network(Model):
     """A link-layer network."""
-    project_id    = Column(String,ForeignKey('project.id'))
-    group_id      = Column(Integer, ForeignKey('group.id'), nullable=False)
+    project_id    = Column(String,ForeignKey('project.id'), nullable=False)
     vlan_no       = Column(Integer, ForeignKey('vlan.vlan_no'), nullable=False)
 
     project = relationship("Project",backref=backref('networks'))
-    group = relationship("Group", backref=backref("network_list"))
 
-    def __init__(self, group, vlan, label):
+    def __init__(self, project, vlan, label):
         assert vlan.available
         vlan.available = False
         self.vlan_no = vlan.vlan_no
-        self.group = group
+        self.project = project
         self.label = label
 
 
@@ -172,14 +167,11 @@ class Group(Model):
 class Headnode(Model):
     available     = Column(Boolean)
 
-    project_id    = Column(String, ForeignKey('project.id'))
+    project_id    = Column(String, ForeignKey('project.id'), nullable=False)
     project       = relationship("Project", backref = backref('headnode',uselist = False))
 
-    group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
-    group = relationship("Group", backref=backref("hn_list"))
-
-    def __init__(self, group, label, available = True):
-        self.group = group
+    def __init__(self, project, label, available = True):
+        self.project = project
         self.label  = label
         self.available = available
 
@@ -209,11 +201,20 @@ class Hnic(Model):
     headnode       = relationship("Headnode", backref = backref('hnics'))
     network        = relationship("Network", backref=backref('hnics'))
 
-    group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
-    group = relationship("Group", backref=backref("hnic_list"))
-
-    def __init__(self, group, headnode, label, mac_addr):
+    def __init__(self, headnode, label, mac_addr):
         self.headnode = headnode
-        self.group = group
         self.label = label
         self.mac_addr = mac_addr
+
+    @no_dry_run
+    def create(self):
+        trunk_nic = cfg.get('headnode', 'trunk_nic')
+        vlan_no = str(self.network.vlan_no)
+        bridge = 'br-vlan%s' % vlan_no
+        vlan_nic = '%s.%s' % (trunk_nic, vlan_no)
+        check_call(['brctl', 'addbr', bridge])
+        check_call(['vconfig', 'add', trunk_nic, vlan_no])
+        check_call(['brctl', 'addif', bridge, vlan_nic])
+        check_call(['ifconfig', bridge, 'up', 'promisc'])
+        check_call(['ifconfig', vlan_nic, 'up', 'promisc'])
+        check_call(['virsh', 'attach-interface', self.headnode._vmname(), 'bridge', bridge, '--config'])
