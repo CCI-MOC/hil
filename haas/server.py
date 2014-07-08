@@ -132,7 +132,7 @@ def project_deploy(projectname):
 @api_function
 def headnode(name):
     if request.method == 'PUT':
-        return api.headnode_create(name, request.form['group'])
+        return api.headnode_create(name, request.form['project'])
     else: # DELETE
         return api.headnode_delete(name)
 
@@ -205,7 +205,7 @@ def port_detach_nic(switch, port):
 def network(networkname):
     """Handle create/delete network commands."""
     if request.method == 'PUT':
-        return api.network_create(networkname, request.form['group'])
+        return api.network_create(networkname, request.form['project'])
     else: # DELETE
         return api.network_delete(networkname)
 
@@ -218,26 +218,6 @@ def project_connect_node(projectname):
 @api_function
 def project_detach_node(projectname):
     return api.project_detach_node(projectname, request.form['node'])
-
-@app.route('/project/<projectname>/connect_headnode', methods=['POST'])
-@api_function
-def project_connect_headnode(projectname):
-    return api.project_connect_headnode(projectname, request.form['headnode'])
-
-@app.route('/project/<projectname>/detach_headnode', methods=['POST'])
-@api_function
-def project_detach_headnode(projectname):
-    return api.project_detach_headnode(projectname, request.form['headnode'])
-
-@app.route('/project/<projectname>/connect_network', methods=['POST'])
-@api_function
-def project_connect_network(projectname):
-    return api.project_connect_network(projectname, request.form['network'])
-
-@app.route('/project/<projectname>/detach_network', methods=['POST'])
-@api_function
-def project_detach_network(projectname):
-    return api.project_detach_network(projectname, request.form['network'])
 
 
 @app.route('/node/<node>/nic/<nic>/connect_network', methods=['POST'])

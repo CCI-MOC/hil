@@ -53,10 +53,10 @@ def user_create(username, password):
     check_status_code(requests.put(url, data={'password': password}))
 
 @cmd
-def network_create(network, group):
-    """Create a <network> belonging to a <group>"""
+def network_create(network, project):
+    """Create a <network> belonging to a <project>"""
     url = object_url('network', network)
-    check_status_code(requests.put(url, data={'group': group}))
+    check_status_code(requests.put(url, data={'project': project}))
 
 @cmd
 def network_delete(network):
@@ -117,10 +117,10 @@ def project_deploy(project):
 
 
 @cmd
-def headnode_create(hn_name, group):
-    """Create a headnode <hn_name> belonging to <group>"""
+def headnode_create(hn_name, project):
+    """Create a headnode <hn_name> belonging to <project>"""
     url = object_url('headnode', hn_name)
-    check_status_code(requests.put(url, data={'group': group}))
+    check_status_code(requests.put(url, data={'project': project}))
 
 @cmd
 def headnode_delete(hn_name):
@@ -139,30 +139,6 @@ def project_detach_node(project, node):
     """Detach <node> from <project>"""
     url = object_url('project', project, 'detach_node')
     check_status_code(requests.post(url, data={'node': node}))
-
-@cmd
-def project_connect_headnode(project, headnode):
-    """Connect <headnode> to <project>"""
-    url = object_url('project', project, 'connect_headnode')
-    check_status_code(requests.post(url, data={'headnode': headnode}))
-
-@cmd
-def project_detach_headnode(project, headnode):
-    """Detach <headnode> from <project>"""
-    url = object_url('project', project, 'detach_headnode')
-    check_status_code(requests.post(url, data={'headnode': headnode}))
-
-@cmd
-def project_connect_network(project, network):
-    """Connect <network> to <project>"""
-    url = object_url('project', project, 'connect_network')
-    check_status_code(requests.post(url, data={'network': network}))
-
-@cmd
-def project_detach_network(project, network):
-    """Detach <network> from <project>"""
-    url = object_url('project', project, 'detach_network')
-    check_status_code(requests.post(url, data={'network': network}))
 
 @cmd
 def node_register(node):
@@ -271,13 +247,13 @@ def usage():
     """Display a summary of the arguments accepted by the CLI."""
     sys.stderr.write('Usage: %s <command>\n\n' % sys.argv[0])
     sys.stderr.write('Where <command> is one of:\n\n')
-    for name in commands.keys():
+    for name in sorted(commands.keys()):
         # For each command, print out a summary including the name, arguments,
         # and the docstring (as a #comment).
         func = commands[name]
         args, _, _, _ = inspect.getargspec(func)
         args = map(lambda name: '<%s>' % name, args)
-        sys.stderr.write('    %s %s # %s\n' % (name, ' '.join(args), func.__doc__))
+        sys.stderr.write('  %s %s\n      %s\n' % (name, ' '.join(args), func.__doc__))
 
 
 def main():

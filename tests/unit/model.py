@@ -91,25 +91,25 @@ class TestSwitch(InsertTest):
 class TestHeadnode(InsertTest):
 
     def test_insert(self):
-        group = Group('acme_corp')
-        self.insert(Headnode(group, 'hn-example'))
+        project = Project(Group('acme_corp'), 'anvil_nextgen')
+        self.insert(Headnode(project, 'hn-example'))
 
     def test_repr(self):
-        group = Group('acme_corp')
-        print(Headnode(group, 'hn-example'))
+        project = Project(Group('acme_corp'), 'anvil_nextgen')
+        print(Headnode(project, 'hn-example'))
 
 
 class TestHnic(InsertTest):
 
     def test_insert(self):
-        group = Group('acme_corp')
-        hn = Headnode(group, 'hn-0')
-        self.insert(Hnic(group, hn, 'storage', '00:11:22:33:44:55'))
+        project = Project(Group('acme_corp'), 'anvil_nextgen')
+        hn = Headnode(project, 'hn-0')
+        self.insert(Hnic(hn, 'storage', '00:11:22:33:44:55'))
 
     def test_repr(self):
-        group = Group('acme_corp')
-        hn = Headnode(group, 'hn-0')
-        print(Hnic(group, hn, 'storage', '00:11:22:33:44:55'))
+        project = Project(Group('acme_corp'), 'anvil_nextgen')
+        hn = Headnode(project, 'hn-0')
+        print(Hnic(hn, 'storage', '00:11:22:33:44:55'))
 
 class TestVlan(InsertTest):
 
@@ -122,8 +122,10 @@ class TestVlan(InsertTest):
 class TestNetwork(InsertTest):
 
     def test_insert(self):
-        network = Network(Group('acme_corp'), Vlan(102), 'hammernet')
+        project = Project(Group('acme_corp'), 'anvil_nextgen')
+        network = Network(project, Vlan(102), 'hammernet')
         self.insert(network)
 
     def test_repr(InsertTest):
-        print(Network(Group('acme_corp'), Vlan(102), 'hammernet'))
+        project = Project(Group('acme_corp'), 'anvil_nextgen')
+        print (Network(project, Vlan(102), 'hammernet'))
