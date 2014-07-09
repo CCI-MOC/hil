@@ -71,10 +71,12 @@ Full Api spec:
     [PUT]    /switch/<switch_label>/port/<port_no>
     [DELETE] /switch/<switch_label>/port/<port_no>
 
-    vlan_register <vlan_id>
-    vlan_delete   <vlan_id>
-    [PUT]    /vlan/<vlan_id>
-    [DELETE] /vlan/<vlan_id>
+## These are driver-specific, and should not exist.
+#
+#   vlan_register <vlan_id>
+#   vlan_delete   <vlan_id>
+#   [PUT]    /vlan/<vlan_id>
+#   [DELETE] /vlan/<vlan_id>
 
     port_connect_nic <switch_label> <port_no> <node_label> <nic_label>
     port_detach_nic  <switch_label> <port_no>

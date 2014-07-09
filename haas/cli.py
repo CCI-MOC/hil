@@ -170,17 +170,19 @@ def headnode_delete_hnic(headnode, hnic):
     url = object_url('headnode', headnode, 'hnic', hnic)
     check_status_code(requests.delete(url))
 
-@cmd
-def vlan_register(vlan_id):
-    """Register existence of VLAN number <vlan_id>"""
-    url = object_url('vlan', vlan_id)
-    check_status_code(requests.put(url))
-
-@cmd
-def vlan_delete(vlan_id):
-    """Delete VLAN number <vlan_id>"""
-    url = object_url('vlan', vlan_id)
-    check_status_code(requests.delete(url))
+## These are driver-specific, and should not exist
+#
+#@cmd
+#def vlan_register(vlan_id):
+#    """Register existence of VLAN number <vlan_id>"""
+#    url = object_url('vlan', vlan_id)
+#    check_status_code(requests.put(url))
+#
+#@cmd
+#def vlan_delete(vlan_id):
+#    """Delete VLAN number <vlan_id>"""
+#    url = object_url('vlan', vlan_id)
+#    check_status_code(requests.delete(url))
 
 @cmd
 def node_connect_network(node, nic, network):
