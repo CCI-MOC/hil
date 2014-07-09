@@ -48,8 +48,8 @@ def get_new_network_id():
     vlan = db.query(Dell_Vlan).filter_by(available = True).first()
     if not vlan:
         return None
-    vlan.avilable = False
-    returnee = vlan.vlan_no
+    vlan.available = False
+    returnee = str(vlan.vlan_no)
     db.commit()
     return returnee
 
