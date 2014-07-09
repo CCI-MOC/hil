@@ -11,8 +11,11 @@ driver-specific.
 
 
 def apply_networking(net_map):
-    """Takes in a dictionary, mapping port IDs to network IDs."""
+    """Takes in a dictionary, mapping port IDs to network IDs.
 
+    For each key-value pair (port, network) in the dictionary, set that port
+    to access that network.  If network is None, set it to access nothing.
+    """
 
 def get_new_network_id():
     """Gets a new network ID, valid for this driver.  Returns 'None' if there
