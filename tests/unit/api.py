@@ -309,6 +309,14 @@ class TestNodeRegisterDeleteNic:
             api.node_delete_nic('compute-02', '01-eth0')
         releaseDB(db)
 
+    def test_node_register_nic_diff_nodes(self):
+        db = newDB()
+        api.node_register('compute-01')
+        api.node_register('compute-02')
+        api.node_register_nic('compute-01', 'ipmi', 'DE:AD:BE:EF:20:14')
+        api.node_register_nic('compute-02', 'ipmi', 'DE:AD:BE:EF:20:14')
+        releaseDB(db)
+
 
 class TestNodeConnectDetachNetwork:
 
@@ -662,6 +670,17 @@ class TestHeadnodeCreateDeleteHnic:
         api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
         with pytest.raises(api.NotFoundError):
             api.headnode_delete_hnic('hn-1', 'hn-0-eth0')
+        releaseDB(db)
+
+    def test_headnode_create_hnic_diff_headnodes(self):
+        db = newDB()
+        api.group_create('acme-code')
+        api.project_create('anvil-legacy', 'acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.headnode_create('hn-0', 'anvil-legacy')
+        api.headnode_create('hn-1', 'anvil-nextgen')
+        api.headnode_create_hnic('hn-0', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.headnode_create_hnic('hn-1', 'eth0', 'DE:AD:BE:EF:20:14')
         releaseDB(db)
 
 
