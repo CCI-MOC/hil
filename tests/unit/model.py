@@ -111,21 +111,13 @@ class TestHnic(InsertTest):
         hn = Headnode(project, 'hn-0')
         print(Hnic(hn, 'storage', '00:11:22:33:44:55'))
 
-class TestVlan(InsertTest):
-
-    def test_insert(self):
-        self.insert(Vlan(102))
-
-    def test_repr(self):
-        print(Vlan(102))
-
 class TestNetwork(InsertTest):
 
     def test_insert(self):
         project = Project(Group('acme_corp'), 'anvil_nextgen')
-        network = Network(project, Vlan(102), 'hammernet')
+        network = Network(project, '34', 'hammernet')
         self.insert(network)
 
     def test_repr(InsertTest):
         project = Project(Group('acme_corp'), 'anvil_nextgen')
-        print (Network(project, Vlan(102), 'hammernet'))
+        print (Network(project, '34', 'hammernet'))

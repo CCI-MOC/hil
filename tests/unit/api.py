@@ -321,7 +321,6 @@ class TestNodeConnectDetachNetwork:
         db = newDB()
         api.node_register('node-99')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
-        api.vlan_register('101')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.project_connect_node('anvil-nextgen', 'node-99')
@@ -338,7 +337,6 @@ class TestNodeConnectDetachNetwork:
         db = newDB()
         api.node_register('node-99')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
-        api.vlan_register('101')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.project_connect_node('anvil-nextgen', 'node-99')
@@ -355,7 +353,6 @@ class TestNodeConnectDetachNetwork:
         db = newDB()
         api.node_register('node-99')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
-        api.vlan_register('101')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.project_connect_node('anvil-nextgen', 'node-99')
@@ -370,7 +367,6 @@ class TestNodeConnectDetachNetwork:
         db = newDB()
         api.node_register('node-99')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
-        api.vlan_register('101')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.project_connect_node('anvil-nextgen', 'node-99')
@@ -384,7 +380,6 @@ class TestNodeConnectDetachNetwork:
         db = newDB()
         api.node_register('node-99')
 #        api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
-        api.vlan_register('101')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.project_connect_node('anvil-nextgen', 'node-99')
@@ -398,7 +393,6 @@ class TestNodeConnectDetachNetwork:
         db = newDB()
         api.node_register('node-99')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
-        api.vlan_register('101')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.project_connect_node('anvil-nextgen', 'node-99')
@@ -411,7 +405,6 @@ class TestNodeConnectDetachNetwork:
         db = newDB()
         api.node_register('node-99')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
-        api.vlan_register('101')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.project_connect_node('anvil-nextgen', 'node-99')
@@ -426,8 +419,6 @@ class TestNodeConnectDetachNetwork:
         db = newDB()
         api.node_register('node-99')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
-        api.vlan_register('101')
-        api.vlan_register('102') # added
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.project_connect_node('anvil-nextgen', 'node-99')
@@ -444,7 +435,6 @@ class TestNodeConnectDetachNetwork:
         db = newDB()
         api.node_register('node-99')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
-        api.vlan_register('101')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.project_connect_node('anvil-nextgen', 'node-99')
@@ -462,7 +452,6 @@ class TestNodeConnectDetachNetwork:
         db = newDB()
         api.node_register('node-99')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
-        api.vlan_register('101')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.project_connect_node('anvil-nextgen', 'node-99')
@@ -478,7 +467,6 @@ class TestNodeConnectDetachNetwork:
         api.node_register('node-99')
         api.node_register('node-98') # added
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
-        api.vlan_register('101')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.project_connect_node('anvil-nextgen', 'node-99')
@@ -495,7 +483,6 @@ class TestNodeConnectDetachNetwork:
         api.node_register('node-99')
         api.node_register('node-98') # added
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
-        api.vlan_register('101')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.project_connect_node('anvil-nextgen', 'node-99')
@@ -510,7 +497,6 @@ class TestNodeConnectDetachNetwork:
         db = newDB()
         api.node_register('node-99')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
-        api.vlan_register('101')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.project_connect_node('anvil-nextgen', 'node-99')
@@ -525,7 +511,6 @@ class TestNodeConnectDetachNetwork:
         db = newDB()
         api.node_register('node-99')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
-        api.vlan_register('101')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.project_connect_node('anvil-nextgen', 'node-99')
@@ -674,7 +659,6 @@ class TestHeadnodeConnectDetachNetwork:
 
     def test_headnode_connect_network_success(self):
         db = newDB()
-        api.vlan_register('101')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.headnode_create('hn-0', 'anvil-nextgen')
@@ -690,7 +674,6 @@ class TestHeadnodeConnectDetachNetwork:
 
     def test_headnode_connect_network_no_such_headnode(self):
         db = newDB()
-        api.vlan_register('101')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.headnode_create('hn-0', 'anvil-nextgen')
@@ -703,7 +686,6 @@ class TestHeadnodeConnectDetachNetwork:
 
     def test_headnode_connect_network_no_such_hnic(self):
         db = newDB()
-        api.vlan_register('101')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.headnode_create('hn-0', 'anvil-nextgen')
@@ -716,7 +698,6 @@ class TestHeadnodeConnectDetachNetwork:
 
     def test_headnode_connect_network_no_such_network(self):
         db = newDB()
-        api.vlan_register('101')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.headnode_create('hn-0', 'anvil-nextgen')
@@ -729,7 +710,6 @@ class TestHeadnodeConnectDetachNetwork:
 
     def test_headnode_connect_network_already_attached_to_same(self):
         db = newDB()
-        api.vlan_register('101')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.headnode_create('hn-0', 'anvil-nextgen')
@@ -743,8 +723,6 @@ class TestHeadnodeConnectDetachNetwork:
 
     def test_headnode_connect_network_already_attached_differently(self):
         db = newDB()
-        api.vlan_register('101')
-        api.vlan_register('102') # added
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.headnode_create('hn-0', 'anvil-nextgen')
@@ -760,7 +738,6 @@ class TestHeadnodeConnectDetachNetwork:
 
     def test_headnode_detach_network_success(self):
         db = newDB()
-        api.vlan_register('101')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.headnode_create('hn-0', 'anvil-nextgen')
@@ -777,7 +754,6 @@ class TestHeadnodeConnectDetachNetwork:
 
     def test_headnode_detach_network_not_attached(self):
         db = newDB()
-        api.vlan_register('101')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.headnode_create('hn-0', 'anvil-nextgen')
@@ -791,7 +767,6 @@ class TestHeadnodeConnectDetachNetwork:
 
     def test_headnode_detach_network_no_such_headnode(self):
         db = newDB()
-        api.vlan_register('101')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.headnode_create('hn-0', 'anvil-nextgen')
@@ -805,7 +780,6 @@ class TestHeadnodeConnectDetachNetwork:
 
     def test_headnode_detach_network_no_such_hnic(self):
         db = newDB()
-        api.vlan_register('101')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.headnode_create('hn-0', 'anvil-nextgen')
@@ -823,14 +797,11 @@ class TestNetworkCreateDelete:
 
     def test_network_create_success(self):
         db = newDB()
-        api.vlan_register('102')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.network_create('hammernet', 'anvil-nextgen')
         net = api._must_find(db, model.Network, 'hammernet')
         assert net.project.label == 'anvil-nextgen'
-        vlan = api._must_find(db, model.Vlan, '102')
-        assert not vlan.available
         releaseDB(db)
 
     def test_network_create_badproject(self):
@@ -843,7 +814,6 @@ class TestNetworkCreateDelete:
     def test_network_create_duplicate(self):
         """Tests that creating a network with a duplicate name fails"""
         db = newDB()
-        api.vlan_register('102')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.project_create('anvil-oldtimer', 'acme-code')
@@ -854,14 +824,11 @@ class TestNetworkCreateDelete:
 
     def test_network_delete_success(self):
         db = newDB()
-        api.vlan_register('102')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.network_create('hammernet', 'anvil-nextgen')
         api.network_delete('hammernet')
         api._assert_absent(db, model.Network, 'hammernet')
-        vlan = api._must_find(db, model.Vlan, '102')
-        assert vlan.available
         releaseDB(db)
 
     def test_network_delete_nonexistent(self):
@@ -871,84 +838,27 @@ class TestNetworkCreateDelete:
             api.network_delete('hammernet')
         releaseDB(db)
 
-    def test_network_basic_vlan_leak(self):
-        db = newDB()
-        api.vlan_register('102')
-        api.group_create('acme-code')
-        api.project_create('anvil-nextgen', 'acme-code')
-        api.network_create('hammernet', 'anvil-nextgen')
-        api.network_delete('hammernet')
-        # For this to work, the vlan will need to have been released:
-        api.network_create('sledge', 'anvil-nextgen')
-        releaseDB(db)
-
-    def test_network_no_duplicates(self):
-        db = newDB()
-        api.vlan_register('102')
-        api.group_create('acme-code')
-        api.project_create('anvil-nextgen', 'acme-code')
-        api.network_create('hammernet', 'anvil-nextgen')
-        with pytest.raises(api.AllocationError):
-            api.network_create('sledge', 'anvil-nextgen')
-        releaseDB(db)
-
-
-class TestVlanRegisterDelete:
-
-    def test_vlan_register_success(self):
-        db = newDB()
-        api.vlan_register('102')
-        vlan = api._must_find(db, model.Vlan, '102')
-        assert vlan.vlan_no == 102
-        assert vlan.available
-        releaseDB(db)
-
-    def test_vlan_register_bad_number(self):
-        """Test various bad inputs."""
-        db = newDB()
-        inputs = ['5000', 'aleph0', '4.2', '-21', 'PI', 'infinity', 'NaN']
-        for input in inputs:
-            with pytest.raises(api.BadArgumentError):
-                api.vlan_register(input)
-        releaseDB(db)
-
-    def test_duplicate_vlan_register(self):
-        db = newDB()
-        api.vlan_register('102')
-        with pytest.raises(api.DuplicateError):
-            api.vlan_register('102')
-
-    def test_vlan_delete_success(self):
-        db = newDB()
-        api.vlan_register('103')
-        api.vlan_delete('103')
-        releaseDB(db)
-
-    def test_vlan_delete_nonexistent(self):
-        """Tests that deleting a never-created vlan fails"""
-        db = newDB()
-        with pytest.raises(api.NotFoundError):
-            api.vlan_delete('103')
-        releaseDB(db)
-
-    def test_vlan_delete_deleted(self):
-        """Tests that deleting an already-deleted vlan fails"""
-        db = newDB()
-        api.vlan_register('103')
-        api.vlan_delete('103')
-        with pytest.raises(api.NotFoundError):
-            api.vlan_delete('103')
-        releaseDB(db)
-
-    def test_vlan_delete_bad_number(self):
-        """Test various bad inputs to vlan_delete"""
-        db = newDB()
-        inputs = ['5000', 'aleph0', '4.2', '-21', 'PI', 'infinity', 'NaN']
-        for input in inputs:
-            with pytest.raises(api.BadArgumentError):
-                api.vlan_delete(input)
-        releaseDB(db)
-
+#   Tests removed for not applying in general case.  (Specific to dell switch)
+#
+#    def test_network_basic_vlan_leak(self):
+#        db = newDB()
+#        api.group_create('acme-code')
+#        api.project_create('anvil-nextgen', 'acme-code')
+#        api.network_create('hammernet', 'anvil-nextgen')
+#        api.network_delete('hammernet')
+#        # For this to work, the vlan will need to have been released:
+#        api.network_create('sledge', 'anvil-nextgen')
+#        releaseDB(db)
+#
+#    def test_network_no_duplicates(self):
+#        db = newDB()
+#        api.group_create('acme-code')
+#        api.project_create('anvil-nextgen', 'acme-code')
+#        api.network_create('hammernet', 'anvil-nextgen')
+#        with pytest.raises(api.AllocationError):
+#            api.network_create('sledge', 'anvil-nextgen')
+#        releaseDB(db)
+#
 
 class TestSwitchRegisterDelete:
     """Tests for the haas.api.switch_* functions."""
