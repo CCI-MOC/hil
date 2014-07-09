@@ -16,5 +16,11 @@ class TestInit_DB:
     """Tests init_db."""
 
     def test_init_db_1(self):
+        cfg.set('switch dell', 'vlans', '100-109')
+        db = newDB()
+        releaseDB(db)
+
+    def test_init_db_2(self):
+        cfg.set('switch dell', 'vlans', '1-10,40-100, 9004, 3000-4000')
         db = newDB()
         releaseDB(db)

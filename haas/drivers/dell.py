@@ -63,8 +63,14 @@ def free_network_id(net_id):
 
 def init_db():
     db = Session()
-    for i in range(100, 110):
-        db.add(Dell_Vlan(i))
+    r_list = cfg.get('switch dell', 'vlans').split(",")
+    for r in r_list:
+        r = r.strip().split("-")
+        if len(r) == 1:
+            db.add(Dell_Vlan(int(r[0])))
+        else:
+            for i in range(int(r[0]), int(r[1])+1):
+                db.add(Dell_Vlan(int(i)))
     db.commit()
 
 @no_dry_run
