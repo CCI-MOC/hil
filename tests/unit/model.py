@@ -10,30 +10,28 @@
 from haas.model import *
 
 # There's probably a better way to do this
-from haas.test_common import newDB, releaseDB
+from haas.test_common import newDB, releaseDB, null_config_decorator
 
 
 class InsertTest:
     """Superclass for tests doing basic database insertions of one object."""
 
-    def insert(self, obj):
-        db = newDB()
+    def insert(self, db, obj):
         db.add(obj)
         db.commit()
-        releaseDB(db)
 
 
 class TestUsers(InsertTest):
     """Test user-related functionality"""
 
-    def test_user_create_verify(self):
-        db = newDB()
+    @null_config_decorator
+    def test_user_create_verify(self, db):
         user = User('bob', 'secret')
         assert user.verify_password('secret')
-        releaseDB(db)
 
-    def test_user_insert(self):
-        self.insert(User('bob', 'secret'))
+    @null_config_decorator
+    def test_user_insert(self, db):
+        self.insert(db, User('bob', 'secret'))
 
     def test_repr(self):
         print(User('bob', 'secret'))
@@ -41,8 +39,9 @@ class TestUsers(InsertTest):
 
 class TestGroup(InsertTest):
 
-    def test_insert(self):
-        self.insert(Group('moc-hackers'))
+    @null_config_decorator
+    def test_insert(self, db):
+        self.insert(db, Group('moc-hackers'))
 
     def test_repr(self):
         print(Group('moc-hackers'))
@@ -50,9 +49,10 @@ class TestGroup(InsertTest):
 
 class TestNic(InsertTest):
 
-    def test_insert(self):
+    @null_config_decorator
+    def test_insert(self, db):
         node = Node('node-99')
-        self.insert(Nic(node, 'ipmi', '00:11:22:33:44:55'))
+        self.insert(db, Nic(node, 'ipmi', '00:11:22:33:44:55'))
 
     def test_repr(self):
         node = Node('node-99')
@@ -61,8 +61,9 @@ class TestNic(InsertTest):
 
 class TestNode(InsertTest):
 
-    def test_insert(self):
-        self.insert(Node('node-99'))
+    @null_config_decorator
+    def test_insert(self, db):
+        self.insert(db, Node('node-99'))
 
     def test_repr(self):
         print(Node('node-99'))
@@ -70,9 +71,10 @@ class TestNode(InsertTest):
 
 class TestProject(InsertTest):
 
-    def test_insert(self):
+    @null_config_decorator
+    def test_insert(self, db):
         group = Group('acme_corp')
-        self.insert(Project(group, 'manhattan'))
+        self.insert(db, Project(group, 'manhattan'))
 
     def test_repr(self):
         group = Group('acme_corp')
@@ -81,8 +83,9 @@ class TestProject(InsertTest):
 
 class TestSwitch(InsertTest):
 
-    def test_insert(self):
-        self.insert(Switch('dev-switch', 'acme_corp'))
+    @null_config_decorator
+    def test_insert(self, db):
+        self.insert(db, Switch('dev-switch', 'acme_corp'))
 
     def test_repr(self):
         print(Switch('dev-switch', 'acme-corp'))
@@ -90,9 +93,10 @@ class TestSwitch(InsertTest):
 
 class TestHeadnode(InsertTest):
 
-    def test_insert(self):
+    @null_config_decorator
+    def test_insert(self, db):
         project = Project(Group('acme_corp'), 'anvil_nextgen')
-        self.insert(Headnode(project, 'hn-example'))
+        self.insert(db, Headnode(project, 'hn-example'))
 
     def test_repr(self):
         project = Project(Group('acme_corp'), 'anvil_nextgen')
@@ -101,10 +105,11 @@ class TestHeadnode(InsertTest):
 
 class TestHnic(InsertTest):
 
-    def test_insert(self):
+    @null_config_decorator
+    def test_insert(self, db):
         project = Project(Group('acme_corp'), 'anvil_nextgen')
         hn = Headnode(project, 'hn-0')
-        self.insert(Hnic(hn, 'storage', '00:11:22:33:44:55'))
+        self.insert(db, Hnic(hn, 'storage', '00:11:22:33:44:55'))
 
     def test_repr(self):
         project = Project(Group('acme_corp'), 'anvil_nextgen')
@@ -113,10 +118,11 @@ class TestHnic(InsertTest):
 
 class TestNetwork(InsertTest):
 
-    def test_insert(self):
+    @null_config_decorator
+    def test_insert(self, db):
         project = Project(Group('acme_corp'), 'anvil_nextgen')
         network = Network(project, '34', 'hammernet')
-        self.insert(network)
+        self.insert(db, network)
 
     def test_repr(InsertTest):
         project = Project(Group('acme_corp'), 'anvil_nextgen')
