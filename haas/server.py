@@ -193,18 +193,6 @@ def headnode_detach_network(headnode, hnic):
     return api.headnode_detach_network(headnode, hnic)
 
 
-## This is driver-specific, and should not exist
-#
-#@app.route('/vlan/<vlan_id>', methods=['PUT', 'DELETE'])
-#@api_function
-#def vlan(vlan_id):
-#    """Handle register/delete vlan commands."""
-#    if request.method == 'PUT':
-#        return api.vlan_register(vlan_id)
-#    else: # DELETE
-#        return api.vlan_delete(vlan_id)
-
-
 if __name__ == '__main__':
     config.load()
     model.init_db(create=True)

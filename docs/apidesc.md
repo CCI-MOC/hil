@@ -119,8 +119,6 @@ project at the same time.
     # operations to describe physical configuration of system to HaaS
     node_register      <node_label>
     node_delete        <node_label>
-#   vlan_register      <vlan_id>   # These are now driver-specific,
-#   vlan_delete        <vlan_id>   # and should not exist
     node_register_nic  <node_label> <nic_label> <mac_addr>
     node_delete_nic    <node_label> <nic_label>
     switch_register    <switch_label> <script> <number_ports>
