@@ -15,6 +15,59 @@ from haas.config import cfg
 
 from haas.dev_support import no_dry_run
 
+from haas.model import Model, Session
+from sqlalchemy import *
+
+class Dell_Vlan(Model):
+    """A VLAN for the Dell switch
+
+    This is used to track which vlan numbers are available; when a Network is
+    created, it must allocate a Vlan, to ensure that:
+
+    1. The VLAN number it is using is unique, and
+    2. The VLAN number is actually allocated to the HaaS; on some deployments we
+       may have specific vlan numbers that we are allowed to use.
+    """
+    vlan_no = Column(Integer, nullable=False)
+    available = Column(Boolean, nullable=False)
+
+    def __init__(self, vlan_no):
+        self.vlan_no = vlan_no
+        self.available = True
+        # XXX: This is pretty gross; it arguably doesn't even make sense for
+        # Vlan to have a label, but we need to do some refactoring for that.
+        self.label = str(vlan_no)
+
+
+
+def apply_network(net_map):
+    for port_id, vlan_id in net_map:
+        set_access_flan(port_id, vlan_id)
+
+def get_new_network_id():
+    db = Session()
+    vlan = db.query(Dell_Vlan).filter_by(available = True).first()
+    if not vlan:
+        return None
+    vlan.avilable = False
+    returnee = vlan.vlan_no
+    db.commit()
+    return returnee
+
+def free_network_id(net_id):
+    db = Session()
+    vlan = db.query(Dell_Vlan).filter_by(vlan_no = net_id).first()
+    if not vlan:
+        pass
+    vlan.available = True
+    db.commit()
+
+def init_db():
+    db = Session()
+    for i in range(100, 110):
+        db.add(Dell_Vlan(i))
+    db.commit()
+
 @no_dry_run
 def set_access_vlan(port, vlan_id):
     # load the configuration:

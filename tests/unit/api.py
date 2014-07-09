@@ -4,6 +4,11 @@ from haas import model, api
 from haas.test_common import newDB, releaseDB
 import pytest
 
+from haas.config import cfg
+
+# Use the 'null' backend for these tests
+cfg.add_section('general')
+cfg.set('general', 'active_switch', 'null')
 
 class TestGroup:
     """Tests for the haas.api.group_* functions."""

@@ -403,10 +403,15 @@ def network_create(networkname, projectname):
     db = model.Session()
     _assert_absent(db, model.Network, networkname)
     project = _must_find(db, model.Project, projectname)
-    vlan = db.query(model.Vlan).filter_by(available=True).first()
-    if vlan is None:
+
+
+    driver_name = cfg.get('general', 'active_switch')
+    driver = importlib.import_module('haas.drivers.' + driver_name)
+    network_id = driver.get_new_network_id()
+    if network_id is None:
         raise AllocationError('No more networks')
-    network = model.Network(project, vlan, networkname)
+
+    network = model.Network(project, network_id, networkname)
     db.add(network)
     db.commit()
 
@@ -418,8 +423,11 @@ def network_delete(networkname):
     """
     db = model.Session()
     network = _must_find(db, model.Network, networkname)
-    vlan = db.query(model.Vlan).filter_by(vlan_no=network.vlan_no).one()
-    vlan.available = True
+
+    driver_name = cfg.get('general', 'active_switch')
+    driver = importlib.import_module('haas.drivers.' + driver_name)
+    driver.free_network_id(network.network_id)
+
     db.delete(network)
     db.commit()
 
