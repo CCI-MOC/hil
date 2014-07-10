@@ -37,7 +37,7 @@ class Model(Base):
     """
     __abstract__ = True
     id = Column(Integer, primary_key=True)
-    label = Column(String, unique=True)
+    label = Column(String)
 
     def __repr__(self):
         return '%s<%r>' % (self.__class__.__name__, self.label)
