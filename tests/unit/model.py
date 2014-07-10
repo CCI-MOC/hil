@@ -12,7 +12,7 @@ from abc import ABCMeta, abstractmethod
 from haas.model import *
 
 # There's probably a better way to do this
-from haas.test_common import newDB, releaseDB
+from haas.test_common import newDB, releaseDB, database_only
 
 class ModelTest:
     """Superclass with tests common to all models.
@@ -35,11 +35,9 @@ class ModelTest:
     def test_repr(self):
         print(self.sample_obj())
 
-    def test_insert(self):
-        db = newDB()
+    @database_only
+    def test_insert(self, db):
         db.add(self.sample_obj())
-        db.commit()
-        releaseDB(db)
 
 
 class TestUsers(ModelTest):
@@ -47,12 +45,6 @@ class TestUsers(ModelTest):
 
     def sample_obj(self):
         return User('bob', 'secret')
-
-    def test_user_create_verify(self):
-        db = newDB()
-        user = User('bob', 'secret')
-        assert user.verify_password('secret')
-        releaseDB(db)
 
 
 class TestGroup(ModelTest):
@@ -98,13 +90,7 @@ class TestHnic(ModelTest):
             'hn-0'), 'storage', '00:11:22:33:44:55')
 
 
-class TestVlan(ModelTest):
-
-    def sample_obj(self):
-        return Vlan(102)
-
-
 class TestNetwork(ModelTest):
 
     def sample_obj(self):
-        return Network(Project(Group('acme_corp'), 'anvil-nextgen'), Vlan(102), 'hammernet')
+        return Network(Project(Group('acme_corp'), 'anvil-nextgen'), '102', 'hammernet')

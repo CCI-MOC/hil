@@ -5,6 +5,7 @@ from passlib.hash import sha512_crypt
 from subprocess import check_call
 from haas.config import cfg
 from haas.dev_support import no_dry_run
+import importlib
 
 Base=declarative_base()
 Session = sessionmaker()
@@ -23,10 +24,15 @@ def init_db(create=False, uri=None):
     if uri == None:
         uri = cfg.get('database', 'uri')
 
+    driver_name = cfg.get('general', 'active_switch')
+    driver = importlib.import_module('haas.drivers.' + driver_name)
+
     engine = create_engine(uri)
     if create:
         Base.metadata.create_all(engine)
     Session.configure(bind=engine)
+
+    driver.init_db()
 
 
 class Model(Base):
@@ -91,37 +97,15 @@ class Project(Model):
 class Network(Model):
     """A link-layer network."""
     project_id    = Column(String,ForeignKey('project.id'), nullable=False)
-    vlan_no       = Column(Integer, ForeignKey('vlan.vlan_no'), nullable=False)
+    network_id    = Column(String, nullable=False)
 
     project = relationship("Project",backref=backref('networks'))
 
-    def __init__(self, project, vlan, label):
-        assert vlan.available
-        vlan.available = False
-        self.vlan_no = vlan.vlan_no
+    def __init__(self, project, network_id, label):
+        self.network_id = network_id
         self.project = project
         self.label = label
 
-
-class Vlan(Model):
-    """A VLAN
-
-    This is used to track which vlan numbers are available; when a Network is
-    created, it must allocate a Vlan, to ensure that:
-
-    1. The VLAN number it is using is unique, and
-    2. The VLAN number is actually allocated to the HaaS; on some deployments we
-       may have specific vlan numbers that we are allowed to use.
-    """
-    vlan_no = Column(Integer, nullable=False)
-    available = Column(Boolean, nullable=False)
-
-    def __init__(self, vlan_no):
-        self.vlan_no = vlan_no
-        self.available = True
-        # XXX: This is pretty gross; it arguably doesn't even make sense for
-        # Vlan to have a label, but we need to do some refactoring for that.
-        self.label = str(vlan_no)
 
 
 class Port(Model):

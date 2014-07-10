@@ -6,6 +6,8 @@ directly ipmlement the semantics of the API.
 To start the server, invoke `haas serve` from the command line.
 """
 
+from functools import wraps
+
 from flask import Flask, request
 from haas import config, model, api
 
@@ -17,6 +19,8 @@ def api_function(f):
     `api.APIError`, the error will be reported to the client, whereas other
     exceptions (being indications of a bug in the HaaS) will not be.
     """
+
+    @wraps(f)
     def wrapped(*args, **kwargs):
         try:
             resp = f(*args, **kwargs)
@@ -30,7 +34,7 @@ def api_function(f):
             return e.message, 400
         if not resp:
             return ''
-    wrapped.__name__ = f.__name__
+
     return wrapped
 
 
@@ -191,18 +195,6 @@ def headnode_connect_network(headnode, hnic):
 @api_function
 def headnode_detach_network(headnode, hnic):
     return api.headnode_detach_network(headnode, hnic)
-
-
-
-
-@app.route('/vlan/<vlan_id>', methods=['PUT', 'DELETE'])
-@api_function
-def vlan(vlan_id):
-    """Handle register/delete vlan commands."""
-    if request.method == 'PUT':
-        return api.vlan_register(vlan_id)
-    else: # DELETE
-        return api.vlan_delete(vlan_id)
 
 
 if __name__ == '__main__':
