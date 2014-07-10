@@ -1,5 +1,7 @@
 """Unit tests for drivers/dell.py"""
 
+from functools import wraps
+
 from haas import model, api
 from haas.test_common import *
 import pytest
@@ -17,6 +19,7 @@ def cfg_decorator(vlan_list):
             cfg.add_section('switch dell')
             cfg.set('switch dell', 'vlans', vlan_list)
 
+        @wraps(f)
         @clear_config_decorator
         def wrapped(self):
             config_initialize()
@@ -24,7 +27,6 @@ def cfg_decorator(vlan_list):
             f(self, db)
             releaseDB(db)
 
-        wrapped.__name__ = f.__name__
         return wrapped
 
     return dec

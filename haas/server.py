@@ -6,6 +6,8 @@ directly ipmlement the semantics of the API.
 To start the server, invoke `haas serve` from the command line.
 """
 
+from functools import wraps
+
 from flask import Flask, request
 from haas import config, model, api
 
@@ -17,6 +19,8 @@ def api_function(f):
     `api.APIError`, the error will be reported to the client, whereas other
     exceptions (being indications of a bug in the HaaS) will not be.
     """
+
+    @wraps(f)
     def wrapped(*args, **kwargs):
         try:
             resp = f(*args, **kwargs)
@@ -30,7 +34,7 @@ def api_function(f):
             return e.message, 400
         if not resp:
             return ''
-    wrapped.__name__ = f.__name__
+
     return wrapped
 
 
