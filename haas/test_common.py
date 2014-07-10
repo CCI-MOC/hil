@@ -31,17 +31,12 @@ def null_config_decorator(f):
         cfg.add_section('general')
         cfg.set('general', 'active_switch', 'null')
 
-    def config_clear():
-        for section in cfg.sections():
-            cfg.remove_section(section)
-
+    @clear_config_decorator
     def wrapped(self):
-        config_clear()
         config_initialize()
         db = newDB()
         f(self, db)
         releaseDB(db)
-        config_clear()
 
     wrapped.__name__ = f.__name__
     return wrapped
