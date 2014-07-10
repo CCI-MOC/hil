@@ -12,7 +12,12 @@ def releaseDB(db):
     pass
 
 
-def clear_config_decorator(f):
+def clear_configuration(f):
+    """A decorator which clears all HaaS configuration both before and after
+    calling the function.  Used for tests which require a specific
+    configuration setup.
+    """
+
     def config_clear():
         for section in cfg.sections():
             cfg.remove_section(section)
@@ -26,14 +31,20 @@ def clear_config_decorator(f):
     return wrapped
 
 
-def null_config_decorator(f):
+def database_only(f):
+    """A decorator which runs the given function on a fresh memory-backed
+    database, and a config that is empty except for making the 'null' backend
+    active.  Used for testing functions that pertain to the database but not
+    the backend.
+    """
+
     def config_initialize():
         # Use the 'null' backend for these tests
         cfg.add_section('general')
         cfg.set('general', 'active_switch', 'null')
 
     @wraps(f)
-    @clear_config_decorator
+    @clear_configuration
     def wrapped(self):
         config_initialize()
         db = newDB()

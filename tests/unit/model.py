@@ -10,7 +10,7 @@
 from haas.model import *
 
 # There's probably a better way to do this
-from haas.test_common import newDB, releaseDB, null_config_decorator
+from haas.test_common import newDB, releaseDB, database_only
 
 
 class InsertTest:
@@ -24,12 +24,12 @@ class InsertTest:
 class TestUsers(InsertTest):
     """Test user-related functionality"""
 
-    @null_config_decorator
+    @database_only
     def test_user_create_verify(self, db):
         user = User('bob', 'secret')
         assert user.verify_password('secret')
 
-    @null_config_decorator
+    @database_only
     def test_user_insert(self, db):
         self.insert(db, User('bob', 'secret'))
 
@@ -39,7 +39,7 @@ class TestUsers(InsertTest):
 
 class TestGroup(InsertTest):
 
-    @null_config_decorator
+    @database_only
     def test_insert(self, db):
         self.insert(db, Group('moc-hackers'))
 
@@ -49,7 +49,7 @@ class TestGroup(InsertTest):
 
 class TestNic(InsertTest):
 
-    @null_config_decorator
+    @database_only
     def test_insert(self, db):
         node = Node('node-99')
         self.insert(db, Nic(node, 'ipmi', '00:11:22:33:44:55'))
@@ -61,7 +61,7 @@ class TestNic(InsertTest):
 
 class TestNode(InsertTest):
 
-    @null_config_decorator
+    @database_only
     def test_insert(self, db):
         self.insert(db, Node('node-99'))
 
@@ -71,7 +71,7 @@ class TestNode(InsertTest):
 
 class TestProject(InsertTest):
 
-    @null_config_decorator
+    @database_only
     def test_insert(self, db):
         group = Group('acme_corp')
         self.insert(db, Project(group, 'manhattan'))
@@ -83,7 +83,7 @@ class TestProject(InsertTest):
 
 class TestSwitch(InsertTest):
 
-    @null_config_decorator
+    @database_only
     def test_insert(self, db):
         self.insert(db, Switch('dev-switch', 'acme_corp'))
 
@@ -93,7 +93,7 @@ class TestSwitch(InsertTest):
 
 class TestHeadnode(InsertTest):
 
-    @null_config_decorator
+    @database_only
     def test_insert(self, db):
         project = Project(Group('acme_corp'), 'anvil_nextgen')
         self.insert(db, Headnode(project, 'hn-example'))
@@ -105,7 +105,7 @@ class TestHeadnode(InsertTest):
 
 class TestHnic(InsertTest):
 
-    @null_config_decorator
+    @database_only
     def test_insert(self, db):
         project = Project(Group('acme_corp'), 'anvil_nextgen')
         hn = Headnode(project, 'hn-0')
@@ -118,7 +118,7 @@ class TestHnic(InsertTest):
 
 class TestNetwork(InsertTest):
 
-    @null_config_decorator
+    @database_only
     def test_insert(self, db):
         project = Project(Group('acme_corp'), 'anvil_nextgen')
         network = Network(project, '34', 'hammernet')

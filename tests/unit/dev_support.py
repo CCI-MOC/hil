@@ -5,7 +5,7 @@ from haas.test_common import *
 
 class TestNoDryRun:
 
-    @clear_config_decorator
+    @clear_configuration
     def test_function(self):
         cfg.add_section('devel')
         cfg.set('devel', 'dry_run', True)
@@ -15,7 +15,7 @@ class TestNoDryRun:
             assert False
         func()
 
-    @clear_config_decorator
+    @clear_configuration
     def test_method(self):
         cfg.add_section('devel')
         cfg.set('devel', 'dry_run', True)
