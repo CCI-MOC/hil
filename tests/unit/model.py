@@ -15,7 +15,13 @@ from haas.model import *
 from haas.test_common import newDB, releaseDB
 
 class ModelTest:
-    """Superclass with tests common to all models."""
+    """Superclass with tests common to all models.
+
+    Inheriting from ``ModelTest`` will generate tests in the subclass (each
+    of the methods beginning with ``test_`` below), but the ``ModelTest`` class
+    itself does not generate tests. (pytest will ignore it because the name of
+    the class does not start with ``Test`).
+    """
     __metaclass__ = ABCMeta
 
     @abstractmethod
