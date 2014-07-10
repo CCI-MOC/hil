@@ -218,7 +218,11 @@ def node_register_nic(nodename, nic_name, macaddr):
     """
     db = model.Session()
     node = _must_find(db, model.Node, nodename)
-    _assert_absent(db, model.Nic, nic_name)
+    nic = db.query(model.Nic) \
+            .filter_by(node = node) \
+            .filter_by(label = nic_name).first()
+    if nic is not None:
+        raise DuplicateError(nic_name)
     nic = model.Nic(node, nic_name, macaddr)
     db.add(nic)
     db.commit()
@@ -323,7 +327,11 @@ def headnode_create_hnic(nodename, hnic_name, macaddr):
     """
     db = model.Session()
     headnode = _must_find(db, model.Headnode, nodename)
-    _assert_absent(db, model.Hnic, hnic_name)
+    hnic = db.query(model.Hnic) \
+            .filter_by(headnode = headnode) \
+            .filter_by(label = hnic_name).first()
+    if hnic is not None:
+        raise DuplicateError(hnic_name)
     hnic = model.Hnic(headnode, hnic_name, macaddr)
     db.add(hnic)
     db.commit()
