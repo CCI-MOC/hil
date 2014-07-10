@@ -5,6 +5,7 @@ from passlib.hash import sha512_crypt
 from subprocess import check_call
 from haas.config import cfg
 from haas.dev_support import no_dry_run
+import importlib
 
 Base=declarative_base()
 Session = sessionmaker()
@@ -23,10 +24,15 @@ def init_db(create=False, uri=None):
     if uri == None:
         uri = cfg.get('database', 'uri')
 
+    driver_name = cfg.get('general', 'active_switch')
+    driver = importlib.import_module('haas.drivers.' + driver_name)
+
     engine = create_engine(uri)
     if create:
         Base.metadata.create_all(engine)
     Session.configure(bind=engine)
+
+    driver.init_db()
 
 
 class Model(Base):
@@ -37,7 +43,7 @@ class Model(Base):
     """
     __abstract__ = True
     id = Column(Integer, primary_key=True)
-    label = Column(String, unique=True)
+    label = Column(String)
 
     def __repr__(self):
         return '%s<%r>' % (self.__class__.__name__, self.label)
@@ -52,17 +58,15 @@ class Nic(Model):
     mac_addr  = Column(String)
 
     port_id   = Column(Integer,ForeignKey('port.id'))
-    node_id   = Column(Integer,ForeignKey('node.id'))
+    node_id   = Column(Integer,ForeignKey('node.id'), nullable=False)
+    network_id = Column(Integer, ForeignKey('network.id'))
 
-    # One to one mapping port
+    network   = relationship("Network", backref=backref('nics'))
     port      = relationship("Port",backref=backref('nic',uselist=False))
     node      = relationship("Node",backref=backref('nics'))
 
-    group_id = Column(Integer, ForeignKey('group.id'))
-    group = relationship("Group", backref=backref("nic_list"))
-
-
-    def __init__(self, label, mac_addr):
+    def __init__(self, node, label, mac_addr):
+        self.node      = node
         self.label     = label
         self.mac_addr  = mac_addr
 
@@ -73,9 +77,6 @@ class Node(Model):
     #many to one mapping to project
     project       = relationship("Project",backref=backref('nodes'))
 
-    group_id = Column(Integer, ForeignKey('group.id'))
-    group = relationship("Group", backref=backref("node_list"))
-
     def __init__(self, label, available = True):
         self.label   = label
         self.available = available
@@ -85,7 +86,7 @@ class Project(Model):
     deployed    = Column(Boolean)
 
     group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
-    group = relationship("Group", backref=backref("project_list"))
+    group = relationship("Group", backref=backref("projects"))
 
     def __init__(self, group, label):
         self.group = group
@@ -94,39 +95,35 @@ class Project(Model):
 
 
 class Network(Model):
-    available     = Column(Boolean)
+    """A link-layer network."""
+    project_id    = Column(String,ForeignKey('project.id'), nullable=False)
+    network_id    = Column(String, nullable=False)
 
-    project_id    = Column(String,ForeignKey('project.id'))
-    project       = relationship("Project",backref=backref('networks'))
+    project = relationship("Project",backref=backref('networks'))
 
-    group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
-    group = relationship("Group", backref=backref("network_list"))
-
-    def __init__(self, group, label, available=True):
-        self.group = group
+    def __init__(self, project, network_id, label):
+        self.network_id = network_id
+        self.project = project
         self.label = label
-        self.available = available
+
 
 
 class Port(Model):
-    port_no       = Column(Integer)
-    switch_id     = Column(Integer,ForeignKey('switch.id'))
+    switch_id     = Column(Integer,ForeignKey('switch.id'), nullable=False)
     switch        = relationship("Switch",backref=backref('ports'))
 
-    group_id = Column(Integer, ForeignKey('group.id'))
-    group = relationship("Group", backref=backref("port_list"))
-
-    def __init__(self, label, port_no):
+    def __init__(self, switch, label):
+        self.switch = switch
         self.label   = label
-        self.port_no   = port_no
+
 
 
 class Switch(Model):
-    model         = Column(String)
+    driver = Column(String)
 
-    def __init__(self,label,model):
+    def __init__(self, label, driver):
         self.label = label
-        self.model = model
+        self.driver = driver
 
 
 class User(Model):
@@ -154,14 +151,11 @@ class Group(Model):
 class Headnode(Model):
     available     = Column(Boolean)
 
-    project_id    = Column(String, ForeignKey('project.id'))
+    project_id    = Column(String, ForeignKey('project.id'), nullable=False)
     project       = relationship("Project", backref = backref('headnode',uselist = False))
 
-    group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
-    group = relationship("Group", backref=backref("hn_list"))
-
-    def __init__(self, group, label, available = True):
-        self.group = group
+    def __init__(self, project, label, available = True):
+        self.project = project
         self.label  = label
         self.available = available
 
@@ -185,14 +179,26 @@ class Headnode(Model):
 
 class Hnic(Model):
     mac_addr       = Column(String)
-    headnode_id    = Column(String, ForeignKey('headnode.id'), nullable=False)
+    headnode_id    = Column(Integer, ForeignKey('headnode.id'), nullable=False)
+    network_id     = Column(Integer, ForeignKey('network.id'))
+
     headnode       = relationship("Headnode", backref = backref('hnics'))
+    network        = relationship("Network", backref=backref('hnics'))
 
-    group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
-    group = relationship("Group", backref=backref("hnic_list"))
-
-    def __init__(self, group, headnode, label, mac_addr):
+    def __init__(self, headnode, label, mac_addr):
         self.headnode = headnode
-        self.group = group
         self.label = label
         self.mac_addr = mac_addr
+
+    @no_dry_run
+    def create(self):
+        trunk_nic = cfg.get('headnode', 'trunk_nic')
+        vlan_no = str(self.network.vlan_no)
+        bridge = 'br-vlan%s' % vlan_no
+        vlan_nic = '%s.%s' % (trunk_nic, vlan_no)
+        check_call(['brctl', 'addbr', bridge])
+        check_call(['vconfig', 'add', trunk_nic, vlan_no])
+        check_call(['brctl', 'addif', bridge, vlan_nic])
+        check_call(['ifconfig', bridge, 'up', 'promisc'])
+        check_call(['ifconfig', vlan_nic, 'up', 'promisc'])
+        check_call(['virsh', 'attach-interface', self.headnode._vmname(), 'bridge', bridge, '--config'])

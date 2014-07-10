@@ -41,6 +41,9 @@ ip = 192.168.0.2
 user = foo
 pass = bar
 
+vlans = 100-109
+# Another valid list:  14,35-40, 100-900, 904, 65-85
+
 # A handful of functions which touch external state (start vms, communicate with
 # swithces...) can be disabled for development purposes. When this is done, the
 # calls to the function will be logged, but not actually executed. to do this,
