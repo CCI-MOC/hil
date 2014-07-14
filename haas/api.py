@@ -10,6 +10,7 @@ import importlib
 from haas import model
 from haas.config import cfg
 
+
 class APIError(Exception):
     """An exception indicating an error that should be reported to the user.
 
@@ -17,20 +18,25 @@ class APIError(Exception):
     part of the HTTP response.
     """
 
+
 class NotFoundError(APIError):
     """An exception indicating that a given resource does not exist."""
+
 
 class DuplicateError(APIError):
     """An exception indicating that a given resource already exists."""
 
+
 class AllocationError(APIError):
     """An exception indicating resource exhaustion."""
+
 
 class BadArgumentError(APIError):
     """An exception indicating an invalid request on the part of the user."""
 
 
 app = Flask(__name__)
+
 
 def handle_client_errors(f):
     """A decorator which adds some error handling.
@@ -55,6 +61,7 @@ def handle_client_errors(f):
             return ''
     return wrapped
 
+
 def rest_call(method, path):
     """A decorator which generates a rest mapping to a python api call.
 
@@ -71,15 +78,17 @@ def rest_call(method, path):
         def foo(bar, baz, quux):
             pass
 
-    When a POST request to /some-uril/*/* occurs, `foo` will be invoked with its
-    bar and baz arguments pulleed from the url, and its quux from the form data
-    in the body.
+    When a POST request to /some-uril/*/* occurs, `foo` will be invoked
+    with its bar and baz arguments pulleed from the url, and its quux from
+    the form data in the body.
 
-    The original function will not be modfied by the call; This way the test
-    suite doesn't have to deal with the things flask has done to it.
+    The original function will returned by the call, not the wrapper. This
+    way the test suite doesn't have to deal with the things flask has done
+    to it - it can invoke the raw api calls..
     """
     def wrapper(func):
         argnames, _, _, _ = inspect.getargspec(func)
+
         @app.route(path, methods=[method])
         @wraps(func)
         @handle_client_errors
@@ -120,9 +129,9 @@ def user_delete(username):
     db.delete(user)
     db.commit()
 
-
                             # Group Code #
                             ##############
+
 
 @rest_call('PUT', '/group/<groupname>')
 def group_create(groupname):
@@ -181,6 +190,7 @@ def group_remove_user(groupname, username):
                             # Project Code #
                             ################
 
+
 @rest_call('PUT', '/project/<projectname>')
 def project_create(projectname, groupname):
     """Create project 'projectname'.
@@ -232,7 +242,7 @@ def project_deploy(projectname):
             hnic.create()
         project.headnode.start()
     else:
-        pass # TODO: at least log this, if not throw an error.
+        pass  # TODO: at least log this, if not throw an error.
 
 
 @rest_call('POST', '/project/<projectname>/connect_node')
@@ -325,6 +335,7 @@ def project_detach_network(projectname, networkname):
                             # Node Code #
                             #############
 
+
 @rest_call('PUT', '/node/<nodename>')
 def node_register(nodename):
     """Create node 'nodename'.
@@ -404,7 +415,7 @@ def node_connect_network(node_label, nic_label, network_label):
     if nic.network:
         # The nic is already part of a network; report an error to the user.
         raise BusyError('nic %s on node %s is already part of a network' %
-                (nic_label, node_label))
+                        (nic_label, node_label))
     nic.network = network
     db.commit()
 
@@ -413,7 +424,8 @@ def node_connect_network(node_label, nic_label, network_label):
 def node_detach_network(node_label, nic_label):
     """Detach a physical nic from its network (if any).
 
-    If the nic is not already a member of a network, this function does nothing.
+    If the nic is not already a member of a network, this function does
+    nothing.
     """
     db = model.Session()
 
@@ -423,12 +435,13 @@ def node_detach_network(node_label, nic_label):
     if nic.node is not node:
         raise NotFoundError('nic %s on node %s' % (nic_label, node_label))
 
-
     nic.network = None
     db.commit()
 
                             # Head Node Code #
                             ##################
+
+
 @rest_call('PUT', '/headnode/<nodename>')
 def headnode_create(nodename, projectname):
     """Create head node 'nodename'.
@@ -441,7 +454,8 @@ def headnode_create(nodename, projectname):
     project = _must_find(db, model.Project, projectname)
 
     if project.headnode is not None:
-        raise DuplicateError('project %s already has a headnode' % (projectname))
+        raise DuplicateError('project %s already has a headnode' %
+                             (projectname))
 
     headnode = model.Headnode(project, nodename)
 
@@ -467,7 +481,8 @@ def headnode_create_hnic(nodename, hnic_name, macaddr):
 
     If the node does not exist, a NotFoundError will be raised.
 
-    If there is already an hnic with that name, a DuplicateError will be raised.
+    If there is already an hnic with that name, a DuplicateError will
+    be raised.
     """
     db = model.Session()
     headnode = _must_find(db, model.Headnode, nodename)
@@ -518,7 +533,7 @@ def headnode_connect_network(node_label, nic_label, network_label):
     if hnic.network:
         # The nic is already part of a network; report an error to the user.
         raise BusyError('hnic %s on headnode %s is already part of a network' %
-                (nic_label, node_label))
+                        (nic_label, node_label))
     hnic.network = network
     db.commit()
 
@@ -527,7 +542,8 @@ def headnode_connect_network(node_label, nic_label, network_label):
 def headnode_detach_network(node_label, nic_label):
     """Detach a heanode's nic from its network (if any).
 
-    If the nic is not already a member of a network, this function does nothing.
+    If the nic is not already a member of a network, this function does
+    nothing.
     """
     db = model.Session()
 
@@ -542,6 +558,7 @@ def headnode_detach_network(node_label, nic_label):
 
                             # Network Code #
                             ################
+
 
 @rest_call('PUT', '/network/<networkname>')
 def network_create(networkname, projectname):
@@ -745,7 +762,7 @@ def _assert_absent(session, cls, name):
     cls - the class of the object to query.
     name - the name of the object in question.
     """
-    obj = session.query(cls).filter_by(label = name).first()
+    obj = session.query(cls).filter_by(label=name).first()
     if obj:
         raise DuplicateError(cls.__name__ + ': ' + name)
 
@@ -762,7 +779,7 @@ def _must_find(session, cls, name):
     cls - the class of the object to query.
     name - the name of the object in question.
     """
-    obj = session.query(cls).filter_by(label = name).first()
+    obj = session.query(cls).filter_by(label=name).first()
     if not obj:
         raise NotFoundError(cls.__name__ + ': ' + name)
     return obj
