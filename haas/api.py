@@ -78,7 +78,7 @@ def rest_call(method, path):
         def foo(bar, baz, quux):
             pass
 
-    When a POST request to /some-uril/*/* occurs, `foo` will be invoked
+    When a POST request to /some-url/*/* occurs, `foo` will be invoked
     with its bar and baz arguments pulleed from the url, and its quux from
     the form data in the body.
 
