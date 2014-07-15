@@ -159,11 +159,13 @@ def group_delete(groupname):
 
 
 @rest_call('POST', '/group/<groupname>/add_user')
-def group_add_user(groupname, username):
+def group_add_user(groupname, user):
     """Add a group to a user
 
     If the group or user does not exist, a NotFoundError will be raised.
     """
+    username = user
+
     db = model.Session()
     user = _must_find(db, model.User, username)
     group = _must_find(db, model.Group, groupname)
@@ -174,11 +176,13 @@ def group_add_user(groupname, username):
 
 
 @rest_call('POST', '/group/<groupname>/remove_user')
-def group_remove_user(groupname, username):
+def group_remove_user(groupname, user):
     """Remove a group from a user
 
     If the group or user does not exist, a NotFoundError will be raised.
     """
+    username = user
+
     db = model.Session()
     user = _must_find(db, model.User, username)
     group = _must_find(db, model.Group, groupname)
@@ -192,11 +196,13 @@ def group_remove_user(groupname, username):
 
 
 @rest_call('PUT', '/project/<projectname>')
-def project_create(projectname, groupname):
+def project_create(projectname, group):
     """Create project 'projectname'.
 
     If the project already exists, a DuplicateError will be raised.
     """
+    groupname = group
+
     db = model.Session()
     _assert_absent(db, model.Project, projectname)
     group = _must_find(db, model.Group, groupname)
@@ -246,11 +252,13 @@ def project_deploy(projectname):
 
 
 @rest_call('POST', '/project/<projectname>/connect_node')
-def project_connect_node(projectname, nodename):
+def project_connect_node(projectname, node):
     """Add a project 'projectname' to an existing node
 
     If the node or project does not exist, a NotFoundError will be raised.
     """
+    nodename = node
+
     db = model.Session()
     project = _must_find(db, model.Project, projectname)
     node = _must_find(db, model.Node, nodename)
@@ -259,11 +267,13 @@ def project_connect_node(projectname, nodename):
 
 
 @rest_call('POST', '/project/<projectname>/detach_node')
-def project_detach_node(projectname, nodename):
+def project_detach_node(projectname, node):
     """Remove a project 'projectname' from an existing node
 
     If the node or project does not exist, a NotFoundError will be raised.
     """
+    nodename = node
+
     db = model.Session()
     project = _must_find(db, model.Project, projectname)
     node = _must_find(db, model.Node, nodename)
@@ -272,65 +282,6 @@ def project_detach_node(projectname, nodename):
     project.nodes.remove(node)
     db.commit()
 
-
-@rest_call('POST', '/project/<projectname>/connect_headnode')
-def project_connect_headnode(projectname, nodename):
-    """Add a project 'projectname' to an existing headnode
-
-    If the headnode or project does not exist, a NotFoundError will be raised.
-    """
-    db = model.Session()
-    project = _must_find(db, model.Project, projectname)
-    headnode = _must_find(db, model.Headnode, nodename)
-    if project.headnode is not None:
-        raise DuplicateError(nodename)
-    project.headnode = headnode
-    db.commit()
-
-
-@rest_call('POST', '/project/<projectname>/detach_headnode')
-def project_detach_headnode(projectname, nodename):
-    """Remove a project 'projectname' from an existing headnode
-
-    If the headnode or project does not exist, a NotFoundError will be raised.
-    """
-    db = model.Session()
-    project = _must_find(db, model.Project, projectname)
-    headnode = _must_find(db, model.Headnode, nodename)
-    if project.headnode is not headnode:
-        raise NotFoundError(nodename)
-    project.headnode = None
-    db.commit()
-
-
-@rest_call('POST', '/project/<projectname>/connect_network')
-def project_connect_network(projectname, networkname):
-    """Add a project 'projectname' to an existing network
-
-    If the network or project does not exist, a NotFoundError will be raised.
-    """
-    db = model.Session()
-    project = _must_find(db, model.Project, projectname)
-    network = _must_find(db, model.Network, networkname)
-    if network in project.networks:
-        raise DuplicateError(networkname)
-    project.networks.append(network)
-    db.commit()
-
-
-@rest_call('POST', '/project/<projectname>/detach_network')
-def project_detach_network(projectname, networkname):
-    """Remove a project 'projectname' from an existing network
-
-    If the network or project does not exist, a NotFoundError will be raised.
-    """
-    db = model.Session()
-    project = _must_find(db, model.Project, projectname)
-    network = _must_find(db, model.Network, networkname)
-    if network not in project.networks:
-        raise NotFoundError(networkname)
-    project.networks.remove(network)
-    db.commit()
 
                             # Node Code #
                             #############
@@ -386,19 +337,16 @@ def node_delete_nic(nodename, nic_name):
     db = model.Session()
     nic = _must_find(db, model.Nic, nic_name)
     if nic.node.label != nodename:
-        # We raise a NotFoundError for the following reason: Nic's SHOULD
-        # belong to nodes, and thus we SHOULD be doing a search of the nics
-        # belonging to the given node.  (In that situation, we will honestly
-        # get a NotFoundError.)  We aren't right now, because currently Nic's
-        # labels are globally unique.
         raise NotFoundError("Nic: " + nic_name)
     db.delete(nic)
     db.commit()
 
 
 @rest_call('POST', '/node/<node_label>/nic/<nic_label>/connect_network')
-def node_connect_network(node_label, nic_label, network_label):
+def node_connect_network(node_label, nic_label, network):
     """Connect a physical NIC to a network"""
+    network_label = network
+
     db = model.Session()
 
     node = _must_find(db, model.Node, node_label)
@@ -406,10 +354,6 @@ def node_connect_network(node_label, nic_label, network_label):
     network = _must_find(db, model.Network, network_label)
 
     if nic.node is not node:
-        # XXX: This is arguably misleading at present, but soon we'll want to
-        # have nics namespaced by their nodes, so this is what we want in the
-        # long term. We should adjust the models such that nic labels are
-        # private to a node.
         raise NotFoundError('nic %s on node %s' % (nic_label, node_label))
 
     if nic.network:
@@ -443,11 +387,13 @@ def node_detach_network(node_label, nic_label):
 
 
 @rest_call('PUT', '/headnode/<nodename>')
-def headnode_create(nodename, projectname):
+def headnode_create(nodename, project):
     """Create head node 'nodename'.
 
     If the node already exists, a DuplicateError will be raised.
     """
+    projectname = project
+
     db = model.Session()
 
     _assert_absent(db, model.Headnode, nodename)
@@ -512,8 +458,10 @@ def headnode_delete_hnic(nodename, hnic_name):
 
 
 @rest_call('POST', '/headnode/<node_label>/hnic/<nic_label>/connect_network')
-def headnode_connect_network(node_label, nic_label, network_label):
+def headnode_connect_network(node_label, nic_label, network):
     """Connect a headnode's NIC to a network"""
+    network_label = network
+
     # XXX: This is flagrantly copy/pasted from node_connect network. I feel a
     # little bad about myself, and we should fix this. same goes for
     # *_detach_network.
@@ -524,10 +472,6 @@ def headnode_connect_network(node_label, nic_label, network_label):
     network = _must_find(db, model.Network, network_label)
 
     if hnic.headnode is not headnode:
-        # XXX: This is arguably misleading at present, but soon we'll want to
-        # have nics namespaced by their nodes, so this is what we want in the
-        # long term. We should adjust the models such that nic labels are
-        # private to a node.
         raise NotFoundError('hnic %s on headnode %s' % (nic_label, node_label))
 
     if hnic.network:
@@ -561,13 +505,15 @@ def headnode_detach_network(node_label, nic_label):
 
 
 @rest_call('PUT', '/network/<networkname>')
-def network_create(networkname, projectname):
+def network_create(networkname, project):
     """Create network 'networkname'.
 
     If the network already exists, a DuplicateError will be raised.
     If the network cannot be allocated (due to resource exhaustion), an
     AllocationError will be raised.
     """
+    projectname = project
+
     db = model.Session()
     _assert_absent(db, model.Network, networkname)
     project = _must_find(db, model.Project, projectname)
@@ -694,7 +640,7 @@ def port_delete(switch_name, port_name):
 
 
 @rest_call('POST', '/switch/<switch_name>/port/<port_name>/connect_nic')
-def port_connect_nic(switch_name, port_name, node_name, nic_name):
+def port_connect_nic(switch_name, port_name, node, nic):
     """Connect a port on a switch to a nic on a node
 
     If any of the four arguments does not exist, a NotFoundError will be
@@ -703,6 +649,9 @@ def port_connect_nic(switch_name, port_name, node_name, nic_name):
     If the port or the nic are already connected to something, a
     DuplicateError will be raised.
     """
+    node_name = node
+    nic_name = nic
+
     db = model.Session()
 
     switch = _must_find(db, model.Switch, switch_name)
