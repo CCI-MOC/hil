@@ -149,12 +149,15 @@ class Group(Model):
 
 
 class Headnode(Model):
-    project_id    = Column(String, ForeignKey('project.id'), nullable=False)
-    project       = relationship("Project", backref = backref('headnode',uselist = False))
+    project_id = Column(String, ForeignKey('project.id'), nullable=False)
+    frozen = Column(Boolean, nullable=False)
+
+    project = relationship("Project", backref=backref('headnode', uselist=False))
 
     def __init__(self, project, label):
         self.project = project
         self.label = label
+        self.frozen = False
 
     @no_dry_run
     def create(self):
