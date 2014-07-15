@@ -149,15 +149,12 @@ class Group(Model):
 
 
 class Headnode(Model):
-    available     = Column(Boolean)
-
     project_id    = Column(String, ForeignKey('project.id'), nullable=False)
     project       = relationship("Project", backref = backref('headnode',uselist = False))
 
-    def __init__(self, project, label, available = True):
+    def __init__(self, project, label):
         self.project = project
-        self.label  = label
-        self.available = available
+        self.label = label
 
     @no_dry_run
     def create(self):
