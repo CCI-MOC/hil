@@ -322,7 +322,11 @@ def node_register_nic(nodename, nic_name, macaddr):
     """
     db = model.Session()
     node = _must_find(db, model.Node, nodename)
-    _assert_absent(db, model.Nic, nic_name)
+    nic = db.query(model.Nic) \
+            .filter_by(node = node) \
+            .filter_by(label = nic_name).first()
+    if nic is not None:
+        raise DuplicateError(nic_name)
     nic = model.Nic(node, nic_name, macaddr)
     db.add(nic)
     db.commit()
@@ -358,8 +362,9 @@ def node_connect_network(node_label, nic_label, network):
 
     if nic.network:
         # The nic is already part of a network; report an error to the user.
-        raise BusyError('nic %s on node %s is already part of a network' %
-                        (nic_label, node_label))
+        raise DuplicateError('nic %s on node %s is already part of a network' %
+                (nic_label, node_label))
+
     nic.network = network
     db.commit()
 
@@ -378,6 +383,9 @@ def node_detach_network(node_label, nic_label):
 
     if nic.node is not node:
         raise NotFoundError('nic %s on node %s' % (nic_label, node_label))
+
+    if nic.network is None:
+        raise NotFoundError('nic %s on node %s is not attached' % (nic_label, node_label))
 
     nic.network = None
     db.commit()
@@ -432,7 +440,11 @@ def headnode_create_hnic(nodename, hnic_name, macaddr):
     """
     db = model.Session()
     headnode = _must_find(db, model.Headnode, nodename)
-    _assert_absent(db, model.Hnic, hnic_name)
+    hnic = db.query(model.Hnic) \
+            .filter_by(headnode = headnode) \
+            .filter_by(label = hnic_name).first()
+    if hnic is not None:
+        raise DuplicateError(hnic_name)
     hnic = model.Hnic(headnode, hnic_name, macaddr)
     db.add(hnic)
     db.commit()
@@ -476,8 +488,8 @@ def headnode_connect_network(node_label, nic_label, network):
 
     if hnic.network:
         # The nic is already part of a network; report an error to the user.
-        raise BusyError('hnic %s on headnode %s is already part of a network' %
-                        (nic_label, node_label))
+        raise DuplicateError('hnic %s on headnode %s is already part of a network' %
+                (nic_label, node_label))
     hnic.network = network
     db.commit()
 
@@ -496,6 +508,10 @@ def headnode_detach_network(node_label, nic_label):
 
     if hnic.headnode is not headnode:
         raise NotFoundError('hnic %s on headnode %s' % (nic_label, node_label))
+
+    if hnic.network is None:
+        raise NotFoundError('hnic %s on headnode %s not attached'
+                            % (nic_label, node_label))
 
     hnic.network = None
     db.commit()
@@ -517,10 +533,15 @@ def network_create(networkname, project):
     db = model.Session()
     _assert_absent(db, model.Network, networkname)
     project = _must_find(db, model.Project, projectname)
-    vlan = db.query(model.Vlan).filter_by(available=True).first()
-    if vlan is None:
+
+
+    driver_name = cfg.get('general', 'active_switch')
+    driver = importlib.import_module('haas.drivers.' + driver_name)
+    network_id = driver.get_new_network_id()
+    if network_id is None:
         raise AllocationError('No more networks')
-    network = model.Network(project, vlan, networkname)
+
+    network = model.Network(project, network_id, networkname)
     db.add(network)
     db.commit()
 
@@ -533,8 +554,11 @@ def network_delete(networkname):
     """
     db = model.Session()
     network = _must_find(db, model.Network, networkname)
-    vlan = db.query(model.Vlan).filter_by(vlan_no=network.vlan_no).one()
-    vlan.available = True
+
+    driver_name = cfg.get('general', 'active_switch')
+    driver = importlib.import_module('haas.drivers.' + driver_name)
+    driver.free_network_id(network.network_id)
+
     db.delete(network)
     db.commit()
 
@@ -688,7 +712,6 @@ def port_detach_nic(switch_name, port_name):
     port = _must_find(db, model.Port, port_name)
     if port.switch is not switch:
         raise NotFoundError(port_name)
-
 
     if port.nic is None:
         raise NotFoundError(port_name)
