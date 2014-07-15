@@ -150,6 +150,9 @@ class Group(Model):
 
 class Headnode(Model):
     project_id = Column(String, ForeignKey('project.id'), nullable=False)
+
+    # Once we've actually created a headnode (in libvirt), it becomes "frozen,"
+    # at which point no further changes can be made to its networking.
     frozen = Column(Boolean, nullable=False)
 
     project = relationship("Project", backref=backref('headnode', uselist=False))
@@ -165,7 +168,13 @@ class Headnode(Model):
 
         The vm is not started at this time.
         """
+        # TODO: It would be nice if we could ensure that when and if this dies
+        # partway through, calling it again can succeed (much like our plans
+        # for the network bits of deploy).
         check_call(['virt-clone', '-o', 'base-headnode', '-n', self._vmname(), '--auto-clone'])
+        for hnic in hnics:
+            hnic.create()
+        self.frozen = True
 
     @no_dry_run
     def start(self):

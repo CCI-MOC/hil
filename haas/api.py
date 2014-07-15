@@ -151,11 +151,10 @@ def project_deploy(projectname):
 
     if project.headnode:
         project.headnode.create()
-        for hnic in project.headnode.hnics:
-            hnic.create()
         project.headnode.start()
     else:
-        pass # TODO: at least log this, if not throw an error.
+        pass  # TODO: at least log this, if not throw an error.
+
 
 def project_connect_node(projectname, nodename):
     """Add a project 'projectname' to an existing node
