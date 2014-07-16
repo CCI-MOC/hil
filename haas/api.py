@@ -540,7 +540,7 @@ def network_create(networkname, project):
 
     driver_name = cfg.get('general', 'active_switch')
     driver = importlib.import_module('haas.drivers.' + driver_name)
-    network_id = driver.get_new_network_id()
+    network_id = driver.get_new_network_id(db)
     if network_id is None:
         raise AllocationError('No more networks')
 
@@ -560,7 +560,7 @@ def network_delete(networkname):
 
     driver_name = cfg.get('general', 'active_switch')
     driver = importlib.import_module('haas.drivers.' + driver_name)
-    driver.free_network_id(network.network_id)
+    driver.free_network_id(db, network.network_id)
 
     db.delete(network)
     db.commit()

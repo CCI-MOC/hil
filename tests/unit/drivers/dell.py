@@ -54,17 +54,17 @@ class TestNetworkID:
 
     @dell_backend('84')
     def test_allocate_free_1(self, db):
-        assert '84' == get_new_network_id()
-        assert None == get_new_network_id()
-        free_network_id('84')
-        assert '84' == get_new_network_id()
-        assert None == get_new_network_id()
+        assert '84' == get_new_network_id(db)
+        assert None == get_new_network_id(db)
+        free_network_id(db, '84')
+        assert '84' == get_new_network_id(db)
+        assert None == get_new_network_id(db)
 
     @dell_backend('84, 85')
     def test_allocate_free_1(self, db):
-        get_new_network_id()
-        get_new_network_id()
-        free_network_id('84')
-        assert '84' == get_new_network_id()
-        free_network_id('85')
-        assert '85' == get_new_network_id()
+        get_new_network_id(db)
+        get_new_network_id(db)
+        free_network_id(db, '84')
+        assert '84' == get_new_network_id(db)
+        free_network_id(db, '85')
+        assert '85' == get_new_network_id(db)
