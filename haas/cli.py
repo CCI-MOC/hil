@@ -21,7 +21,7 @@ def check_status_code(response):
     if response.status_code < 200 or response.status_code >= 300:
         sys.stderr.write('Unexpected status code: %d\n' % response.status_code)
         sys.stderr.write('Response text:\n')
-        sys.stderr.write(response.text)
+    sys.stderr.write(response.text)
 
 # TODO: This function's name is no longer very accurate.  As soon as it is
 # safe, we should change it to something more generic.
@@ -64,7 +64,7 @@ def network_delete(network):
     url = object_url('network', network)
     check_status_code(requests.delete(url))
 
-    
+
 @cmd
 def user_delete(username):
     url = object_url('user', username)
@@ -230,6 +230,19 @@ def port_detach_nic(switch, port):
     """Detach a <port> on a <switch> from whatever's connected to it"""
     url = object_url('switch', switch, 'port', port, 'detach_nic')
     check_status_code(requests.post(url))
+
+
+@cmd
+def list_free_nodes():
+    url = object_url('free_nodes')
+    check_status_code(requests.get(url))
+
+
+@cmd
+def show_node(node):
+    url = object_url('node', node)
+    check_status_code(requests.get(url))
+
 
 def usage():
     """Display a summary of the arguments accepted by the CLI."""

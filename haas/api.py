@@ -730,6 +730,17 @@ def list_free_nodes():
     nodes = map(lambda n: n.label, nodes)
     return json.dumps(nodes)
 
+
+@rest_call('GET', '/node/<nodename>')
+def show_node(nodename):
+    db = model.Session()
+    node = _must_find(db, model.Node, nodename)
+    return json.dumps({
+        'name': node.label,
+        'free': node.available,
+        'nics': map(lambda n: n.label, node.nics),
+    })
+
     # Helper functions #
     ####################
 
