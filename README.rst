@@ -76,6 +76,13 @@ Fix this by upgrading ``pip`` within the virtual environment::
 
   pip install --upgrade pip
 
+Versions of python prior to 2.7 don't have importlib as part of their
+standard library, but it is possible to install it separately. If you're
+using python 2.6 (which is what is available on CentOS 6, for example),
+you may need to run::
+
+  pip install importlib
+
 
 **Testing the HaaS**
 ====================
