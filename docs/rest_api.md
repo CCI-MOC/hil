@@ -81,7 +81,7 @@ Full Api spec:
     unblock_user <user_label>
 
     list_free_nodes -> ["<node1_name>", "<node2_name>", ...]
-    [GET] (Not sure what the URL should be).
+    [GET] /free_nodes
 
     list_project_nodes <project> -> ["<node1_name>", "<node2_name>", ...]
     [GET] /project/<project>/nodes
