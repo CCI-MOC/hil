@@ -3,6 +3,7 @@
 from haas import model, api
 from haas.test_common import *
 import pytest
+import json
 
 
 class TestGroup:
@@ -957,3 +958,48 @@ class TestPortConnectDetachNic:
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         with pytest.raises(api.NotFoundError):
             api.port_detach_nic('bait-and', '3')
+
+
+class TestQuery:
+    """test the query api"""
+
+    @database_only
+    def test_free_nodes(self, db):
+        api.node_register('master-control-program')
+        api.node_register('robocop')
+        api.node_register('data')
+        result = json.loads(api.list_free_nodes())
+        # For the lists to be equal, the ordering must be the same:
+        result.sort()
+        assert result == [
+            'data',
+            'master-control-program',
+            'robocop',
+        ]
+
+    @database_only
+    def test_no_free_nodes(self, db):
+        assert json.loads(api.list_free_nodes()) == []
+
+    @database_only
+    def test_show_node(self, db):
+        api.node_register('robocop')
+        api.node_register_nic('robocop', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.node_register_nic('robocop', 'wlan0', 'DE:AD:BE:EF:20:15')
+
+        result = json.loads(api.show_node('robocop'))
+        # For the lists to be equal, the ordering must be the same:
+        result['nics'].sort()
+        assert result == {
+            'name': 'robocop',
+            'free': True,
+            'nics': [
+                'eth0',
+                'wlan0',
+            ],
+        }
+
+    @database_only
+    def test_show_nonexistant_node(self, db):
+        with pytest.raises(api.NotFoundError):
+            api.show_node('master-control-program')
