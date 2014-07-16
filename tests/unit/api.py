@@ -982,6 +982,20 @@ class TestQuery:
         assert json.loads(api.list_free_nodes()) == []
 
     @database_only
+    def test_some_non_free_nodes(self, db):
+        """Make sure that allocated nodes don't show up in the free list."""
+        api.node_register('master-control-program')
+        api.node_register('robocop')
+        api.node_register('data')
+
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        api.project_connect_node('anvil-nextgen', 'robocop')
+        api.project_connect_node('anvil-nextgen', 'data')
+
+        assert json.loads(api.list_free_nodes()) == ['master-control-program']
+
+    @database_only
     def test_show_node(self, db):
         api.node_register('robocop')
         api.node_register_nic('robocop', 'eth0', 'DE:AD:BE:EF:20:14')
@@ -998,6 +1012,29 @@ class TestQuery:
                 'wlan0',
             ],
         }
+
+    @database_only
+    def test_show_node_unavailable(self, db):
+        api.node_register('robocop')
+        api.node_register_nic('robocop', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.node_register_nic('robocop', 'wlan0', 'DE:AD:BE:EF:20:15')
+
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        api.project_connect_node('anvil-nextgen', 'robocop')
+
+        result = json.loads(api.show_node('robocop'))
+        # For the lists to be equal, the ordering must be the same:
+        result['nics'].sort()
+        assert result == {
+            'name': 'robocop',
+            'free': False,
+            'nics': [
+                'eth0',
+                'wlan0',
+            ],
+        }
+
 
     @database_only
     def test_show_nonexistant_node(self, db):
