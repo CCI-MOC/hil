@@ -79,3 +79,25 @@ Full Api spec:
     import_vlan <network_label> <vlan_label>
     block_user <user_label>
     unblock_user <user_label>
+
+    list_free_nodes -> ["<node1_name>", "<node2_name>", ...]
+    [GET] /free_nodes
+
+    list_project_nodes <project> -> ["<node1_name>", "<node2_name>", ...]
+    [GET] /project/<project>/nodes
+
+    show_node <node> ->
+        {
+            "name": "box02",
+            "free": true,
+            "nics": ["ipmi", "pxe", "external",...]
+        }
+    [GET] /node/<node>
+
+    show_headnode <headnode> ->
+        {
+            "name": "hn04",
+            "project": "projectname",
+            "nics": ["ipmi", "pxe", "public", ...]
+        }
+    [GET] /headnode/<headnode>
