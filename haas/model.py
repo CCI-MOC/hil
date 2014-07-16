@@ -172,7 +172,7 @@ class Headnode(Model):
         # partway through, calling it again can succeed (much like our plans
         # for the network bits of deploy).
         check_call(['virt-clone', '-o', 'base-headnode', '-n', self._vmname(), '--auto-clone'])
-        for hnic in hnics:
+        for hnic in self.hnics:
             hnic.create()
         self.frozen = True
 
@@ -202,7 +202,7 @@ class Hnic(Model):
     @no_dry_run
     def create(self):
         trunk_nic = cfg.get('headnode', 'trunk_nic')
-        vlan_no = str(self.network.vlan_no)
+        vlan_no = str(self.network.network_id)
         bridge = 'br-vlan%s' % vlan_no
         vlan_nic = '%s.%s' % (trunk_nic, vlan_no)
         check_call(['brctl', 'addbr', bridge])
