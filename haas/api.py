@@ -6,6 +6,7 @@ from flask import Flask, request
 from functools import wraps
 import inspect
 import importlib
+import json
 
 from haas import model
 from haas.config import cfg
@@ -59,6 +60,8 @@ def handle_client_errors(f):
             return e.message, 400
         if not resp:
             return ''
+        else:
+            return resp
     return wrapped
 
 
@@ -718,6 +721,14 @@ def port_detach_nic(switch_name, port_name):
 
     port.nic = None
     db.commit()
+
+
+@rest_call('GET', '/free_nodes')
+def list_free_nodes():
+    db = model.Session()
+    nodes = db.query(model.Node).filter_by(available=True).all()
+    nodes = map(lambda n: n.label, nodes)
+    return json.dumps(nodes)
 
     # Helper functions #
     ####################
