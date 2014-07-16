@@ -7,6 +7,15 @@ as a place to document the interface shared by all of the drivers.
 Port IDs and network IDs should both be strings.  The content of them will be
 driver-specific.
 
+Note that get_new_network_id and free_network_id both accept a database
+connection.  They should not commit any changes---this way, if there is a
+crash between the function returning, and the network actually being assigned
+or removed from a network object, the entire transaction is cancelled.
+
+Stateless drivers such as 'null' don't need to worry about this.  Drivers
+whose state is in the database, such as 'dell', require this.  Drivers with
+external state may need to do some difficult work to make this work.
+
 """
 
 
