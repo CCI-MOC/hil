@@ -35,6 +35,10 @@ class AllocationError(APIError):
 class BadArgumentError(APIError):
     """An exception indicating an invalid request on the part of the user."""
 
+class ProjectMismatchError(APIError):
+    """An expection indicating that the resources given don't belong to the
+    same project.
+    """
 
 app = Flask(__name__)
 
@@ -368,6 +372,14 @@ def node_connect_network(node_label, nic_label, network):
 
     network = _must_find(db, model.Network, network_label)
 
+    if not node.project:
+        raise ProjectMismatchError("Node not in project")
+
+    if node.project.label is not network.project.label:
+        raise ProjectMismatchError("Node and network in different projects")
+
+    project = node.project
+
     if nic.network:
         # The nic is already part of a network; report an error to the user.
         raise DuplicateError('nic %s on node %s is already part of a network' %
@@ -395,6 +407,11 @@ def node_detach_network(node_label, nic_label):
 
     if nic.network is None:
         raise NotFoundError('nic %s on node %s is not attached' % (nic_label, node_label))
+
+    if not node.project:
+        raise ProjectMismatchError("Node not in project")
+
+    project = node.project
 
     nic.network = None
     db.commit()
@@ -494,6 +511,11 @@ def headnode_connect_network(node_label, nic_label, network):
     if hnic is None:
         raise NotFoundError(nic_label)
     network = _must_find(db, model.Network, network_label)
+
+    if headnode.project.label is not network.project.label:
+        raise ProjectMismatchError("Headnode and network in different projects")
+
+    project = headnode.project
 
     if hnic.network:
         # The nic is already part of a network; report an error to the user.
