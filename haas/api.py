@@ -478,6 +478,8 @@ def headnode_create_hnic(nodename, hnic_name, macaddr):
     """
     db = model.Session()
     headnode = _must_find(db, model.Headnode, nodename)
+    if headnode.frozen:
+        raise IllegalStateError
     hnic = db.query(model.Hnic) \
             .filter_by(headnode = headnode) \
             .filter_by(label = hnic_name).first()
