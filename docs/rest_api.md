@@ -25,8 +25,12 @@ Full Api spec:
 
     headnode_create <hn_label> <project_label>
     headnode_delete <hn_label>
+    headnode_start <hn_label>
+    headnode_stop <hn_label>
     [PUT]    /headnode/<hn_label> {project=<project_label>}
     [DELETE] /headnode/<hn_label>
+    [POST] /headnode/<hn_label>/start
+    [POST] /headnode/<hn_label>/stop
 
     project_connect_node <project_label> <node_label>
     project_detach_node  <project_label> <node_label>
@@ -79,3 +83,25 @@ Full Api spec:
     import_vlan <network_label> <vlan_label>
     block_user <user_label>
     unblock_user <user_label>
+
+    list_free_nodes -> ["<node1_name>", "<node2_name>", ...]
+    [GET] /free_nodes
+
+    list_project_nodes <project> -> ["<node1_name>", "<node2_name>", ...]
+    [GET] /project/<project>/nodes
+
+    show_node <node> ->
+        {
+            "name": "box02",
+            "free": true,
+            "nics": ["ipmi", "pxe", "external",...]
+        }
+    [GET] /node/<node>
+
+    show_headnode <headnode> ->
+        {
+            "name": "hn04",
+            "project": "projectname",
+            "nics": ["ipmi", "pxe", "public", ...]
+        }
+    [GET] /headnode/<headnode>

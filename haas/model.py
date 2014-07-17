@@ -72,7 +72,6 @@ class Nic(Model):
 
 
 class Node(Model):
-    available     = Column(Boolean)
     project_id    = Column(Integer,ForeignKey('project.id'))
     #many to one mapping to project
     project       = relationship("Project",backref=backref('nodes'))
