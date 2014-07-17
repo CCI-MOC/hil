@@ -540,7 +540,7 @@ def network_create(networkname, project):
 
     driver_name = cfg.get('general', 'active_switch')
     driver = importlib.import_module('haas.drivers.' + driver_name)
-    network_id = driver.get_new_network_id()
+    network_id = driver.get_new_network_id(db)
     if network_id is None:
         raise AllocationError('No more networks')
 
@@ -560,7 +560,7 @@ def network_delete(networkname):
 
     driver_name = cfg.get('general', 'active_switch')
     driver = importlib.import_module('haas.drivers.' + driver_name)
-    driver.free_network_id(network.network_id)
+    driver.free_network_id(db, network.network_id)
 
     db.delete(network)
     db.commit()
@@ -726,7 +726,7 @@ def port_detach_nic(switch_name, port_name):
 @rest_call('GET', '/free_nodes')
 def list_free_nodes():
     db = model.Session()
-    nodes = db.query(model.Node).filter_by(available=True).all()
+    nodes = db.query(model.Node).filter_by(project_id=None).all()
     nodes = map(lambda n: n.label, nodes)
     return json.dumps(nodes)
 
@@ -745,7 +745,7 @@ def show_node(nodename):
     node = _must_find(db, model.Node, nodename)
     return json.dumps({
         'name': node.label,
-        'free': node.available,
+        'free': node.project_id is None,
         'nics': map(lambda n: n.label, node.nics),
     })
 
