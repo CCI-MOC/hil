@@ -342,9 +342,12 @@ def node_delete_nic(nodename, nic_name):
     If the nic does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
-    nic = _must_find(db, model.Nic, nic_name)
-    if nic.node.label != nodename:
-        raise NotFoundError("Nic: " + nic_name)
+    node = _must_find(db, model.Node, nodename)
+    nic = db.query(model.Nic) \
+            .filter_by(node = node) \
+            .filter_by(label = nic_name).first()
+    if nic is None:
+        raise NotFoundError(nic_name)
     db.delete(nic)
     db.commit()
 
@@ -357,11 +360,13 @@ def node_connect_network(node_label, nic_label, network):
     db = model.Session()
 
     node = _must_find(db, model.Node, node_label)
-    nic = _must_find(db, model.Nic, nic_label)
-    network = _must_find(db, model.Network, network_label)
+    nic = db.query(model.Nic) \
+            .filter_by(node = node) \
+            .filter_by(label = nic_label).first()
+    if nic is None:
+        raise NotFoundError(nic_label)
 
-    if nic.node is not node:
-        raise NotFoundError('nic %s on node %s' % (nic_label, node_label))
+    network = _must_find(db, model.Network, network_label)
 
     if nic.network:
         # The nic is already part of a network; report an error to the user.
@@ -382,10 +387,11 @@ def node_detach_network(node_label, nic_label):
     db = model.Session()
 
     node = _must_find(db, model.Node, node_label)
-    nic = _must_find(db, model.Nic, nic_label)
-
-    if nic.node is not node:
-        raise NotFoundError('nic %s on node %s' % (nic_label, node_label))
+    nic = db.query(model.Nic) \
+            .filter_by(node = node) \
+            .filter_by(label = nic_label).first()
+    if nic is None:
+        raise NotFoundError(nic_label)
 
     if nic.network is None:
         raise NotFoundError('nic %s on node %s is not attached' % (nic_label, node_label))
@@ -460,14 +466,13 @@ def headnode_delete_hnic(nodename, hnic_name):
     If the hnic does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
-    hnic = _must_find(db, model.Hnic, hnic_name)
-    if hnic.headnode.label != nodename:
-        # We raise a NotFoundError for the following reason: Hnic's SHOULD
-        # belong to headnodes, and thus we SHOULD be doing a search of the
-        # hnics belonging to the given headnode.  (In that situation, we will
-        # honestly get a NotFoundError.)  We aren't right now, because
-        # currently Hnic's labels are globally unique.
-        raise NotFoundError("Hnic: " + hnic_name)
+    headnode = _must_find(db, model.Headnode, nodename)
+    hnic = db.query(model.Hnic) \
+            .filter_by(headnode = headnode) \
+            .filter_by(label = hnic_name).first()
+    if hnic is None:
+        raise NotFoundError(hnic_name)
+
     db.delete(hnic)
     db.commit()
 
@@ -483,11 +488,12 @@ def headnode_connect_network(node_label, nic_label, network):
     db = model.Session()
 
     headnode = _must_find(db, model.Headnode, node_label)
-    hnic = _must_find(db, model.Hnic, nic_label)
+    hnic = db.query(model.Hnic) \
+            .filter_by(headnode = headnode) \
+            .filter_by(label = nic_label).first()
+    if hnic is None:
+        raise NotFoundError(nic_label)
     network = _must_find(db, model.Network, network_label)
-
-    if hnic.headnode is not headnode:
-        raise NotFoundError('hnic %s on headnode %s' % (nic_label, node_label))
 
     if hnic.network:
         # The nic is already part of a network; report an error to the user.
@@ -507,10 +513,11 @@ def headnode_detach_network(node_label, nic_label):
     db = model.Session()
 
     headnode = _must_find(db, model.Headnode, node_label)
-    hnic = _must_find(db, model.Hnic, nic_label)
-
-    if hnic.headnode is not headnode:
-        raise NotFoundError('hnic %s on headnode %s' % (nic_label, node_label))
+    hnic = db.query(model.Hnic) \
+            .filter_by(headnode = headnode) \
+            .filter_by(label = nic_label).first()
+    if hnic is None:
+        raise NotFoundError(nic_label)
 
     if hnic.network is None:
         raise NotFoundError('hnic %s on headnode %s not attached'
@@ -687,8 +694,10 @@ def port_connect_nic(switch_name, port_name, node, nic):
         raise NotFoundError(port_name)
 
     node = _must_find(db, model.Node, node_name)
-    nic = _must_find(db, model.Nic, nic_name)
-    if nic.node is not node:
+    nic = db.query(model.Nic) \
+            .filter_by(node = node) \
+            .filter_by(label = nic_name).first()
+    if nic is None:
         raise NotFoundError(nic_name)
 
     if nic.port is not None:
