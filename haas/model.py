@@ -175,10 +175,36 @@ class Headnode(Model):
             hnic.create()
         self.frozen = True
 
+    def delete(self):
+        """Delete the vm, including associated storage"""
+        # XXX: This doesn't actually work. I copied this from the headnode
+        # module so I could finally delete it, but I haven't actually made the
+        # slight changes needed to get it to work again (variable renames,
+        # mostly).
+        trunk_nic = cfg.get('headnode', 'trunk_nic')
+        cmd(['virsh', 'undefine', self.name, '--remove-all-storage'])
+        for nic in self.nics:
+            nic = str(nic)
+            bridge = 'br-vlan%s' % nic
+            vlan_nic = '%s.%d' % (trunk_nic, nic)
+            cmd(['ifconfig', bridge, 'down'])
+            cmd(['ifconfig', vlan_nic, 'down'])
+            cmd(['brctl', 'delif', bridge, vlan_nic])
+            cmd(['vconfig', 'rem', vlan_nic])
+            cmd(['brctl', 'delbr', bridge])
+
     @no_dry_run
     def start(self):
         """Powers on the vm, which must have been previously created."""
         check_call(['virsh', 'start', self._vmname()])
+
+    @no_dry_run
+    def stop(self):
+        """Stop the vm.
+
+        This does a hard poweroff; the OS is not given a chance to react.
+        """
+        check_call(['virsh', 'destroy', self._vmname()])
 
     def _vmname(self):
         """Returns the name (as recognized by libvirt) of this vm."""
