@@ -7,6 +7,15 @@ as a place to document the interface shared by all of the drivers.
 Port IDs and network IDs should both be strings.  The content of them will be
 driver-specific.
 
+Note that get_new_network_id and free_network_id both accept a database
+connection.  They should not commit any changes---this way, if there is a
+crash between the function returning, and the network actually being assigned
+or removed from a network object, the entire transaction is cancelled.
+
+Stateless drivers such as 'null' don't need to worry about this.  Drivers
+whose state is in the database, such as 'dell', require this.  Drivers with
+external state may need to do some difficult work to make this work.
+
 """
 
 
@@ -17,14 +26,16 @@ def apply_networking(net_map):
     to access that network.  If network is None, set it to access nothing.
     """
 
-def get_new_network_id():
+def get_new_network_id(db):
     """Gets a new network ID, valid for this driver.  Returns 'None' if there
-    are no more possible IDs available.
+    are no more possible IDs available.  Pass in the database connection, to
+    make the allocation part of the current transaction.
     """
 
-def free_network_id(net_id):
+def free_network_id(db, net_id):
     """Marks a network ID as unused, so that it can be re-used for a new
-    network.  Can be a no-op on some drivers.
+    network.  Can be a no-op on some drivers.  Pass in the database
+    connection, to make the freeing part of the current transaction.
     """
 
 def init_db():
