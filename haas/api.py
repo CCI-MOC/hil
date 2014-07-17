@@ -36,7 +36,7 @@ class BadArgumentError(APIError):
     """An exception indicating an invalid request on the part of the user."""
 
 
-class IllegalStateException(APIError):
+class IllegalStateError(APIError):
     """The request is invalid due to the state of the system.
 
     The request might otherwise be perfectly valid.
