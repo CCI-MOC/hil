@@ -448,7 +448,6 @@ def headnode_start(hn_name):
     """
     db = model.Session()
     headnode = _must_find(db, model.Headnode, hn_name)
-    headnode.frozen = True
     headnode.create()
     headnode.start()
     db.commit()
@@ -478,7 +477,7 @@ def headnode_create_hnic(nodename, hnic_name, macaddr):
     """
     db = model.Session()
     headnode = _must_find(db, model.Headnode, nodename)
-    if headnode.frozen:
+    if headnode.exists():
         raise IllegalStateError
     hnic = db.query(model.Hnic) \
             .filter_by(headnode = headnode) \

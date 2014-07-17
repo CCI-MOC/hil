@@ -733,6 +733,14 @@ class TestHeadnodeConnectDetachNetwork:
 
 class TestHeadnodeFreeze:
 
+    @pytest.fixture(autouse=True)
+    def patch_create_exists(self, monkeypatch):
+        created = set()
+        monkeypatch.setattr(model.Headnode, 'create',
+                            lambda self: created.add(self.label))
+        monkeypatch.setattr(model.Headnode, 'exists',
+                            lambda self: self.label in created)
+
     @database_only
     def test_freeze_fail_create_hnic(self, db):
         api.group_create('acme-code')

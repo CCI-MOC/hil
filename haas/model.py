@@ -192,6 +192,9 @@ class Headnode(Model):
             cmd(['vconfig', 'rem', vlan_nic])
             cmd(['brctl', 'delbr', bridge])
 
+    def exists(self):
+        return self.frozen
+
     @no_dry_run
     def start(self):
         """Powers on the vm, which must have been previously created."""
