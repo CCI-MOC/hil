@@ -90,6 +90,8 @@ project at the same time.
  
     headnode_create             <hn_label> <project_label>
     headnode_delete             <hn_label>
+    headnode_start              <hn_label>
+    headnode_stop               <hn_label>
  
     # allocate/deallocate node to a project
     project_connect_node        <project_label> <node_label>

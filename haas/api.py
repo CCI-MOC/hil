@@ -36,6 +36,13 @@ class BadArgumentError(APIError):
     """An exception indicating an invalid request on the part of the user."""
 
 
+class IllegalStateException(APIError):
+    """The request is invalid due to the state of the system.
+
+    The request might otherwise be perfectly valid.
+    """
+
+
 app = Flask(__name__)
 
 
@@ -430,6 +437,27 @@ def headnode_delete(nodename):
     headnode = _must_find(db, model.Headnode, nodename)
     db.delete(headnode)
     db.commit()
+
+
+@rest_call('POST', '/headnode/<hn_name>/start')
+def headnode_start(hn_name):
+    """Start the headnode.
+
+    This actually boots up the headnode virtual machine. The VM is created
+    within libvirt if needed. Once the VM has been started once, it is
+    "frozen," and all other headnode-related api calls will fail (by raising
+    an IllegalStateException), with the exception of headnode_stop.
+    """
+
+
+@rest_call('POST', '/headnode/<hn_name>/stop')
+def headnode_stop(hn_name):
+    """Stop the headnode.
+
+    This powers off the headnode. This is a hard poweroff; the VM is not given
+    the opportunity to shut down cleanly. This does *not* unfreeze the VM;
+    headnode_start will be the only valid API call after the VM is powered off.
+    """
 
 
 @rest_call('PUT', '/headnode/<nodename>/hnic/<hnic_name>')
