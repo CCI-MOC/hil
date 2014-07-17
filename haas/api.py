@@ -40,6 +40,12 @@ class ProjectMismatchError(APIError):
     same project.
     """
 
+class BlockedError(APIError):
+    """An exception indicating that the requested action cannot happen until
+    some other change.  For example, deletion is blocked until the components
+    are deleted, and possibly until the dirty flag is cleared as well.
+    """
+
 app = Flask(__name__)
 
 
@@ -226,6 +232,14 @@ def project_delete(projectname):
     """
     db = model.Session()
     project = _must_find(db, model.Project, projectname)
+    if project.nodes:
+        return BlockedError("Project has nodes still")
+    if project.networks:
+        return BlockedError("Project still has networks")
+    if project.headnode:
+        ### FIXME: If you ever create a headnode, you can't delete it right
+        ### now.  This essentially makes deletion of projects impossible.
+        return BlockedError("Project still has a headnode")
     db.delete(project)
     db.commit()
 
@@ -257,6 +271,9 @@ def project_deploy(projectname):
     else:
         pass  # TODO: at least log this, if not throw an error.
 
+    project.dirty = False
+    db.commit()
+
 
 @rest_call('POST', '/project/<projectname>/connect_node')
 def project_connect_node(projectname, node):
@@ -286,6 +303,11 @@ def project_detach_node(projectname, node):
     node = _must_find(db, model.Node, nodename)
     if node not in project.nodes:
         raise NotFoundError(projectname)
+    for nic in node.nics:
+        if nic.network is not None:
+            raise BlockedError("Node attached to a network")
+    if project.dirty:
+        raise BlockedError("Project dirty")
     project.nodes.remove(node)
     db.commit()
 
@@ -386,6 +408,7 @@ def node_connect_network(node_label, nic_label, network):
                 (nic_label, node_label))
 
     nic.network = network
+    project.dirty = True
     db.commit()
 
 
@@ -414,6 +437,7 @@ def node_detach_network(node_label, nic_label):
     project = node.project
 
     nic.network = None
+    project.dirty = True
     db.commit()
 
                             # Head Node Code #
@@ -449,6 +473,7 @@ def headnode_delete(nodename):
 
     If the node does not exist, a NotFoundError will be raised.
     """
+    ### XXX This should never suceed currently.
     db = model.Session()
     headnode = _must_find(db, model.Headnode, nodename)
     db.delete(headnode)
@@ -522,6 +547,7 @@ def headnode_connect_network(node_label, nic_label, network):
         raise DuplicateError('hnic %s on headnode %s is already part of a network' %
                 (nic_label, node_label))
     hnic.network = network
+    project.dirty = True
     db.commit()
 
 
@@ -545,7 +571,10 @@ def headnode_detach_network(node_label, nic_label):
         raise NotFoundError('hnic %s on headnode %s not attached'
                             % (nic_label, node_label))
 
+    project = headnode.project
+
     hnic.network = None
+    project.dirty = True
     db.commit()
 
                             # Network Code #
@@ -586,6 +615,13 @@ def network_delete(networkname):
     """
     db = model.Session()
     network = _must_find(db, model.Network, networkname)
+
+    if network.nics:
+        raise BlockedError("Network still connected to nodes")
+    if network.hnics:
+        raise BlockedError("Network still connected to headnodes")
+    if network.project.dirty:
+        raise BlockedError("Project dirty")
 
     driver_name = cfg.get('general', 'active_switch')
     driver = importlib.import_module('haas.drivers.' + driver_name)
