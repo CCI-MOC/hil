@@ -743,6 +743,14 @@ class TestHeadnodeFreeze:
         with pytest.raises(api.IllegalStateError):
             api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
 
+    @database_only
+    def test_succeed_create_hnic(self, db):
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.headnode_create('hn-0', 'anvil-nextgen')
+
+        api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
+
 
 class TestNetworkCreateDelete:
     """Tests for the haas.api.network_* functions."""
