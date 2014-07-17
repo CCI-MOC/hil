@@ -61,7 +61,7 @@ class TestNetworkID:
         assert None == get_new_network_id(db)
 
     @dell_backend('84, 85')
-    def test_allocate_free_1(self, db):
+    def test_allocate_free_2(self, db):
         get_new_network_id(db)
         get_new_network_id(db)
         free_network_id(db, '84')
