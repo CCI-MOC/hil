@@ -239,8 +239,20 @@ def list_free_nodes():
 
 
 @cmd
+def list_project_nodes(project):
+    url = object_url('project', project, 'nodes')
+    check_status_code(requests.get(url))
+
+
+@cmd
 def show_node(node):
     url = object_url('node', node)
+    check_status_code(requests.get(url))
+
+
+@cmd
+def show_headnode(headnode):
+    url = object_url('headnode', headnode)
     check_status_code(requests.get(url))
 
 
