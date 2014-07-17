@@ -446,6 +446,12 @@ def headnode_start(hn_name):
     "frozen," and all other headnode-related api calls will fail (by raising
     an IllegalStateException), with the exception of headnode_stop.
     """
+    db = model.Session()
+    headnode = _must_find(db, model.Headnode, hn_name)
+    headnode.frozen = True
+    headnode.create()
+    headnode.start()
+    db.commit()
 
 
 @rest_call('POST', '/headnode/<hn_name>/stop')
@@ -456,6 +462,9 @@ def headnode_stop(hn_name):
     the opportunity to shut down cleanly. This does *not* unfreeze the VM;
     headnode_start will be the only valid API call after the VM is powered off.
     """
+    db = model.Session()
+    headnode = _must_find(db, model.Headnode, hn_name)
+    headnode.stop()
 
 
 @rest_call('PUT', '/headnode/<nodename>/hnic/<hnic_name>')

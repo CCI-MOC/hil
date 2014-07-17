@@ -173,7 +173,6 @@ class Headnode(Model):
         check_call(['virt-clone', '-o', 'base-headnode', '-n', self._vmname(), '--auto-clone'])
         for hnic in self.hnics:
             hnic.create()
-        self.frozen = True
 
     def delete(self):
         """Delete the vm, including associated storage"""
