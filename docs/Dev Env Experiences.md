@@ -1,3 +1,5 @@
+# Current Errors
+## Puppetmaster service doesn't start/sign its own node's certificate properly
 
 **puppet SSL described:**
 http://www.masterzen.fr/2010/11/14/puppet-ssl-explained/
@@ -19,12 +21,13 @@ Error: Could not run: Could not write puppet: undefined method `writesub' for #<
 Error: Could not request certificate: Connection refused - connect(2)
 
 
-
+## Agent nodes don't properly send signing request to CA (puppet)
 
 **Individual nodes trying to get certificates signed by master (puppet node) / CA (certificate authority):**
 Error: Could not request certificate: The certificate retrieved from the master does not match the agent's private key.
 Certificate fingerprint: D0:9E:C4:D6:74:D3:86:A7:C4:43:59:AE:8C:5E:30:5F:88:F2:69:6E:96:0F:BB:E6:B0:DD:DF:25:02:23:2B:25
 To fix this, remove the certificate from both the master and the agent and then start a puppet run, which will automatically regenerate a certficate.
+
 On the master:
   puppet cert clean network
 On the agent:
