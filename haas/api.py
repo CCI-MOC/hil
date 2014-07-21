@@ -233,13 +233,13 @@ def project_delete(projectname):
     db = model.Session()
     project = _must_find(db, model.Project, projectname)
     if project.nodes:
-        return BlockedError("Project has nodes still")
+        raise BlockedError("Project has nodes still")
     if project.networks:
-        return BlockedError("Project still has networks")
+        raise BlockedError("Project still has networks")
     if project.headnode:
         ### FIXME: If you ever create a headnode, you can't delete it right
         ### now.  This essentially makes deletion of projects impossible.
-        return BlockedError("Project still has a headnode")
+        raise BlockedError("Project still has a headnode")
     db.delete(project)
     db.commit()
 
