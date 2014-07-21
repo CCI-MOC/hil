@@ -428,13 +428,13 @@ def node_detach_network(node_label, nic_label):
     if nic is None:
         raise NotFoundError(nic_label)
 
-    if nic.network is None:
-        raise NotFoundError('nic %s on node %s is not attached' % (nic_label, node_label))
-
     if not node.project:
         raise ProjectMismatchError("Node not in project")
 
     project = node.project
+
+    if nic.network is None:
+        raise NotFoundError('nic %s on node %s is not attached' % (nic_label, node_label))
 
     nic.network = None
     project.dirty = True
