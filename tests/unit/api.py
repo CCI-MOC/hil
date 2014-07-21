@@ -126,6 +126,49 @@ class TestProjectCreateDelete:
         with pytest.raises(api.NotFoundError):
             api.project_delete('anvil-nextgen')
 
+    @database_only
+    def test_project_delete_hasnode(self, db):
+        api.node_register('node-99')
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        with pytest.raises(api.BlockedError):
+            api.project_delete('anvil-nextgen')
+
+    @database_only
+    def test_project_delete_success_nodesdeleted(self, db):
+        api.node_register('node-99')
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.project_detach_node('anvil-nextgen', 'node-99')
+        api.project_delete('anvil-nextgen')
+
+    @database_only
+    def test_project_delete_hasnetwork(self, db):
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        api.network_create('hammernet', 'anvil-nextgen')
+        with pytest.raises(api.BlockedError):
+            api.project_delete('anvil-nextgen')
+
+    @database_only
+    def test_project_delete_success_networksdeleted(self, db):
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.network_delete('hammernet')
+        api.project_delete('anvil-nextgen')
+
+    @database_only
+    def test_project_delete_hasheadnode(self, db):
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        api.headnode_create('hn-01', 'anvil-nextgen')
+        with pytest.raises(api.BlockedError):
+            api.project_delete('anvil-nextgen')
+
+
 class TestProjectConnectDetachNode:
 
     @database_only
@@ -188,6 +231,41 @@ class TestProjectConnectDetachNode:
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
         with pytest.raises(api.NotFoundError):
+            api.project_detach_node('anvil-nextgen', 'node-99')
+
+    @database_only
+    def test_project_detach_node_on_network(self, db):
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        api.node_register('node-99')
+        api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:13')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.node_connect_network('node-99', 'eth0', 'hammernet')
+        with pytest.raises(api.BlockedError):
+            api.project_detach_node('anvil-nextgen', 'node-99')
+
+    @database_only
+    def test_project_detach_node_success_nic_not_on_network(self, db):
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        api.node_register('node-99')
+        api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:13')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.project_detach_node('anvil-nextgen', 'node-99')
+
+    @database_only
+    def test_project_detach_node_not_on_network_but_still_dirty(self, db):
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        api.node_register('node-99')
+        api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:13')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.node_connect_network('node-99', 'eth0', 'hammernet')
+        api.node_detach_network('node-99', 'eth0')
+        with pytest.raises(api.BlockedError):
             api.project_detach_node('anvil-nextgen', 'node-99')
 
 
@@ -363,6 +441,31 @@ class TestNodeConnectDetachNetwork:
             api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
     @database_only
+    def test_node_connect_network_node_not_in_project(self, db):
+        api.node_register('node-99')
+        api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+#        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.network_create('hammernet', 'anvil-nextgen')
+
+        with pytest.raises(api.ProjectMismatchError):
+            api.node_connect_network('node-99', '99-eth0', 'hammernet')
+
+    @database_only
+    def test_node_connect_network_different_projects(self, db):
+        api.node_register('node-99')
+        api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.project_create('anvil-oldtimer', 'acme-code') # added
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.network_create('hammernet', 'anvil-oldtimer') # changed
+
+        with pytest.raises(api.ProjectMismatchError):
+            api.node_connect_network('node-99', '99-eth0', 'hammernet')
+
+    @database_only
     def test_node_connect_network_already_attached_to_same(self, db):
         api.node_register('node-99')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
@@ -473,6 +576,20 @@ class TestNodeConnectDetachNetwork:
 
         with pytest.raises(api.NotFoundError):
             api.node_detach_network('node-99', '99-eth1') # changed
+
+    @database_only
+    def test_node_detach_network_node_not_in_project(self, db):
+        api.node_register('node-99')
+        api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+#        api.project_connect_node('anvil-nextgen', 'node-99')
+#        api.network_create('hammernet', 'anvil-nextgen')
+#        api.node_connect_network('node-99', '99-eth0', 'hammernet')
+
+        with pytest.raises(api.ProjectMismatchError):
+            api.node_detach_network('node-99', '99-eth0')
+
 
 class TestHeadnodeCreateDelete:
 
@@ -678,6 +795,18 @@ class TestHeadnodeConnectDetachNetwork:
         with pytest.raises(api.DuplicateError):
             api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet2') # changed
 
+    @database_only
+    def test_headnode_connect_network_different_projects(self, db):
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.project_create('anvil-oldtimer', 'acme-code') # added
+        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
+        api.network_create('hammernet', 'anvil-oldtimer') #changed
+
+        with pytest.raises(api.ProjectMismatchError):
+            api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
+
 
     @database_only
     def test_headnode_detach_network_success(self, db):
@@ -770,6 +899,42 @@ class TestNetworkCreateDelete:
     def test_network_delete_nonexistent(self, db):
         """Tests that deleting a nonexistent network fails"""
         with pytest.raises(api.NotFoundError):
+            api.network_delete('hammernet')
+
+    @database_only
+    def test_network_delete_node_on_network(self, db):
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.node_register('node-99')
+        api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.node_connect_network('node-99', 'eth0', 'hammernet')
+        with pytest.raises(api.BlockedError):
+            api.network_delete('hammernet')
+
+    @database_only
+    def test_network_delete_headnode_on_network(self, db):
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create_hnic('hn-0', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.headnode_connect_network('hn-0', 'eth0', 'hammernet')
+        with pytest.raises(api.BlockedError):
+            api.network_delete('hammernet')
+
+    @database_only
+    def test_network_delete_project_dirty(self, db):
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.node_register('node-99')
+        api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.node_connect_network('node-99', 'eth0', 'hammernet')
+        api.node_detach_network('node-99', 'eth0')
+        with pytest.raises(api.BlockedError):
             api.network_delete('hammernet')
 
 #   Tests removed for not applying in general case.  (Specific to dell switch)
