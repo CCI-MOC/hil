@@ -1035,8 +1035,77 @@ class TestQuery:
             ],
         }
 
-
     @database_only
     def test_show_nonexistant_node(self, db):
         with pytest.raises(api.NotFoundError):
             api.show_node('master-control-program')
+
+    @database_only
+    def test_project_nodes_exist(self, db):
+        api.node_register('master-control-program')
+        api.node_register('robocop')
+        api.node_register('data')
+
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        api.project_connect_node('anvil-nextgen', 'master-control-program')
+        api.project_connect_node('anvil-nextgen', 'robocop')
+        api.project_connect_node('anvil-nextgen', 'data')
+        result = json.loads(api.list_project_nodes('anvil-nextgen'))
+        # For the lists to be equal, the ordering must be the same:
+        result.sort()
+        assert result == [
+            'data',
+            'master-control-program',
+            'robocop',
+        ]
+
+    @database_only
+    def test_no_project_nodes(self, db):
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        assert json.loads(api.list_project_nodes('anvil-nextgen')) == []
+
+    @database_only
+    def test_some_nodes_in_project(self, db):
+        """Make sure that allocated nodes don't show up in the free list."""
+        api.node_register('master-control-program')
+        api.node_register('robocop')
+        api.node_register('data')
+
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        api.project_connect_node('anvil-nextgen', 'robocop')
+        api.project_connect_node('anvil-nextgen', 'data')
+
+        result = json.loads(api.list_project_nodes('anvil-nextgen'))
+        result.sort()
+        assert result == ['data', 'robocop']
+
+    @database_only
+    def test_show_headnode(self, db):
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        api.network_create('spiderwebs', 'anvil-nextgen')
+        api.headnode_create('BGH', 'anvil-nextgen')
+        api.headnode_create_hnic('BGH', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.headnode_create_hnic('BGH', 'wlan0', 'DE:AD:BE:EF:20:15')
+        api.headnode_connect_network('BGH', 'eth0', 'spiderwebs')
+
+
+        result = json.loads(api.show_headnode('BGH'))
+        # For the lists to be equal, the ordering must be the same:
+        result['hnics'].sort()
+        assert result == {
+            'name': 'BGH',
+            'project': 'anvil-nextgen',
+            'hnics': [
+                'eth0',
+                'wlan0',
+            ],
+        }
+
+    @database_only
+    def test_show_nonexistant_headnode(self, db):
+        with pytest.raises(api.NotFoundError):
+            api.show_headnode('BGH')

@@ -734,6 +734,7 @@ def list_free_nodes():
 @rest_call('GET', '/project/<project>/nodes')
 def list_project_nodes(project):
     db = model.Session()
+    project = _must_find(db, model.Project, project)
     nodes = db.query(model.Node).filter_by(project=project).all()
     nodes = map(lambda n: n.label, nodes)
     return json.dumps(nodes)
@@ -756,7 +757,7 @@ def show_headnode(nodename):
     headnode = _must_find(db, model.Headnode, nodename)
     return json.dumps({
         'name': headnode.label,
-        'project': headnode.project,
+        'project': headnode.project.label,
         'hnics': map(lambda n: n.label, headnode.hnics),
     })
 
