@@ -42,8 +42,8 @@ class Model(Base):
     auto-generating table names.
     """
     __abstract__ = True
-    id = Column(Integer, primary_key=True)
-    label = Column(String)
+    id = Column(Integer, primary_key=True, nullable=False)
+    label = Column(String, nullable=False)
 
     def __repr__(self):
         return '%s<%r>' % (self.__class__.__name__, self.label)
