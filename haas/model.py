@@ -76,9 +76,8 @@ class Node(Model):
     #many to one mapping to project
     project       = relationship("Project",backref=backref('nodes'))
 
-    def __init__(self, label, available = True):
+    def __init__(self, label):
         self.label   = label
-        self.available = available
 
 
 class Project(Model):
