@@ -735,7 +735,7 @@ def list_free_nodes():
 def list_project_nodes(project):
     db = model.Session()
     project = _must_find(db, model.Project, project)
-    nodes = db.query(model.Node).filter_by(project=project).all()
+    nodes = project.nodes
     nodes = map(lambda n: n.label, nodes)
     return json.dumps(nodes)
 
