@@ -82,7 +82,7 @@ class Node(Model):
 
 
 class Project(Model):
-    dirty = Column(Boolean)
+    dirty = Column(Boolean, nullable=False)
 
     group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
     group = relationship("Group", backref=backref("projects"))
