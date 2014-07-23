@@ -252,12 +252,6 @@ def project_deploy(projectname):
         for nic in net.nics:
             driver.set_access_vlan(int(nic.port.label), net.vlan_no)
 
-    if project.headnode:
-        project.headnode.create()
-        project.headnode.start()
-    else:
-        pass  # TODO: at least log this, if not throw an error.
-
 
 @rest_call('POST', '/project/<projectname>/connect_node')
 def project_connect_node(projectname, node):
@@ -448,7 +442,8 @@ def headnode_start(hn_name):
     """
     db = model.Session()
     headnode = _must_find(db, model.Headnode, hn_name)
-    headnode.create()
+    if headnode.dirty:
+        headnode.create()
     headnode.start()
     db.commit()
 
@@ -477,7 +472,7 @@ def headnode_create_hnic(nodename, hnic_name, macaddr):
     """
     db = model.Session()
     headnode = _must_find(db, model.Headnode, nodename)
-    if headnode.exists():
+    if not headnode.dirty:
         raise IllegalStateError
     hnic = db.query(model.Hnic) \
             .filter_by(headnode = headnode) \

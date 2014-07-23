@@ -733,13 +733,13 @@ class TestHeadnodeConnectDetachNetwork:
 
 class TestHeadnodeFreeze:
 
+    # We can't start the headnodes for real in the test suite, but we need
+    # "starting" them to still clear the dirty bit.
     @pytest.fixture(autouse=True)
-    def patch_create_exists(self, monkeypatch):
-        created = set()
-        monkeypatch.setattr(model.Headnode, 'create',
-                            lambda self: created.add(self.label))
-        monkeypatch.setattr(model.Headnode, 'exists',
-                            lambda self: self.label in created)
+    def patch_start(self, monkeypatch):
+        def start(self):
+            self.dirty = False
+        monkeypatch.setattr(model.Headnode, 'start', start)
 
     @database_only
     def test_freeze_fail_create_hnic(self, db):

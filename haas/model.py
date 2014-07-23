@@ -2,7 +2,7 @@ from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import relationship, sessionmaker,backref
 from passlib.hash import sha512_crypt
-from subprocess import check_call
+from subprocess import call, check_call
 from haas.config import cfg
 from haas.dev_support import no_dry_run
 import importlib
@@ -149,17 +149,13 @@ class Group(Model):
 
 class Headnode(Model):
     project_id = Column(String, ForeignKey('project.id'), nullable=False)
-
-    # Once we've actually created a headnode (in libvirt), it becomes "frozen,"
-    # at which point no further changes can be made to its networking.
-    frozen = Column(Boolean, nullable=False)
-
     project = relationship("Project", backref=backref('headnode', uselist=False))
+    dirty = Column(Boolean, nullable=False)
 
     def __init__(self, project, label):
         self.project = project
         self.label = label
-        self.frozen = False
+        self.dirty = True
 
     @no_dry_run
     def create(self):
@@ -167,9 +163,15 @@ class Headnode(Model):
 
         The vm is not started at this time.
         """
-        # TODO: It would be nice if we could ensure that when and if this dies
-        # partway through, calling it again can succeed (much like our plans
-        # for the network bits of deploy).
+        # Before doing anything else, make sure the VM doesn't already
+        # exist. This gives us the nice property that create will not fail
+        # because of state left behind by previous failures (much like
+        # deploying a project):
+        call(['virsh', 'undefine', self._vmname(), '--remove-all-storage'])
+        # The --remove-all-storage flag above *should* take care of this,
+        # but doesn't seem to on our development setup. XXX.
+        call(['rm', '-f', '/var/lib/libvirt/images/%s.img' % self._vmname()])
+
         check_call(['virt-clone', '-o', 'base-headnode', '-n', self._vmname(), '--auto-clone'])
         for hnic in self.hnics:
             hnic.create()
@@ -192,13 +194,16 @@ class Headnode(Model):
             cmd(['vconfig', 'rem', vlan_nic])
             cmd(['brctl', 'delbr', bridge])
 
-    def exists(self):
-        return self.frozen
 
     @no_dry_run
     def start(self):
-        """Powers on the vm, which must have been previously created."""
+        """Powers on the vm, which must have been previously created.
+
+        Once the headnode has been started once it is "frozen," and no changes
+        may be made to it, other than starting, stopping or deleting it.
+        """
         check_call(['virsh', 'start', self._vmname()])
+        self.dirty = False
 
     @no_dry_run
     def stop(self):
