@@ -244,11 +244,16 @@ def show_node(node):
     check_status_code(requests.get(url))
 
 
-def usage():
-    """Display a summary of the arguments accepted by the CLI."""
-    sys.stderr.write('Usage: %s <command>\n\n' % sys.argv[0])
-    sys.stderr.write('Where <command> is one of:\n\n')
-    for name in sorted(commands.keys()):
+@cmd
+def help(*command_list):
+    """Display usage of following commands.  If none given, display usage of all commands."""
+    # FIXME: Displaying help for help doesn't work well with our function
+    # inspection, because we don't handle variable lists right now.
+    if not command_list:
+        sys.stderr.write('Usage: %s <command> [<arguments>]... \n\n' % sys.argv[0])
+        sys.stderr.write('Where <command> is one of:\n\n')
+        command_list = sorted(commands.keys())
+    for name in command_list:
         # For each command, print out a summary including the name, arguments,
         # and the docstring (as a #comment).
         func = commands[name]
@@ -266,7 +271,8 @@ def main():
     logging.basicConfig(level=logging.DEBUG)
     config.load()
     if len(sys.argv) < 2 or sys.argv[1] not in commands:
-        usage()
+        # Display usage for all commands
+        help()
     else:
         commands[sys.argv[1]](*sys.argv[2:])
 
