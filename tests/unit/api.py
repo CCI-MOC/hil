@@ -1068,7 +1068,7 @@ class TestQuery:
 
     @database_only
     def test_some_nodes_in_project(self, db):
-        """Make sure that allocated nodes don't show up in the free list."""
+        """Test that only assigned nodes are in the project."""
         api.node_register('master-control-program')
         api.node_register('robocop')
         api.node_register('data')
