@@ -748,12 +748,19 @@ class TestHeadnodeFreeze:
         api.project_create('anvil-nextgen', 'acme-code')
         api.headnode_create('hn-0', 'anvil-nextgen')
 
+    def _prep_delete_hnic(self):
+        self._prep()
+        api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
 
     def _prep_connect_network(self):
         """Helper to set up common state for headnode_connect_network tests."""
         self._prep()
         api.network_create('hammernet', 'anvil-nextgen')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
+
+    def _prep_detach_network(self):
+        self._prep_connect_network()
+        api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
 
     @database_only
     def test_freeze_fail_create_hnic(self, db):
@@ -770,6 +777,20 @@ class TestHeadnodeFreeze:
         api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
 
     @database_only
+    def test_freeze_fail_delete_hnic(self, db):
+        self._prep_delete_hnic()
+
+        api.headnode_start('hn-0')
+        with pytest.raises(api.IllegalStateError):
+            api.headnode_delete_hnic('hn-0', 'hn-0-eth0')
+
+    @database_only
+    def test_succeed_delete_hnic(self, db):
+        self._prep_delete_hnic()
+
+        api.headnode_delete_hnic('hn-0', 'hn-0-eth0')
+
+    @database_only
     def test_freeze_fail_connect_network(self, db):
         self._prep_connect_network()
 
@@ -777,12 +798,25 @@ class TestHeadnodeFreeze:
         with pytest.raises(api.IllegalStateError):
             api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
 
-
     @database_only
     def test_succeed_connect_network(self, db):
         self._prep_connect_network()
 
         api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
+
+    @database_only
+    def test_freeze_fail_detach_network(self, db):
+        self._prep_detach_network()
+
+        api.headnode_start('hn-0')
+        with pytest.raises(api.IllegalStateError):
+            api.headnode_detach_network('hn-0', 'hn-0-eth0')
+
+    @database_only
+    def test_succeed_detach_network(self, db):
+        self._prep_detach_network()
+
+        api.headnode_detach_network('hn-0', 'hn-0-eth0')
 
 class TestNetworkCreateDelete:
     """Tests for the haas.api.network_* functions."""
