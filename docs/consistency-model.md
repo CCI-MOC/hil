@@ -1,14 +1,21 @@
 Here is the consistency model for our database.
 
   - The entire project has a 'dirty bit', which represents if the networking
-    information has been applied/deployed.
+    information has been applied.  Operations that do not mention the dirty
+    bit neither check nor set it.
 
   - ``project_apply``: Take the networking state as the database sees it, and
-    make the world match.  This is idempotent.  This clears the dirty bit.
+    make the world match.  If the operation succeeds, this clears the dirty
+    bit.  (If it fails, it does not alter the dirty bit.)  It is idempotent,
+    so it can be re-run as desired.  Notably, it can be used both to apply
+    changes made to a project, as well as to restore networking state that was
+    upset by some manual change.
 
-  - ``node_attach_network``, ``node_detach_network``: These don't affect the
-    outside world, so they happen immediately.  These set the dirty bit,
-    because the real world and the database now disagree.
+  - ``node_attach_network``, ``node_detach_network``: When these operations
+    are run, they immediately change the database.  But, the actual networking
+    of the project does not change until ``project_apply`` is run.  So, these
+    two operations set the dirty bit, because the real world and the database
+    now disagree.
 
   - ``project_attach_node``, ``network_create``: These don't have any effect
     on the outside world, so they happen immediately.
@@ -28,11 +35,13 @@ Here is the consistency model for our database.
     you do this, the headnode is /locked/, and no more changes to it are
     allowed.
 
-  - ``headnode_delete``: This deletes the headnode immediately, detaching it from
-    all networks it was attached to.
+  - ``headnode_delete``: This deletes the headnode immediately, detaching it
+    from all networks it was attached to.  Due to current limitations, this
+    operation cannot be run at all.  Eventually, this call should succeed as
+    long as the headnode is powered off, if not more often.
 
-  - ``headnode_power_on``, ``headnode_power_off``: These cycle power on the headnode.
-    It's possible that headnode_start and headnode_power_on should be the same
-    thing.  It's also possible that, eventually, we might allow networking
-    changes to powered-off headnodes.  (It's semantically reasonable, but
-    might be tricky in implementation.)
+  - ``headnode_power_on``, ``headnode_power_off``: These cycle power on the
+    headnode.  It's possible that ``headnode_start`` and ``headnode_power_on``
+    should be the same thing.  It's also possible that, eventually, we might
+    allow networking changes to powered-off headnodes.  (It's semantically
+    reasonable, but might be tricky in implementation.)
