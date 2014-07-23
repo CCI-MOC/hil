@@ -517,6 +517,9 @@ def headnode_connect_network(node_label, nic_label, network):
     hnic = _must_find(db, model.Hnic, nic_label)
     network = _must_find(db, model.Network, network_label)
 
+    if not headnode.dirty:
+        raise IllegalStateError
+
     if hnic.headnode is not headnode:
         raise NotFoundError('hnic %s on headnode %s' % (nic_label, node_label))
 
