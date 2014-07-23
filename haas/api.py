@@ -491,13 +491,13 @@ def headnode_delete_hnic(nodename, hnic_name):
     If the hnic does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
-    hnic = _must_find(db, model.Hnic, hnic_name)
-    if hnic.headnode.label != nodename:
-        # We raise a NotFoundError for the following reason: Hnic's SHOULD
-        # belong to headnodes, and thus we SHOULD be doing a search of the
-        # hnics belonging to the given headnode.  (In that situation, we will
-        # honestly get a NotFoundError.)  We aren't right now, because
-        # currently Hnic's labels are globally unique.
+    headnode = _must_find(db, model.Headnode, nodename)
+    if not headnode.dirty:
+        raise IllegalStateError
+    hnic = db.query(model.Hnic) \
+            .filter_by(headnode = headnode) \
+            .filter_by(label = hnic_name).first()
+    if not hnic:
         raise NotFoundError("Hnic: " + hnic_name)
     db.delete(hnic)
     db.commit()
@@ -542,6 +542,9 @@ def headnode_detach_network(node_label, nic_label):
 
     headnode = _must_find(db, model.Headnode, node_label)
     hnic = _must_find(db, model.Hnic, nic_label)
+
+    if not headnode.dirty:
+        raise IllegalStateError
 
     if hnic.headnode is not headnode:
         raise NotFoundError('hnic %s on headnode %s' % (nic_label, node_label))
