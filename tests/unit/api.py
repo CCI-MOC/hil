@@ -741,11 +741,23 @@ class TestHeadnodeFreeze:
             self.dirty = False
         monkeypatch.setattr(model.Headnode, 'start', start)
 
-    @database_only
-    def test_freeze_fail_create_hnic(self, db):
+
+    def _prep(self):
+        """Helper to set up common state."""
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.headnode_create('hn-0', 'anvil-nextgen')
+
+
+    def _prep_connect_network(self):
+        """Helper to set up common state for headnode_connect_network tests."""
+        self._prep()
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
+
+    @database_only
+    def test_freeze_fail_create_hnic(self, db):
+        self._prep()
 
         api.headnode_start('hn-0')
         with pytest.raises(api.IllegalStateError):
@@ -753,12 +765,24 @@ class TestHeadnodeFreeze:
 
     @database_only
     def test_succeed_create_hnic(self, db):
-        api.group_create('acme-code')
-        api.project_create('anvil-nextgen', 'acme-code')
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        self._prep()
 
         api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
 
+    @database_only
+    def test_freeze_fail_connect_network(self, db):
+        self._prep_connect_network()
+
+        api.headnode_start('hn-0')
+        with pytest.raises(api.IllegalStateError):
+            api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
+
+
+    @database_only
+    def test_succeed_connect_network(self, db):
+        self._prep_connect_network()
+
+        api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
 
 class TestNetworkCreateDelete:
     """Tests for the haas.api.network_* functions."""
