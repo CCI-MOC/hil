@@ -36,7 +36,7 @@ class BadArgumentError(APIError):
     """An exception indicating an invalid request on the part of the user."""
 
 class ProjectMismatchError(APIError):
-    """An expection indicating that the resources given don't belong to the
+    """An exception indicating that the resources given don't belong to the
     same project.
     """
 
