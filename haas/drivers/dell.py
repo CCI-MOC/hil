@@ -40,8 +40,8 @@ class Dell_Vlan(Model):
 
 
 def apply_networking(net_map):
-    for port_id, vlan_id in net_map:
-        set_access_vlan(port_id, vlan_id)
+    for port_id in net_map:
+        set_access_vlan(port_id, net_map[port_id])
 
 def get_new_network_id(db):
     vlan = db.query(Dell_Vlan).filter_by(available = True).first()

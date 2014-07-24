@@ -262,7 +262,7 @@ def project_deploy(projectname):
     net_map = {}
     for net in project.networks:
         for nic in net.nics:
-            net_map[nic.port.label] = net.vlan_no
+            net_map[nic.port.label] = net.network_id
     driver.apply_networking(net_map)
 
     if project.headnode:
