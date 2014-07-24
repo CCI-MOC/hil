@@ -8,13 +8,38 @@ import sys
 import urllib
 import requests
 
-commands = {}
+from functools import wraps
 
+commands = {}
+usage = {}
 
 def cmd(f):
-    """A decorator, which resgisters it's argument as a command."""
-    commands[f.__name__] = f
-    return f
+    """A decorator for CLI commands.
+
+    This decorator firstly adds the function to a dictionary of valid CLI
+    commands, secondly adds exception handling for when the user passes the
+    wrong number of arguments, and thirdly generates a 'usage' description and
+    puts it in the usage dictionary.
+    """
+    @wraps(f)
+    def wrapped(*args, **kwargs):
+        try:
+            f(*args, **kwargs)
+        except TypeError:
+            # TODO TypeError is probably too broad here.
+            sys.stderr.write('Wrong number of arguements.  Usage:\n')
+            help(f.__name__)
+    commands[f.__name__] = wrapped
+    def get_usage(f):
+        args, varargs, _, _ = inspect.getargspec(f)
+        args = ''.join(map(lambda name: ' <%s>' % name, args))
+        if varargs:
+            varargs = ' <%s...>' % varargs
+        else:
+            varargs = ''
+        return '%s%s%s' % (f.__name__, args, varargs)
+    usage[f.__name__] = get_usage(f)
+    return wrapped
 
 
 def check_status_code(response):
@@ -248,14 +273,8 @@ def help(*command_list):
     for name in command_list:
         # For each command, print out a summary including the name, arguments,
         # and the docstring (as a #comment).
-        func = commands[name]
-        args, varargs, _, _ = inspect.getargspec(func)
-        args = ''.join(map(lambda name: ' <%s>' % name, args))
-        if varargs:
-            varargs = ' <%s...>' % varargs
-        else:
-            varargs = ''
-        sys.stderr.write('  %s%s%s\n      %s\n' % (name, args, varargs, func.__doc__))
+        sys.stderr.write('  %s\n' % usage[name])
+        sys.stderr.write('      %s\n' % commands[name].__doc__)
 
 
 def main():
