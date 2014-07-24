@@ -9,10 +9,10 @@ import uuid
 def apply_network(net_map):
     pass
 
-def get_new_network_id():
+def get_new_network_id(db):
     return str(uuid.uuid1())
 
-def free_network_id(net_id):
+def free_network_id(db, net_id):
     pass
 
 def init_db():

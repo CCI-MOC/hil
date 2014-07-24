@@ -43,23 +43,19 @@ def apply_network(net_map):
     for port_id, vlan_id in net_map:
         set_access_vlan(port_id, vlan_id)
 
-def get_new_network_id():
-    db = Session()
+def get_new_network_id(db):
     vlan = db.query(Dell_Vlan).filter_by(available = True).first()
     if not vlan:
         return None
     vlan.available = False
     returnee = str(vlan.vlan_no)
-    db.commit()
     return returnee
 
-def free_network_id(net_id):
-    db = Session()
+def free_network_id(db, net_id):
     vlan = db.query(Dell_Vlan).filter_by(vlan_no = net_id).first()
     if not vlan:
         pass
     vlan.available = True
-    db.commit()
 
 def init_db():
     db = Session()

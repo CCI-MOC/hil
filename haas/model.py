@@ -42,8 +42,8 @@ class Model(Base):
     auto-generating table names.
     """
     __abstract__ = True
-    id = Column(Integer, primary_key=True)
-    label = Column(String)
+    id = Column(Integer, primary_key=True, nullable=False)
+    label = Column(String, nullable=False)
 
     def __repr__(self):
         return '%s<%r>' % (self.__class__.__name__, self.label)
@@ -76,13 +76,12 @@ class Node(Model):
     #many to one mapping to project
     project       = relationship("Project",backref=backref('nodes'))
 
-    def __init__(self, label, available = True):
+    def __init__(self, label):
         self.label   = label
-        self.available = available
 
 
 class Project(Model):
-    deployed    = Column(Boolean)
+    dirty = Column(Boolean, nullable=False)
 
     group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
     group = relationship("Group", backref=backref("projects"))
@@ -90,7 +89,7 @@ class Project(Model):
     def __init__(self, group, label):
         self.group = group
         self.label = label
-        self.deployed   = False
+        self.dirty = False
 
 
 class Network(Model):
