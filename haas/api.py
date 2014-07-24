@@ -259,9 +259,11 @@ def project_deploy(projectname):
     db = model.Session()
     project = _must_find(db, model.Project, projectname)
 
+    net_map = {}
     for net in project.networks:
         for nic in net.nics:
-            driver.set_access_vlan(int(nic.port.label), net.vlan_no)
+            net_map[nic.port.label] = net.vlan_no
+    driver.apply_networking(net_map)
 
     if project.headnode:
         project.headnode.create()

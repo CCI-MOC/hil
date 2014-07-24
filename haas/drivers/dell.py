@@ -39,7 +39,7 @@ class Dell_Vlan(Model):
         self.label = str(vlan_no)
 
 
-def apply_network(net_map):
+def apply_networking(net_map):
     for port_id, vlan_id in net_map:
         set_access_vlan(port_id, vlan_id)
 

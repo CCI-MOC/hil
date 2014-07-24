@@ -169,6 +169,16 @@ class TestProjectCreateDelete:
             api.project_delete('anvil-nextgen')
 
 
+class TestProjectDeploy:
+
+    @database_only
+    def test_project_deploy(self, db):
+        # Test that it doesn't crash, at least
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        api.project_deploy('anvil-nextgen')
+
+
 class TestProjectConnectDetachNode:
 
     @database_only

@@ -6,7 +6,7 @@ For unit testing purposes.
 
 import uuid
 
-def apply_network(net_map):
+def apply_networking(net_map):
     pass
 
 def get_new_network_id(db):
