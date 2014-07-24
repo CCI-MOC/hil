@@ -241,8 +241,6 @@ def show_node(node):
 @cmd
 def help(*command_list):
     """Display usage of all following commands, or of all commands if none are given"""
-    # FIXME: Displaying help for help doesn't work well with our function
-    # inspection, because we don't handle variable lists right now.
     if not command_list:
         sys.stderr.write('Usage: %s <command> [<arguments>]... \n\n' % sys.argv[0])
         sys.stderr.write('Where <command> is one of:\n\n')
@@ -251,9 +249,13 @@ def help(*command_list):
         # For each command, print out a summary including the name, arguments,
         # and the docstring (as a #comment).
         func = commands[name]
-        args, _, _, _ = inspect.getargspec(func)
-        args = map(lambda name: '<%s>' % name, args)
-        sys.stderr.write('  %s %s\n      %s\n' % (name, ' '.join(args), func.__doc__))
+        args, varargs, _, _ = inspect.getargspec(func)
+        args = ''.join(map(lambda name: ' <%s>' % name, args))
+        if varargs:
+            varargs = ' <%s...>' % varargs
+        else:
+            varargs = ''
+        sys.stderr.write('  %s%s%s\n      %s\n' % (name, args, varargs, func.__doc__))
 
 
 def main():
