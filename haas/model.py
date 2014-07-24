@@ -81,7 +81,7 @@ class Node(Model):
 
 
 class Project(Model):
-    deployed    = Column(Boolean)
+    dirty = Column(Boolean, nullable=False)
 
     group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
     group = relationship("Group", backref=backref("projects"))
@@ -89,7 +89,7 @@ class Project(Model):
     def __init__(self, group, label):
         self.group = group
         self.label = label
-        self.deployed   = False
+        self.dirty = False
 
 
 class Network(Model):
