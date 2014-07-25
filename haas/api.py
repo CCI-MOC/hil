@@ -699,17 +699,17 @@ def switch_delete(name):
 def port_register(switch_name, port_name):
     """Register a port with name "port" on switch "switch".
 
-    Currently, this label both must be unique AND will generally have to be
-    decimal integers.  This is nonsense if there are multiple switches, but we
-    don't support that anyways.
-
     If the port already exists, a DuplicateError will be raised.
 
     If the switch does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
     switch = _must_find(db, model.Switch, switch_name)
-    _assert_absent(db, model.Port, port_name)
+    port = db.query(model.Port) \
+             .filter_by(switch = switch) \
+             .filter_by(label = port_name).first()
+    if port is not None:
+        raise DuplicateError(port_name)
     port = model.Port(switch, port_name)
     db.add(port)
     db.commit()
@@ -723,10 +723,14 @@ def port_delete(switch_name, port_name):
     NotFoundError will be raised.
     """
     db = model.Session()
+
     switch = _must_find(db, model.Switch, switch_name)
-    port = _must_find(db, model.Port, port_name)
-    if port.switch is not switch:
+    port = db.query(model.Port) \
+             .filter_by(switch = switch) \
+             .filter_by(label = port_name).first()
+    if port is None:
         raise NotFoundError(port_name)
+
     db.delete(port)
     db.commit()
 
@@ -747,8 +751,10 @@ def port_connect_nic(switch_name, port_name, node, nic):
     db = model.Session()
 
     switch = _must_find(db, model.Switch, switch_name)
-    port = _must_find(db, model.Port, port_name)
-    if port.switch is not switch:
+    port = db.query(model.Port) \
+             .filter_by(switch = switch) \
+             .filter_by(label = port_name).first()
+    if port is None:
         raise NotFoundError(port_name)
 
     node = _must_find(db, model.Node, node_name)
@@ -779,8 +785,10 @@ def port_detach_nic(switch_name, port_name):
     db = model.Session()
 
     switch = _must_find(db, model.Switch, switch_name)
-    port = _must_find(db, model.Port, port_name)
-    if port.switch is not switch:
+    port = db.query(model.Port) \
+             .filter_by(switch = switch) \
+             .filter_by(label = port_name).first()
+    if port is None:
         raise NotFoundError(port_name)
 
     if port.nic is None:
