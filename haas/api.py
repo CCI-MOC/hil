@@ -631,46 +631,6 @@ def network_delete(networkname):
     db.commit()
 
 
-@rest_call('PUT', '/vlan/<vlan>')
-def vlan_register(vlan):
-    """Registers the vlan with vlan number `vlan`.
-
-    Note that vlan should be a *string*, not a number. It is intended to be
-    pulled right from the HTTP request; this function will validate the
-    argument.
-    """
-    try:
-        vlan_no = int(vlan)
-    except Exception:
-        raise BadArgumentError('vlan:%s' % vlan)
-    if vlan_no < 1 or vlan_no > 4096:
-        raise BadArgumentError('vlan out of range: %d', vlan_no)
-    db = model.Session()
-    _assert_absent(db, model.Vlan, str(vlan_no))
-    db.add(model.Vlan(vlan_no))
-    db.commit()
-
-
-@rest_call('DELETE', '/vlan/<vlan>')
-def vlan_delete(vlan):
-    """Deletes the vlan with vlan number `vlan`.
-
-    Note that vlan should be a *string*, not a number. It is intended to be
-    pulled right from the HTTP request; this function will validate the
-    argument.
-    """
-    try:
-        vlan_no = int(vlan)
-    except Exception:
-        raise BadArgumentError('vlan:%s' % vlan)
-    if vlan_no < 1 or vlan_no > 4096:
-        raise BadArgumentError('vlan out of range: %d', vlan_no)
-
-    db = model.Session()
-    db.delete(_must_find(db, model.Vlan, str(vlan_no)))
-    db.commit()
-
-
                             # Switch code #
                             ###############
 
