@@ -1,3 +1,17 @@
+# Copyright 2013-2014 Massachusetts Open Cloud Contributors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the
+# License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS
+# IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+# express or implied.  See the License for the specific language
+# governing permissions and limitations under the License.
+
 """This module provides the HaaS service's public API.
 
 TODO: Spec out and document what sanitization is required.
@@ -34,6 +48,23 @@ class AllocationError(APIError):
 
 class BadArgumentError(APIError):
     """An exception indicating an invalid request on the part of the user."""
+
+class ProjectMismatchError(APIError):
+    """An exception indicating that the resources given don't belong to the
+    same project.
+    """
+
+class BlockedError(APIError):
+    """An exception indicating that the requested action cannot happen until
+    some other change.  For example, deletion is blocked until the components
+    are deleted, and possibly until the dirty flag is cleared as well.
+    """
+
+class IllegalStateError(APIError):
+    """The request is invalid due to the state of the system.
+
+    The request might otherwise be perfectly valid.
+    """
 
 
 app = Flask(__name__)
@@ -222,6 +253,14 @@ def project_delete(projectname):
     """
     db = model.Session()
     project = _must_find(db, model.Project, projectname)
+    if project.nodes:
+        raise BlockedError("Project has nodes still")
+    if project.networks:
+        raise BlockedError("Project still has networks")
+    if project.headnode:
+        ### FIXME: If you ever create a headnode, you can't delete it right
+        ### now.  This essentially makes deletion of projects impossible.
+        raise BlockedError("Project still has a headnode")
     db.delete(project)
     db.commit()
 
@@ -245,14 +284,8 @@ def project_deploy(projectname):
         for nic in net.nics:
             driver.set_access_vlan(int(nic.port.label), net.vlan_no)
 
-    if project.headnode:
-        project.headnode.create()
-        for hnic in project.headnode.hnics:
-            hnic.create()
-        project.headnode.start()
-    else:
-        pass  # TODO: at least log this, if not throw an error.
-
+    project.dirty = False
+    db.commit()
 
 @rest_call('POST', '/project/<projectname>/connect_node')
 def project_connect_node(projectname, node):
@@ -282,6 +315,11 @@ def project_detach_node(projectname, node):
     node = _must_find(db, model.Node, nodename)
     if node not in project.nodes:
         raise NotFoundError(projectname)
+    for nic in node.nics:
+        if nic.network is not None:
+            raise BlockedError("Node attached to a network")
+    if project.dirty:
+        raise BlockedError("Project dirty")
     project.nodes.remove(node)
     db.commit()
 
@@ -342,9 +380,12 @@ def node_delete_nic(nodename, nic_name):
     If the nic does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
-    nic = _must_find(db, model.Nic, nic_name)
-    if nic.node.label != nodename:
-        raise NotFoundError("Nic: " + nic_name)
+    node = _must_find(db, model.Node, nodename)
+    nic = db.query(model.Nic) \
+            .filter_by(node = node) \
+            .filter_by(label = nic_name).first()
+    if nic is None:
+        raise NotFoundError(nic_name)
     db.delete(nic)
     db.commit()
 
@@ -357,11 +398,21 @@ def node_connect_network(node_label, nic_label, network):
     db = model.Session()
 
     node = _must_find(db, model.Node, node_label)
-    nic = _must_find(db, model.Nic, nic_label)
+    nic = db.query(model.Nic) \
+            .filter_by(node = node) \
+            .filter_by(label = nic_label).first()
+    if nic is None:
+        raise NotFoundError(nic_label)
+
     network = _must_find(db, model.Network, network_label)
 
-    if nic.node is not node:
-        raise NotFoundError('nic %s on node %s' % (nic_label, node_label))
+    if not node.project:
+        raise ProjectMismatchError("Node not in project")
+
+    if node.project.label is not network.project.label:
+        raise ProjectMismatchError("Node and network in different projects")
+
+    project = node.project
 
     if nic.network:
         # The nic is already part of a network; report an error to the user.
@@ -369,6 +420,7 @@ def node_connect_network(node_label, nic_label, network):
                 (nic_label, node_label))
 
     nic.network = network
+    project.dirty = True
     db.commit()
 
 
@@ -382,15 +434,22 @@ def node_detach_network(node_label, nic_label):
     db = model.Session()
 
     node = _must_find(db, model.Node, node_label)
-    nic = _must_find(db, model.Nic, nic_label)
+    nic = db.query(model.Nic) \
+            .filter_by(node = node) \
+            .filter_by(label = nic_label).first()
+    if nic is None:
+        raise NotFoundError(nic_label)
 
-    if nic.node is not node:
-        raise NotFoundError('nic %s on node %s' % (nic_label, node_label))
+    if not node.project:
+        raise ProjectMismatchError("Node not in project")
+
+    project = node.project
 
     if nic.network is None:
         raise NotFoundError('nic %s on node %s is not attached' % (nic_label, node_label))
 
     nic.network = None
+    project.dirty = True
     db.commit()
 
                             # Head Node Code #
@@ -426,10 +485,41 @@ def headnode_delete(nodename):
 
     If the node does not exist, a NotFoundError will be raised.
     """
+    ### XXX This should never succeed currently.
     db = model.Session()
     headnode = _must_find(db, model.Headnode, nodename)
     db.delete(headnode)
     db.commit()
+
+
+@rest_call('POST', '/headnode/<hn_name>/start')
+def headnode_start(hn_name):
+    """Start the headnode.
+
+    This actually boots up the headnode virtual machine. The VM is created
+    within libvirt if needed. Once the VM has been started once, it is
+    "frozen," and all other headnode-related api calls will fail (by raising
+    an IllegalStateException), with the exception of headnode_stop.
+    """
+    db = model.Session()
+    headnode = _must_find(db, model.Headnode, hn_name)
+    if headnode.dirty:
+        headnode.create()
+    headnode.start()
+    db.commit()
+
+
+@rest_call('POST', '/headnode/<hn_name>/stop')
+def headnode_stop(hn_name):
+    """Stop the headnode.
+
+    This powers off the headnode. This is a hard poweroff; the VM is not given
+    the opportunity to shut down cleanly. This does *not* unfreeze the VM;
+    headnode_start will be the only valid API call after the VM is powered off.
+    """
+    db = model.Session()
+    headnode = _must_find(db, model.Headnode, hn_name)
+    headnode.stop()
 
 
 @rest_call('PUT', '/headnode/<nodename>/hnic/<hnic_name>')
@@ -443,6 +533,8 @@ def headnode_create_hnic(nodename, hnic_name, macaddr):
     """
     db = model.Session()
     headnode = _must_find(db, model.Headnode, nodename)
+    if not headnode.dirty:
+        raise IllegalStateError
     hnic = db.query(model.Hnic) \
             .filter_by(headnode = headnode) \
             .filter_by(label = hnic_name).first()
@@ -460,14 +552,15 @@ def headnode_delete_hnic(nodename, hnic_name):
     If the hnic does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
-    hnic = _must_find(db, model.Hnic, hnic_name)
-    if hnic.headnode.label != nodename:
-        # We raise a NotFoundError for the following reason: Hnic's SHOULD
-        # belong to headnodes, and thus we SHOULD be doing a search of the
-        # hnics belonging to the given headnode.  (In that situation, we will
-        # honestly get a NotFoundError.)  We aren't right now, because
-        # currently Hnic's labels are globally unique.
+    headnode = _must_find(db, model.Headnode, nodename)
+    if not headnode.dirty:
+        raise IllegalStateError
+    hnic = db.query(model.Hnic) \
+            .filter_by(headnode = headnode) \
+            .filter_by(label = hnic_name).first()
+    if not hnic:
         raise NotFoundError("Hnic: " + hnic_name)
+
     db.delete(hnic)
     db.commit()
 
@@ -483,17 +576,25 @@ def headnode_connect_network(node_label, nic_label, network):
     db = model.Session()
 
     headnode = _must_find(db, model.Headnode, node_label)
-    hnic = _must_find(db, model.Hnic, nic_label)
+    hnic = db.query(model.Hnic) \
+            .filter_by(headnode = headnode) \
+            .filter_by(label = nic_label).first()
+    if hnic is None:
+        raise NotFoundError(nic_label)
     network = _must_find(db, model.Network, network_label)
 
-    if hnic.headnode is not headnode:
-        raise NotFoundError('hnic %s on headnode %s' % (nic_label, node_label))
+    if not headnode.dirty:
+        raise IllegalStateError
+
+    if headnode.project.label is not network.project.label:
+        raise ProjectMismatchError("Headnode and network in different projects")
 
     if hnic.network:
         # The nic is already part of a network; report an error to the user.
         raise DuplicateError('hnic %s on headnode %s is already part of a network' %
                 (nic_label, node_label))
     hnic.network = network
+    headnode.project.dirty = True
     db.commit()
 
 
@@ -507,7 +608,14 @@ def headnode_detach_network(node_label, nic_label):
     db = model.Session()
 
     headnode = _must_find(db, model.Headnode, node_label)
-    hnic = _must_find(db, model.Hnic, nic_label)
+    hnic = db.query(model.Hnic) \
+            .filter_by(headnode = headnode) \
+            .filter_by(label = nic_label).first()
+    if hnic is None:
+        raise NotFoundError(nic_label)
+
+    if not headnode.dirty:
+        raise IllegalStateError
 
     if hnic.headnode is not headnode:
         raise NotFoundError('hnic %s on headnode %s' % (nic_label, node_label))
@@ -517,6 +625,7 @@ def headnode_detach_network(node_label, nic_label):
                             % (nic_label, node_label))
 
     hnic.network = None
+    headnode.project.dirty = True
     db.commit()
 
                             # Network Code #
@@ -558,51 +667,18 @@ def network_delete(networkname):
     db = model.Session()
     network = _must_find(db, model.Network, networkname)
 
+    if network.nics:
+        raise BlockedError("Network still connected to nodes")
+    if network.hnics:
+        raise BlockedError("Network still connected to headnodes")
+    if network.project.dirty:
+        raise BlockedError("Project dirty")
+
     driver_name = cfg.get('general', 'active_switch')
     driver = importlib.import_module('haas.drivers.' + driver_name)
     driver.free_network_id(db, network.network_id)
 
     db.delete(network)
-    db.commit()
-
-
-@rest_call('PUT', '/vlan/<vlan>')
-def vlan_register(vlan):
-    """Registers the vlan with vlan number `vlan`.
-
-    Note that vlan should be a *string*, not a number. It is intended to be
-    pulled right from the HTTP request; this function will validate the
-    argument.
-    """
-    try:
-        vlan_no = int(vlan)
-    except Exception:
-        raise BadArgumentError('vlan:%s' % vlan)
-    if vlan_no < 1 or vlan_no > 4096:
-        raise BadArgumentError('vlan out of range: %d', vlan_no)
-    db = model.Session()
-    _assert_absent(db, model.Vlan, str(vlan_no))
-    db.add(model.Vlan(vlan_no))
-    db.commit()
-
-
-@rest_call('DELETE', '/vlan/<vlan>')
-def vlan_delete(vlan):
-    """Deletes the vlan with vlan number `vlan`.
-
-    Note that vlan should be a *string*, not a number. It is intended to be
-    pulled right from the HTTP request; this function will validate the
-    argument.
-    """
-    try:
-        vlan_no = int(vlan)
-    except Exception:
-        raise BadArgumentError('vlan:%s' % vlan)
-    if vlan_no < 1 or vlan_no > 4096:
-        raise BadArgumentError('vlan out of range: %d', vlan_no)
-
-    db = model.Session()
-    db.delete(_must_find(db, model.Vlan, str(vlan_no)))
     db.commit()
 
 
@@ -634,17 +710,17 @@ def switch_delete(name):
 def port_register(switch_name, port_name):
     """Register a port with name "port" on switch "switch".
 
-    Currently, this label both must be unique AND will generally have to be
-    decimal integers.  This is nonsense if there are multiple switches, but we
-    don't support that anyways.
-
     If the port already exists, a DuplicateError will be raised.
 
     If the switch does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
     switch = _must_find(db, model.Switch, switch_name)
-    _assert_absent(db, model.Port, port_name)
+    port = db.query(model.Port) \
+             .filter_by(switch = switch) \
+             .filter_by(label = port_name).first()
+    if port is not None:
+        raise DuplicateError(port_name)
     port = model.Port(switch, port_name)
     db.add(port)
     db.commit()
@@ -658,10 +734,14 @@ def port_delete(switch_name, port_name):
     NotFoundError will be raised.
     """
     db = model.Session()
+
     switch = _must_find(db, model.Switch, switch_name)
-    port = _must_find(db, model.Port, port_name)
-    if port.switch is not switch:
+    port = db.query(model.Port) \
+             .filter_by(switch = switch) \
+             .filter_by(label = port_name).first()
+    if port is None:
         raise NotFoundError(port_name)
+
     db.delete(port)
     db.commit()
 
@@ -682,13 +762,17 @@ def port_connect_nic(switch_name, port_name, node, nic):
     db = model.Session()
 
     switch = _must_find(db, model.Switch, switch_name)
-    port = _must_find(db, model.Port, port_name)
-    if port.switch is not switch:
+    port = db.query(model.Port) \
+             .filter_by(switch = switch) \
+             .filter_by(label = port_name).first()
+    if port is None:
         raise NotFoundError(port_name)
 
     node = _must_find(db, model.Node, node_name)
-    nic = _must_find(db, model.Nic, nic_name)
-    if nic.node is not node:
+    nic = db.query(model.Nic) \
+            .filter_by(node = node) \
+            .filter_by(label = nic_name).first()
+    if nic is None:
         raise NotFoundError(nic_name)
 
     if nic.port is not None:
@@ -712,8 +796,10 @@ def port_detach_nic(switch_name, port_name):
     db = model.Session()
 
     switch = _must_find(db, model.Switch, switch_name)
-    port = _must_find(db, model.Port, port_name)
-    if port.switch is not switch:
+    port = db.query(model.Port) \
+             .filter_by(switch = switch) \
+             .filter_by(label = port_name).first()
+    if port is None:
         raise NotFoundError(port_name)
 
     if port.nic is None:
@@ -731,6 +817,15 @@ def list_free_nodes():
     return json.dumps(nodes)
 
 
+@rest_call('GET', '/project/<project>/nodes')
+def list_project_nodes(project):
+    db = model.Session()
+    project = _must_find(db, model.Project, project)
+    nodes = project.nodes
+    nodes = map(lambda n: n.label, nodes)
+    return json.dumps(nodes)
+
+
 @rest_call('GET', '/node/<nodename>')
 def show_node(nodename):
     db = model.Session()
@@ -740,6 +835,18 @@ def show_node(nodename):
         'free': node.project_id is None,
         'nics': map(lambda n: n.label, node.nics),
     })
+
+
+@rest_call('GET', '/headnode/<nodename>')
+def show_headnode(nodename):
+    db = model.Session()
+    headnode = _must_find(db, model.Headnode, nodename)
+    return json.dumps({
+        'name': headnode.label,
+        'project': headnode.project.label,
+        'hnics': map(lambda n: n.label, headnode.hnics),
+    })
+
 
     # Helper functions #
     ####################

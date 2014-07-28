@@ -1,3 +1,17 @@
+# Copyright 2013-2014 Massachusetts Open Cloud Contributors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the
+# License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS
+# IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+# express or implied.  See the License for the specific language
+# governing permissions and limitations under the License.
+
 """This module implements the HaaS command line tool."""
 from haas import config
 from haas.config import cfg
@@ -161,6 +175,18 @@ def project_detach_node(project, node):
     check_status_code(requests.post(url, data={'node': node}))
 
 @cmd
+def headnode_start(headnode):
+    """Start <headnode>"""
+    url = object_url('headnode', headnode, 'start')
+    check_status_code(requests.post(url))
+
+@cmd
+def headnode_stop(headnode):
+    """Stop <headnode>"""
+    url = object_url('headnode', headnode, 'stop')
+    check_stauts_code(requests.post(url))
+
+@cmd
 def node_register(node):
     """Register a node named <node>"""
     url = object_url('node', node)
@@ -257,11 +283,20 @@ def list_free_nodes():
     check_status_code(requests.get(url))
 
 @cmd
+def list_project_nodes(project):
+    url = object_url('project', project, 'nodes')
+    check_status_code(requests.get(url))
+
+@cmd
 def show_node(node):
     """Display information about a <node>"""
     url = object_url('node', node)
     check_status_code(requests.get(url))
 
+@cmd
+def show_headnode(headnode):
+    url = object_url('headnode', headnode)
+    check_status_code(requests.get(url))
 
 @cmd
 def help(*commands):
