@@ -758,6 +758,15 @@ def list_free_nodes():
     return json.dumps(nodes)
 
 
+@rest_call('GET', '/project/<project>/nodes')
+def list_project_nodes(project):
+    db = model.Session()
+    project = _must_find(db, model.Project, project)
+    nodes = project.nodes
+    nodes = map(lambda n: n.label, nodes)
+    return json.dumps(nodes)
+
+
 @rest_call('GET', '/node/<nodename>')
 def show_node(nodename):
     db = model.Session()
@@ -767,6 +776,18 @@ def show_node(nodename):
         'free': node.project_id is None,
         'nics': map(lambda n: n.label, node.nics),
     })
+
+
+@rest_call('GET', '/headnode/<nodename>')
+def show_headnode(nodename):
+    db = model.Session()
+    headnode = _must_find(db, model.Headnode, nodename)
+    return json.dumps({
+        'name': headnode.label,
+        'project': headnode.project.label,
+        'hnics': map(lambda n: n.label, headnode.hnics),
+    })
+
 
     # Helper functions #
     ####################
