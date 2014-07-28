@@ -32,8 +32,12 @@ Here is the consistency model for our database.
     ``headnode_attach_network``, ``headnode_detach_network`` as much as you
     want, until you run ``headnode_start``.  The headnode's VM is then
     created, started, and connected to the appropriate networks.  As soon as
-    you do this, the headnode is /locked/, and no more changes to it are
-    allowed.
+    you do this, the headnode becomes 'frozen', and no more changes to it are
+    allowed.  (Currently, the headnode is marked dirty/clean instead of
+    unfrozen/frozen.  This lines up with the semantics in one way, in that a
+    dirty headnode hasn't been fully applied yet.  But, they act different
+    enough that this will probably change.  This change will not affect
+    external behavior.)
 
   - ``headnode_delete``: This deletes the headnode immediately, detaching it
     from all networks it was attached to.  Due to current limitations, this
