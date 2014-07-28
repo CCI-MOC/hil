@@ -44,8 +44,7 @@ Here is the consistency model for our database.
     operation cannot be run at all.  Eventually, this call should succeed as
     long as the headnode is powered off, if not more often.
 
-  - ``headnode_power_on``, ``headnode_power_off``: These cycle power on the
-    headnode.  It's possible that ``headnode_start`` and ``headnode_power_on``
-    should be the same thing.  It's also possible that, eventually, we might
-    allow networking changes to powered-off headnodes.  (It's semantically
-    reasonable, but might be tricky in implementation.)
+  - ``headnode_start``, ``headnode_stop``: These cycle power on the headnode.
+    It's also possible that, eventually, we might allow networking changes to
+    powered-off headnodes.  (It's semantically reasonable, but might be tricky
+    in implementation.)
