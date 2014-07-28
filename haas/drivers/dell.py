@@ -42,7 +42,7 @@ class Dell_Vlan(Model):
     2. The VLAN number is actually allocated to the HaaS; on some deployments we
        may have specific vlan numbers that we are allowed to use.
     """
-    vlan_no = Column(Integer, nullable=False)
+    vlan_no = Column(Integer, nullable=False, unique=True)
     available = Column(Boolean, nullable=False)
 
     def __init__(self, vlan_no):
@@ -71,7 +71,9 @@ def free_network_id(db, net_id):
         pass
     vlan.available = True
 
-def init_db():
+def init_db(create=False):
+    if not create:
+        return
     db = Session()
     r_list = cfg.get('switch dell', 'vlans').split(",")
     for r in r_list:

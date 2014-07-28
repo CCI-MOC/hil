@@ -46,7 +46,7 @@ def init_db(create=False, uri=None):
         Base.metadata.create_all(engine)
     Session.configure(bind=engine)
 
-    driver.init_db()
+    driver.init_db(create=create)
 
 
 class Model(Base):

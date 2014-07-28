@@ -52,7 +52,16 @@ def free_network_id(db, net_id):
     connection, to make the freeing part of the current transaction.
     """
 
-def init_db():
-    """Initializes any database tables and/or objects that the driver needs to
-    have to function correctly.
+def init_db(create=False):
+    """Called upon startup with 'create=False', and upon 'haas init_db' with
+    'create=True'.
+
+    If 'create==True', the driver should initialize any database tables and/or
+    objects that it needs to have in order to function correctly.
+
+    If 'create==False', the driver should perform any actions that must happen
+    on server startup.
     """
+    # XXX This is gross.  Right now there are three different things called
+    # 'init_db': a function in model.py, the driver function, and the API
+    # call.  They all do different things.
