@@ -284,6 +284,7 @@ def list_free_nodes():
 
 @cmd
 def list_project_nodes(project):
+    """List all nodes attached to a <project>"""
     url = object_url('project', project, 'nodes')
     check_status_code(requests.get(url))
 
@@ -295,6 +296,7 @@ def show_node(node):
 
 @cmd
 def show_headnode(headnode):
+    """Display information about a <headnode>"""
     url = object_url('headnode', headnode)
     check_status_code(requests.get(url))
 
