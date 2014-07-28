@@ -10,8 +10,8 @@ import requests
 
 from functools import wraps
 
-commands = {}
-usage = {}
+command_dict = {}
+usage_dict = {}
 
 def cmd(f):
     """A decorator for CLI commands.
@@ -29,7 +29,7 @@ def cmd(f):
             # TODO TypeError is probably too broad here.
             sys.stderr.write('Wrong number of arguements.  Usage:\n')
             help(f.__name__)
-    commands[f.__name__] = wrapped
+    command_dict[f.__name__] = wrapped
     def get_usage(f):
         args, varargs, _, _ = inspect.getargspec(f)
         args = ''.join(map(lambda name: ' <%s>' % name, args))
@@ -38,7 +38,7 @@ def cmd(f):
         else:
             varargs = ''
         return '%s%s%s' % (f.__name__, args, varargs)
-    usage[f.__name__] = get_usage(f)
+    usage_dict[f.__name__] = get_usage(f)
     return wrapped
 
 
@@ -264,17 +264,17 @@ def show_node(node):
 
 
 @cmd
-def help(*command_list):
-    """Display usage of all following commands, or of all commands if none are given"""
-    if not command_list:
-        sys.stderr.write('Usage: %s <command> [<arguments>]... \n\n' % sys.argv[0])
-        sys.stderr.write('Where <command> is one of:\n\n')
-        command_list = sorted(commands.keys())
-    for name in command_list:
+def help(*commands):
+    """Display usage of all following <commands>, or of all commands if none are given"""
+    if not commands:
+        sys.stderr.write('Usage: %s <command> <arguments...> \n' % sys.argv[0])
+        sys.stderr.write('Where <command> is one of:\n')
+        commands = sorted(command_dict.keys())
+    for name in commands:
         # For each command, print out a summary including the name, arguments,
         # and the docstring (as a #comment).
-        sys.stderr.write('  %s\n' % usage[name])
-        sys.stderr.write('      %s\n' % commands[name].__doc__)
+        sys.stderr.write('  %s\n' % usage_dict[name])
+        sys.stderr.write('      %s\n' % command_dict[name].__doc__)
 
 
 def main():
@@ -285,9 +285,9 @@ def main():
     """
     logging.basicConfig(level=logging.DEBUG)
     config.load()
-    if len(sys.argv) < 2 or sys.argv[1] not in commands:
+    if len(sys.argv) < 2 or sys.argv[1] not in command_dict:
         # Display usage for all commands
         help()
     else:
-        commands[sys.argv[1]](*sys.argv[2:])
+        command_dict[sys.argv[1]](*sys.argv[2:])
 
