@@ -38,7 +38,7 @@ def free_network_id(db, net_id):
     connection, to make the freeing part of the current transaction.
     """
 
-def init_db():
+def init_db(create=False):
     """Initializes any database tables and/or objects that the driver needs to
     have to function correctly.
     """

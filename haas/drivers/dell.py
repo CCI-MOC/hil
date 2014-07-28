@@ -57,7 +57,9 @@ def free_network_id(db, net_id):
         pass
     vlan.available = True
 
-def init_db():
+def init_db(create=False):
+    if not create:
+        return
     db = Session()
     r_list = cfg.get('switch dell', 'vlans').split(",")
     for r in r_list:

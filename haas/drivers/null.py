@@ -15,5 +15,5 @@ def get_new_network_id(db):
 def free_network_id(db, net_id):
     pass
 
-def init_db():
+def init_db(create=False):
     pass
