@@ -42,7 +42,7 @@ Here is the consistency model for our database.
   - ``headnode_delete``: This deletes the headnode immediately, detaching it
     from all networks it was attached to.  Due to current limitations, this
     operation cannot be run at all.  Eventually, this call should succeed as
-    long as the headnode is powered off, if not more often.
+    long as the headnode is powered off.
 
   - ``headnode_start``, ``headnode_stop``: These cycle power on the headnode.
     It's also possible that, eventually, we might allow networking changes to
