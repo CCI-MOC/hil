@@ -2,7 +2,7 @@ from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import relationship, sessionmaker,backref
 from passlib.hash import sha512_crypt
-from subprocess import check_call
+from subprocess import call, check_call
 from haas.config import cfg
 from haas.dev_support import no_dry_run
 import importlib
@@ -147,15 +147,14 @@ class Group(Model):
 
 
 class Headnode(Model):
-    available     = Column(Boolean)
+    project_id = Column(String, ForeignKey('project.id'), nullable=False)
+    project = relationship("Project", backref=backref('headnode', uselist=False))
+    dirty = Column(Boolean, nullable=False)
 
-    project_id    = Column(String, ForeignKey('project.id'), nullable=False)
-    project       = relationship("Project", backref = backref('headnode',uselist = False))
-
-    def __init__(self, project, label, available = True):
+    def __init__(self, project, label):
         self.project = project
-        self.label  = label
-        self.available = available
+        self.label = label
+        self.dirty = True
 
     @no_dry_run
     def create(self):
@@ -163,12 +162,55 @@ class Headnode(Model):
 
         The vm is not started at this time.
         """
+        # Before doing anything else, make sure the VM doesn't already
+        # exist. This gives us the nice property that create will not fail
+        # because of state left behind by previous failures (much like
+        # deploying a project):
+        call(['virsh', 'undefine', self._vmname(), '--remove-all-storage'])
+        # The --remove-all-storage flag above *should* take care of this,
+        # but doesn't seem to on our development setup. XXX.
+        call(['rm', '-f', '/var/lib/libvirt/images/%s.img' % self._vmname()])
+
         check_call(['virt-clone', '-o', 'base-headnode', '-n', self._vmname(), '--auto-clone'])
+        for hnic in self.hnics:
+            hnic.create()
+
+    def delete(self):
+        """Delete the vm, including associated storage"""
+        # XXX: This doesn't actually work. I copied this from the headnode
+        # module so I could finally delete it, but I haven't actually made the
+        # slight changes needed to get it to work again (variable renames,
+        # mostly).
+        trunk_nic = cfg.get('headnode', 'trunk_nic')
+        cmd(['virsh', 'undefine', self.name, '--remove-all-storage'])
+        for nic in self.nics:
+            nic = str(nic)
+            bridge = 'br-vlan%s' % nic
+            vlan_nic = '%s.%d' % (trunk_nic, nic)
+            cmd(['ifconfig', bridge, 'down'])
+            cmd(['ifconfig', vlan_nic, 'down'])
+            cmd(['brctl', 'delif', bridge, vlan_nic])
+            cmd(['vconfig', 'rem', vlan_nic])
+            cmd(['brctl', 'delbr', bridge])
+
 
     @no_dry_run
     def start(self):
-        """Powers on the vm, which must have been previously created."""
+        """Powers on the vm, which must have been previously created.
+
+        Once the headnode has been started once it is "frozen," and no changes
+        may be made to it, other than starting, stopping or deleting it.
+        """
         check_call(['virsh', 'start', self._vmname()])
+        self.dirty = False
+
+    @no_dry_run
+    def stop(self):
+        """Stop the vm.
+
+        This does a hard poweroff; the OS is not given a chance to react.
+        """
+        check_call(['virsh', 'destroy', self._vmname()])
 
     def _vmname(self):
         """Returns the name (as recognized by libvirt) of this vm."""
@@ -191,7 +233,7 @@ class Hnic(Model):
     @no_dry_run
     def create(self):
         trunk_nic = cfg.get('headnode', 'trunk_nic')
-        vlan_no = str(self.network.vlan_no)
+        vlan_no = str(self.network.network_id)
         bridge = 'br-vlan%s' % vlan_no
         vlan_nic = '%s.%s' % (trunk_nic, vlan_no)
         check_call(['brctl', 'addbr', bridge])

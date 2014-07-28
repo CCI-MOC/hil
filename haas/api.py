@@ -46,6 +46,13 @@ class BlockedError(APIError):
     are deleted, and possibly until the dirty flag is cleared as well.
     """
 
+class IllegalStateError(APIError):
+    """The request is invalid due to the state of the system.
+
+    The request might otherwise be perfectly valid.
+    """
+
+
 app = Flask(__name__)
 
 
@@ -263,17 +270,8 @@ def project_deploy(projectname):
         for nic in net.nics:
             driver.set_access_vlan(int(nic.port.label), net.vlan_no)
 
-    if project.headnode:
-        project.headnode.create()
-        for hnic in project.headnode.hnics:
-            hnic.create()
-        project.headnode.start()
-    else:
-        pass  # TODO: at least log this, if not throw an error.
-
     project.dirty = False
     db.commit()
-
 
 @rest_call('POST', '/project/<projectname>/connect_node')
 def project_connect_node(projectname, node):
@@ -480,6 +478,36 @@ def headnode_delete(nodename):
     db.commit()
 
 
+@rest_call('POST', '/headnode/<hn_name>/start')
+def headnode_start(hn_name):
+    """Start the headnode.
+
+    This actually boots up the headnode virtual machine. The VM is created
+    within libvirt if needed. Once the VM has been started once, it is
+    "frozen," and all other headnode-related api calls will fail (by raising
+    an IllegalStateException), with the exception of headnode_stop.
+    """
+    db = model.Session()
+    headnode = _must_find(db, model.Headnode, hn_name)
+    if headnode.dirty:
+        headnode.create()
+    headnode.start()
+    db.commit()
+
+
+@rest_call('POST', '/headnode/<hn_name>/stop')
+def headnode_stop(hn_name):
+    """Stop the headnode.
+
+    This powers off the headnode. This is a hard poweroff; the VM is not given
+    the opportunity to shut down cleanly. This does *not* unfreeze the VM;
+    headnode_start will be the only valid API call after the VM is powered off.
+    """
+    db = model.Session()
+    headnode = _must_find(db, model.Headnode, hn_name)
+    headnode.stop()
+
+
 @rest_call('PUT', '/headnode/<nodename>/hnic/<hnic_name>')
 def headnode_create_hnic(nodename, hnic_name, macaddr):
     """Create hnic attached to given headnode
@@ -491,6 +519,8 @@ def headnode_create_hnic(nodename, hnic_name, macaddr):
     """
     db = model.Session()
     headnode = _must_find(db, model.Headnode, nodename)
+    if not headnode.dirty:
+        raise IllegalStateError
     hnic = db.query(model.Hnic) \
             .filter_by(headnode = headnode) \
             .filter_by(label = hnic_name).first()
@@ -509,11 +539,13 @@ def headnode_delete_hnic(nodename, hnic_name):
     """
     db = model.Session()
     headnode = _must_find(db, model.Headnode, nodename)
+    if not headnode.dirty:
+        raise IllegalStateError
     hnic = db.query(model.Hnic) \
             .filter_by(headnode = headnode) \
             .filter_by(label = hnic_name).first()
-    if hnic is None:
-        raise NotFoundError(hnic_name)
+    if not hnic:
+        raise NotFoundError("Hnic: " + hnic_name)
 
     db.delete(hnic)
     db.commit()
@@ -537,17 +569,18 @@ def headnode_connect_network(node_label, nic_label, network):
         raise NotFoundError(nic_label)
     network = _must_find(db, model.Network, network_label)
 
+    if not headnode.dirty:
+        raise IllegalStateError
+
     if headnode.project.label is not network.project.label:
         raise ProjectMismatchError("Headnode and network in different projects")
-
-    project = headnode.project
 
     if hnic.network:
         # The nic is already part of a network; report an error to the user.
         raise DuplicateError('hnic %s on headnode %s is already part of a network' %
                 (nic_label, node_label))
     hnic.network = network
-    project.dirty = True
+    headnode.project.dirty = True
     db.commit()
 
 
@@ -567,14 +600,18 @@ def headnode_detach_network(node_label, nic_label):
     if hnic is None:
         raise NotFoundError(nic_label)
 
+    if not headnode.dirty:
+        raise IllegalStateError
+
+    if hnic.headnode is not headnode:
+        raise NotFoundError('hnic %s on headnode %s' % (nic_label, node_label))
+
     if hnic.network is None:
         raise NotFoundError('hnic %s on headnode %s not attached'
                             % (nic_label, node_label))
 
-    project = headnode.project
-
     hnic.network = None
-    project.dirty = True
+    headnode.project.dirty = True
     db.commit()
 
                             # Network Code #

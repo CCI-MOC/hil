@@ -25,8 +25,12 @@ Full Api spec:
 
     headnode_create <hn_label> <project_label>
     headnode_delete <hn_label>
+    headnode_start <hn_label>
+    headnode_stop <hn_label>
     [PUT]    /headnode/<hn_label> {project=<project_label>}
     [DELETE] /headnode/<hn_label>
+    [POST] /headnode/<hn_label>/start
+    [POST] /headnode/<hn_label>/stop
 
     project_connect_node <project_label> <node_label>
     project_detach_node  <project_label> <node_label>

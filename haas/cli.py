@@ -141,6 +141,18 @@ def project_detach_node(project, node):
     check_status_code(requests.post(url, data={'node': node}))
 
 @cmd
+def headnode_start(headnode):
+    """Start <headnode>"""
+    url = object_url('headnode', headnode, 'start')
+    check_status_code(requests.post(url))
+
+@cmd
+def headnode_stop(headnode):
+    """Stop <headnode>"""
+    url = object_url('headnode', headnode, 'stop')
+    check_stauts_code(requests.post(url))
+
+@cmd
 def node_register(node):
     """Register a node named <node>"""
     url = object_url('node', node)
