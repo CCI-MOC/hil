@@ -22,13 +22,38 @@ import sys
 import urllib
 import requests
 
-commands = {}
+from functools import wraps
 
+command_dict = {}
+usage_dict = {}
 
 def cmd(f):
-    """A decorator, which resgisters it's argument as a command."""
-    commands[f.__name__] = f
-    return f
+    """A decorator for CLI commands.
+
+    This decorator firstly adds the function to a dictionary of valid CLI
+    commands, secondly adds exception handling for when the user passes the
+    wrong number of arguments, and thirdly generates a 'usage' description and
+    puts it in the usage dictionary.
+    """
+    @wraps(f)
+    def wrapped(*args, **kwargs):
+        try:
+            f(*args, **kwargs)
+        except TypeError:
+            # TODO TypeError is probably too broad here.
+            sys.stderr.write('Wrong number of arguements.  Usage:\n')
+            help(f.__name__)
+    command_dict[f.__name__] = wrapped
+    def get_usage(f):
+        args, varargs, _, _ = inspect.getargspec(f)
+        args = ''.join(map(lambda name: ' <%s>' % name, args))
+        if varargs:
+            varargs = ' <%s...>' % varargs
+        else:
+            varargs = ''
+        return '%s%s%s' % (f.__name__, args, varargs)
+    usage_dict[f.__name__] = get_usage(f)
+    return wrapped
 
 
 def check_status_code(response):
@@ -48,7 +73,7 @@ def object_url(*args):
 
 @cmd
 def serve():
-    """Start the HaaS API server."""
+    """Start the HaaS API server"""
     from haas import model, api
     model.init_db()
     api.app.run(debug=True)
@@ -58,7 +83,6 @@ def init_db():
     """Initialize the database"""
     from haas import model
     model.init_db(create=True)
-
 
 @cmd
 def user_create(username, password):
@@ -78,68 +102,64 @@ def network_delete(network):
     url = object_url('network', network)
     check_status_code(requests.delete(url))
 
-
 @cmd
 def user_delete(username):
+    """Delete the user <username>"""
     url = object_url('user', username)
     check_status_code(requests.delete(url))
 
-
 @cmd
 def group_add_user(group, user):
-    """Add <user> to <group>."""
+    """Add <user> to <group>"""
     url = object_url('group', group, 'add_user')
     check_status_code(requests.post(url, data={'user': user}))
 
-
 @cmd
 def group_remove_user(group, user):
-    """Remove <user> from <group>."""
+    """Remove <user> from <group>"""
     url = object_url('group', group, 'remove_user')
     check_status_code(requests.post(url, data={'user': user}))
 
 @cmd
-def project_create(projectname, group, *args):
-    """Create a project"""
-    url = object_url('project', projectname)
+def project_create(project, group):
+    """Create <project> belonging to <group>"""
+    url = object_url('project', project)
     check_status_code(requests.put(url, data={'group': group}))
 
 @cmd
-def project_delete(projectname):
-    url = object_url('project', projectname)
+def project_delete(project):
+    """Delete <project>"""
+    url = object_url('project', project)
     check_status_code(requests.delete(url))
 
 @cmd
-def group_create(groupname):
-    """Create a group"""
-    url = object_url('group', groupname)
+def group_create(group):
+    """Create <group>"""
+    url = object_url('group', group)
     check_status_code(requests.put(url))
 
-
 @cmd
-def group_delete(groupname):
-    """Delete a group"""
-    url = object_url('group', groupname)
+def group_delete(group):
+    """Delete <group>"""
+    url = object_url('group', group)
     check_status_code(requests.delete(url))
-
 
 @cmd
 def project_deploy(project):
-    """Deploy <project>"""
+    """Apply the networking of a <project>"""
     url = object_url('project', project, 'deploy')
     check_status_code(requests.post(url))
 
-
 @cmd
-def headnode_create(hn_name, project):
-    """Create a headnode <hn_name> belonging to <project>"""
-    url = object_url('headnode', hn_name)
+def headnode_create(headnode, project):
+    """Create a <headnode> belonging to <project>"""
+    url = object_url('headnode', headnode)
     check_status_code(requests.put(url, data={'project': project}))
 
 @cmd
-def headnode_delete(hn_name):
-    """Delete the headnode <hn_name>"""
-    url = object_url('headnode', hn_name)
+def headnode_delete(headnode):
+    """Delete <headnode>"""
+    url = object_url('headnode', headnode)
     check_status_code(requests.delete(url))
 
 @cmd
@@ -174,26 +194,26 @@ def node_register(node):
 
 @cmd
 def node_register_nic(node, nic, macaddr):
-    """Register existence of a NIC with the given MAC address on the given node"""
+    """Register existence of a <nic> with the given <macaddr> on the given <node>"""
     url = object_url('node', node, 'nic', nic)
     check_status_code(requests.put(url, data={'macaddr':macaddr}))
 
 @cmd
 def node_delete_nic(node, nic):
-    """Delete a NIC on a node"""
+    """Delete a <nic> on a <node>"""
     url = object_url('node', node, 'nic', nic)
     check_status_code(requests.delete(url))
 
 @cmd
-def headnode_create_hnic(headnode, hnic, macaddr):
-    """Create a NIC with the given MAC address on the given headnode"""
-    url = object_url('headnode', headnode, 'hnic', hnic)
+def headnode_create_hnic(headnode, nic, macaddr):
+    """Create a <nic> with the given <macaddr> on the given <headnode>"""
+    url = object_url('headnode', headnode, 'hnic', nic)
     check_status_code(requests.put(url, data={'macaddr':macaddr}))
 
 @cmd
-def headnode_delete_hnic(headnode, hnic):
-    """Delete a NIC on a headnode"""
-    url = object_url('headnode', headnode, 'hnic', hnic)
+def headnode_delete_hnic(headnode, nic):
+    """Delete a <nic> on a <headnode>"""
+    url = object_url('headnode', headnode, 'hnic', nic)
     check_status_code(requests.delete(url))
 
 @cmd
@@ -209,23 +229,22 @@ def node_detach_network(node, nic):
     check_status_code(requests.post(url))
 
 @cmd
-def headnode_connect_network(headnode, hnic, network):
-    """Connect <headnode> to <network> on given <hnic>"""
-    url = object_url('headnode', headnode, 'hnic', hnic, 'connect_network')
+def headnode_connect_network(headnode, nic, network):
+    """Connect <headnode> to <network> on given <nic>"""
+    url = object_url('headnode', headnode, 'hnic', nic, 'connect_network')
     check_status_code(requests.post(url, data={'network':network}))
 
 @cmd
-def headnode_detach_network(headnode, hnic):
-    """Detach <headnode> from the network on given <hnic>"""
+def headnode_detach_network(headnode, nic):
+    """Detach <headnode> from the network on given <nic>"""
     url = object_url('headnode', headnode, 'hnic', hnic, 'detach_network')
     check_status_code(requests.post(url))
 
-
 @cmd
 def switch_register(name, driver):
-        """Register a switch using driver <driver> under the name <name>."""
-        url = object_url('switch', name)
-        check_status_code(requests.put(url, data={'driver': driver}))
+    """Register a switch using driver <driver> under the name <name>"""
+    url = object_url('switch', name)
+    check_status_code(requests.put(url, data={'driver': driver}))
 
 @cmd
 def switch_delete(name):
@@ -257,42 +276,42 @@ def port_detach_nic(switch, port):
     url = object_url('switch', switch, 'port', port, 'detach_nic')
     check_status_code(requests.post(url))
 
-
 @cmd
 def list_free_nodes():
+    """List all free nodes"""
     url = object_url('free_nodes')
     check_status_code(requests.get(url))
 
-
 @cmd
 def list_project_nodes(project):
+    """List all nodes attached to a <project>"""
     url = object_url('project', project, 'nodes')
     check_status_code(requests.get(url))
 
-
 @cmd
 def show_node(node):
+    """Display information about a <node>"""
     url = object_url('node', node)
     check_status_code(requests.get(url))
 
-
 @cmd
 def show_headnode(headnode):
+    """Display information about a <headnode>"""
     url = object_url('headnode', headnode)
     check_status_code(requests.get(url))
 
-
-def usage():
-    """Display a summary of the arguments accepted by the CLI."""
-    sys.stderr.write('Usage: %s <command>\n\n' % sys.argv[0])
-    sys.stderr.write('Where <command> is one of:\n\n')
-    for name in sorted(commands.keys()):
+@cmd
+def help(*commands):
+    """Display usage of all following <commands>, or of all commands if none are given"""
+    if not commands:
+        sys.stderr.write('Usage: %s <command> <arguments...> \n' % sys.argv[0])
+        sys.stderr.write('Where <command> is one of:\n')
+        commands = sorted(command_dict.keys())
+    for name in commands:
         # For each command, print out a summary including the name, arguments,
         # and the docstring (as a #comment).
-        func = commands[name]
-        args, _, _, _ = inspect.getargspec(func)
-        args = map(lambda name: '<%s>' % name, args)
-        sys.stderr.write('  %s %s\n      %s\n' % (name, ' '.join(args), func.__doc__))
+        sys.stderr.write('  %s\n' % usage_dict[name])
+        sys.stderr.write('      %s\n' % command_dict[name].__doc__)
 
 
 def main():
@@ -303,8 +322,9 @@ def main():
     """
     logging.basicConfig(level=logging.DEBUG)
     config.load()
-    if len(sys.argv) < 2 or sys.argv[1] not in commands:
-        usage()
+    if len(sys.argv) < 2 or sys.argv[1] not in command_dict:
+        # Display usage for all commands
+        help()
     else:
-        commands[sys.argv[1]](*sys.argv[2:])
+        command_dict[sys.argv[1]](*sys.argv[2:])
 
