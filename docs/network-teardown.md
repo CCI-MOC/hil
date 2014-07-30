@@ -1,5 +1,5 @@
 The devel branch of the haas provides no good automated way of tearing
-down the network state created when deploying a group. Here's how to
+down the network state created when applying a project. Here's how to
 do it manually:
 
     brctl delif br-vlan${vlan_number} em3.${vlan_number}

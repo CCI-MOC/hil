@@ -16,13 +16,13 @@ From a user's perspective, the HaaS allows one to:
   * connect physical nodes to those logical networks (on a per-nic basis)
 * connect login/management nodes to those networks.
 
-Once everything is configured as desired, the user "deploys" the
+Once everything is configured as desired, the user "applies" the
 configuration, at which point the necessary adjustments will be made
 to the switch (see below), and the login node will boot.
 
 Right now, we're using 802.1q VLANs to achieve network isolation. The
 HaaS communicates with a managed switch, to which the physical
-hardware is attached. When a "deploy" operation is performed, the
+hardware is attached. When an "apply" operation is performed, the
 HaaS sends commands to the switch which configure the relevant ports
 as needed to create the logical networks.
 
@@ -80,7 +80,7 @@ These components will be configured as follows:
   least one VM, powered off, called "base-headnode", which can be cloned
   and started to provide login/management nodes.
 * A network object in the HaaS corresponds to a vlan id. When a network
-  is deployed, the following will occur:
+  is applied, the following will occur:
   * All ports connected corresponding nics on the logical network will
     have their access vlan set to the vlan id associated with the
     network.

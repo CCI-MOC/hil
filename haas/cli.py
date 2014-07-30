@@ -145,9 +145,9 @@ def group_delete(group):
     check_status_code(requests.delete(url))
 
 @cmd
-def project_deploy(project):
+def project_apply(project):
     """Apply the networking of a <project>"""
-    url = object_url('project', project, 'deploy')
+    url = object_url('project', project, 'apply')
     check_status_code(requests.post(url))
 
 @cmd

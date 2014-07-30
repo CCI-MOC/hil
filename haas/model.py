@@ -179,7 +179,7 @@ class Headnode(Model):
         # Before doing anything else, make sure the VM doesn't already
         # exist. This gives us the nice property that create will not fail
         # because of state left behind by previous failures (much like
-        # deploying a project):
+        # applying a project):
         call(['virsh', 'undefine', self._vmname(), '--remove-all-storage'])
         # The --remove-all-storage flag above *should* take care of this,
         # but doesn't seem to on our development setup. XXX.
