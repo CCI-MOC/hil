@@ -183,6 +183,42 @@ class TestProjectCreateDelete:
             api.project_delete('anvil-nextgen')
 
 
+class TestProjectDeploy:
+
+    @database_only
+    def test_project_deploy(self, db):
+        # Test that it doesn't crash, at least
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        api.project_deploy('anvil-nextgen')
+
+
+    @database_only
+    def test_project_deploy_involved(self, db):
+        api.switch_register('switch', 'null')
+        api.port_register('switch', '1')
+        api.port_register('switch', '2')
+        api.port_register('switch', '3')
+        api.node_register('node-99')
+        api.node_register('node-98')
+        api.node_register('node-97')
+        api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.node_register_nic('node-98', 'eth0', 'DE:AD:BE:EF:20:15')
+        api.node_register_nic('node-97', 'eth0', 'DE:AD:BE:EF:20:16')
+        api.port_connect_nic('switch', '1', 'node-99', 'eth0')
+        api.port_connect_nic('switch', '2', 'node-98', 'eth0')
+        api.port_connect_nic('switch', '3', 'node-97', 'eth0')
+
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.project_connect_node('anvil-nextgen', 'node-98')
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.network_create('spiderwebs', 'anvil-nextgen')
+        api.node_connect_network('node-98', 'eth0', 'hammernet')
+        api.project_deploy('anvil-nextgen')
+
+
 class TestProjectConnectDetachNode:
 
     @database_only

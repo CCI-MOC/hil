@@ -280,9 +280,11 @@ def project_apply(projectname):
     db = model.Session()
     project = _must_find(db, model.Project, projectname)
 
+    net_map = {}
     for net in project.networks:
         for nic in net.nics:
-            driver.set_access_vlan(int(nic.port.label), net.vlan_no)
+            net_map[nic.port.label] = net.network_id
+    driver.apply_networking(net_map)
 
     project.dirty = False
     db.commit()

@@ -20,8 +20,13 @@ For unit testing purposes.
 
 import uuid
 
-def apply_network(net_map):
-    pass
+def apply_networking(net_map):
+    # The following code does nothing, except for check that the net_map is in
+    # fact a map that can be iterated over.  This is how it's used in the
+    # 'dell' plugin, and likely in most VLAN-based plugins.  This can help
+    # check for bugs in haas/api.py
+    for port in net_map:
+        net = net_map[port]
 
 def get_new_network_id(db):
     return str(uuid.uuid1())
