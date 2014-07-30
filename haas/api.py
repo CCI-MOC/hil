@@ -265,9 +265,9 @@ def project_delete(projectname):
     db.commit()
 
 
-@rest_call('POST', '/project/<projectname>/deploy')
-def project_deploy(projectname):
-    """Deploy project 'projectname'
+@rest_call('POST', '/project/<projectname>/apply')
+def project_apply(projectname):
+    """Apply networking of project 'projectname'
 
     If the project does not exist, a NotFoundError will be raised.
 

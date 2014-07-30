@@ -67,8 +67,8 @@ time.
 
 To ensure users to be able to configure their systems in a fashion
 where "their" users see a complete set of changes, rather than
-intermediate results, we provide a "deploy" operation, where users can
-make many individual changes, and then "deploy" them in one operation to
+intermediate results, we provide a "apply" operation, where users can
+make many individual changes, and then "apply" them in one operation to
 the network.  Users are expected to coordinate among themselves on
 changes to a project so that two users are not modifying the same
 project at the same time. 
@@ -97,7 +97,7 @@ project at the same time.
     project_connect_node        <project_label> <node_label>
     project_detach_node         <project_label> <node_label>
  
-    project deploy              <project_label>
+    project_apply               <project_label>
  
     # networking operations on a physical node
     node_connect_network        <node_label> <nic_label> <network_label>
