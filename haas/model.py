@@ -71,16 +71,15 @@ class Model(Base):
 class Nic(Model):
     mac_addr  = Column(String)
 
+    owner_id   = Column(Integer,ForeignKey('node.id'), nullable=False)
+    owner     = relationship("Node",backref=backref('nics'))
     port_id   = Column(Integer,ForeignKey('port.id'))
-    node_id   = Column(Integer,ForeignKey('node.id'), nullable=False)
-    network_id = Column(Integer, ForeignKey('network.id'))
-
-    network   = relationship("Network", backref=backref('nics'))
     port      = relationship("Port",backref=backref('nic',uselist=False))
-    node      = relationship("Node",backref=backref('nics'))
+    network_id = Column(Integer, ForeignKey('network.id'))
+    network   = relationship("Network", backref=backref('nics'))
 
     def __init__(self, node, label, mac_addr):
-        self.node      = node
+        self.owner     = node
         self.label     = label
         self.mac_addr  = mac_addr
 
@@ -108,10 +107,11 @@ class Project(Model):
 
 class Network(Model):
     """A link-layer network."""
-    project_id    = Column(String,ForeignKey('project.id'), nullable=False)
-    network_id    = Column(String, nullable=False)
 
+    project_id    = Column(String,ForeignKey('project.id'), nullable=False)
     project = relationship("Project",backref=backref('networks'))
+
+    network_id    = Column(String, nullable=False)
 
     def __init__(self, project, network_id, label):
         self.network_id = network_id
@@ -121,11 +121,11 @@ class Network(Model):
 
 
 class Port(Model):
-    switch_id     = Column(Integer,ForeignKey('switch.id'), nullable=False)
-    switch        = relationship("Switch",backref=backref('ports'))
+    owner_id     = Column(Integer,ForeignKey('switch.id'), nullable=False)
+    owner        = relationship("Switch",backref=backref('ports'))
 
     def __init__(self, switch, label):
-        self.switch = switch
+        self.owner = switch
         self.label   = label
 
 
@@ -232,16 +232,17 @@ class Headnode(Model):
 
 
 class Hnic(Model):
-    mac_addr       = Column(String)
-    headnode_id    = Column(Integer, ForeignKey('headnode.id'), nullable=False)
-    network_id     = Column(Integer, ForeignKey('network.id'))
+    owner_id    = Column(Integer, ForeignKey('headnode.id'), nullable=False)
+    owner       = relationship("Headnode", backref = backref('hnics'))
 
-    headnode       = relationship("Headnode", backref = backref('hnics'))
-    network        = relationship("Network", backref=backref('hnics'))
+    mac_addr    = Column(String)
+
+    network_id  = Column(Integer, ForeignKey('network.id'))
+    network     = relationship("Network", backref=backref('hnics'))
 
     def __init__(self, headnode, label, mac_addr):
-        self.headnode = headnode
-        self.label = label
+        self.owner    = headnode
+        self.label    = label
         self.mac_addr = mac_addr
 
     @no_dry_run
@@ -255,4 +256,4 @@ class Hnic(Model):
         check_call(['brctl', 'addif', bridge, vlan_nic])
         check_call(['ifconfig', bridge, 'up', 'promisc'])
         check_call(['ifconfig', vlan_nic, 'up', 'promisc'])
-        check_call(['virsh', 'attach-interface', self.headnode._vmname(), 'bridge', bridge, '--config'])
+        check_call(['virsh', 'attach-interface', self.owner._vmname(), 'bridge', bridge, '--config'])
