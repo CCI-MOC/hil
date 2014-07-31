@@ -831,6 +831,12 @@ def _must_find(session, cls, name):
         raise NotFoundError(cls.__name__ + ': ' + name)
     return obj
 
+def _namespaced_query(session, obj_outer, cls_inner, name_inner):
+    """Helper function to search for subobjects of an object."""
+    return session.query(cls_inner) \
+        .filter_by(owner = obj_outer) \
+        .filter_by(label = name_inner).first()
+
 def _assert_absent_n(session, obj_outer, cls_inner, name_inner):
     """Raises DuplicateError if a "namespaced" object, such as a node's nic, exists.
 
@@ -843,9 +849,7 @@ def _assert_absent_n(session, obj_outer, cls_inner, name_inner):
     cls_inner - the "owned" class
     name_inner - the name of the "owned" object
     """
-    obj_inner = session.query(cls_inner) \
-        .filter_by(owner = obj_outer) \
-        .filter_by(label = name_inner).first()
+    obj_inner = _namespaced_query(session, obj_outer, cls_inner, name_inner)
     if obj_inner is not None:
         raise DuplicateError(cls_inner.__name__ + " " + obj_outer.label + " " + name_inner)
 
@@ -861,9 +865,7 @@ def _must_find_n(session, obj_outer, cls_inner, name_inner):
     cls_inner - the "owned" class
     name_inner - the name of the "owned" object
     """
-    obj_inner = session.query(cls_inner) \
-        .filter_by(owner = obj_outer) \
-        .filter_by(label = name_inner).first()
+    obj_inner = _namespaced_query(session, obj_outer, cls_inner, name_inner)
     if obj_inner is None:
         raise NotFoundError(cls_inner.__name__ + " " + obj_outer.label + " " + name_inner)
     return obj_inner
