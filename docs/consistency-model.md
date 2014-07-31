@@ -11,13 +11,13 @@ Here is the consistency model for our database.
     changes made to a project, as well as to restore networking state that was
     upset by some manual change.
 
-  - ``node_attach_network``, ``node_detach_network``: When these operations
+  - ``node_connect_network``, ``node_detach_network``: When these operations
     are run, they immediately change the database.  But, the actual networking
     of the project does not change until ``project_apply`` is run.  So, these
     two operations set the dirty bit, because the real world and the database
     now disagree.
 
-  - ``project_attach_node``, ``network_create``: These don't have any effect
+  - ``project_connect_node``, ``network_create``: These don't have any effect
     on the outside world, so they happen immediately.
 
   - ``project_detach_node``, ``network_delete``: These also don't have any
@@ -29,7 +29,7 @@ Here is the consistency model for our database.
 
   - ``headnode_create``: After running this, you can then run
     ``headnode_create_nic``, ``headnode_delete_nic``,
-    ``headnode_attach_network``, ``headnode_detach_network`` as much as you
+    ``headnode_connect_network``, ``headnode_detach_network`` as much as you
     want, until you run ``headnode_start``.  The headnode's VM is then
     created, started, and connected to the appropriate networks.  As soon as
     you do this, the headnode becomes 'frozen', and no more changes to it are
