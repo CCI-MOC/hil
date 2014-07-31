@@ -190,7 +190,7 @@ class TestProjectDeploy:
         # Test that it doesn't crash, at least
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
-        api.project_deploy('anvil-nextgen')
+        api.project_apply('anvil-nextgen')
 
 
     @database_only
@@ -216,7 +216,7 @@ class TestProjectDeploy:
         api.network_create('hammernet', 'anvil-nextgen')
         api.network_create('spiderwebs', 'anvil-nextgen')
         api.node_connect_network('node-98', 'eth0', 'hammernet')
-        api.project_deploy('anvil-nextgen')
+        api.project_apply('anvil-nextgen')
 
 
 class TestProjectConnectDetachNode:
