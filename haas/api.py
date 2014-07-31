@@ -141,7 +141,7 @@ def rest_call(method, path):
 
 @rest_call('PUT', '/user/<user>')
 def user_create(user, password):
-    """Create user with given password
+    """Create user with given password.
 
     If the user already exists, a DuplicateError will be raised.
     """
@@ -154,7 +154,7 @@ def user_create(user, password):
 
 @rest_call('DELETE', '/user/<user>')
 def user_delete(user):
-    """Delete user `username`
+    """Delete user.
 
     If the user does not exist, a NotFoundError will be raised.
     """
@@ -194,7 +194,7 @@ def group_delete(group):
 
 @rest_call('POST', '/group/<group>/add_user')
 def group_add_user(group, user):
-    """Add a user to a group
+    """Add a user to a group.
 
     If the group or user does not exist, a NotFoundError will be raised.
     """
@@ -209,7 +209,7 @@ def group_add_user(group, user):
 
 @rest_call('POST', '/group/<group>/remove_user')
 def group_remove_user(group, user):
-    """Remove a user from a group
+    """Remove a user from a group.
 
     If the group or user does not exist, a NotFoundError will be raised.
     """
@@ -349,7 +349,7 @@ def node_delete(node):
 
 @rest_call('PUT', '/node/<node>/nic/<nic>')
 def node_register_nic(node, nic, macaddr):
-    """Register exitence of nic attached to given node
+    """Register exitence of nic attached to given node.
 
     If the node does not exist, a NotFoundError will be raised.
 
@@ -377,7 +377,7 @@ def node_delete_nic(node, nic):
 
 @rest_call('POST', '/node/<node>/nic/<nic>/connect_network')
 def node_connect_network(node, nic, network):
-    """Connect a physical NIC to a network"""
+    """Connect a physical NIC to a network."""
     db = model.Session()
 
     node = _must_find(db, model.Node, node)
@@ -404,7 +404,13 @@ def node_connect_network(node, nic, network):
 
 @rest_call('POST', '/node/<node>/nic/<nic>/detach_network')
 def node_detach_network(node, nic):
-    """Detach a physical nic from its network (if any).
+    """Detach a physical nic from the network it's on.
+
+    Raises NotFoundError if the node or the nic does not exist.
+
+    Raises NotFoundError if the nic is not on a network.
+
+    Raises ProjectMismatchError if the node is not in a project.
 
     If the nic is not already a member of a network, this function does
     nothing.
@@ -458,7 +464,7 @@ def headnode_create(headnode, project):
 
 @rest_call('DELETE', '/headnode/<headnode>')
 def headnode_delete(headnode):
-    """Delete headnode
+    """Delete headnode.
 
     If the node does not exist, a NotFoundError will be raised.
     """
@@ -501,7 +507,7 @@ def headnode_stop(headnode):
 
 @rest_call('PUT', '/headnode/<headnode>/hnic/<hnic>')
 def headnode_create_hnic(headnode, hnic, macaddr):
-    """Create hnic attached to given headnode
+    """Create hnic attached to given headnode.
 
     If the node does not exist, a NotFoundError will be raised.
 
@@ -522,7 +528,7 @@ def headnode_create_hnic(headnode, hnic, macaddr):
 
 @rest_call('DELETE', '/headnode/<headnode>/hnic/<hnic>')
 def headnode_delete_hnic(headnode, hnic):
-    """Delete hnic with given name.
+    """Delete hnic on a given headnode.
 
     If the hnic does not exist, a NotFoundError will be raised.
     """
@@ -541,7 +547,7 @@ def headnode_delete_hnic(headnode, hnic):
 
 @rest_call('POST', '/headnode/<headnode>/hnic/<hnic>/connect_network')
 def headnode_connect_network(headnode, hnic, network):
-    """Connect a headnode's NIC to a network"""
+    """Connect a headnode's hnic to a network."""
     db = model.Session()
 
     headnode = _must_find(db, model.Headnode, headnode)
@@ -565,7 +571,11 @@ def headnode_connect_network(headnode, hnic, network):
 
 @rest_call('POST', '/headnode/<headnode>/hnic/<hnic>/detach_network')
 def headnode_detach_network(headnode, hnic):
-    """Detach a heanode's nic from its network (if any).
+    """Detach a heanode's nic from the network it's on.
+
+    Raises NotFoundError if the headnode or the hnic don't exist.
+
+    Raises NotFoundError if the hnic is not on a network.
 
     If the nic is not already a member of a network, this function does
     nothing.
@@ -592,7 +602,7 @@ def headnode_detach_network(headnode, hnic):
 
 @rest_call('PUT', '/network/<network>')
 def network_create(network, project):
-    """Create network 'network'.
+    """Create a network belonging to a project.
 
     If the network already exists, a DuplicateError will be raised.
     If the network cannot be allocated (due to resource exhaustion), an
@@ -617,7 +627,7 @@ def network_create(network, project):
 
 @rest_call('DELETE', '/network/<network>')
 def network_delete(network):
-    """Delete network 'network'
+    """Delete network.
 
     If the network does not exist, a NotFoundError will be raised.
     """
@@ -644,7 +654,7 @@ def network_delete(network):
 
 @rest_call('PUT', '/switch/<switch>')
 def switch_register(switch, driver):
-    """Register the switch 'switch'.
+    """Register a switch.
 
     If the switch already exists, a DuplicateError will be raised.
     """
@@ -657,6 +667,7 @@ def switch_register(switch, driver):
 
 @rest_call('DELETE', '/switch/<switch>')
 def switch_delete(switch):
+    """Delete a switch."""
     db = model.Session()
     switch = _must_find(db, model.Switch, switch)
     db.delete(switch)
@@ -665,7 +676,7 @@ def switch_delete(switch):
 
 @rest_call('PUT', '/switch/<switch>/port/<port>')
 def port_register(switch, port):
-    """Register a port with name "port" on switch "switch".
+    """Register a port on a switch.
 
     If the port already exists, a DuplicateError will be raised.
 
@@ -683,7 +694,7 @@ def port_register(switch, port):
 
 @rest_call('DELETE', '/switch/<switch>/port/<port>')
 def port_delete(switch, port):
-    """Delete a port with name "port" on switch "switch".
+    """Delete a port on a switch.
 
     If the port does not exist, or if the switch does not exist, a
     NotFoundError will be raised.
@@ -698,7 +709,7 @@ def port_delete(switch, port):
 
 @rest_call('POST', '/switch/<switch>/port/<port>/connect_nic')
 def port_connect_nic(switch, port, node, nic):
-    """Connect a port on a switch to a nic on a node
+    """Connect a port on a switch to a nic on a node.
 
     If any of the four arguments does not exist, a NotFoundError will be
     raised.
@@ -723,7 +734,7 @@ def port_connect_nic(switch, port, node, nic):
 
 @rest_call('POST', '/switch/<switch>/port/<port>/detach_nic')
 def port_detach_nic(switch, port):
-    """Detach attached nic from a port
+    """Detach attached nic from a port.
 
     If the port or switch are not found, a NotFoundError will be raised.
 
@@ -742,6 +753,7 @@ def port_detach_nic(switch, port):
 
 @rest_call('GET', '/free_nodes')
 def list_free_nodes():
+    """List all nodes not in a project."""
     db = model.Session()
     nodes = db.query(model.Node).filter_by(project_id=None).all()
     nodes = map(lambda n: n.label, nodes)
@@ -750,6 +762,7 @@ def list_free_nodes():
 
 @rest_call('GET', '/project/<project>/nodes')
 def list_project_nodes(project):
+    """List all nodes belonging to a project."""
     db = model.Session()
     project = _must_find(db, model.Project, project)
     nodes = project.nodes
@@ -759,6 +772,7 @@ def list_project_nodes(project):
 
 @rest_call('GET', '/node/<nodename>')
 def show_node(nodename):
+    """Show details of a node."""
     db = model.Session()
     node = _must_find(db, model.Node, nodename)
     return json.dumps({
@@ -770,6 +784,7 @@ def show_node(nodename):
 
 @rest_call('GET', '/headnode/<nodename>')
 def show_headnode(nodename):
+    """Show details of a headnode."""
     db = model.Session()
     headnode = _must_find(db, model.Headnode, nodename)
     return json.dumps({
