@@ -190,7 +190,7 @@ class TestProjectDeploy:
         # Test that it doesn't crash, at least
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
-        api.project_deploy('anvil-nextgen')
+        api.project_apply('anvil-nextgen')
 
 
     @database_only
@@ -216,7 +216,7 @@ class TestProjectDeploy:
         api.network_create('hammernet', 'anvil-nextgen')
         api.network_create('spiderwebs', 'anvil-nextgen')
         api.node_connect_network('node-98', 'eth0', 'hammernet')
-        api.project_deploy('anvil-nextgen')
+        api.project_apply('anvil-nextgen')
 
 
 class TestProjectConnectDetachNode:
@@ -353,7 +353,7 @@ class TestNodeRegisterDeleteNic:
         api.node_register('compute-01')
         api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
         nic = api._must_find(db, model.Nic, '01-eth0')
-        assert nic.node.label == 'compute-01'
+        assert nic.owner.label == 'compute-01'
 
     @database_only
     def test_node_register_nic_no_node(self, db):
@@ -701,7 +701,7 @@ class TestHeadnodeCreateDeleteHnic:
         api.headnode_create('hn-0', 'anvil-nextgen')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0', 'DE:AD:BE:EF:20:14')
         nic = api._must_find(db, model.Hnic, 'hn-0-eth0')
-        assert nic.headnode.label == 'hn-0'
+        assert nic.owner.label == 'hn-0'
 
     @database_only
     def test_headnode_create_hnic_no_headnode(self, db):
