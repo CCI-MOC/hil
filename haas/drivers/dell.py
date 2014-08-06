@@ -115,11 +115,11 @@ def set_access_vlan(port, vlan_id):
     # select the right interface:
     console.sendline('config')
     console.expect(config_prompt)
-    console.sendline('int gi1/0/%d' % port)
+    console.sendline('int gi1/0/%s' % port)
     console.expect(if_prompt)
 
     # set the vlan:
-    console.sendline('sw access vlan %d' % vlan_id)
+    console.sendline('sw access vlan %s' % vlan_id)
     console.expect(if_prompt)
 
     # set it to access mode:
