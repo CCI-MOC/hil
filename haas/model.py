@@ -247,6 +247,10 @@ class Hnic(Model):
 
     @no_dry_run
     def create(self):
+        if not self.network:
+            # It is non-trivial to make a NIC not connected to a network, so
+            # do nothing at all instead.
+            return
         trunk_nic = cfg.get('headnode', 'trunk_nic')
         vlan_no = str(self.network.network_id)
         bridge = 'br-vlan%s' % vlan_no
