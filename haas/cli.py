@@ -184,7 +184,7 @@ def headnode_start(headnode):
 def headnode_stop(headnode):
     """Stop <headnode>"""
     url = object_url('headnode', headnode, 'stop')
-    check_stauts_code(requests.post(url))
+    check_status_code(requests.post(url))
 
 @cmd
 def node_register(node):
