@@ -167,7 +167,7 @@ class Headnode(Model):
     dirty = Column(Boolean, nullable=False)
 
     # We need a guaranteed unique name to generate the libvirt machine name
-    uuid = Column(String, nullable=False)
+    uuid = Column(String, nullable=False, unique=True)
 
     def __init__(self, project, label):
         self.project = project
