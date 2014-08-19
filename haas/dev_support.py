@@ -23,8 +23,8 @@ def no_dry_run(f):
     If the option is present (regardless of its value), any function or
     method decorated with `no_dry_run` will be "disabled." The call will
     be logged (with level `logging.DEBUG`), but will not actually execute.
-    callers of decorated functions should not rely on the return value of
-    those functions; the return value during a dry run is unspecified.
+    The function will instead return 'None'.  Callers of decorated functions
+    must accept a None value gracefully.
 
     The intended use case of `no_dry_run` is to disable functions which
     cannot be run because, for example, the HaaS is executing on a
@@ -37,6 +37,7 @@ def no_dry_run(f):
             logger = logging.getLogger(__name__)
             logger.debug('dry run, not executing: %s.%s(*%r,**%r)' %
                          (f.__module__, f.__name__, args, kwargs))
+            return None
         else:
             f(*args, **kwargs)
     wrapper.__name__ = f.__name__  # This will make debugging a bit nicer.
