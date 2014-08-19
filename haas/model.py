@@ -21,6 +21,7 @@ from haas.config import cfg
 from haas.dev_support import no_dry_run
 import importlib
 import uuid
+import re
 
 Base=declarative_base()
 Session = sessionmaker()
@@ -234,6 +235,36 @@ class Headnode(Model):
     def _vmname(self):
         """Returns the name (as recognized by libvirt) of this vm."""
         return 'headnode-%s' % self.uuid
+
+
+    # This function returns a meaningful value, but also uses actual hardware.
+    # It has no_dry_run because the unit test for 'show_headnode' will call
+    # it.  None is a fine return value there, because it will just put it into
+    # a JSON object.
+    @no_dry_run
+    def get_vncport(self):
+        """Returns the port that VNC is listening on, as an int.
+
+        If the VM is off, in all likelihood the result will be -1.  This
+        signifies that no port has been allocated to it yet.  (The XML will
+        also have "autoport='yes'".)
+        """
+        xmldump = check_output(['virsh', 'dumpxml', self._vmname()])
+        # Now parse the xml by naively searching for the right fields.
+
+        # FIXME: This is clearly not the best way to do this.  We should use
+        # an XML parser.  This will be even more necessary as soon as we're
+        # using the actual API.
+        for line in xmldump.split("\n"):
+            # Expected line:  either
+            #   <graphics type='vnc' port='5906' autoport='yes' listen='127.0.0.1'>
+            # or
+            #   <graphics type='vnc' port='-1' autoport='yes'/>
+            if "graphics" in line:
+                return int(re.search("port='(-?\d+)'", line).group(1))
+        # Something failed.  Returning -1 is bad, because that would indicate
+        # the 'autoport' case.
+        return None
 
 
 class Hnic(Model):

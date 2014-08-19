@@ -791,6 +791,7 @@ def show_headnode(nodename):
         'name': headnode.label,
         'project': headnode.project.label,
         'hnics': map(lambda n: n.label, headnode.hnics),
+        'vncport': headnode.get_vncport(),
     })
 
 
