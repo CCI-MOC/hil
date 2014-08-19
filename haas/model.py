@@ -245,9 +245,9 @@ class Headnode(Model):
     def get_vncport(self):
         """Returns the port that VNC is listening on, as an int.
 
-        If the VM is off, in all likelihood the result will be -1.  This
-        signifies that no port has been allocated to it yet.  (The XML will
-        also have "autoport='yes'".)
+        If the VM is off, in all likelihood the result will be None.  This is
+        because no port has been allocated to it yet.  (The XML will also have
+        "autoport='yes'".)
         """
         xmldump = check_output(['virsh', 'dumpxml', self._vmname()])
         # Now parse the xml by naively searching for the right fields.
@@ -261,9 +261,13 @@ class Headnode(Model):
             # or
             #   <graphics type='vnc' port='-1' autoport='yes'/>
             if "graphics" in line:
-                return int(re.search("port='(-?\d+)'", line).group(1))
-        # Something failed.  Returning -1 is bad, because that would indicate
-        # the 'autoport' case.
+                port = int(re.search("port='(-?\d+)'", line).group(1))
+                if port == -1:
+                    # No port allocated (yet)
+                    return None
+                else:
+                    return port
+        # No VNC service found, so no port available
         return None
 
 
