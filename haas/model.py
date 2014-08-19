@@ -21,7 +21,7 @@ from haas.config import cfg
 from haas.dev_support import no_dry_run
 import importlib
 import uuid
-import re
+import xml.etree.ElementTree
 
 Base=declarative_base()
 Session = sessionmaker()
@@ -250,23 +250,13 @@ class Headnode(Model):
         "autoport='yes'".)
         """
         xmldump = check_output(['virsh', 'dumpxml', self._vmname()])
-        # Now parse the xml by naively searching for the right fields.
-
-        # FIXME: This is clearly not the best way to do this.  We should use
-        # an XML parser.  This will be even more necessary as soon as we're
-        # using the actual API.
-        for line in xmldump.split("\n"):
-            # Expected line:  either
-            #   <graphics type='vnc' port='5906' autoport='yes' listen='127.0.0.1'>
-            # or
-            #   <graphics type='vnc' port='-1' autoport='yes'/>
-            if "graphics" in line:
-                port = int(re.search("port='(-?\d+)'", line).group(1))
-                if port == -1:
-                    # No port allocated (yet)
-                    return None
-                else:
-                    return port
+        root = xml.etree.ElementTree.fromstring(xmldump)
+        port = root.findall("./devices/graphics")[0].get('port')
+        if port == -1:
+            # No port allocated (yet)
+            return None
+        else:
+            return port
         # No VNC service found, so no port available
         return None
 
