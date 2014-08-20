@@ -69,3 +69,63 @@ def database_only(f):
         releaseDB(db)
 
     return wrapped
+
+
+def deployment_test(f):
+    """A decorator which runs the given function on a fresh memory-backed
+    databse and a config that is setup to operate with a dell switch.  Used
+    fo testing functions that pertain to the state of the outside world.
+    """
+
+    def config_initialize():
+        # Use the 'dell' backend for these tests
+        cfg.add_section('general')
+        cfg.set('general', 'active_switch', 'dell')
+        cfg.add_section('headnode')
+        cfg.set('headnode', 'trunk_nic', 'em3')
+        cfg.add_section('switch dell')
+        cfg.set('switch dell', 'user', 'admin')
+        cfg.set('switch dell', 'pass', 'PASSWORDHERE')
+        cfg.set('switch dell', 'ip', '172.16.3.241')
+        cfg.set('switch dell', 'vlans', '100-110')
+
+    @wraps(f)
+    @clear_configuration
+    def wrapped(self):
+        config_initialize()
+        db = newDB()
+        f(self, db)
+        releaseDB(db)
+
+    return wrapped
+
+def hnic_cleanup(f):
+    """A decorator which cleans up any vlans and netowrk bridges after a VM
+    has been shutdown.  This is intended for deployment tests that do not
+    clean up after themselves.  This decorator depends on the database
+    containing an accurate list of headnodes and hnics.
+    """
+
+    def remove_bridges_and_vlans(db):
+        trunk_nic = cfg.get('headnode', 'trunk_nic')
+        for hn in db.query(Headnode):
+            call(['virsh', 'undefine', hn._vmname(), '--remove-all-storage'])
+            for hnic in hn.hnics:
+                hnic = str(hnic)
+                bridge = 'br-vlan%s' % hnic
+                vlan_hnic = '%s.%s' % (trunk_nic, hnic)
+                call(['ifconfig', bridge, 'down'])
+                call(['ifconfig', vlan_hnic, 'down'])
+                call(['brctl', 'delif', bridge, vlan_hnic])
+                call(['vconfig', 'rem', vlan_hnic])
+                call(['brctl', 'delbr', bridge])
+
+    @wraps(f)
+    def wrapped(self, db):
+        try:
+            f(self, db)
+        finally:
+            remove_bridges_and_vlans(db)
+
+    return wrapped
+
