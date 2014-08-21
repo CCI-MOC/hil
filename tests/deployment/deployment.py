@@ -12,7 +12,9 @@
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
 
-"""Deployment Unit Tests"""
+"""Deployment Unit Tests - These tests are inteded for our
+internal setup only and will most likely not work on
+other HaaS configurations."""
 
 from haas import api
 from haas.test_common import *
@@ -176,7 +178,3 @@ class TestHeadNodeCreate:
         
         # Apply current configuration
         api.project_apply('anvil-nextgen')
-
-
-        
-
