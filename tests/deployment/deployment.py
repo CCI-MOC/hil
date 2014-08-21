@@ -12,7 +12,7 @@
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
 
-"""Deployment Unit test"""
+"""Deployment Unit Tests"""
 
 from haas import api
 from haas.test_common import *
@@ -86,7 +86,6 @@ class TestHeadNodeCreate:
 
         def get_network(intfc, vlan_cfgs):
             """Returns all interfaces on a network"""
-            #pdb.set_trace()
             for vlan_cfg in vlan_cfgs:
                 if intfc in vlan_cfg:
                     regex = re.compile(r'gi\d+\/\d+\/\d+-?\d?\d?')
@@ -122,7 +121,6 @@ class TestHeadNodeCreate:
         api.project_apply('anvil-nextgen')
 
         # Ask the switch which vlans nodes 195 anf 196 are on
-        #pdb.set_trace()
         vlan_cfgs = get_switch_vlans()
 
         print(vlan_cfgs[0])
@@ -146,7 +144,7 @@ class TestHeadNodeCreate:
         node_195_net = get_network('gi1/0/15', vlan_cfgs)
         node_196_net = get_network('gi1/0/16', vlan_cfgs)
 
-        # Assert that nodes 197 and 197 have been added to nodes 195 and 196's networks respectively
+        # Assert that nodes 197 and 198 have been added to nodes 195 and 196's networks respectively
         assert node_195_net == ['gi1/0/15', 'gi1/0/17']
         assert node_196_net == ['gi1/0/16', 'gi1/0/18']
 
