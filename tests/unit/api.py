@@ -183,10 +183,10 @@ class TestProjectCreateDelete:
             api.project_delete('anvil-nextgen')
 
 
-class TestProjectDeploy:
+class TestProjectApply:
 
     @database_only
-    def test_project_deploy(self, db):
+    def test_project_apply(self, db):
         # Test that it doesn't crash, at least
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
@@ -194,7 +194,7 @@ class TestProjectDeploy:
 
 
     @database_only
-    def test_project_deploy_involved(self, db):
+    def test_project_apply_involved(self, db):
         api.switch_register('switch', 'null')
         api.port_register('switch', '1')
         api.port_register('switch', '2')
