@@ -118,8 +118,12 @@ def set_access_vlan(port, vlan_id):
     console.sendline('int gi1/0/%s' % port)
     console.expect(if_prompt)
 
-    # set the vlan:
-    console.sendline('sw access vlan %s' % vlan_id)
+    if vlan_id is None:
+        # turn the port off
+        console.sendline('sw access vlan no')
+    else:
+        # set the vlan:
+        console.sendline('sw access vlan %s' % vlan_id)
     console.expect(if_prompt)
 
     # set it to access mode:

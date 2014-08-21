@@ -277,9 +277,12 @@ def project_apply(project):
     project = _must_find(db, model.Project, project)
 
     net_map = {}
-    for net in project.networks:
-        for nic in net.nics:
-            net_map[nic.port.label] = net.network_id
+    for node in project.nodes:
+        for nic in node.nics:
+            if nic.network:
+                net_map[nic.port.label] = nic.network.network_id
+            else:
+                net_map[nic.port.label] = None
     driver.apply_networking(net_map)
 
     project.dirty = False
