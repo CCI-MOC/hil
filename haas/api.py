@@ -323,16 +323,24 @@ def project_detach_node(project, node):
 
 
 @rest_call('PUT', '/node/<node>')
-def node_register(node):
+def node_register(node, ipmi_host, ipmi_user, ipmi_pass):
     """Create node.
 
     If the node already exists, a DuplicateError will be raised.
     """
     db = model.Session()
     _assert_absent(db, model.Node, node)
-    node = model.Node(node)
+    node = model.Node(node, ipmi_host, ipmi_user, ipmi_pass)
     db.add(node)
     db.commit()
+
+
+@rest_call('POST', '/node/<node>/power_cycle')
+def node_power_cycle(node):
+    db = model.Session()
+    node = _must_find(db, model.Node, node)
+    if not node.power_cycle():
+        return 'Could not power cycle node %s' % node.label, 500
 
 
 @rest_call('DELETE', '/node/<node>')
