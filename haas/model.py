@@ -20,6 +20,7 @@ from subprocess import call, check_call
 from haas.config import cfg
 from haas.dev_support import no_dry_run
 import importlib
+import uuid
 
 Base=declarative_base()
 Session = sessionmaker()
@@ -165,10 +166,14 @@ class Headnode(Model):
     project = relationship("Project", backref=backref('headnode', uselist=False))
     dirty = Column(Boolean, nullable=False)
 
+    # We need a guaranteed unique name to generate the libvirt machine name
+    uuid = Column(String, nullable=False, unique=True)
+
     def __init__(self, project, label):
         self.project = project
         self.label = label
         self.dirty = True
+        self.uuid = str(uuid.uuid1())
 
     @no_dry_run
     def create(self):
@@ -228,7 +233,7 @@ class Headnode(Model):
 
     def _vmname(self):
         """Returns the name (as recognized by libvirt) of this vm."""
-        return 'headnode-%d' % self.id
+        return 'headnode-%s' % self.uuid
 
 
 class Hnic(Model):
@@ -247,6 +252,10 @@ class Hnic(Model):
 
     @no_dry_run
     def create(self):
+        if not self.network:
+            # It is non-trivial to make a NIC not connected to a network, so
+            # do nothing at all instead.
+            return
         trunk_nic = cfg.get('headnode', 'trunk_nic')
         vlan_no = str(self.network.network_id)
         bridge = 'br-vlan%s' % vlan_no

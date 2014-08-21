@@ -64,6 +64,7 @@ A typical installation of the HaaS will have the following components:
 
 * One machine which acts as the "HaaS master". This machine will be
   running the HaaS api server itself.
+* A headnode host, running the headnode vm's
 * A managed switch
 * One or more physical nodes, each of which may have one or more network
   interfaces.
