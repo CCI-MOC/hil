@@ -12,7 +12,7 @@
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
 
-"""Deployment Unit Tests - These tests are inteded for our
+"""Deployment Unit Tests - These tests are intended for our
 internal setup only and will most likely not work on
 other HaaS configurations."""
 

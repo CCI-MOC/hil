@@ -74,8 +74,11 @@ def database_only(f):
 
 def deployment_test(f):
     """A decorator which runs the given function on a fresh memory-backed
-    databse and a config that is setup to operate with a dell switch.  Used
-    fo testing functions that pertain to the state of the outside world.
+    database and a config that is setup to operate with a dell switch.  Used
+    for testing functions that pertain to the state of the outside world.
+    These tests are very specific to our setup and are used for internal
+    testing purposes. These tests are unlikely to work with other HaaS 
+    configurations.
     """
 
     def config_initialize():
