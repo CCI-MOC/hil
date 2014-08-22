@@ -39,6 +39,6 @@ def no_dry_run(f):
                          (f.__module__, f.__name__, args, kwargs))
             return None
         else:
-            f(*args, **kwargs)
+            return f(*args, **kwargs)
     wrapper.__name__ = f.__name__  # This will make debugging a bit nicer.
     return wrapper
