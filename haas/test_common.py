@@ -118,7 +118,7 @@ def deployment_test(f):
 
     return wrapped
 
-def hnic_cleanup(f):
+def headnode_cleanup(f):
     """A decorator which cleans up any vlans and network bridges after a VM
     has been shutdown.  This is intended for deployment tests that do not
     clean up after themselves.  This decorator depends on the database
@@ -129,15 +129,6 @@ def hnic_cleanup(f):
         trunk_nic = cfg.get('headnode', 'trunk_nic')
         for hn in db.query(Headnode):
             call(['virsh', 'undefine', hn._vmname(), '--remove-all-storage'])
-            for hnic in hn.hnics:
-                net_id = hnic.network.network_id
-                bridge = 'br-vlan%s' % net_id
-                vlan_hnic = '%s.%s' % (trunk_nic, net_id)
-                call(['ifconfig', bridge, 'down'])
-                call(['ifconfig', vlan_hnic, 'down'])
-                call(['brctl', 'delif', bridge, vlan_hnic])
-                call(['vconfig', 'rem', vlan_hnic])
-                call(['brctl', 'delbr', bridge])
 
     @wraps(f)
     def wrapped(self, db):

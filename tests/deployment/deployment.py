@@ -25,7 +25,7 @@ import pexpect
 class TestHeadNode:
 
     @deployment_test
-    @hnic_cleanup
+    @headnode_cleanup
     def test_headnode_start(self, db):
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
@@ -39,7 +39,7 @@ class TestHeadNode:
 class TestNetwork:
 
     @deployment_test
-    @hnic_cleanup
+    @headnode_cleanup
     def test_isolated_networks(self, db):
 
         def get_switch_vlans():
@@ -186,7 +186,7 @@ class TestNetwork:
             delete_networks()
 
     @deployment_test
-    @hnic_cleanup
+    @headnode_cleanup
     def test_network_allocation(self, db):
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
