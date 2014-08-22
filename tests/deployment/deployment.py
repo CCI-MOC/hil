@@ -133,7 +133,8 @@ class TestNetwork:
             assert node_195_net == ['gi1/0/15']
             assert node_196_net == ['gi1/0/16']
     
-            # Add nodes 197 and 198 to the same networks as nodes 195 and 196 respectively
+            # Add nodes 197 and 198 to the same networks as nodes 195 and 196
+            # respectively
             api.node_connect_network('197', 'node-197-nic1', 'net-0')
             api.node_connect_network('198', 'node-198-nic1', 'net-1')
     
@@ -145,7 +146,8 @@ class TestNetwork:
             node_195_net = get_network('gi1/0/15', vlan_cfgs)
             node_196_net = get_network('gi1/0/16', vlan_cfgs)
     
-            # Assert that nodes 197 and 198 have been added to nodes 195 and 196's networks respectively
+            # Assert that nodes 197 and 198 have been added to nodes 195 and
+            # 196's networks respectively
             assert node_195_net == ['gi1/0/15', 'gi1/0/17']
             assert node_196_net == ['gi1/0/16', 'gi1/0/18']
 
@@ -158,18 +160,10 @@ class TestNetwork:
             # Apply current configuration
             api.project_apply('anvil-nextgen')
     
-            # Ask the switch which vlans nodes 195, 196, 197 and 198 are on
+            # Ask the switch which vlans nodes 195, 196, 197 and 198 are on             # and assert that they are not on a network
             vlan_cfgs = get_switch_vlans()
-            node_195_net = get_network('gi1/0/15', vlan_cfgs)
-            node_196_net = get_network('gi1/0/16', vlan_cfgs)
-            node_197_net = get_network('gi1/0/17', vlan_cfgs)
-            node_198_net = get_network('gi1/0/18', vlan_cfgs)
-    
-            # Assert that nodes 195, 196, 197, and 198 are not on a network
-            assert node_195_net == []
-            assert node_196_net == []
-            assert node_197_net == []
-            assert node_198_net == []
+            for i in range(15,19):
+                assert get_network('gi1/0/%d' % i, vlan_cfgs) == []
     
             # Delete the networks
             api.network_delete('net-0')

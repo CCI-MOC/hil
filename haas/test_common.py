@@ -120,7 +120,7 @@ def headnode_cleanup(f):
     containing an accurate list of headnodes and hnics.
     """
 
-    def remove_bridges_and_vlans(db):
+    def undefine_headnodes(db):
         trunk_nic = cfg.get('headnode', 'trunk_nic')
         for hn in db.query(Headnode):
             call(['virsh', 'undefine', hn._vmname(), '--remove-all-storage'])
@@ -130,7 +130,7 @@ def headnode_cleanup(f):
         try:
             f(self, db)
         finally:
-            remove_bridges_and_vlans(db)
+            undefine_headnodes(db)
 
     return wrapped
 
