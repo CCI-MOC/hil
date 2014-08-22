@@ -83,16 +83,8 @@ def deployment_test(f):
 
     def config_initialize():
         # Use the 'dell' backend for these tests
-        cfg.add_section('general')
-        cfg.set('general', 'active_switch', 'dell')
-        cfg.add_section('headnode')
-        cfg.set('headnode', 'trunk_nic', 'em3')
-        cfg.add_section('switch dell')
-        cfg.set('switch dell', 'user', 'admin')
-        cfg.set('switch dell', 'pass', 'PASSWORDHERE')
-        cfg.set('switch dell', 'ip', '172.16.3.241')
-        cfg.set('switch dell', 'vlans', '100-110')
-    
+        cfg.read('deployment.cfg')
+ 
     def allocate_nodes():
         api.switch_register('dell', 'dell')
 
