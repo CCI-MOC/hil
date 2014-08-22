@@ -17,7 +17,7 @@
 import sys
 from haas import config
 from haas.config import cfg
-from subprocess import check_call
+from subprocess import call
 
 config.load()
 
@@ -31,11 +31,11 @@ def create_bridge(vlan_no):
     trunk_nic = cfg.get('headnode', 'trunk_nic')
     bridge = 'br-vlan%s' % vlan_no
     vlan_nic = '%s.%s' % (trunk_nic, vlan_no)
-    check_call(['brctl', 'addbr', bridge])
-    check_call(['vconfig', 'add', trunk_nic, vlan_no])
-    check_call(['brctl', 'addif', bridge, vlan_nic])
-    check_call(['ifconfig', bridge, 'up', 'promisc'])
-    check_call(['ifconfig', vlan_nic, 'up', 'promisc'])
+    call(['brctl', 'addbr', bridge])
+    call(['vconfig', 'add', trunk_nic, vlan_no])
+    call(['brctl', 'addif', bridge, vlan_nic])
+    call(['ifconfig', bridge, 'up', 'promisc'])
+    call(['ifconfig', vlan_nic, 'up', 'promisc'])
 
 r_list = cfg.get('switch dell', 'vlans').split(",")
 for r in r_list:
