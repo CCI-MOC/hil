@@ -17,10 +17,12 @@ from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import relationship, sessionmaker,backref
 from passlib.hash import sha512_crypt
 from subprocess import call, check_call
+import subprocess
 from haas.config import cfg
 from haas.dev_support import no_dry_run
 import importlib
 import uuid
+import xml.etree.ElementTree
 
 Base=declarative_base()
 Session = sessionmaker()
@@ -250,6 +252,32 @@ class Headnode(Model):
     def _vmname(self):
         """Returns the name (as recognized by libvirt) of this vm."""
         return 'headnode-%s' % self.uuid
+
+
+    # This function returns a meaningful value, but also uses actual hardware.
+    # It has no_dry_run because the unit test for 'show_headnode' will call
+    # it.  None is a fine return value there, because it will just put it into
+    # a JSON object.
+    @no_dry_run
+    def get_vncport(self):
+        """Returns the port that VNC is listening on, as an int.
+
+        If the VM is off, in all likelihood the result will be None.  This is
+        because no port has been allocated to it yet.  (The XML will also have
+        "autoport='yes'".)
+        """
+        p = subprocess.Popen(['virsh', 'dumpxml', self._vmname()],
+                             stdout=subprocess.PIPE)
+        xmldump, _ = p.communicate()
+        root = xml.etree.ElementTree.fromstring(xmldump)
+        port = root.findall("./devices/graphics")[0].get('port')
+        if port == -1:
+            # No port allocated (yet)
+            return None
+        else:
+            return port
+        # No VNC service found, so no port available
+        return None
 
 
 class Hnic(Model):

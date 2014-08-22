@@ -1405,6 +1405,7 @@ class TestQuery:
                 'eth0',
                 'wlan0',
             ],
+            'vncport': None
         }
 
     @database_only
