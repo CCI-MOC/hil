@@ -220,16 +220,6 @@ class Headnode(Model):
         # mostly).
         trunk_nic = cfg.get('headnode', 'trunk_nic')
         cmd(['virsh', 'undefine', self.name, '--remove-all-storage'])
-        for nic in self.nics:
-            nic = str(nic)
-            bridge = 'br-vlan%s' % nic
-            vlan_nic = '%s.%d' % (trunk_nic, nic)
-            cmd(['ifconfig', bridge, 'down'])
-            cmd(['ifconfig', vlan_nic, 'down'])
-            cmd(['brctl', 'delif', bridge, vlan_nic])
-            cmd(['vconfig', 'rem', vlan_nic])
-            cmd(['brctl', 'delbr', bridge])
-
 
     @no_dry_run
     def start(self):
@@ -303,10 +293,4 @@ class Hnic(Model):
         trunk_nic = cfg.get('headnode', 'trunk_nic')
         vlan_no = str(self.network.network_id)
         bridge = 'br-vlan%s' % vlan_no
-        vlan_nic = '%s.%s' % (trunk_nic, vlan_no)
-        check_call(['brctl', 'addbr', bridge])
-        check_call(['vconfig', 'add', trunk_nic, vlan_no])
-        check_call(['brctl', 'addif', bridge, vlan_nic])
-        check_call(['ifconfig', bridge, 'up', 'promisc'])
-        check_call(['ifconfig', vlan_nic, 'up', 'promisc'])
         check_call(['virsh', 'attach-interface', self.owner._vmname(), 'bridge', bridge, '--config'])
