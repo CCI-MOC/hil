@@ -17,6 +17,7 @@ from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import relationship, sessionmaker,backref
 from passlib.hash import sha512_crypt
 from subprocess import call, check_call
+import subprocess
 from haas.config import cfg
 from haas.dev_support import no_dry_run
 import importlib
@@ -249,7 +250,9 @@ class Headnode(Model):
         because no port has been allocated to it yet.  (The XML will also have
         "autoport='yes'".)
         """
-        xmldump = check_output(['virsh', 'dumpxml', self._vmname()])
+        p = subprocess.Popen(['virsh', 'dumpxml', self._vmname()],
+                             stdout=subprocess.PIPE)
+        xmldump, _ = p.communicate()
         root = xml.etree.ElementTree.fromstring(xmldump)
         port = root.findall("./devices/graphics")[0].get('port')
         if port == -1:
