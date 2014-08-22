@@ -8,4 +8,4 @@ dist
 .venv
 .coverage
 *.db
-haas.cfg
+*.cfg
