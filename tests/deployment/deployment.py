@@ -20,7 +20,7 @@ from haas import api
 from haas.test_common import *
 import re
 import pexpect
-
+import pytest
 
 class TestHeadNode:
 
@@ -188,41 +188,43 @@ class TestNetwork:
     @deployment_test
     @headnode_cleanup
     def test_network_allocation(self, db):
-        api.group_create('acme-code')
-        api.project_create('anvil-nextgen', 'acme-code')
-        for network in range(0,11):
-            api.network_create('net-%d' %network, 'anvil-nextgen')
- 
-        # Ensure that error is raised if too many networks allocated
-        with pytest.raises(api.AllocationError):
-            api.network_create('net-11', 'anvil-nextgen')
- 
-        # Ensure that project_apply doesn't affect network allocation
-        api.project_apply('anvil-nextgen')
-        with pytest.raises(api.AllocationError):
-            api.network_create('net-11', 'anvil-nextgen')
- 
-        # Ensure that network_delete doesn't affect network allocation
-        api.network_delete('net-10')
-        api.network_create('net-10', 'anvil-nextgen')
-        with pytest.raises(api.AllocationError):
-            api.network_create('net-11', 'anvil-nextgen')
- 
-        # Ensure that network_delete+project_apply doesn't affect network
-        # allocation
-        api.network_delete('net-10')
-        api.project_apply('anvil-nextgen')
-        api.network_create('net-10', 'anvil-nextgen')
-        with pytest.raises(api.AllocationError):
-            api.network_create('net-11', 'anvil-nextgen')
+        try:
+            api.group_create('acme-code')
+            api.project_create('anvil-nextgen', 'acme-code')
+            for network in range(0,11):
+                api.network_create('net-%d' %network, 'anvil-nextgen')
+     
+            # Ensure that error is raised if too many networks allocated
+            with pytest.raises(api.AllocationError):
+                api.network_create('net-11', 'anvil-nextgen')
+     
+            # Ensure that project_apply doesn't affect network allocation
+            api.project_apply('anvil-nextgen')
+            with pytest.raises(api.AllocationError):
+                api.network_create('net-11', 'anvil-nextgen')
+     
+            # Ensure that network_delete doesn't affect network allocation
+            api.network_delete('net-10')
+            api.network_create('net-10', 'anvil-nextgen')
+            with pytest.raises(api.AllocationError):
+                api.network_create('net-11', 'anvil-nextgen')
+     
+            # Ensure that network_delete+project_apply doesn't affect network
+            # allocation
+            api.network_delete('net-10')
+            api.project_apply('anvil-nextgen')
+            api.network_create('net-10', 'anvil-nextgen')
+            with pytest.raises(api.AllocationError):
+                api.network_create('net-11', 'anvil-nextgen')
+    
+            api.network_delete('net-10')
+            api.network_create('net-10', 'anvil-nextgen')
+            api.project_apply('anvil-nextgen')
+            with pytest.raises(api.AllocationError):
+                api.network_create('net-11', 'anvil-nextgen')
 
-        api.network_delete('net-10')
-        api.network_create('net-10', 'anvil-nextgen')
-        api.project_apply('anvil-nextgen')
-        with pytest.raises(api.AllocationError):
-            api.network_create('net-11', 'anvil-nextgen')
-
-        # Clean up networks
-        for network in range(0,11):
-            api.network_delete('net-%d' % network)
-        api.project_apply('anvil-nextgen')
+        finally:
+            # Clean up networks
+            for network in range(0,11):
+                api.network_delete('net-%d' % network)
+            api.project_apply('anvil-nextgen')

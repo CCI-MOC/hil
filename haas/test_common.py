@@ -90,20 +90,15 @@ def deployment_test(f):
 
         for n in range(4):
             node = n + 195
-            ipmi_port = n + 45
             nic1_port = n + 15
             nic2_port = n + 20
-            ipmi = 'node-%d-ipmi' % node
             nic1 = 'node-%d-nic1' % node
             nic2 = 'node-%d-nic2' % node
-            api.node_register(node)
-            api.node_register_nic(node, ipmi, 'FillThisInLater')
+            api.node_register(node, '', '', '')
             api.node_register_nic(node, nic1, 'FillThisInLater')  
             api.node_register_nic(node, nic2, 'FillThisInLater')
-            api.port_register('dell', ipmi_port)
             api.port_register('dell', nic1_port)
             api.port_register('dell', nic2_port)
-            api.port_connect_nic('dell', ipmi_port, node, ipmi)
             api.port_connect_nic('dell', nic1_port, node, nic1)
             api.port_connect_nic('dell', nic2_port, node, nic2)
 
