@@ -17,10 +17,12 @@ from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import relationship, sessionmaker,backref
 from passlib.hash import sha512_crypt
 from subprocess import call, check_call
+import subprocess
 from haas.config import cfg
 from haas.dev_support import no_dry_run
 import importlib
 import uuid
+import xml.etree.ElementTree
 
 Base=declarative_base()
 Session = sessionmaker()
@@ -90,8 +92,24 @@ class Node(Model):
     #many to one mapping to project
     project       = relationship("Project",backref=backref('nodes'))
 
-    def __init__(self, label):
-        self.label   = label
+    ipmi_host = Column(String, nullable=False)
+    ipmi_user = Column(String, nullable=False)
+    ipmi_pass = Column(String, nullable=False)
+
+    def __init__(self, label, ipmi_host, ipmi_user, ipmi_pass):
+        self.label = label
+        self.ipmi_host = ipmi_host
+        self.ipmi_user = ipmi_user
+        self.ipmi_pass = ipmi_pass
+
+    def power_cycle(self):
+        status = call(['ipmitool',
+            '-U', self.ipmi_user,
+            '-P', self.ipmi_pass,
+            '-H', self.ipmi_host,
+            'chassis', 'power', 'cycle'])
+        return status == 0
+        
 
 
 class Project(Model):
@@ -202,16 +220,6 @@ class Headnode(Model):
         # mostly).
         trunk_nic = cfg.get('headnode', 'trunk_nic')
         cmd(['virsh', 'undefine', self.name, '--remove-all-storage'])
-        for nic in self.nics:
-            nic = str(nic)
-            bridge = 'br-vlan%s' % nic
-            vlan_nic = '%s.%d' % (trunk_nic, nic)
-            cmd(['ifconfig', bridge, 'down'])
-            cmd(['ifconfig', vlan_nic, 'down'])
-            cmd(['brctl', 'delif', bridge, vlan_nic])
-            cmd(['vconfig', 'rem', vlan_nic])
-            cmd(['brctl', 'delbr', bridge])
-
 
     @no_dry_run
     def start(self):
@@ -234,6 +242,32 @@ class Headnode(Model):
     def _vmname(self):
         """Returns the name (as recognized by libvirt) of this vm."""
         return 'headnode-%s' % self.uuid
+
+
+    # This function returns a meaningful value, but also uses actual hardware.
+    # It has no_dry_run because the unit test for 'show_headnode' will call
+    # it.  None is a fine return value there, because it will just put it into
+    # a JSON object.
+    @no_dry_run
+    def get_vncport(self):
+        """Returns the port that VNC is listening on, as an int.
+
+        If the VM is off, in all likelihood the result will be None.  This is
+        because no port has been allocated to it yet.  (The XML will also have
+        "autoport='yes'".)
+        """
+        p = subprocess.Popen(['virsh', 'dumpxml', self._vmname()],
+                             stdout=subprocess.PIPE)
+        xmldump, _ = p.communicate()
+        root = xml.etree.ElementTree.fromstring(xmldump)
+        port = root.findall("./devices/graphics")[0].get('port')
+        if port == -1:
+            # No port allocated (yet)
+            return None
+        else:
+            return port
+        # No VNC service found, so no port available
+        return None
 
 
 class Hnic(Model):
@@ -259,10 +293,4 @@ class Hnic(Model):
         trunk_nic = cfg.get('headnode', 'trunk_nic')
         vlan_no = str(self.network.network_id)
         bridge = 'br-vlan%s' % vlan_no
-        vlan_nic = '%s.%s' % (trunk_nic, vlan_no)
-        check_call(['brctl', 'addbr', bridge])
-        check_call(['vconfig', 'add', trunk_nic, vlan_no])
-        check_call(['brctl', 'addif', bridge, vlan_nic])
-        check_call(['ifconfig', bridge, 'up', 'promisc'])
-        check_call(['ifconfig', vlan_nic, 'up', 'promisc'])
         check_call(['virsh', 'attach-interface', self.owner._vmname(), 'bridge', bridge, '--config'])

@@ -118,12 +118,12 @@ def set_access_vlan(port, vlan_id):
     console.sendline('int gi1/0/%s' % port)
     console.expect(if_prompt)
 
-    # set the vlan:
-    console.sendline('sw access vlan %s' % vlan_id)
-    # Note that 'vlan_id' may be None here.  Surprisingly enough, this is not
-    # a problem.  The canonical command for setting a port in access mode to
-    # be on no vlan at all is 'sw access vlan no', and None is close enough,
-    # as it turns out.
+    if vlan_id is None:
+        # turn the port off
+        console.sendline('sw access vlan no')
+    else:
+        # set the vlan:
+        console.sendline('sw access vlan %s' % vlan_id)
     console.expect(if_prompt)
 
     # set it to access mode:

@@ -142,7 +142,7 @@ class TestProjectCreateDelete:
 
     @database_only
     def test_project_delete_hasnode(self, db):
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
         api.project_connect_node('anvil-nextgen', 'node-99')
@@ -151,7 +151,7 @@ class TestProjectCreateDelete:
 
     @database_only
     def test_project_delete_success_nodesdeleted(self, db):
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
         api.project_connect_node('anvil-nextgen', 'node-99')
@@ -183,10 +183,10 @@ class TestProjectCreateDelete:
             api.project_delete('anvil-nextgen')
 
 
-class TestProjectDeploy:
+class TestProjectApply:
 
     @database_only
-    def test_project_deploy(self, db):
+    def test_project_apply(self, db):
         # Test that it doesn't crash, at least
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
@@ -194,14 +194,14 @@ class TestProjectDeploy:
 
 
     @database_only
-    def test_project_deploy_involved(self, db):
+    def test_project_apply_involved(self, db):
         api.switch_register('switch', 'null')
         api.port_register('switch', '1')
         api.port_register('switch', '2')
         api.port_register('switch', '3')
-        api.node_register('node-99')
-        api.node_register('node-98')
-        api.node_register('node-97')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
+        api.node_register('node-98', 'ipmihost', 'root', 'tapeworm')
+        api.node_register('node-97', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
         api.node_register_nic('node-98', 'eth0', 'DE:AD:BE:EF:20:15')
         api.node_register_nic('node-97', 'eth0', 'DE:AD:BE:EF:20:16')
@@ -225,7 +225,7 @@ class TestProjectConnectDetachNode:
     def test_project_connect_node(self, db):
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.project_connect_node('anvil-nextgen', 'node-99')
         project = api._must_find(db, model.Project, 'anvil-nextgen')
         node = api._must_find(db, model.Node, 'node-99')
@@ -235,7 +235,7 @@ class TestProjectConnectDetachNode:
     @database_only
     def test_project_connect_node_project_nexist(self, db):
         """Tests that connecting a node to a nonexistent project fails"""
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         with pytest.raises(api.NotFoundError):
             api.project_connect_node('anvil-nextgen', 'node-99')
 
@@ -251,7 +251,7 @@ class TestProjectConnectDetachNode:
     def test_project_detach_node(self, db):
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.project_detach_node('anvil-nextgen', 'node-99')
         project = api._must_find(db, model.Project, 'anvil-nextgen')
@@ -264,14 +264,14 @@ class TestProjectConnectDetachNode:
         """Tests that removing a node from a project it's not in fails."""
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         with pytest.raises(api.NotFoundError):
             api.project_detach_node('anvil-nextgen', 'node-99')
 
     @database_only
     def test_project_detach_node_project_nexist(self, db):
         """Tests that removing a node from a nonexistent project fails."""
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         with pytest.raises(api.NotFoundError):
             api.project_detach_node('anvil-nextgen', 'node-99')
 
@@ -287,7 +287,7 @@ class TestProjectConnectDetachNode:
     def test_project_detach_node_on_network(self, db):
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:13')
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.network_create('hammernet', 'anvil-nextgen')
@@ -299,7 +299,7 @@ class TestProjectConnectDetachNode:
     def test_project_detach_node_success_nic_not_on_network(self, db):
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:13')
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.network_create('hammernet', 'anvil-nextgen')
@@ -309,7 +309,7 @@ class TestProjectConnectDetachNode:
     def test_project_detach_node_not_on_network_but_still_dirty(self, db):
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:13')
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.network_create('hammernet', 'anvil-nextgen')
@@ -324,18 +324,18 @@ class TestNodeRegisterDelete:
 
     @database_only
     def test_node_register(self, db):
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api._must_find(db, model.Node, 'node-99')
 
     @database_only
     def test_duplicate_node_register(self, db):
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         with pytest.raises(api.DuplicateError):
-            api.node_register('node-99')
+            api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
 
     @database_only
     def test_node_delete(self, db):
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_delete('node-99')
         with pytest.raises(api.NotFoundError):
             api._must_find(db, model.Node, 'node-99')
@@ -350,7 +350,7 @@ class TestNodeRegisterDeleteNic:
 
     @database_only
     def test_node_register_nic(self, db):
-        api.node_register('compute-01')
+        api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
         nic = api._must_find(db, model.Nic, '01-eth0')
         assert nic.owner.label == 'compute-01'
@@ -362,7 +362,7 @@ class TestNodeRegisterDeleteNic:
 
     @database_only
     def test_node_register_nic_duplicate_nic(self, db):
-        api.node_register('compute-01')
+        api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
         nic = api._must_find(db, model.Nic, '01-eth0')
         with pytest.raises(api.DuplicateError):
@@ -370,7 +370,7 @@ class TestNodeRegisterDeleteNic:
 
     @database_only
     def test_node_delete_nic_success(self, db):
-        api.node_register('compute-01')
+        api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
         api.node_delete_nic('compute-01', '01-eth0')
         api._assert_absent(db, model.Nic, '01-eth0')
@@ -378,7 +378,7 @@ class TestNodeRegisterDeleteNic:
 
     @database_only
     def test_node_delete_nic_nic_nexist(self, db):
-        api.node_register('compute-01')
+        api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         with pytest.raises(api.NotFoundError):
             api.node_delete_nic('compute-01', '01-eth0')
 
@@ -389,23 +389,23 @@ class TestNodeRegisterDeleteNic:
 
     @database_only
     def test_node_delete_nic_wrong_node(self, db):
-        api.node_register('compute-01')
-        api.node_register('compute-02')
+        api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
+        api.node_register('compute-02', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
         with pytest.raises(api.NotFoundError):
             api.node_delete_nic('compute-02', '01-eth0')
 
     @database_only
     def test_node_delete_nic_wrong_nexist_node(self, db):
-        api.node_register('compute-01')
+        api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
         with pytest.raises(api.NotFoundError):
             api.node_delete_nic('compute-02', '01-eth0')
 
     @database_only
     def test_node_register_nic_diff_nodes(self, db):
-        api.node_register('compute-01')
-        api.node_register('compute-02')
+        api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
+        api.node_register('compute-02', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'ipmi', 'DE:AD:BE:EF:20:14')
         api.node_register_nic('compute-02', 'ipmi', 'DE:AD:BE:EF:20:14')
 
@@ -414,7 +414,7 @@ class TestNodeConnectDetachNetwork:
 
     @database_only
     def test_node_connect_network_success(self, db):
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
@@ -429,14 +429,14 @@ class TestNodeConnectDetachNetwork:
 
     @database_only
     def test_node_connect_network_wrong_node_in_project(self, db):
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.network_create('hammernet', 'anvil-nextgen')
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
-        api.node_register('node-98') #added
+        api.node_register('node-98', 'ipmihost', 'root', 'tapeworm') #added
         api.project_connect_node('anvil-nextgen', 'node-98') #added
 
         with pytest.raises(api.NotFoundError):
@@ -444,20 +444,20 @@ class TestNodeConnectDetachNetwork:
 
     @database_only
     def test_node_connect_network_wrong_node_not_in_project(self, db):
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.network_create('hammernet', 'anvil-nextgen')
-        api.node_register('node-98') # added
+        api.node_register('node-98', 'ipmihost', 'root', 'tapeworm') # added
 
         with pytest.raises(api.NotFoundError):
             api.node_connect_network('node-98', '99-eth0', 'hammernet')
 
     @database_only
     def test_node_connect_network_no_such_node(self, db):
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
@@ -469,7 +469,7 @@ class TestNodeConnectDetachNetwork:
 
     @database_only
     def test_node_connect_network_no_such_nic(self, db):
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
 #        api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
@@ -481,7 +481,7 @@ class TestNodeConnectDetachNetwork:
 
     @database_only
     def test_node_connect_network_no_such_network(self, db):
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
@@ -492,7 +492,7 @@ class TestNodeConnectDetachNetwork:
 
     @database_only
     def test_node_connect_network_node_not_in_project(self, db):
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
@@ -504,7 +504,7 @@ class TestNodeConnectDetachNetwork:
 
     @database_only
     def test_node_connect_network_different_projects(self, db):
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
@@ -517,7 +517,7 @@ class TestNodeConnectDetachNetwork:
 
     @database_only
     def test_node_connect_network_already_attached_to_same(self, db):
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
@@ -530,7 +530,7 @@ class TestNodeConnectDetachNetwork:
 
     @database_only
     def test_node_connect_network_already_attached_differently(self, db):
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
@@ -545,7 +545,7 @@ class TestNodeConnectDetachNetwork:
 
     @database_only
     def test_node_detach_network_success(self, db):
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
@@ -561,7 +561,7 @@ class TestNodeConnectDetachNetwork:
 
     @database_only
     def test_node_detach_network_not_attached(self, db):
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
@@ -574,8 +574,8 @@ class TestNodeConnectDetachNetwork:
 
     @database_only
     def test_node_detach_network_wrong_node_in_project(self, db):
-        api.node_register('node-99')
-        api.node_register('node-98') # added
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
+        api.node_register('node-98', 'ipmihost', 'root', 'tapeworm') # added
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
@@ -589,8 +589,8 @@ class TestNodeConnectDetachNetwork:
 
     @database_only
     def test_node_detach_network_wrong_node_not_in_project(self, db):
-        api.node_register('node-99')
-        api.node_register('node-98') # added
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
+        api.node_register('node-98', 'ipmihost', 'root', 'tapeworm') # added
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
@@ -603,7 +603,7 @@ class TestNodeConnectDetachNetwork:
 
     @database_only
     def test_node_detach_network_no_such_node(self, db):
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
@@ -616,7 +616,7 @@ class TestNodeConnectDetachNetwork:
 
     @database_only
     def test_node_detach_network_no_such_nic(self, db):
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
@@ -629,7 +629,7 @@ class TestNodeConnectDetachNetwork:
 
     @database_only
     def test_node_detach_network_node_not_in_project(self, db):
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
@@ -1043,7 +1043,7 @@ class TestNetworkCreateDelete:
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.network_create('hammernet', 'anvil-nextgen')
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.node_connect_network('node-99', 'eth0', 'hammernet')
@@ -1066,7 +1066,7 @@ class TestNetworkCreateDelete:
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.network_create('hammernet', 'anvil-nextgen')
-        api.node_register('node-99')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.node_connect_network('node-99', 'eth0', 'hammernet')
@@ -1163,13 +1163,13 @@ class TestPortConnectDetachNic:
     def test_port_connect_nic_success(self, db):
         api.switch_register('bait-and', 'big-iron')
         api.port_register('bait-and', '3')
-        api.node_register('compute-01')
+        api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
 
     @database_only
     def test_port_connect_nic_no_such_switch(self, db):
-        api.node_register('compute-01')
+        api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         with pytest.raises(api.NotFoundError):
             api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
@@ -1177,7 +1177,7 @@ class TestPortConnectDetachNic:
     @database_only
     def test_port_connect_nic_no_such_port(self, db):
         api.switch_register('bait-and', 'big-iron')
-        api.node_register('compute-01')
+        api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         with pytest.raises(api.NotFoundError):
             api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
@@ -1193,7 +1193,7 @@ class TestPortConnectDetachNic:
     def test_port_connect_nic_no_such_nic(self, db):
         api.switch_register('bait-and', 'big-iron')
         api.port_register('bait-and', '3')
-        api.node_register('compute-01')
+        api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         with pytest.raises(api.NotFoundError):
             api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
 
@@ -1201,7 +1201,7 @@ class TestPortConnectDetachNic:
     def test_port_connect_nic_already_attached_to_same(self, db):
         api.switch_register('bait-and', 'big-iron')
         api.port_register('bait-and', '3')
-        api.node_register('compute-01')
+        api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
         with pytest.raises(api.DuplicateError):
@@ -1213,7 +1213,7 @@ class TestPortConnectDetachNic:
         api.switch_register('-eroo', 'big-iron')
         api.port_register('bait-and', '3')
         api.port_register('-eroo', '4')
-        api.node_register('compute-01')
+        api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
         with pytest.raises(api.DuplicateError):
@@ -1223,8 +1223,8 @@ class TestPortConnectDetachNic:
     def test_port_connect_nic_port_already_attached_differently(self, db):
         api.switch_register('bait-and', 'big-iron')
         api.port_register('bait-and', '3')
-        api.node_register('compute-01')
-        api.node_register('compute-02')
+        api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
+        api.node_register('compute-02', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         api.node_register_nic('compute-02', 'eth1', 'DE:AD:BE:EF:20:15')
         api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
@@ -1236,7 +1236,7 @@ class TestPortConnectDetachNic:
     def test_port_detach_nic_success(self, db):
         api.switch_register('bait-and', 'big-iron')
         api.port_register('bait-and', '3')
-        api.node_register('compute-01')
+        api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
         api.port_detach_nic('bait-and', '3')
@@ -1256,7 +1256,7 @@ class TestPortConnectDetachNic:
     def test_port_detach_nic_not_attached(self, db):
         api.switch_register('bait-and', 'big-iron')
         api.port_register('bait-and', '3')
-        api.node_register('compute-01')
+        api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         with pytest.raises(api.NotFoundError):
             api.port_detach_nic('bait-and', '3')
@@ -1267,9 +1267,9 @@ class TestQuery:
 
     @database_only
     def test_free_nodes(self, db):
-        api.node_register('master-control-program')
-        api.node_register('robocop')
-        api.node_register('data')
+        api.node_register('master-control-program', 'ipmihost', 'root', 'tapeworm')
+        api.node_register('robocop', 'ipmihost', 'root', 'tapeworm')
+        api.node_register('data', 'ipmihost', 'root', 'tapeworm')
         result = json.loads(api.list_free_nodes())
         # For the lists to be equal, the ordering must be the same:
         result.sort()
@@ -1286,9 +1286,9 @@ class TestQuery:
     @database_only
     def test_some_non_free_nodes(self, db):
         """Make sure that allocated nodes don't show up in the free list."""
-        api.node_register('master-control-program')
-        api.node_register('robocop')
-        api.node_register('data')
+        api.node_register('master-control-program', 'ipmihost', 'root', 'tapeworm')
+        api.node_register('robocop', 'ipmihost', 'root', 'tapeworm')
+        api.node_register('data', 'ipmihost', 'root', 'tapeworm')
 
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
@@ -1299,7 +1299,7 @@ class TestQuery:
 
     @database_only
     def test_show_node(self, db):
-        api.node_register('robocop')
+        api.node_register('robocop', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('robocop', 'eth0', 'DE:AD:BE:EF:20:14')
         api.node_register_nic('robocop', 'wlan0', 'DE:AD:BE:EF:20:15')
 
@@ -1317,7 +1317,7 @@ class TestQuery:
 
     @database_only
     def test_show_node_unavailable(self, db):
-        api.node_register('robocop')
+        api.node_register('robocop', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('robocop', 'eth0', 'DE:AD:BE:EF:20:14')
         api.node_register_nic('robocop', 'wlan0', 'DE:AD:BE:EF:20:15')
 
@@ -1344,9 +1344,9 @@ class TestQuery:
 
     @database_only
     def test_project_nodes_exist(self, db):
-        api.node_register('master-control-program')
-        api.node_register('robocop')
-        api.node_register('data')
+        api.node_register('master-control-program', 'ipmihost', 'root', 'tapeworm')
+        api.node_register('robocop', 'ipmihost', 'root', 'tapeworm')
+        api.node_register('data', 'ipmihost', 'root', 'tapeworm')
 
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
@@ -1371,9 +1371,9 @@ class TestQuery:
     @database_only
     def test_some_nodes_in_project(self, db):
         """Test that only assigned nodes are in the project."""
-        api.node_register('master-control-program')
-        api.node_register('robocop')
-        api.node_register('data')
+        api.node_register('master-control-program', 'ipmihost', 'root', 'tapeworm')
+        api.node_register('robocop', 'ipmihost', 'root', 'tapeworm')
+        api.node_register('data', 'ipmihost', 'root', 'tapeworm')
 
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
@@ -1405,6 +1405,7 @@ class TestQuery:
                 'eth0',
                 'wlan0',
             ],
+            'vncport': None
         }
 
     @database_only
