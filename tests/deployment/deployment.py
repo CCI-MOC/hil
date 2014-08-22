@@ -160,7 +160,8 @@ class TestNetwork:
             # Apply current configuration
             api.project_apply('anvil-nextgen')
     
-            # Ask the switch which vlans nodes 195, 196, 197 and 198 are on             # and assert that they are not on a network
+            # Ask the switch which vlans nodes 195, 196, 197 and 198 are on
+            # and assert that they are not on a network
             vlan_cfgs = get_switch_vlans()
             for i in range(15,19):
                 assert get_network('gi1/0/%d' % i, vlan_cfgs) == []
