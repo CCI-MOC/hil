@@ -90,8 +90,24 @@ class Node(Model):
     #many to one mapping to project
     project       = relationship("Project",backref=backref('nodes'))
 
-    def __init__(self, label):
-        self.label   = label
+    ipmi_host = Column(String, nullable=False)
+    ipmi_user = Column(String, nullable=False)
+    ipmi_pass = Column(String, nullable=False)
+
+    def __init__(self, label, ipmi_host, ipmi_user, ipmi_pass):
+        self.label = label
+        self.ipmi_host = ipmi_host
+        self.ipmi_user = ipmi_user
+        self.ipmi_pass = ipmi_pass
+
+    def power_cycle(self):
+        status = call(['ipmitool',
+            '-U', self.ipmi_user,
+            '-P', self.ipmi_pass,
+            '-H', self.ipmi_host,
+            'chassis', 'power', 'cycle'])
+        return status == 0
+        
 
 
 class Project(Model):
