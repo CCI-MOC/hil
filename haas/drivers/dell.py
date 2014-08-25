@@ -76,7 +76,7 @@ def apply_networking(net_map):
         console.sendline('sw mode access')
         console.expect(if_prompt)
 
-        # log out:
+        # back out to config_prompt
         console.sendline('exit')
         console.expect(config_prompt)
 
@@ -113,6 +113,7 @@ def apply_networking(net_map):
     for port_id in net_map:
         set_access_vlan(port_id, net_map[port_id])
 
+    # log out
     console.sendline('exit')
     console.expect(main_prompt)
     console.sendline('exit')
