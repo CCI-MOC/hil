@@ -21,6 +21,7 @@ from functools import wraps
 import inspect
 import importlib
 import json
+import logging
 
 from haas import model
 from haas.config import cfg
@@ -279,7 +280,13 @@ def project_apply(project):
     net_map = {}
     for node in project.nodes:
         for nic in node.nics:
-            if nic.network:
+            if not nic.port:
+                # This setup suggests a badly made HaaS setup.  NICs with no
+                # port might as well not exist.
+                logging.getLogger(__name__).warn(
+                    'Not attaching NIC %s to network %s; NIC not on a port.' %
+                    (nic.label, network.label))
+            elif nic.network:
                 net_map[nic.port.label] = nic.network.network_id
             else:
                 net_map[nic.port.label] = None
