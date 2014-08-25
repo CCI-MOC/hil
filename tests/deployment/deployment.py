@@ -121,7 +121,7 @@ class TestNetwork:
             # Apply current configuration
             api.project_apply('anvil-nextgen')
     
-            # Ask the switch which vlans nodes 195 anf 196 are on
+            # Ask the switch which vlans nodes 195 and 196 are on
             vlan_cfgs = get_switch_vlans()
     
             print(vlan_cfgs[0])
