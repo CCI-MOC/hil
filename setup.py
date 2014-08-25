@@ -22,6 +22,6 @@ setup(name='haas',
       version='1.0',
       url='https://github.com/CCI-MOC/moc-public',
       packages=find_packages(),
-      scripts=['scripts/haas'],
+      scripts=['scripts/haas', 'scripts/create_dell_vlans'],
       install_requires=requirements,
       )

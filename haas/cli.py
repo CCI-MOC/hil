@@ -187,10 +187,19 @@ def headnode_stop(headnode):
     check_status_code(requests.post(url))
 
 @cmd
-def node_register(node):
-    """Register a node named <node>"""
+def node_register(node, ipmi_host, ipmi_user, ipmi_pass):
+    """Register a node named <node>, with the given ipmi host/user/password"""
     url = object_url('node', node)
-    check_status_code(requests.put(url))
+    check_status_code(requests.put(url, data={
+        'ipmi_host': ipmi_host,
+        'ipmi_user': ipmi_user,
+        'ipmi_pass': ipmi_pass}))
+
+@cmd
+def node_power_cycle(node):
+    """Power cycle <node>"""
+    url = object_url('node', node, 'power_cycle')
+    check_status_code(requests.post(url))
 
 @cmd
 def node_register_nic(node, nic, macaddr):

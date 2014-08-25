@@ -277,9 +277,12 @@ def project_apply(project):
     project = _must_find(db, model.Project, project)
 
     net_map = {}
-    for net in project.networks:
-        for nic in net.nics:
-            net_map[nic.port.label] = net.network_id
+    for node in project.nodes:
+        for nic in node.nics:
+            if nic.network:
+                net_map[nic.port.label] = nic.network.network_id
+            else:
+                net_map[nic.port.label] = None
     driver.apply_networking(net_map)
 
     project.dirty = False
@@ -323,16 +326,24 @@ def project_detach_node(project, node):
 
 
 @rest_call('PUT', '/node/<node>')
-def node_register(node):
+def node_register(node, ipmi_host, ipmi_user, ipmi_pass):
     """Create node.
 
     If the node already exists, a DuplicateError will be raised.
     """
     db = model.Session()
     _assert_absent(db, model.Node, node)
-    node = model.Node(node)
+    node = model.Node(node, ipmi_host, ipmi_user, ipmi_pass)
     db.add(node)
     db.commit()
+
+
+@rest_call('POST', '/node/<node>/power_cycle')
+def node_power_cycle(node):
+    db = model.Session()
+    node = _must_find(db, model.Node, node)
+    if not node.power_cycle():
+        return 'Could not power cycle node %s' % node.label, 500
 
 
 @rest_call('DELETE', '/node/<node>')
@@ -791,6 +802,7 @@ def show_headnode(nodename):
         'name': headnode.label,
         'project': headnode.project.label,
         'hnics': map(lambda n: n.label, headnode.hnics),
+        'vncport': headnode.get_vncport(),
     })
 
 
