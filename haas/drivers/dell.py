@@ -71,18 +71,24 @@ def free_network_id(db, net_id):
         pass
     vlan.available = True
 
+def get_vlan_list():
+    vlan_str = cfg.get('switch dell', 'vlans')
+    returnee = []
+    for r in vlan_str.split(","):
+        r = r.strip().split("-")
+        if len(r) == 1:
+            returnee.append(int(r[0]))
+        else:
+            returnee += range(int(r[0]), int(r[1])+1)
+    return returnee
+
 def init_db(create=False):
     if not create:
         return
+    vlan_list = get_vlan_list()
     db = Session()
-    r_list = cfg.get('switch dell', 'vlans').split(",")
-    for r in r_list:
-        r = r.strip().split("-")
-        if len(r) == 1:
-            db.add(Dell_Vlan(int(r[0])))
-        else:
-            for i in range(int(r[0]), int(r[1])+1):
-                db.add(Dell_Vlan(int(i)))
+    for vlan in vlan_list:
+        db.add(Dell_Vlan(vlan))
     db.commit()
 
 @no_dry_run

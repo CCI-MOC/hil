@@ -21,6 +21,7 @@ from haas.test_common import *
 import re
 import pexpect
 import pytest
+from haas.drivers.dell import get_vlan_list
 
 class TestHeadNode:
 
@@ -64,18 +65,8 @@ class TestNetwork:
             cmd_prompt = cmd_prompt.strip(' \r\n\t')
 
             # get possible vlans from config
-            vlans = []
-            r_list = cfg.get('switch dell', 'vlans').split(",")
-            for r in r_list:
-                r = r.strip().split("-")
-                if len(r) == 1:
-                    vlans.append(int(r[0]))
-                else:
-                    for i in range(int(r[0]), int(r[1])+1):
-                        vlans.append(int(i))
-
             vlan_cfgs = []
-            for vlan in vlans:
+            for vlan in get_vlan_list():
                 console.sendline('show vlan tag %d' % vlan)
                 console.expect(cmd_prompt)
                 vlan_cfgs.append(console.before)
