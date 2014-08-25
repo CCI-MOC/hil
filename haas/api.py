@@ -280,14 +280,13 @@ def project_apply(project):
     net_map = {}
     for node in project.nodes:
         for nic in node.nics:
-            logger = logging.getLogger(__name__)
             if not nic.port:
-                # If the nic isn't connected to any port, don't do anything.
-                logger.warn(
+                # This setup suggests a badly made HaaS setup.  NICs with no
+                # port might as well not exist.
+                logging.getLogger(__name__).warn(
                     'Not attaching NIC %s to network %s; NIC not on a port.' %
                     (nic.label, network.label))
-                continue
-            if nic.network:
+            elif nic.network:
                 net_map[nic.port.label] = nic.network.network_id
             else:
                 net_map[nic.port.label] = None
