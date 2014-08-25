@@ -279,6 +279,9 @@ def project_apply(project):
     net_map = {}
     for node in project.nodes:
         for nic in node.nics:
+            if not nic.port:
+                # If the nic isn't connected to any port, don't do anything.
+                continue
             if nic.network:
                 net_map[nic.port.label] = nic.network.network_id
             else:
