@@ -74,9 +74,13 @@ def object_url(*args):
 @cmd
 def serve():
     """Start the HaaS API server"""
+    if cfg.has_option('devel', 'debug'):
+        debug = cfg.getboolean('devel', 'debug')
+    else:
+        debug = False
     from haas import model, api
     model.init_db()
-    api.app.run(debug=True)
+    api.app.run(debug=debug)
 
 @cmd
 def init_db():
