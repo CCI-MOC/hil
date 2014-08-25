@@ -82,7 +82,9 @@ def deployment_test(f):
     """
 
     def config_initialize():
-        # Use the 'dell' backend for these tests
+        # Use the 'dell' backend for these tests.  Setup such as the switch IP
+        # address and password must be in this file, as well as the allowed
+        # VLAN range.
         cfg.read('deployment.cfg')
  
     def allocate_nodes():
@@ -114,10 +116,10 @@ def deployment_test(f):
     return wrapped
 
 def headnode_cleanup(f):
-    """A decorator which cleans up any vlans and network bridges after a VM
-    has been shutdown.  This is intended for deployment tests that do not
-    clean up after themselves.  This decorator depends on the database
-    containing an accurate list of headnodes and hnics.
+    """A decorator which cleans up headnode VMs left by tests.  This is to
+    work around an irritating bug in some versions of libvirt, which causes
+    'virsh undefine' to fail if called too quickly.  This decorator depends on
+    the database containing an accurate list of headnodes.
     """
 
     def undefine_headnodes(db):
