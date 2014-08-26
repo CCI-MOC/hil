@@ -350,17 +350,19 @@ class Headnode(Model):
 
     # True iff there are unapplied changes to the Headnode:
     dirty = Column(Boolean, nullable=False)
+    base_img = Column(String, nullable=False)
 
     # We need a guaranteed unique name to generate the libvirt machine name;
     # The name is therefore a function of a uuid:
     uuid = Column(String, nullable=False, unique=True)
 
-    def __init__(self, project, label):
+    def __init__(self, project, label, base_img):
         """Create a headnode belonging to `project` with the given label."""
         self.project = project
         self.label = label
         self.dirty = True
         self.uuid = str(uuid.uuid1())
+        self.base_img = base_img
 
     @no_dry_run
     def create(self):
@@ -368,7 +370,7 @@ class Headnode(Model):
 
         The vm is not started at this time.
         """
-        check_call(['virt-clone', '-o', 'base-headnode', '-n', self._vmname(), '--auto-clone'])
+        check_call(['virt-clone', '-o', self.base_img, '-n', self._vmname(), '--auto-clone'])
         for hnic in self.hnics:
             hnic.create()
 

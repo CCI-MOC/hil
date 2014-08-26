@@ -95,14 +95,14 @@ class TestSwitch(ModelTest):
 class TestHeadnode(ModelTest):
 
     def sample_obj(self):
-        return Headnode(Project(Group('acme_corp'), 'anvil-nextgen'), 'hn-example')
+        return Headnode(Project(Group('acme_corp'), 'anvil-nextgen'), 'hn-example', 'base-headnode')
 
 
 class TestHnic(ModelTest):
 
     def sample_obj(self):
         return Hnic(Headnode(Project(Group('acme-corp'), 'anvil-nextgen'),
-            'hn-0'), 'storage')
+            'hn-0', 'base-headnode'), 'storage')
 
 
 class TestNetwork(ModelTest):

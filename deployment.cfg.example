@@ -16,6 +16,7 @@ driver = simple_vlan
 # The trunked network interface on the host. This is the nic that the VMs will
 # be bridged to to gain access to their networks.
 trunk_nic = em3
+base_images = base-headnode, base-headnode-2
 
 [driver simple_vlan]
 switch = {"switch": "dell", "ip": "192.168.0.1", "user": "foo", "pass": "bar"}

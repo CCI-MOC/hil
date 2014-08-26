@@ -46,7 +46,7 @@ class TestHeadNode:
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         network_create_simple('spider-web', 'anvil-nextgen')
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hnic-0')
         api.headnode_connect_network('hn-0', 'hnic-0', 'spider-web')
         assert json.loads(api.show_headnode('hn-0'))['vncport'] is None
@@ -60,7 +60,7 @@ class TestHeadNode:
     def test_headnode_deletion_while_running(self, db):
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode-2')
         api.headnode_start('hn-0')
         api.headnode_delete('hn-0')
 

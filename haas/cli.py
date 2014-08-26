@@ -169,10 +169,11 @@ def group_delete(group):
     check_status_code(requests.delete(url))
 
 @cmd
-def headnode_create(headnode, project):
-    """Create a <headnode> belonging to <project>"""
+def headnode_create(headnode, project, base_img):
+    """Create a <headnode> in a <project> with <base_img>"""
     url = object_url('headnode', headnode)
-    check_status_code(requests.put(url, data={'project': project}))
+    check_status_code(requests.put(url, data={'project': project,
+                                              'base_img': base_img}))
 
 @cmd
 def headnode_delete(headnode):

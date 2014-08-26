@@ -379,7 +379,7 @@ def node_detach_network(node, nic):
 
 
 @rest_call('PUT', '/headnode/<headnode>')
-def headnode_create(headnode, project):
+def headnode_create(headnode, project, base_img):
     """Create headnode.
 
     If a node with the same name already exists, a DuplicateError will be
@@ -390,12 +390,18 @@ def headnode_create(headnode, project):
     If the project does not exist, a NotFoundError will be raised.
 
     """
+
+    valid_imgs = cfg.get('headnode', 'base_imgs')
+    valid_imgs = [img.strip() for img in valid_imgs.split(',')]
+
+    if base_img not in valid_imgs:
+        raise BadArgumentError('Provided image is not a valid image.')
     db = model.Session()
 
     _assert_absent(db, model.Headnode, headnode)
     project = _must_find(db, model.Project, project)
 
-    headnode = model.Headnode(project, headnode)
+    headnode = model.Headnode(project, headnode, base_img)
 
     db.add(headnode)
     db.commit()
