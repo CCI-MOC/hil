@@ -1,0 +1,30 @@
+{
+    "switch": "dell",
+    "driver": "dell",
+    "nodes" : [ 
+        {
+            "name": "node-1",
+            "nics": [
+                {
+                    "name": "nic1",
+                    "mac" : "de:ad:be:ef:20:14",
+                    "port": "gi1/0/1"
+                },
+                {
+                    "name": "nic2",
+                    "mac" : "de:ad:be:ef:20:15",
+                    "port": "gi1/0/2
+            ]
+        },
+        {
+            "name": "node-2",
+            "nics": [
+                {
+                    "name": "nic1",
+                    "mac" : "de:ad:be:ef:20:16",
+                    "port": "gi1/0/3"
+                }
+            ]
+        }
+    ]
+}
