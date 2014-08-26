@@ -90,7 +90,6 @@ def deployment_test(f):
 
         for n in range(4):
             node = n + 195
-            # Modify nic1_port and nic2_port to support stacked-switches
             nic1_port_num = n + 15
             nic2_port_num = n + 20
             nic1_port = 'gi1/0/%d' % nic1_port_num
