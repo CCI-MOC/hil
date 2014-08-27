@@ -81,8 +81,8 @@ def handle_client_errors(f):
     @wraps(f)
     def wrapped(*args, **kwargs):
         logger = logging.getLogger(__name__)
-        logger.debug('Received API call %s %s %s' %
-                     (f.__name__, repr(args), repr(kwargs)))
+        logger.debug('Received API call %s(*%r, **%r)' %
+                     (f.__name__, args, kwargs))
         try:
             resp = f(*args, **kwargs)
         except APIError as e:
