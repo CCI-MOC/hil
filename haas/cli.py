@@ -333,8 +333,24 @@ def main():
     There is a script located at ${source_tree}/scripts/haas, which invokes
     this function.
     """
-    logging.basicConfig(level=logging.DEBUG)
     config.load()
+
+    if cfg.has_option('general', 'log_level'):
+        LOG_SET = {"CRITICAL", "DEBUG", "ERROR", "FATAL", "INFO", "WARN",
+                   "WARNING"}
+        log_level = cfg.get('general', 'log_level').upper()
+        if log_level in LOG_SET:
+            # Set to mnemonic log level
+            logging.basicConfig(level=getattr(logging, log_level))
+        else:
+            # Set to 'warning', and warn that the config is bad
+            logging.basicConfig(level=logging.WARNING)
+            logging.getLogger(__name__).warning(
+                "Invalid debugging level %s defaulted to WARNING"% log_level)
+    else:
+        # Default to 'warning'
+        logging.basicConfig(level=logging.WARNING)
+
     if len(sys.argv) < 2 or sys.argv[1] not in command_dict:
         # Display usage for all commands
         help()
