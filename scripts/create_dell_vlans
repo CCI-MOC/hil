@@ -18,6 +18,7 @@ import sys
 from haas import config
 from haas.config import cfg
 from subprocess import call
+from haas.drivers.dell import get_vlan_list
 
 config.load()
 
@@ -37,11 +38,5 @@ def create_bridge(vlan_no):
     call(['ifconfig', bridge, 'up', 'promisc'])
     call(['ifconfig', vlan_nic, 'up', 'promisc'])
 
-r_list = cfg.get('switch dell', 'vlans').split(",")
-for r in r_list:
-    r = r.strip().split("-")
-    if len(r) == 1:
-        create_bridge(int(r[0]))
-    else:
-        for i in range(int(r[0]), int(r[1])+1):
-            create_bridge(i)
+for vlan in get_vlan_list():
+    create_bridge(vlan)

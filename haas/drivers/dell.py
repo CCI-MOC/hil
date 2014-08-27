@@ -53,9 +53,73 @@ class Dell_Vlan(Model):
         self.label = str(vlan_no)
 
 
+@no_dry_run
 def apply_networking(net_map):
+    def set_access_vlan(port, vlan_id):
+        """Set a port to access a given vlan.
+
+        This function expects to be called while in the config prompt, and
+        leaves you there when done.
+        """
+        console.sendline('int %s' % port)
+        console.expect(if_prompt)
+
+        if vlan_id is None:
+            # turn the port off
+            console.sendline('sw access vlan no')
+        else:
+            # set the vlan:
+            console.sendline('sw access vlan %s' % vlan_id)
+        console.expect(if_prompt)
+
+        # set it to access mode:
+        console.sendline('sw mode access')
+        console.expect(if_prompt)
+
+        # back out to config_prompt
+        console.sendline('exit')
+        console.expect(config_prompt)
+
+    # load the configuration:
+    switch_ip = cfg.get('switch dell', 'ip')
+    switch_user = cfg.get('switch dell', 'user')
+    switch_pass = cfg.get('switch dell', 'pass')
+
+    # connect to the switch, and log in:
+    console = pexpect.spawn('telnet ' + switch_ip)
+    console.expect('User Name:')
+    console.sendline(switch_user)
+    console.expect('Password:')
+    console.sendline(switch_pass)
+
+    #Regex to handle different prompt at switch
+    #[\r\n]+ will handle any newline
+    #.+ will handle any character after newline
+    # this sequence terminates with #
+    console.expect(r'[\r\n]+.+#')
+    cmd_prompt = console.after
+    cmd_prompt = cmd_prompt.strip(' \r\n\t')
+
+    #:-1 omits the last hash character
+    config_prompt = re.escape(cmd_prompt[:-1] + '(config)#')
+    if_prompt = re.escape(cmd_prompt[:-1] + '(config-if)#')
+    main_prompt = re.escape(cmd_prompt)
+
+    # select the right interface:
+    console.sendline('config')
+    console.expect(config_prompt)
+
+    # For each port, set it
     for port_id in net_map:
         set_access_vlan(port_id, net_map[port_id])
+
+    # log out
+    console.sendline('exit')
+    console.expect(main_prompt)
+    console.sendline('exit')
+    console.expect(pexpect.EOF)
+
+
 
 def get_new_network_id(db):
     vlan = db.query(Dell_Vlan).filter_by(available = True).first()
@@ -71,70 +135,24 @@ def free_network_id(db, net_id):
         pass
     vlan.available = True
 
+def get_vlan_list():
+    vlan_str = cfg.get('switch dell', 'vlans')
+    returnee = []
+    for r in vlan_str.split(","):
+        r = r.strip().split("-")
+        if len(r) == 1:
+            returnee.append(int(r[0]))
+        else:
+            returnee += range(int(r[0]), int(r[1])+1)
+    return returnee
+
 def init_db(create=False):
     if not create:
         return
+    vlan_list = get_vlan_list()
     db = Session()
-    r_list = cfg.get('switch dell', 'vlans').split(",")
-    for r in r_list:
-        r = r.strip().split("-")
-        if len(r) == 1:
-            db.add(Dell_Vlan(int(r[0])))
-        else:
-            for i in range(int(r[0]), int(r[1])+1):
-                db.add(Dell_Vlan(int(i)))
+    for vlan in vlan_list:
+        db.add(Dell_Vlan(vlan))
     db.commit()
 
-@no_dry_run
-def set_access_vlan(port, vlan_id):
-    # load the configuration:
-    switch_ip = cfg.get('switch dell', 'ip')
-    switch_user = cfg.get('switch dell', 'user')
-    switch_pass = cfg.get('switch dell', 'pass')
-
-    # connect to the switch, and log in:
-    console = pexpect.spawn('telnet ' + switch_ip)
-    console.expect('User Name:')
-    console.sendline(switch_user)
-    console.expect('Password:')
-    console.sendline(switch_pass)
-
-    #Regex to handle different prompt at switch 
-    #[\r\n]+ will handle any newline
-    #.+ will handle any character after newline 
-    # this sequence terminates with #
-    console.expect(r'[\r\n]+.+#')
-    cmd_prompt = console.after
-    cmd_prompt = cmd_prompt.strip(' \r\n\t')
-    
-    #:-1 omits the last hash character
-    config_prompt = re.escape(cmd_prompt[:-1] + '(config)#')
-    if_prompt = re.escape(cmd_prompt[:-1] + '(config-if)#')
-    main_prompt = re.escape(cmd_prompt)
-    
-    # select the right interface:
-    console.sendline('config')
-    console.expect(config_prompt)
-    console.sendline('int %s' % port)
-    console.expect(if_prompt)
-
-    if vlan_id is None:
-        # turn the port off
-        console.sendline('sw access vlan no')
-    else:
-        # set the vlan:
-        console.sendline('sw access vlan %s' % vlan_id)
-    console.expect(if_prompt)
-
-    # set it to access mode:
-    console.sendline('sw mode access')
-    console.expect(if_prompt)
-
-    # log out:
-    console.sendline('exit')
-    console.expect(config_prompt)
-    console.sendline('exit')
-    console.expect(main_prompt)
-    console.sendline('exit')
-    console.expect(pexpect.EOF)
     
