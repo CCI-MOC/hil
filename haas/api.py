@@ -72,7 +72,7 @@ app = Flask(__name__)
 
 
 def handle_client_errors(f):
-    """A decorator which adds some error handling, and logs the call.
+    """A decorator which adds some error handling.
 
     If the function decorated with `handle_client_errors` raises an exception
     of type `APIError`, the error will be reported to the client, whereas
