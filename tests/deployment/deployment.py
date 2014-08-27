@@ -90,10 +90,6 @@ class TestNetwork:
             return []
         
         def create_networks(nodes):
-            # At least 2 nodes with 1 nic each are required for this test
-            if len(nodes) < 2:
-                return
-
             # Create two networks
             api.network_create('net-0', 'anvil-nextgen')
             api.network_create('net-1', 'anvil-nextgen')
@@ -123,10 +119,6 @@ class TestNetwork:
             assert get_network(n0_port, vlan_cfgs) == [n0_port]
             assert get_network(n1_port, vlan_cfgs) == [n1_port]
     
-            # At least 4 nodes with 1 nic each are required for further testing
-            if len(nodes) < 4:
-                return
-       
             # Define nodes n2 and n3, their nic, and their port
             n2 = nodes[2].label
             n3 = nodes[3].label
@@ -183,7 +175,13 @@ class TestNetwork:
                 nodes.append(node)
                 if len(nodes) >= 4:
                     break
-        
+
+        # If there are not enough nodes with nics, raise an exception 
+        if len(nodes) < 4:
+            raise api.AllocationError(('At least 4 nodes with at least ' +
+                '1 NIC are required for this test. Only %d node(s) were ' +
+                'provided.') % len(nodes))
+
         # Try the create_networks tests, then always run the delete_networks
         # tests
         try:
