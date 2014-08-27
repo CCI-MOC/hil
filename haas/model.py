@@ -140,7 +140,7 @@ class Network(Model):
 
 
 class Port(Model):
-    owner_id     = Column(Integer,ForeignKey('switch.id'), nullable=False)
+    owner_id     = Column(String,ForeignKey('switch.id'), nullable=False)
     owner        = relationship("Switch",backref=backref('ports'))
 
     def __init__(self, switch, label):

@@ -92,8 +92,10 @@ def deployment_test(f):
 
         for n in range(4):
             node = n + 195
-            nic1_port = n + 15
-            nic2_port = n + 20
+            nic1_port_num = n + 15
+            nic2_port_num = n + 20
+            nic1_port = 'gi1/0/%d' % nic1_port_num
+            nic2_port = 'gi1/0/%d' % nic2_port_num
             nic1 = 'node-%d-nic1' % node
             nic2 = 'node-%d-nic2' % node
             api.node_register(node, '', '', '')

@@ -61,7 +61,7 @@ def apply_networking(net_map):
         This function expects to be called while in the config prompt, and
         leaves you there when done.
         """
-        console.sendline('int gi1/0/%s' % port)
+        console.sendline('int %s' % port)
         console.expect(if_prompt)
 
         if vlan_id is None:
