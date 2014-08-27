@@ -60,7 +60,9 @@ def check_status_code(response):
     if response.status_code < 200 or response.status_code >= 300:
         sys.stderr.write('Unexpected status code: %d\n' % response.status_code)
         sys.stderr.write('Response text:\n')
-    sys.stderr.write(response.text)
+        sys.stderr.write(response.text + "\n")
+    else:
+        sys.stdout.write(response.text + "\n")
 
 # TODO: This function's name is no longer very accurate.  As soon as it is
 # safe, we should change it to something more generic.
