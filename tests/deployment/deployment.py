@@ -178,7 +178,8 @@ class TestNetwork:
         api.project_create('anvil-nextgen', 'acme-code')
         
         # Try the create_networks tests, then always run the delete_networks
-        # tests
+        # tests.  Its important to always run delete_networks because it
+        # performs cleanup in addition to running additional tests.
         try:
             create_networks()
         finally:
