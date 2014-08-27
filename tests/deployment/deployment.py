@@ -178,9 +178,11 @@ class TestNetwork:
         free_nodes = db.query(model.Node).filter_by(project_id=None).all()
         nodes = []
         for node in free_nodes:
-            if len(node.nics) > 0 and len(nodes) < 4:
+            if len(node.nics) > 0:
                 api.project_connect_node('anvil-nextgen', node.label)
                 nodes.append(node)
+                if len(nodes) >= 4:
+                    break
         
         # Try the create_networks tests, then always run the delete_networks
         # tests
