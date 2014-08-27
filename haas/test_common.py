@@ -89,7 +89,7 @@ def deployment_test(f):
         cfg.read('deployment.cfg')
  
     def allocate_nodes():
-        arch_json_file = cfg.get('deployment tests', 'architecture_json')
+        arch_json_file = cfg.get('deployment tests', 'site_layout_json')
         arch_json_data = open(arch_json_file)
         arch = json.load(arch_json_data)
         arch_json_data.close()
