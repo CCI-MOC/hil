@@ -86,6 +86,7 @@ def deployment_test(f):
         # Use the deployment config for these tests.  Setup such as the switch
         # IP address and password must be in this file, as well as the allowed
         # VLAN range.
+        # XXX: Currently, the deployment tests only support the Dell driver.
         cfg.read('deployment.cfg')
  
     def allocate_nodes():
