@@ -1,6 +1,11 @@
 {
     "switch": "dell",
     "driver": "dell",
+    "ipmi": {
+        "host": "192.168.1.1",
+        "user": "foo",
+        "pass": "bar"
+    },
     "nodes" : [ 
         {
             "name": "node-1",
