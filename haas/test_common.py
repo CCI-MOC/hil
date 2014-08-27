@@ -98,7 +98,8 @@ def deployment_test(f):
         api.switch_register(arch['switch'], arch['driver'])
 
         for node in arch['nodes']:
-            api.node_register(node['name'], '', '', '')
+            api.node_register(node['name'], node['ipmi']['host'], 
+                node['ipmi']['user'], node['ipmi']['pass'])
             for nic in node['nics']:
                 api.node_register_nic(node['name'], nic['name'], nic['mac'])
                 api.port_register(arch['switch'], nic['port'])
