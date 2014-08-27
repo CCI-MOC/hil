@@ -126,6 +126,11 @@ def headnode_cleanup(f):
     def undefine_headnodes(db):
         trunk_nic = cfg.get('headnode', 'trunk_nic')
         for hn in db.query(Headnode):
+            # XXX: Our current version of libvirt has a bug that causes this 
+            # command to hang for a minute and throw an error before 
+            # completing successfully.  For this reason, we are ignoring any 
+            # errors thrown by 'virsh undefine'. This should be changed once 
+            # we start using a version of libvirt that has fixed this bug.
             call(['virsh', 'undefine', hn._vmname(), '--remove-all-storage'])
 
     @wraps(f)
