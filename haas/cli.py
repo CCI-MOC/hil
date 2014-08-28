@@ -338,8 +338,8 @@ def main():
     config.load()
 
     if cfg.has_option('general', 'log_level'):
-        LOG_SET = {"CRITICAL", "DEBUG", "ERROR", "FATAL", "INFO", "WARN",
-                   "WARNING"}
+        LOG_SET = ["CRITICAL", "DEBUG", "ERROR", "FATAL", "INFO", "WARN",
+                   "WARNING"]
         log_level = cfg.get('general', 'log_level').upper()
         if log_level in LOG_SET:
             # Set to mnemonic log level
