@@ -80,6 +80,9 @@ def handle_client_errors(f):
     """
     @wraps(f)
     def wrapped(*args, **kwargs):
+        logger = logging.getLogger(__name__)
+        logger.debug('Received API call %s(*%r, **%r)' %
+                     (f.__name__, args, kwargs))
         try:
             resp = f(*args, **kwargs)
         except APIError as e:
@@ -89,13 +92,15 @@ def handle_client_errors(f):
             # Additionally, we're getting deprecation errors about the use of
             # the message attribute. TODO: figure out what the right way to do
             # this is.
+            logger.debug('API call invalid: %s' % e.message)
             return e.message, 400
-        if not resp:
-            return ''
-        else:
+        if resp:
+            logger.debug('API call succesful: %s' % resp)
             return resp
+        else:
+            logger.debug('API call succesful, no response body')
+            return ''
     return wrapped
-
 
 def rest_call(method, path):
     """A decorator which generates a rest mapping to a python api call.
@@ -125,8 +130,8 @@ def rest_call(method, path):
         argnames, _, _, _ = inspect.getargspec(func)
 
         @app.route(path, methods=[method])
-        @wraps(func)
         @handle_client_errors
+        @wraps(func)
         def wrapped(*args, **kwargs):
             positional_args = []
             for name in argnames:

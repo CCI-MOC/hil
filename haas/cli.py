@@ -60,7 +60,9 @@ def check_status_code(response):
     if response.status_code < 200 or response.status_code >= 300:
         sys.stderr.write('Unexpected status code: %d\n' % response.status_code)
         sys.stderr.write('Response text:\n')
-    sys.stderr.write(response.text)
+        sys.stderr.write(response.text + "\n")
+    else:
+        sys.stdout.write(response.text + "\n")
 
 # TODO: This function's name is no longer very accurate.  As soon as it is
 # safe, we should change it to something more generic.
@@ -333,8 +335,24 @@ def main():
     There is a script located at ${source_tree}/scripts/haas, which invokes
     this function.
     """
-    logging.basicConfig(level=logging.DEBUG)
     config.load()
+
+    if cfg.has_option('general', 'log_level'):
+        LOG_SET = ["CRITICAL", "DEBUG", "ERROR", "FATAL", "INFO", "WARN",
+                   "WARNING"]
+        log_level = cfg.get('general', 'log_level').upper()
+        if log_level in LOG_SET:
+            # Set to mnemonic log level
+            logging.basicConfig(level=getattr(logging, log_level))
+        else:
+            # Set to 'warning', and warn that the config is bad
+            logging.basicConfig(level=logging.WARNING)
+            logging.getLogger(__name__).warning(
+                "Invalid debugging level %s defaulted to WARNING"% log_level)
+    else:
+        # Default to 'warning'
+        logging.basicConfig(level=logging.WARNING)
+
     if len(sys.argv) < 2 or sys.argv[1] not in command_dict:
         # Display usage for all commands
         help()

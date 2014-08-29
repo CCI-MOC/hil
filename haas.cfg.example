@@ -17,6 +17,9 @@
 # The driver to use for the network switch. The value must be the name of one of
 # the modules in haas.drivers:
 active_switch = dell
+# How verbosely to log.  Log messages of the given severity or more will be
+# logged.  Options include: debug, info, warn/warning, error, critical/fatal.
+log_level = info
 
 [headnode]
 # The trunked network interface on the host. This is the nic that the VMs will
