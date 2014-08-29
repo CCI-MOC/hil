@@ -1,0 +1,35 @@
+# This is an example configuration file for deployment testing HaaS.  The
+# Deployment Tests will read its configuration from a file called
+# ``deployment.cfg``, in the current working directory.  To get started, simply
+# copy this file, and modify as needed.
+
+[general]
+# The driver to use for the network switch. The value must be the name of one
+# of the modules in haas.drivers:
+active_switch = dell
+
+[headnode]
+# The trunked network interface on the host. This is the nic that the VMs will
+# be bridged to to gain access to their networks.
+trunk_nic = em3
+
+[switch dell]
+# Settings specific to the dell powerconnect driver. Other switches might have
+# sections for their own options.
+
+# The ip address that the switch's console is listening on.
+ip = 192.168.0.2
+# Login credetials, fairly self-explanatory:
+user = foo
+pass = bar
+# Another valid list:  14,35-40, 100-900, 904, 65-85
+vlans = 100-109
+# The port that the switch is trunking to the head node. Note that this is
+# currently set manually, but must be known for deployment testing.
+trunk_port = gi1/0/4
+
+[deployment tests]
+# Name of the JSON file that contains the site layout for the deployment
+# tests.  This file must be in the current working directory and must follow the
+# format exemplified in site-layout.json.example.
+site_layout_json = site-layout.json
