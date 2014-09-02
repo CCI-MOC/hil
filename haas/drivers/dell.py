@@ -30,7 +30,6 @@ from haas.config import cfg
 
 from haas.dev_support import no_dry_run
 
-from haas.api import NotFoundError
 from haas.model import Model, Session
 from sqlalchemy import *
 
