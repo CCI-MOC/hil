@@ -46,7 +46,7 @@ def cmd(f):
     command_dict[f.__name__] = wrapped
     def get_usage(f):
         args, varargs, _, _ = inspect.getargspec(f)
-        args = ''.join(map(lambda name: ' <%s>' % name, args))
+        args = ''.join(['<%s>' % name for name in args])
         if varargs:
             varargs = ' <%s...>' % varargs
         else:

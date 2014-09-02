@@ -779,7 +779,7 @@ def list_free_nodes():
     """List all nodes not in a project."""
     db = model.Session()
     nodes = db.query(model.Node).filter_by(project_id=None).all()
-    nodes = map(lambda n: n.label, nodes)
+    nodes = [n.label for n in nodes]
     return json.dumps(nodes)
 
 
@@ -789,7 +789,7 @@ def list_project_nodes(project):
     db = model.Session()
     project = _must_find(db, model.Project, project)
     nodes = project.nodes
-    nodes = map(lambda n: n.label, nodes)
+    nodes = [n.label for n in nodes]
     return json.dumps(nodes)
 
 
@@ -801,7 +801,7 @@ def show_node(nodename):
     return json.dumps({
         'name': node.label,
         'free': node.project_id is None,
-        'nics': map(lambda n: n.label, node.nics),
+        'nics': [n.label for n in node.nics],
     })
 
 
@@ -813,7 +813,7 @@ def show_headnode(nodename):
     return json.dumps({
         'name': headnode.label,
         'project': headnode.project.label,
-        'hnics': map(lambda n: n.label, headnode.hnics),
+        'hnics': [n.label for n in headnode.hnics],
         'vncport': headnode.get_vncport(),
     })
 
