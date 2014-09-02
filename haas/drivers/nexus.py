@@ -11,7 +11,7 @@
 # IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
 # express or implied. See the License for the specific language
 # governing permissions and limitations under the License.
-"""A switch driver for the Dell Powerconnect
+"""A switch driver for the Nexus 5500
 See the documentation for the haas.drivers package for a description of this
 module's interface.
 Currently the driver uses telnet to connect to the switch's console; in
@@ -31,7 +31,8 @@ class Nexus_Vlan(Model):
        1. The VLAN number it is using is unique, and
        2. The VLAN number is actually allocated to the HaaS; on some deployments we
        may have specific vlan numbers that we are allowed to use.
-       This code currently only works if there is only one Nexus switch. This is       because the Nexus switch does not support switch stacking. 
+       This code currently only works if there is only one Nexus switch. 
+       This is because the Nexus switch does not support switch stacking. 
     """
     vlan_no = Column(Integer, nullable=False, unique=True)
     available = Column(Boolean, nullable=False)
