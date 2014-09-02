@@ -136,7 +136,7 @@ def free_network_id(db, net_id):
     if not vlan:
         logger = logging.getLogger(__name__)
         logger.error('vlan %s does not exist in database' % net_id)
-        raise NotFoundError('vlan %s does not exist in database' % net_id)
+        return
     vlan.available = True
 
 def get_vlan_list():
