@@ -109,7 +109,7 @@ class Node(Model):
             '-H', self.ipmi_host,
             'chassis', 'power', 'cycle'])
         return status == 0
-        
+
 
 
 class Project(Model):
@@ -218,7 +218,6 @@ class Headnode(Model):
         # module so I could finally delete it, but I haven't actually made the
         # slight changes needed to get it to work again (variable renames,
         # mostly).
-        trunk_nic = cfg.get('headnode', 'trunk_nic')
         cmd(['virsh', 'undefine', self.name, '--remove-all-storage'])
 
     @no_dry_run
@@ -290,7 +289,6 @@ class Hnic(Model):
             # It is non-trivial to make a NIC not connected to a network, so
             # do nothing at all instead.
             return
-        trunk_nic = cfg.get('headnode', 'trunk_nic')
         vlan_no = str(self.network.network_id)
         bridge = 'br-vlan%s' % vlan_no
         check_call(['virsh', 'attach-interface', self.owner._vmname(), 'bridge', bridge, '--config'])
