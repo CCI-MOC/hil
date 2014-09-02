@@ -82,3 +82,10 @@ class TestNetworkID:
         assert '84' == get_new_network_id(db)
         free_network_id(db, '85')
         assert '85' == get_new_network_id(db)
+
+    @dell_backend('84')
+    def test_free_nonexist(self,db):
+        get_new_network_id(db)
+        free_network_id(db, '84')
+        with pytest.raises(api.NotFoundError):
+            free_network_id(db, '85') 

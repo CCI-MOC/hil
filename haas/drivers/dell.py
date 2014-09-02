@@ -24,11 +24,13 @@ the long term we want to be using SNMP.
 import os
 import pexpect
 import re
+import logging
 
 from haas.config import cfg
 
 from haas.dev_support import no_dry_run
 
+from haas.api import NotFoundError
 from haas.model import Model, Session
 from sqlalchemy import *
 
@@ -132,7 +134,9 @@ def get_new_network_id(db):
 def free_network_id(db, net_id):
     vlan = db.query(Dell_Vlan).filter_by(vlan_no = net_id).first()
     if not vlan:
-        pass
+        logger = logging.getLogger(__name__)
+        logger.error('vlan %s does not exist in database' % net_id)
+        raise NotFoundError('vlan %s does not exist in database' % net_id)
     vlan.available = True
 
 def get_vlan_list():
