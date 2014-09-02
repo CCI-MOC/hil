@@ -33,10 +33,12 @@ class APIError(Exception):
     i.e. If such an error occurs in a rest API call, it should be reported as
     part of the HTTP response.
     """
+    status_code = 400
 
 
 class NotFoundError(APIError):
     """An exception indicating that a given resource does not exist."""
+    status_code = 404
 
 
 class DuplicateError(APIError):
@@ -93,7 +95,10 @@ def handle_client_errors(f):
             # the message attribute. TODO: figure out what the right way to do
             # this is.
             logger.debug('API call invalid: %s' % e.message)
-            return e.message, 400
+            return json.dumps({
+                'type': e.__class__.__name__,
+                'msg': e.message,
+            }), e.status_code
         if resp:
             logger.debug('API call succesful: %s', resp)
             return resp
