@@ -631,8 +631,6 @@ def network_create(network, project):
     If the network cannot be allocated (due to resource exhaustion), an
     AllocationError will be raised.
     """
-    projectname = project
-
     db = model.Session()
     _assert_absent(db, model.Network, network)
     project = _must_find(db, model.Project, project)
