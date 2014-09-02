@@ -290,7 +290,7 @@ def project_apply(project):
                 # port might as well not exist.
                 logging.getLogger(__name__).warn(
                     'Not attaching NIC %s to network %s; NIC not on a port.' %
-                    (nic.label, network.label))
+                    (nic.label, nic.network.label))
             elif nic.network:
                 net_map[nic.port.label] = nic.network.network_id
             else:
