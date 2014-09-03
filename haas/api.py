@@ -695,7 +695,7 @@ def switch_delete(switch):
     db.commit()
 
 
-@rest_call('PUT', '/switch/<switch>/port/<port>')
+@rest_call('PUT', '/switch/<switch>/port/<path:port>')
 def port_register(switch, port):
     """Register a port on a switch.
 
@@ -713,7 +713,7 @@ def port_register(switch, port):
     db.commit()
 
 
-@rest_call('DELETE', '/switch/<switch>/port/<port>')
+@rest_call('DELETE', '/switch/<switch>/port/<path:port>')
 def port_delete(switch, port):
     """Delete a port on a switch.
 
@@ -728,7 +728,7 @@ def port_delete(switch, port):
     db.commit()
 
 
-@rest_call('POST', '/switch/<switch>/port/<port>/connect_nic')
+@rest_call('POST', '/switch/<switch>/port/<path:port>/connect_nic')
 def port_connect_nic(switch, port, node, nic):
     """Connect a port on a switch to a nic on a node.
 
@@ -753,7 +753,7 @@ def port_connect_nic(switch, port, node, nic):
     db.commit()
 
 
-@rest_call('POST', '/switch/<switch>/port/<port>/detach_nic')
+@rest_call('POST', '/switch/<switch>/port/<path:port>/detach_nic')
 def port_detach_nic(switch, port):
     """Detach attached nic from a port.
 

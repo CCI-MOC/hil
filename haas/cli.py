@@ -69,7 +69,7 @@ def check_status_code(response):
 def object_url(*args):
     url = cfg.get('client', 'endpoint')
     for arg in args:
-        url += '/' + urllib.quote(arg)
+        url += '/' + urllib.quote(arg,'')
     return url
 
 
