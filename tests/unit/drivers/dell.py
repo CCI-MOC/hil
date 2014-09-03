@@ -82,3 +82,10 @@ class TestNetworkID:
         assert '84' == get_new_network_id(db)
         free_network_id(db, '85')
         assert '85' == get_new_network_id(db)
+
+    @dell_backend('84')
+    def test_free_nonexist(self,db):
+        # This test ensures that attempting to free a vlan that is not in the
+        # db is handled gracefully, and the program does not crash.
+        # TODO: Check to see that an error message is actually logged.
+        free_network_id(db, '85') 
