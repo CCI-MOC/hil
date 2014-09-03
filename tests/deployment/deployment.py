@@ -35,7 +35,9 @@ class TestHeadNode:
         api.headnode_create('hn-0', 'anvil-nextgen')
         api.headnode_create_hnic('hn-0', 'hnic-0', 'de:ad:be:ef:20:14')
         api.headnode_connect_network('hn-0', 'hnic-0', 'spider-web')
+        assert json.loads(api.show_headnode('hn-0'))['vncport'] is None
         api.headnode_start('hn-0')
+        assert json.loads(api.show_headnode('hn-0'))['vncport'] is not None
 
 
 class TestNetwork:
