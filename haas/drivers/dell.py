@@ -24,35 +24,14 @@ the long term we want to be using SNMP.
 import os
 import pexpect
 import re
-import logging
 
 from haas.config import cfg
 
 from haas.dev_support import no_dry_run
 
-from haas.model import Model, Session
+from haas.model import Session
 from sqlalchemy import *
-
-class Dell_Vlan(Model):
-    """A VLAN for the Dell switch
-
-    This is used to track which vlan numbers are available; when a Network is
-    created, it must allocate a Vlan, to ensure that:
-
-    1. The VLAN number it is using is unique, and
-    2. The VLAN number is actually allocated to the HaaS; on some deployments we
-       may have specific vlan numbers that we are allowed to use.
-    """
-    vlan_no = Column(Integer, nullable=False, unique=True)
-    available = Column(Boolean, nullable=False)
-
-    def __init__(self, vlan_no):
-        self.vlan_no = vlan_no
-        self.available = True
-        # XXX: This is pretty gross; it arguably doesn't even make sense for
-        # Vlan to have a label, but we need to do some refactoring for that.
-        self.label = str(vlan_no)
-
+from haas.drivers.driver_tools.vlan import *
 
 @no_dry_run
 def apply_networking(net_map):
@@ -121,33 +100,10 @@ def apply_networking(net_map):
     console.expect(pexpect.EOF)
 
 
-
-def get_new_network_id(db):
-    vlan = db.query(Dell_Vlan).filter_by(available = True).first()
-    if not vlan:
-        return None
-    vlan.available = False
-    returnee = str(vlan.vlan_no)
-    return returnee
-
-def free_network_id(db, net_id):
-    vlan = db.query(Dell_Vlan).filter_by(vlan_no = net_id).first()
-    if not vlan:
-        logger = logging.getLogger(__name__)
-        logger.error('vlan %s does not exist in database' % net_id)
-        return
-    vlan.available = True
-
 def get_vlan_list():
     vlan_str = cfg.get('switch dell', 'vlans')
-    returnee = []
-    for r in vlan_str.split(","):
-        r = r.strip().split("-")
-        if len(r) == 1:
-            returnee.append(int(r[0]))
-        else:
-            returnee += range(int(r[0]), int(r[1])+1)
-    return returnee
+    return parse_vlan_list(vlan_str)
+
 
 def init_db(create=False):
     if not create:
@@ -155,7 +111,5 @@ def init_db(create=False):
     vlan_list = get_vlan_list()
     db = Session()
     for vlan in vlan_list:
-        db.add(Dell_Vlan(vlan))
+        db.add(Vlan(vlan))
     db.commit()
-
-    
