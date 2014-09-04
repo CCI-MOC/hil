@@ -35,8 +35,8 @@ def dell_backend(vlan_list):
             # Use the 'dell' backend for these tests
             cfg.add_section('general')
             cfg.set('general', 'active_switch', 'dell')
-            cfg.add_section('switch dell')
-            cfg.set('switch dell', 'vlans', vlan_list)
+            cfg.add_section('vlan')
+            cfg.set('vlan', 'vlans', vlan_list)
 
         @wraps(f)
         @clear_configuration

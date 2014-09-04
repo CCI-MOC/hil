@@ -42,17 +42,6 @@ class Vlan(Model):
         self.label = str(vlan_no)
 
 
-def parse_vlan_list(vlan_str):    
-    returnee = []
-    for r in vlan_str.split(","):
-        r = r.strip().split("-")
-        if len(r) == 1:
-            returnee.append(int(r[0]))
-        else:
-            returnee += range(int(r[0]), int(r[1])+1)
-    return returnee
-
-
 def get_new_network_id(db):
     vlan = db.query(Vlan).filter_by(available = True).first()
     if not vlan:
@@ -69,4 +58,25 @@ def free_network_id(db, net_id):
         logger.error('vlan %s does not exist in database' % net_id)
         return
     vlan.available = True
+
     
+def get_vlan_list():
+    vlan_str = cfg.get('vlan', 'vlans')
+    returnee = []
+    for r in vlan_str.split(","):
+        r = r.strip().split("-")
+        if len(r) == 1:
+            returnee.append(int(r[0]))
+        else:
+            returnee += range(int(r[0]), int(r[1])+1)
+    return returnee
+
+
+def init_db(create=False):
+    if not create:
+        return
+    vlan_list = get_vlan_list()
+    db = Session()
+    for vlan in vlan_list:
+        db.add(Vlan(vlan))
+    db.commit()

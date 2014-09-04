@@ -98,18 +98,3 @@ def apply_networking(net_map):
     console.expect(main_prompt)
     console.sendline('exit')
     console.expect(pexpect.EOF)
-
-
-def get_vlan_list():
-    vlan_str = cfg.get('switch dell', 'vlans')
-    return parse_vlan_list(vlan_str)
-
-
-def init_db(create=False):
-    if not create:
-        return
-    vlan_list = get_vlan_list()
-    db = Session()
-    for vlan in vlan_list:
-        db.add(Vlan(vlan))
-    db.commit()
