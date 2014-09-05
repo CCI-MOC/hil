@@ -90,21 +90,20 @@ def deployment_test(f):
         cfg.read('deployment.cfg')
 
     def allocate_nodes():
-        arch_json_file = cfg.get('deployment tests', 'site_layout_json')
-        arch_json_data = open(arch_json_file)
-        arch = json.load(arch_json_data)
-        arch_json_data.close()
+        layout_json_data = open('site-layout.json')
+        layout = json.load(layout_json_data)
+        layout_json_data.close()
 
-        api.switch_register(arch['switch'], arch['driver'])
+        api.switch_register(layout['switch'], layout['driver'])
 
-        for node in arch['nodes']:
+        for node in layout['nodes']:
             api.node_register(node['name'], node['ipmi']['host'],
                 node['ipmi']['user'], node['ipmi']['pass'])
             for nic in node['nics']:
                 api.node_register_nic(node['name'], nic['name'], nic['mac'])
-                api.port_register(arch['switch'], nic['port'])
+                api.port_register(layout['switch'], nic['port'])
                 api.port_connect_nic(
-                    arch['switch'], nic['port'],
+                    layout['switch'], nic['port'],
                     node['name'], nic['name'])
 
     @wraps(f)
