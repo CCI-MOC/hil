@@ -29,9 +29,3 @@ trunk_port = gi1/0/4
 [vlan]
 # Another valid list:  14,35-40, 100-900, 904, 65-85
 vlans = 100-109
-
-[deployment tests]
-# Name of the JSON file that contains the site layout for the deployment
-# tests.  This file must be in the current working directory and must follow the
-# format exemplified in site-layout.json.example.
-site_layout_json = site-layout.json
