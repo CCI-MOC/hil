@@ -90,8 +90,7 @@ def deployment_test(f):
         cfg.read('deployment.cfg')
 
     def allocate_nodes():
-        layout_json_file = 'site-layout.json'
-        layout_json_data = open(layout_json_file)
+        layout_json_data = open('site-layout.json')
         layout = json.load(layout_json_data)
         layout_json_data.close()
 
