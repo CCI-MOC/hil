@@ -95,7 +95,7 @@ def handle_client_errors(f):
             logger.debug('API call invalid: %s' % e.message)
             return e.message, 400
         if resp:
-            logger.debug('API call succesful: %s' % resp)
+            logger.debug('API call succesful: %s', resp)
             return resp
         else:
             logger.debug('API call succesful, no response body')
