@@ -23,6 +23,7 @@ from haas.dev_support import no_dry_run
 import importlib
 import uuid
 import xml.etree.ElementTree
+import logging
 
 Base=declarative_base()
 Session = sessionmaker()
@@ -102,14 +103,30 @@ class Node(Model):
         self.ipmi_user = ipmi_user
         self.ipmi_pass = ipmi_pass
 
-    def power_cycle(self):
+    def _ipmitool(self, args):
+        """Invoke ipmitool with the right host/pass etc. for this node.
+
+        `args` - any additional arguments to pass to ipmitool.
+        """
         status = call(['ipmitool',
             '-U', self.ipmi_user,
             '-P', self.ipmi_pass,
-            '-H', self.ipmi_host,
-            'chassis', 'power', 'cycle'])
-        return status == 0
+            '-H', self.ipmi_host] + args)
+        if status != 0:
+            logger = logging.getLogger(__name__)
+            logger.info('Nonzero exit status from ipmitool, args = %r', args)
+        return status
+            
 
+    def power_cycle(self):
+        self._ipmitool(['chassis', 'bootdev', 'pxe'])
+        status = self._ipmitool(['chassis', 'power', 'cycle'])
+        if status != 0:
+            # power cycle will fail if the machine isn't running, so let's
+            # just turn it on in that case. This way we can save power by
+            # turning things off without breaking the HaaS. 
+            status = self._ipmitool(['chassis', 'power', 'on'])
+        return status == 0
 
 
 class Project(Model):
