@@ -254,7 +254,13 @@ class Headnode(Model):
         If the VM is off, in all likelihood the result will be None.  This is
         because no port has been allocated to it yet.  (The XML will also have
         "autoport='yes'".)
+
+        If the VM has not been created yet (and is therefore dirty), return
+        None.
         """
+        if self.dirty:
+            return None
+
         p = subprocess.Popen(['virsh', 'dumpxml', self._vmname()],
                              stdout=subprocess.PIPE)
         xmldump, _ = p.communicate()
