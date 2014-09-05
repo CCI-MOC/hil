@@ -29,8 +29,6 @@ from haas.config import cfg
 
 from haas.dev_support import no_dry_run
 
-from haas.model import Session
-from sqlalchemy import *
 from haas.drivers.driver_tools.vlan import *
 
 @no_dry_run
