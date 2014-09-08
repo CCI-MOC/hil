@@ -45,6 +45,9 @@ Full Api spec:
     [POST] /node/<node_label>/nic/<nic_label>/connect_network {network=<network_label>}
     [POST] /node/<node_label>/nic/<nic_label>/detach_network
 
+    node_power_cycle <node_label>
+    [POST] /node/<node_label>/power_cycle
+
     headnode_create_hnic <headnode_label> <hnic_label>
     headnode_delete_hnic <headnode_label> <hnic_label>
     [PUT]    /headnode/<hn_label>/hnic/<hnic_label>
