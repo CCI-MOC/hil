@@ -218,6 +218,20 @@ class TestProjectApply:
         api.node_connect_network('node-98', 'eth0', 'hammernet')
         api.project_apply('anvil-nextgen')
 
+    @database_only
+    def test_project_apply_nic_no_port(self, db):
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
+        api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
+
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.node_connect_network('node-99', 'eth0', 'hammernet')
+
+        api.project_apply('anvil-nextgen')
+
 
 class TestProjectConnectDetachNode:
 

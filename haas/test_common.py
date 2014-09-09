@@ -16,6 +16,7 @@ from functools import wraps
 from haas.model import *
 from haas.config import cfg
 from haas import api
+import json
 
 def newDB():
     """Configures and returns an in-memory DB connection"""
@@ -57,7 +58,7 @@ def database_only(f):
     def config_initialize():
         # Use the 'null' backend for these tests
         cfg.add_section('general')
-        cfg.set('general', 'active_switch', 'null')
+        cfg.set('general', 'driver', 'null')
         cfg.add_section('devel')
         cfg.set('devel', 'dry_run', True)
 
@@ -77,34 +78,33 @@ def deployment_test(f):
     database and a config that is setup to operate with a dell switch.  Used
     for testing functions that pertain to the state of the outside world.
     These tests are very specific to our setup and are used for internal
-    testing purposes. These tests are unlikely to work with other HaaS 
+    testing purposes. These tests are unlikely to work with other HaaS
     configurations.
     """
 
     def config_initialize():
-        # Use the 'dell' backend for these tests.  Setup such as the switch IP
-        # address and password must be in this file, as well as the allowed
+        # Use the deployment config for these tests.  Setup such as the switch
+        # IP address and password must be in this file, as well as the allowed
         # VLAN range.
+        # XXX: Currently, the deployment tests only support the Dell driver.
         cfg.read('deployment.cfg')
- 
-    def allocate_nodes():
-        api.switch_register('dell', 'dell')
 
-        for n in range(4):
-            node = n + 195
-            nic1_port_num = n + 15
-            nic2_port_num = n + 20
-            nic1_port = 'gi1/0/%d' % nic1_port_num
-            nic2_port = 'gi1/0/%d' % nic2_port_num
-            nic1 = 'node-%d-nic1' % node
-            nic2 = 'node-%d-nic2' % node
-            api.node_register(node, '', '', '')
-            api.node_register_nic(node, nic1, 'FillThisInLater')  
-            api.node_register_nic(node, nic2, 'FillThisInLater')
-            api.port_register('dell', nic1_port)
-            api.port_register('dell', nic2_port)
-            api.port_connect_nic('dell', nic1_port, node, nic1)
-            api.port_connect_nic('dell', nic2_port, node, nic2)
+    def allocate_nodes():
+        layout_json_data = open('site-layout.json')
+        layout = json.load(layout_json_data)
+        layout_json_data.close()
+
+        api.switch_register(layout['switch'], layout['driver'])
+
+        for node in layout['nodes']:
+            api.node_register(node['name'], node['ipmi']['host'],
+                node['ipmi']['user'], node['ipmi']['pass'])
+            for nic in node['nics']:
+                api.node_register_nic(node['name'], nic['name'], nic['mac'])
+                api.port_register(layout['switch'], nic['port'])
+                api.port_connect_nic(
+                    layout['switch'], nic['port'],
+                    node['name'], nic['name'])
 
     @wraps(f)
     @clear_configuration
@@ -125,12 +125,11 @@ def headnode_cleanup(f):
     """
 
     def undefine_headnodes(db):
-        trunk_nic = cfg.get('headnode', 'trunk_nic')
         for hn in db.query(Headnode):
-            # XXX: Our current version of libvirt has a bug that causes this 
-            # command to hang for a minute and throw an error before 
-            # completing successfully.  For this reason, we are ignoring any 
-            # errors thrown by 'virsh undefine'. This should be changed once 
+            # XXX: Our current version of libvirt has a bug that causes this
+            # command to hang for a minute and throw an error before
+            # completing successfully.  For this reason, we are ignoring any
+            # errors thrown by 'virsh undefine'. This should be changed once
             # we start using a version of libvirt that has fixed this bug.
             call(['virsh', 'undefine', hn._vmname(), '--remove-all-storage'])
 

@@ -95,7 +95,7 @@ def handle_client_errors(f):
             logger.debug('API call invalid: %s' % e.message)
             return e.message, 400
         if resp:
-            logger.debug('API call succesful: %s' % resp)
+            logger.debug('API call succesful: %s', resp)
             return resp
         else:
             logger.debug('API call succesful, no response body')
@@ -276,7 +276,7 @@ def project_apply(project):
     TODO: there are other possible errors, document them and how they are
     handled.
     """
-    driver_name = cfg.get('general', 'active_switch')
+    driver_name = cfg.get('general', 'driver')
     driver = importlib.import_module('haas.drivers.' + driver_name)
 
     db = model.Session()
@@ -290,7 +290,7 @@ def project_apply(project):
                 # port might as well not exist.
                 logging.getLogger(__name__).warn(
                     'Not attaching NIC %s to network %s; NIC not on a port.' %
-                    (nic.label, network.label))
+                    (nic.label, nic.network.label))
             elif nic.network:
                 net_map[nic.port.label] = nic.network.network_id
             else:
@@ -631,13 +631,11 @@ def network_create(network, project):
     If the network cannot be allocated (due to resource exhaustion), an
     AllocationError will be raised.
     """
-    projectname = project
-
     db = model.Session()
     _assert_absent(db, model.Network, network)
     project = _must_find(db, model.Project, project)
 
-    driver_name = cfg.get('general', 'active_switch')
+    driver_name = cfg.get('general', 'driver')
     driver = importlib.import_module('haas.drivers.' + driver_name)
     network_id = driver.get_new_network_id(db)
     if network_id is None:
@@ -664,7 +662,7 @@ def network_delete(network):
     if network.project.dirty:
         raise BlockedError("Project dirty")
 
-    driver_name = cfg.get('general', 'active_switch')
+    driver_name = cfg.get('general', 'driver')
     driver = importlib.import_module('haas.drivers.' + driver_name)
     driver.free_network_id(db, network.network_id)
 
@@ -697,7 +695,7 @@ def switch_delete(switch):
     db.commit()
 
 
-@rest_call('PUT', '/switch/<switch>/port/<port>')
+@rest_call('PUT', '/switch/<switch>/port/<path:port>')
 def port_register(switch, port):
     """Register a port on a switch.
 
@@ -715,7 +713,7 @@ def port_register(switch, port):
     db.commit()
 
 
-@rest_call('DELETE', '/switch/<switch>/port/<port>')
+@rest_call('DELETE', '/switch/<switch>/port/<path:port>')
 def port_delete(switch, port):
     """Delete a port on a switch.
 
@@ -730,7 +728,7 @@ def port_delete(switch, port):
     db.commit()
 
 
-@rest_call('POST', '/switch/<switch>/port/<port>/connect_nic')
+@rest_call('POST', '/switch/<switch>/port/<path:port>/connect_nic')
 def port_connect_nic(switch, port, node, nic):
     """Connect a port on a switch to a nic on a node.
 
@@ -755,7 +753,7 @@ def port_connect_nic(switch, port, node, nic):
     db.commit()
 
 
-@rest_call('POST', '/switch/<switch>/port/<port>/detach_nic')
+@rest_call('POST', '/switch/<switch>/port/<path:port>/detach_nic')
 def port_detach_nic(switch, port):
     """Detach attached nic from a port.
 
@@ -779,7 +777,7 @@ def list_free_nodes():
     """List all nodes not in a project."""
     db = model.Session()
     nodes = db.query(model.Node).filter_by(project_id=None).all()
-    nodes = map(lambda n: n.label, nodes)
+    nodes = [n.label for n in nodes]
     return json.dumps(nodes)
 
 
@@ -789,7 +787,7 @@ def list_project_nodes(project):
     db = model.Session()
     project = _must_find(db, model.Project, project)
     nodes = project.nodes
-    nodes = map(lambda n: n.label, nodes)
+    nodes = [n.label for n in nodes]
     return json.dumps(nodes)
 
 
@@ -801,7 +799,7 @@ def show_node(nodename):
     return json.dumps({
         'name': node.label,
         'free': node.project_id is None,
-        'nics': map(lambda n: n.label, node.nics),
+        'nics': [n.label for n in node.nics],
     })
 
 
@@ -813,7 +811,7 @@ def show_headnode(nodename):
     return json.dumps({
         'name': headnode.label,
         'project': headnode.project.label,
-        'hnics': map(lambda n: n.label, headnode.hnics),
+        'hnics': [n.label for n in headnode.hnics],
         'vncport': headnode.get_vncport(),
     })
 

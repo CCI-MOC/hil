@@ -16,12 +16,14 @@
 internal setup only and will most likely not work on
 other HaaS configurations."""
 
-from haas import api
+from haas import api, model
+from haas.drivers.driver_tools.vlan import get_vlan_list
 from haas.test_common import *
-import re
+import importlib
+import json
 import pexpect
 import pytest
-from haas.drivers.dell import get_vlan_list
+import re
 
 class TestHeadNode:
 
@@ -34,7 +36,9 @@ class TestHeadNode:
         api.headnode_create('hn-0', 'anvil-nextgen')
         api.headnode_create_hnic('hn-0', 'hnic-0', 'de:ad:be:ef:20:14')
         api.headnode_connect_network('hn-0', 'hnic-0', 'spider-web')
+        assert json.loads(api.show_headnode('hn-0'))['vncport'] is None
         api.headnode_start('hn-0')
+        assert json.loads(api.show_headnode('hn-0'))['vncport'] is not None
 
 
 class TestNetwork:
@@ -44,118 +48,98 @@ class TestNetwork:
     def test_isolated_networks(self, db):
 
         def get_switch_vlans():
-            # load the configuration:
-            switch_ip = cfg.get('switch dell', 'ip')
-            switch_user = cfg.get('switch dell', 'user')
-            switch_pass = cfg.get('switch dell', 'pass')
-
-            # connect to the switch, and log in:
-            console = pexpect.spawn('telnet ' + switch_ip)
-            console.expect('User Name:')
-            console.sendline(switch_user)
-            console.expect('Password:')
-            console.sendline(switch_pass)
-
-            #Regex to handle different prompt at switch 
-            #[\r\n]+ will handle any newline
-            #.+ will handle any character after newline 
-            # this sequence terminates with #
-            console.expect(r'[\r\n]+.+#')
-            cmd_prompt = console.after
-            cmd_prompt = cmd_prompt.strip(' \r\n\t')
-
-            # get possible vlans from config
-            vlan_cfgs = []
-            for vlan in get_vlan_list():
-                console.sendline('show vlan tag %d' % vlan)
-                console.expect(cmd_prompt)
-                vlan_cfgs.append(console.before)
-
-            # close session
-            console.sendline('exit')
-            console.expect(pexpect.EOF)
-
-            return vlan_cfgs
+            config = json.loads(cfg.get('driver simple_vlan', 'switch'))
+            vlan_list = get_vlan_list()
+            driver = importlib.import_module('haas.drivers.switches.' + config['switch'])
+            return driver.get_switch_vlans(config, vlan_list)
 
         def get_network(intfc, vlan_cfgs):
             """Returns all interfaces on a network"""
+            trunk_port = cfg.get('driver simple_vlan', 'trunk_port')
             for vlan_cfg in vlan_cfgs:
                 if intfc in vlan_cfg:
                     regex = re.compile(r'gi\d+\/\d+\/\d+-?\d?\d?')
                     network = regex.findall(vlan_cfg)
-                    # XXX: this probably shouldn't be hard-coded
-                    network.remove('gi1/0/19')
+                    network.remove(trunk_port)
                     return network
             return []
         
-        def create_networks():
-            api.group_create('acme-code')
-            api.project_create('anvil-nextgen', 'acme-code')
+        def create_networks(): 
+            # Add up to 4 available nodes with nics to the project
+            free_nodes = db.query(model.Node).filter_by(project_id=None).all()
+            nodes = []
+            for node in free_nodes:
+                if len(node.nics) > 0:
+                    api.project_connect_node('anvil-nextgen', node.label)
+                    nodes.append(node)
+                    if len(nodes) >= 4:
+                        break
+    
+            # If there are not enough nodes with nics, raise an exception 
+            if len(nodes) < 4:
+                raise api.AllocationError(('At least 4 nodes with at least ' +
+                    '1 NIC are required for this test. Only %d node(s) were ' +
+                    'provided.') % len(nodes))
+
+            # Create two networks
             api.network_create('net-0', 'anvil-nextgen')
-            api.network_create('net-1', 'anvil-nextgen')    
-            for node in range(195, 199):
-                api.project_connect_node('anvil-nextgen', node)
-    
-            # Ask the switch which vlans nodes 195 and 196 are on
+            api.network_create('net-1', 'anvil-nextgen')
+ 
+            # Convert each node to a dict for ease of access
+            nodes = [{'label': n.label,
+                      'nic': n.nics[0].label,
+                      'port': n.nics[0].port.label}
+                     for n in nodes]
+
+            # Assert that n0 and n1 are not on any network
             vlan_cfgs = get_switch_vlans()
-            node_195_net = get_network('gi1/0/15', vlan_cfgs)
-            node_196_net= get_network('gi1/0/16', vlan_cfgs)
-    
-            # Assert that nodes 195 and 196 are not on a network
-            assert node_195_net == []
-            assert node_196_net == []
-    
-            # Add nodes 195 and 196 to net-0 and net-1 respectively
-            api.node_connect_network('195', 'node-195-nic1', 'net-0')
-            api.node_connect_network('196', 'node-196-nic1', 'net-1')
+
+            assert get_network(nodes[0]['port'], vlan_cfgs) == []
+            assert get_network(nodes[1]['port'], vlan_cfgs) == []
+
+            # Connect n0 and n1 to net-0 and net-1 respectively
+            api.node_connect_network(nodes[0]['label'], nodes[0]['nic'], 'net-0')
+            api.node_connect_network(nodes[1]['label'], nodes[1]['nic'], 'net-1')
             
             # Apply current configuration
             api.project_apply('anvil-nextgen')
     
-            # Ask the switch which vlans nodes 195 and 196 are on
+            # Assert that n0 and n1 are on isolated networks
             vlan_cfgs = get_switch_vlans()
+            assert get_network(nodes[0]['port'], vlan_cfgs) == [nodes[0]['port']]
+            assert get_network(nodes[1]['port'], vlan_cfgs) == [nodes[1]['port']]
     
-            print(vlan_cfgs[0])
-    
-            node_195_net = get_network('gi1/0/15', vlan_cfgs)
-            node_196_net = get_network('gi1/0/16', vlan_cfgs)
-    
-            # Assert that nodes 195 and 196 are on isolated networks
-            assert node_195_net == ['gi1/0/15']
-            assert node_196_net == ['gi1/0/16']
-    
-            # Add nodes 197 and 198 to the same networks as nodes 195 and 196
-            # respectively
-            api.node_connect_network('197', 'node-197-nic1', 'net-0')
-            api.node_connect_network('198', 'node-198-nic1', 'net-1')
+            # Add n2 and n3 to the same networks as n0 and n1 respectively
+            api.node_connect_network(nodes[2]['label'], nodes[2]['nic'], 'net-0')
+            api.node_connect_network(nodes[3]['label'], nodes[3]['nic'], 'net-1')
     
             # Apply current configuration
             api.project_apply('anvil-nextgen')
     
-            # Ask the switch which vlans nodes 195 and 196 are on
+            # Assert that n2 and n3 have been added to n0 and n1's networks
+            # respectively
             vlan_cfgs = get_switch_vlans() 
-            node_195_net = get_network('gi1/0/15', vlan_cfgs)
-            node_196_net = get_network('gi1/0/16', vlan_cfgs)
-    
-            # Assert that nodes 197 and 198 have been added to nodes 195 and
-            # 196's networks respectively
-            assert node_195_net == ['gi1/0/15', 'gi1/0/17']
-            assert node_196_net == ['gi1/0/16', 'gi1/0/18']
+            assert get_network(nodes[0]['port'], vlan_cfgs) == [nodes[0]['port'], nodes[2]['port']]
+            assert get_network(nodes[1]['port'], vlan_cfgs) == [nodes[1]['port'], nodes[3]['port']]
 
 
         def delete_networks():
+            # Query the DB for nodes on this project 
+            project = api._must_find(db, model.Project, 'anvil-nextgen')
+            nodes = project.nodes
+
             # Remove all nodes from their networks
-            for node in range(195,199):
-                api.node_detach_network(node, 'node-%d-nic1' % node)
+            for node in nodes:
+                if node.nics[0].network is not None:
+                    api.node_detach_network(node.label, node.nics[0].label)
     
             # Apply current configuration
             api.project_apply('anvil-nextgen')
     
-            # Ask the switch which vlans nodes 195, 196, 197 and 198 are on
-            # and assert that they are not on a network
+            # Assert that none of the nodes are on any network
             vlan_cfgs = get_switch_vlans()
-            for i in range(15,19):
-                assert get_network('gi1/0/%d' % i, vlan_cfgs) == []
+            for node in nodes:
+                assert get_network(node.nics[0].label, vlan_cfgs) == []
     
             # Delete the networks
             api.network_delete('net-0')
@@ -164,11 +148,17 @@ class TestNetwork:
             # Apply current configuration
             api.project_apply('anvil-nextgen')
 
+        
+        # Create group and project
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        
+        # Try the create_networks tests, then always run the delete_networks
+        # tests.  Its important to always run delete_networks because it
+        # performs cleanup in addition to running additional tests.
         try:
-            # Run core tests
             create_networks()
         finally:
-            # Always cleanup and run final tests
             delete_networks()
 
     @deployment_test
@@ -177,40 +167,44 @@ class TestNetwork:
         try:
             api.group_create('acme-code')
             api.project_create('anvil-nextgen', 'acme-code')
-            for network in range(0,11):
-                api.network_create('net-%d' %network, 'anvil-nextgen')
+            
+            vlans = get_vlan_list()
+            num_vlans = len(vlans)
+
+            for network in range(0,num_vlans):
+                api.network_create('net-%d' % network, 'anvil-nextgen')
      
             # Ensure that error is raised if too many networks allocated
             with pytest.raises(api.AllocationError):
-                api.network_create('net-11', 'anvil-nextgen')
+                api.network_create('net-%d' % num_vlans, 'anvil-nextgen')
      
             # Ensure that project_apply doesn't affect network allocation
             api.project_apply('anvil-nextgen')
             with pytest.raises(api.AllocationError):
-                api.network_create('net-11', 'anvil-nextgen')
+                api.network_create('net-%d' % num_vlans, 'anvil-nextgen')
      
             # Ensure that network_delete doesn't affect network allocation
-            api.network_delete('net-10')
-            api.network_create('net-10', 'anvil-nextgen')
+            api.network_delete('net-%d' % (num_vlans-1))
+            api.network_create('net-%d' % (num_vlans-1), 'anvil-nextgen')
             with pytest.raises(api.AllocationError):
-                api.network_create('net-11', 'anvil-nextgen')
+                api.network_create('net-%d' % num_vlans, 'anvil-nextgen')
      
             # Ensure that network_delete+project_apply doesn't affect network
             # allocation
-            api.network_delete('net-10')
+            api.network_delete('net-%d' % (num_vlans-1))
             api.project_apply('anvil-nextgen')
-            api.network_create('net-10', 'anvil-nextgen')
+            api.network_create('net-%d' % (num_vlans-1), 'anvil-nextgen')
             with pytest.raises(api.AllocationError):
-                api.network_create('net-11', 'anvil-nextgen')
+                api.network_create('net-%d' % num_vlans, 'anvil-nextgen')
     
-            api.network_delete('net-10')
-            api.network_create('net-10', 'anvil-nextgen')
+            api.network_delete('net-%d' % (num_vlans-1))
+            api.network_create('net-%d' % (num_vlans-1), 'anvil-nextgen')
             api.project_apply('anvil-nextgen')
             with pytest.raises(api.AllocationError):
-                api.network_create('net-11', 'anvil-nextgen')
+                api.network_create('net-%d' % num_vlans, 'anvil-nextgen')
 
         finally:
             # Clean up networks
-            for network in range(0,11):
+            for network in range(0,num_vlans):
                 api.network_delete('net-%d' % network)
             api.project_apply('anvil-nextgen')

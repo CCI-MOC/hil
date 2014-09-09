@@ -12,15 +12,15 @@
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
 
-from setuptools import setup, find_packages
-from pip.req import parse_requirements
+"""A switch driver that doesn't do anything
 
-requirements = [str(r.req) for r in parse_requirements('requirements.txt')]
+See the documentation for the haas.drivers package for a description of this
+module's interface.
+"""
 
-setup(name='haas',
-      version='1.0',
-      url='https://github.com/CCI-MOC/moc-public',
-      packages=find_packages(),
-      scripts=['scripts/haas', 'scripts/create_dell_vlans'],
-      install_requires=requirements,
-      )
+from haas.dev_support import no_dry_run
+
+@no_dry_run
+def apply_networking(net_map, config):
+    for port in net_map:
+        network = net_map[port]

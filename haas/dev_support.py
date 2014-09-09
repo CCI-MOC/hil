@@ -14,6 +14,7 @@
 
 import logging
 from haas import config
+from functools import wraps
 
 
 def no_dry_run(f):
@@ -32,6 +33,7 @@ def no_dry_run(f):
 
     If the `dry_run` option is not specified, this decorator has no effect.
     """
+    @wraps(f)
     def wrapper(*args, **kwargs):
         if config.cfg.has_option('devel', 'dry_run'):
             logger = logging.getLogger(__name__)
@@ -40,5 +42,4 @@ def no_dry_run(f):
             return None
         else:
             return f(*args, **kwargs)
-    wrapper.__name__ = f.__name__  # This will make debugging a bit nicer.
     return wrapper

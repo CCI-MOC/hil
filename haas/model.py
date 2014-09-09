@@ -23,6 +23,7 @@ from haas.dev_support import no_dry_run
 import importlib
 import uuid
 import xml.etree.ElementTree
+import logging
 
 Base=declarative_base()
 Session = sessionmaker()
@@ -41,7 +42,7 @@ def init_db(create=False, uri=None):
     if uri == None:
         uri = cfg.get('database', 'uri')
 
-    driver_name = cfg.get('general', 'active_switch')
+    driver_name = cfg.get('general', 'driver')
     driver = importlib.import_module('haas.drivers.' + driver_name)
 
     engine = create_engine(uri)
@@ -102,14 +103,30 @@ class Node(Model):
         self.ipmi_user = ipmi_user
         self.ipmi_pass = ipmi_pass
 
-    def power_cycle(self):
+    def _ipmitool(self, args):
+        """Invoke ipmitool with the right host/pass etc. for this node.
+
+        `args` - any additional arguments to pass to ipmitool.
+        """
         status = call(['ipmitool',
             '-U', self.ipmi_user,
             '-P', self.ipmi_pass,
-            '-H', self.ipmi_host,
-            'chassis', 'power', 'cycle'])
+            '-H', self.ipmi_host] + args)
+        if status != 0:
+            logger = logging.getLogger(__name__)
+            logger.info('Nonzero exit status from ipmitool, args = %r', args)
+        return status
+            
+
+    def power_cycle(self):
+        self._ipmitool(['chassis', 'bootdev', 'pxe'])
+        status = self._ipmitool(['chassis', 'power', 'cycle'])
+        if status != 0:
+            # power cycle will fail if the machine isn't running, so let's
+            # just turn it on in that case. This way we can save power by
+            # turning things off without breaking the HaaS. 
+            status = self._ipmitool(['chassis', 'power', 'on'])
         return status == 0
-        
 
 
 class Project(Model):
@@ -218,7 +235,6 @@ class Headnode(Model):
         # module so I could finally delete it, but I haven't actually made the
         # slight changes needed to get it to work again (variable renames,
         # mostly).
-        trunk_nic = cfg.get('headnode', 'trunk_nic')
         cmd(['virsh', 'undefine', self.name, '--remove-all-storage'])
 
     @no_dry_run
@@ -255,7 +271,13 @@ class Headnode(Model):
         If the VM is off, in all likelihood the result will be None.  This is
         because no port has been allocated to it yet.  (The XML will also have
         "autoport='yes'".)
+
+        If the VM has not been created yet (and is therefore dirty), return
+        None.
         """
+        if self.dirty:
+            return None
+
         p = subprocess.Popen(['virsh', 'dumpxml', self._vmname()],
                              stdout=subprocess.PIPE)
         xmldump, _ = p.communicate()
@@ -290,7 +312,6 @@ class Hnic(Model):
             # It is non-trivial to make a NIC not connected to a network, so
             # do nothing at all instead.
             return
-        trunk_nic = cfg.get('headnode', 'trunk_nic')
         vlan_no = str(self.network.network_id)
         bridge = 'br-vlan%s' % vlan_no
         check_call(['virsh', 'attach-interface', self.owner._vmname(), 'bridge', bridge, '--config'])

@@ -46,12 +46,11 @@ def cmd(f):
     command_dict[f.__name__] = wrapped
     def get_usage(f):
         args, varargs, _, _ = inspect.getargspec(f)
-        args = ''.join(map(lambda name: ' <%s>' % name, args))
+        showee = [f.__name__] + ['<%s>' % name for name in args]
+        args = ' '.join(['<%s>' % name for name in args])
         if varargs:
-            varargs = ' <%s...>' % varargs
-        else:
-            varargs = ''
-        return '%s%s%s' % (f.__name__, args, varargs)
+            showee += ['<%s...>' % varargs]
+        return ' '.join(showee)
     usage_dict[f.__name__] = get_usage(f)
     return wrapped
 
@@ -69,7 +68,7 @@ def check_status_code(response):
 def object_url(*args):
     url = cfg.get('client', 'endpoint')
     for arg in args:
-        url += '/' + urllib.quote(arg)
+        url += '/' + urllib.quote(arg,'')
     return url
 
 

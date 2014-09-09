@@ -12,15 +12,19 @@
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
 
-from setuptools import setup, find_packages
-from pip.req import parse_requirements
+"""A VLAN-based null switch driver.  Network IDs are allocated from a VLAN
+pool.  Applying the network state does nothing.
 
-requirements = [str(r.req) for r in parse_requirements('requirements.txt')]
+For unit testing purposes.
+"""
 
-setup(name='haas',
-      version='1.0',
-      url='https://github.com/CCI-MOC/moc-public',
-      packages=find_packages(),
-      scripts=['scripts/haas', 'scripts/create_dell_vlans'],
-      install_requires=requirements,
-      )
+# We are a VLAN-based driver with simple allocation
+from haas.drivers.driver_tools.vlan import *
+
+def apply_networking(net_map):
+    # The following code does nothing, except for check that the net_map is in
+    # fact a map that can be iterated over.  This is how it's used in the
+    # 'dell' plugin, and likely in most VLAN-based plugins.  This can help
+    # check for bugs in haas/api.py
+    for port in net_map:
+        net = net_map[port]
