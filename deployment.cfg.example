@@ -15,7 +15,8 @@ trunk_nic = em3
 
 [driver simple_vlan]
 switch = {"switch": "dell", "ip": "192.168.0.1", "user": "foo", "pass": "bar"}
-# The port that the switch is trunking to the head node.
+# The port that the switch is trunking to the head node. Note that this is
+# currently set manually, but must be known for deployment testing.
 trunk_port = gi1/0/4
 
 [vlan]
