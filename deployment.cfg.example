@@ -6,24 +6,19 @@
 [general]
 # The driver to use for the network switch. The value must be the name of one
 # of the modules in haas.drivers:
-active_switch = dell
+driver = simple_vlan
 
 [headnode]
 # The trunked network interface on the host. This is the nic that the VMs will
 # be bridged to to gain access to their networks.
 trunk_nic = em3
 
-[switch dell]
-# Settings specific to the dell powerconnect driver. Other switches might have
-# sections for their own options.
+[driver simple_vlan]
+switch = {"switch": "dell", "ip": "192.168.0.1", "user": "foo", "pass": "bar"}
 
-# The ip address that the switch's console is listening on.
-ip = 192.168.0.2
-# Login credetials, fairly self-explanatory:
-user = foo
-pass = bar
+[switch dell]
 # The port that the switch is trunking to the head node. Note that this is
-# currently set manually, but must be known for deployment testing.
+# currently set manually, but must be known for deployment testing.  Also note that this is a hack, because this section shouldn't even be here.
 trunk_port = gi1/0/4
 
 [vlan]
