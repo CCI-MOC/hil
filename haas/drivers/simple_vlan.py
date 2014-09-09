@@ -12,7 +12,7 @@
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
 
-"""A driver for VLAN-based setups using a single switch (possible stacked)
+"""A driver for VLAN-based setups using a single switch (possibly stacked)
 
 See the documentation for the haas.drivers package for a description of this
 module's interface.
@@ -23,7 +23,7 @@ An example config:
 driver = simple_vlan
 
 [driver simple_vlan]
-switch = {"switch": dell, "ip": "192.168.0.2", "user": "foo", "pass": "bar"}
+switch = {"switch": "dell", "ip": "192.168.0.2", "user": "foo", "pass": "bar"}
 
 """
 

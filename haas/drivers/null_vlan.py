@@ -18,7 +18,7 @@ pool.  Applying the network state does nothing.
 For unit testing purposes.
 """
 
-# We are a VLAN-based driver with simple allocatoin
+# We are a VLAN-based driver with simple allocation
 from haas.drivers.driver_tools.vlan import *
 
 def apply_networking(net_map):
