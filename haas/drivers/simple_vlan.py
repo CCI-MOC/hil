@@ -12,25 +12,18 @@
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
 
-"""A switch driver for VLAN-based setups using multiple non-stacked switches.
+"""A driver for VLAN-based setups using a single switch (possible stacked)
 
 See the documentation for the haas.drivers package for a description of this
 module's interface.
 
-This is for setups with a single switch.
-
-This driver does not manage the trunked links between the switches.  Indeed,
-it doesn't even know how they are set up.
-
-The format of ports here is simply "[port_id]", where "port_id" is whatever
-that switch's driver expects.  "switch_id" can be anything, and corresponds to
-the description in the config file.
+An example config:
 
 [general]
 driver = simple_vlan
 
 [driver simple_vlan]
-switch = {switch: dell, ip: "192.168.0.2", user: "foo", pass: "bar"}
+switch = {"switch": dell, "ip": "192.168.0.2", "user": "foo", "pass": "bar"}
 
 """
 
