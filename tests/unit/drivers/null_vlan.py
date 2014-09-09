@@ -12,7 +12,7 @@
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
 
-"""Unit tests for drivers/dell.py"""
+"""Unit tests for VLAN helper functions"""
 
 from functools import wraps
 
@@ -21,20 +21,20 @@ from haas.test_common import *
 import pytest
 
 from haas.config import cfg
-from haas.drivers.dell import *
 
+from haas.drivers.null_vlan import *
 
-def dell_backend(vlan_list):
-    """A decorator for tests running on the Dell backend.  Pass in a string
-    for the vlan_list configuration option, which determines which vlans can
-    be used for networking.
+def vlan_test(vlan_list):
+    """A decorator for tests of the vlan helper file.  Pass in a string for
+    the vlan_list configuration option, which determines which vlans can be
+    used for networking.
     """
 
     def dec(f):
         def config_initialize():
             # Use the 'dell' backend for these tests
             cfg.add_section('general')
-            cfg.set('general', 'active_switch', 'dell')
+            cfg.set('general', 'active_switch', 'null_vlan')
             cfg.add_section('vlan')
             cfg.set('vlan', 'vlans', vlan_list)
 
@@ -54,11 +54,11 @@ def dell_backend(vlan_list):
 class TestInit_DB:
     """Tests init_db."""
 
-    @dell_backend('100-109')
+    @vlan_test('100-109')
     def test_init_db_1(self, db):
         pass
 
-    @dell_backend('1-10,40-100, 4044, 3000-4000')
+    @vlan_test('1-10,40-100, 4044, 3000-4000')
     def test_init_db_2(self, db):
         pass
 
@@ -66,7 +66,7 @@ class TestInit_DB:
 class TestNetworkID:
     """Tests allocation and freeing of network IDs"""
 
-    @dell_backend('84')
+    @vlan_test('84')
     def test_allocate_free_1(self, db):
         assert '84' == get_new_network_id(db)
         assert None == get_new_network_id(db)
@@ -74,7 +74,7 @@ class TestNetworkID:
         assert '84' == get_new_network_id(db)
         assert None == get_new_network_id(db)
 
-    @dell_backend('84, 85')
+    @vlan_test('84, 85')
     def test_allocate_free_2(self, db):
         get_new_network_id(db)
         get_new_network_id(db)
@@ -83,9 +83,9 @@ class TestNetworkID:
         free_network_id(db, '85')
         assert '85' == get_new_network_id(db)
 
-    @dell_backend('84')
+    @vlan_test('84')
     def test_free_nonexist(self,db):
         # This test ensures that attempting to free a vlan that is not in the
         # db is handled gracefully, and the program does not crash.
         # TODO: Check to see that an error message is actually logged.
-        free_network_id(db, '85') 
+        free_network_id(db, '85')
