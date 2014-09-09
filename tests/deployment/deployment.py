@@ -17,7 +17,7 @@ internal setup only and will most likely not work on
 other HaaS configurations."""
 
 from haas import api, model
-from haas.drivers.dell import get_vlan_list
+from haas.drivers.driver_tools.vlan import get_vlan_list
 from haas.test_common import *
 import json
 import pexpect
@@ -48,9 +48,10 @@ class TestNetwork:
 
         def get_switch_vlans():
             # load the configuration:
-            switch_ip = cfg.get('switch dell', 'ip')
-            switch_user = cfg.get('switch dell', 'user')
-            switch_pass = cfg.get('switch dell', 'pass')
+            config = json.loads(cfg.get('driver simple_vlan', 'switch'))
+            switch_ip = config['ip']
+            switch_user = config['user']
+            switch_pass = config['pass']
 
             # connect to the switch, and log in:
             console = pexpect.spawn('telnet ' + switch_ip)

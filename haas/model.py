@@ -42,7 +42,7 @@ def init_db(create=False, uri=None):
     if uri == None:
         uri = cfg.get('database', 'uri')
 
-    driver_name = cfg.get('general', 'active_switch')
+    driver_name = cfg.get('general', 'driver')
     driver = importlib.import_module('haas.drivers.' + driver_name)
 
     engine = create_engine(uri)

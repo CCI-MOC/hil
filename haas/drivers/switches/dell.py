@@ -25,14 +25,13 @@ import os
 import pexpect
 import re
 
-from haas.config import cfg
 
 from haas.dev_support import no_dry_run
 
 from haas.drivers.driver_tools.vlan import *
 
 @no_dry_run
-def apply_networking(net_map):
+def apply_networking(net_map, config):
     def set_access_vlan(port, vlan_id):
         """Set a port to access a given vlan.
 
@@ -59,9 +58,9 @@ def apply_networking(net_map):
         console.expect(config_prompt)
 
     # load the configuration:
-    switch_ip = cfg.get('switch dell', 'ip')
-    switch_user = cfg.get('switch dell', 'user')
-    switch_pass = cfg.get('switch dell', 'pass')
+    switch_ip = config["ip"]
+    switch_user = config["user"]
+    switch_pass = config["pass"]
 
     # connect to the switch, and log in:
     console = pexpect.spawn('telnet ' + switch_ip)

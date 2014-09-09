@@ -58,7 +58,7 @@ def database_only(f):
     def config_initialize():
         # Use the 'null' backend for these tests
         cfg.add_section('general')
-        cfg.set('general', 'active_switch', 'null')
+        cfg.set('general', 'driver', 'null')
         cfg.add_section('devel')
         cfg.set('devel', 'dry_run', True)
 
