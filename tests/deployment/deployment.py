@@ -83,7 +83,7 @@ class TestNetwork:
 
         def get_network(intfc, vlan_cfgs):
             """Returns all interfaces on a network"""
-            trunk_port = cfg.get('switch dell', 'trunk_port')
+            trunk_port = cfg.get('driver simple_vlan', 'trunk_port')
             for vlan_cfg in vlan_cfgs:
                 if intfc in vlan_cfg:
                     regex = re.compile(r'gi\d+\/\d+\/\d+-?\d?\d?')
