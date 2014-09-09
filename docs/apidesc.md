@@ -102,6 +102,10 @@ project at the same time.
     # networking operations on a physical node
     node_connect_network        <node_label> <nic_label> <network_label>
     node_detach_network         <node_label> <nic_label>
+
+    # Reboot a headnode, or turn it on if it's off.  In all cases, PXE boot on
+    # the next boot.
+    node_power_cycle <node_label>
  
     # networking operations on a headnode
     headnode_create_hnic        <hn_label> <hnic_label>
