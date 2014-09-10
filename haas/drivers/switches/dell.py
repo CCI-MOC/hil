@@ -14,9 +14,6 @@
 
 """A switch driver for the Dell Powerconnect
 
-See the documentation for the haas.drivers package for a description of this
-module's interface.
-
 Currently the driver uses telnet to connect to the switch's console; in
 the long term we want to be using SNMP.
 """
