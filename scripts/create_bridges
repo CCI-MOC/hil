@@ -14,18 +14,12 @@
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
 
-import sys
 from haas import config
 from haas.config import cfg
 from subprocess import call
-from haas.drivers.dell import get_vlan_list
+from haas.drivers.driver_tools.vlan import get_vlan_list
 
 config.load()
-
-driver_name = cfg.get('general', 'active_switch')
-if driver_name != "dell":
-    print("Not using dell switch.  Aborting.")
-    sys.exit(1)
 
 def create_bridge(vlan_no):
     vlan_no = str(vlan_no)
