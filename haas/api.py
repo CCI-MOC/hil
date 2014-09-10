@@ -276,7 +276,7 @@ def project_apply(project):
     TODO: there are other possible errors, document them and how they are
     handled.
     """
-    driver_name = cfg.get('general', 'active_switch')
+    driver_name = cfg.get('general', 'driver')
     driver = importlib.import_module('haas.drivers.' + driver_name)
 
     db = model.Session()
@@ -635,7 +635,7 @@ def network_create(network, project):
     _assert_absent(db, model.Network, network)
     project = _must_find(db, model.Project, project)
 
-    driver_name = cfg.get('general', 'active_switch')
+    driver_name = cfg.get('general', 'driver')
     driver = importlib.import_module('haas.drivers.' + driver_name)
     network_id = driver.get_new_network_id(db)
     if network_id is None:
@@ -662,7 +662,7 @@ def network_delete(network):
     if network.project.dirty:
         raise BlockedError("Project dirty")
 
-    driver_name = cfg.get('general', 'active_switch')
+    driver_name = cfg.get('general', 'driver')
     driver = importlib.import_module('haas.drivers.' + driver_name)
     driver.free_network_id(db, network.network_id)
 

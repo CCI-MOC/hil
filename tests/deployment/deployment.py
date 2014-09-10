@@ -17,8 +17,9 @@ internal setup only and will most likely not work on
 other HaaS configurations."""
 
 from haas import api, model
-from haas.drivers.dell import get_vlan_list
+from haas.drivers.driver_tools.vlan import get_vlan_list
 from haas.test_common import *
+import importlib
 import json
 import pexpect
 import pytest
@@ -47,42 +48,14 @@ class TestNetwork:
     def test_isolated_networks(self, db):
 
         def get_switch_vlans():
-            # load the configuration:
-            switch_ip = cfg.get('switch dell', 'ip')
-            switch_user = cfg.get('switch dell', 'user')
-            switch_pass = cfg.get('switch dell', 'pass')
-
-            # connect to the switch, and log in:
-            console = pexpect.spawn('telnet ' + switch_ip)
-            console.expect('User Name:')
-            console.sendline(switch_user)
-            console.expect('Password:')
-            console.sendline(switch_pass)
-
-            #Regex to handle different prompt at switch 
-            #[\r\n]+ will handle any newline
-            #.+ will handle any character after newline 
-            # this sequence terminates with #
-            console.expect(r'[\r\n]+.+#')
-            cmd_prompt = console.after
-            cmd_prompt = cmd_prompt.strip(' \r\n\t')
-
-            # get possible vlans from config
-            vlan_cfgs = []
-            for vlan in get_vlan_list():
-                console.sendline('show vlan tag %d' % vlan)
-                console.expect(cmd_prompt)
-                vlan_cfgs.append(console.before)
-
-            # close session
-            console.sendline('exit')
-            console.expect(pexpect.EOF)
-
-            return vlan_cfgs
+            config = json.loads(cfg.get('driver simple_vlan', 'switch'))
+            vlan_list = get_vlan_list()
+            driver = importlib.import_module('haas.drivers.switches.' + config['switch'])
+            return driver.get_switch_vlans(config, vlan_list)
 
         def get_network(intfc, vlan_cfgs):
             """Returns all interfaces on a network"""
-            trunk_port = cfg.get('switch dell', 'trunk_port')
+            trunk_port = cfg.get('driver simple_vlan', 'trunk_port')
             for vlan_cfg in vlan_cfgs:
                 if intfc in vlan_cfg:
                     regex = re.compile(r'gi\d+\/\d+\/\d+-?\d?\d?')
@@ -120,6 +93,7 @@ class TestNetwork:
 
             # Assert that n0 and n1 are not on any network
             vlan_cfgs = get_switch_vlans()
+
             assert get_network(nodes[0]['port'], vlan_cfgs) == []
             assert get_network(nodes[1]['port'], vlan_cfgs) == []
 

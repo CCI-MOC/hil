@@ -25,14 +25,13 @@ import os
 import pexpect
 import re
 
-from haas.config import cfg
 
 from haas.dev_support import no_dry_run
 
 from haas.drivers.driver_tools.vlan import *
 
 @no_dry_run
-def apply_networking(net_map):
+def apply_networking(net_map, config):
     def set_access_vlan(port, vlan_id):
         """Set a port to access a given vlan.
 
@@ -59,9 +58,9 @@ def apply_networking(net_map):
         console.expect(config_prompt)
 
     # load the configuration:
-    switch_ip = cfg.get('switch dell', 'ip')
-    switch_user = cfg.get('switch dell', 'user')
-    switch_pass = cfg.get('switch dell', 'pass')
+    switch_ip = config["ip"]
+    switch_user = config["user"]
+    switch_pass = config["pass"]
 
     # connect to the switch, and log in:
     console = pexpect.spawn('telnet ' + switch_ip)
@@ -96,3 +95,39 @@ def apply_networking(net_map):
     console.expect(main_prompt)
     console.sendline('exit')
     console.expect(pexpect.EOF)
+
+
+# This doesn't get @no_dry_run, because returning None here is a bad idea
+def get_switch_vlans(config, vlan_list):
+    # load the configuration:
+    switch_ip = config['ip']
+    switch_user = config['user']
+    switch_pass = config['pass']
+
+    # connect to the switch, and log in:
+    console = pexpect.spawn('telnet ' + switch_ip)
+    console.expect('User Name:')
+    console.sendline(switch_user)
+    console.expect('Password:')
+    console.sendline(switch_pass)
+
+    #Regex to handle different prompt at switch
+    #[\r\n]+ will handle any newline
+    #.+ will handle any character after newline
+    # this sequence terminates with #
+    console.expect(r'[\r\n]+.+#')
+    cmd_prompt = console.after
+    cmd_prompt = cmd_prompt.strip(' \r\n\t')
+
+    # get possible vlans from config
+    vlan_cfgs = []
+    for vlan in get_vlan_list():
+        console.sendline('show vlan tag %d' % vlan)
+        console.expect(cmd_prompt)
+        vlan_cfgs.append(console.before)
+
+    # close session
+    console.sendline('exit')
+    console.expect(pexpect.EOF)
+
+    return vlan_cfgs

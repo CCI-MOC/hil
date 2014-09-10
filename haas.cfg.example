@@ -16,7 +16,7 @@
 [general]
 # The driver to use for the network switch. The value must be the name of one of
 # the modules in haas.drivers:
-active_switch = dell
+driver = simple_vlan
 # How verbosely to log.  Log messages of the given severity or more will be
 # logged.  Options include: debug, info, warn/warning, error, critical/fatal.
 log_level = info
@@ -34,16 +34,12 @@ endpoint = http://127.0.0.1:5000
 # A SQLAlchemy database URI, specifying the database for the server to connect to.
 uri = sqlite:///haas.db
 
-[switch dell]
-# Settings specific to the dell powerconnect driver. Other switches might have
-# sections for their own options.
+# Settings for the driver in question
+[driver simple_vlan]
+# In this case, we use a JSON dictionary describing the switch
+switch = {"switch": "dell", "ip": "192.168.0.1", "user": "foo", "pass": "bar"}
 
-# The ip address that the switch's console is listening on.
-ip = 192.168.0.2
-# Login credetials, fairly self-explanatory:
-user = foo
-pass = bar
-
+#VLANs aviailable for use for the active, VLAN-based driver
 [vlan]
 vlans = 100-109
 # Another valid list:  14,35-40, 100-900, 904, 65-85
