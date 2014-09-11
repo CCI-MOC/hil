@@ -53,15 +53,12 @@ class TestNetwork:
             driver = importlib.import_module('haas.drivers.switches.' + config['switch'])
             return driver.get_switch_vlans(config, vlan_list)
 
-        def get_network(intfc, vlan_cfgs):
-            """Returns all interfaces on a network"""
+        def get_network(port, vlan_cfg):
+            """Returns all interfaces on the same network as a given port"""
             trunk_port = cfg.get('driver simple_vlan', 'trunk_port')
-            for vlan_cfg in vlan_cfgs:
-                if intfc in vlan_cfg:
-                    regex = re.compile(r'gi\d+\/\d+\/\d+-?\d?\d?')
-                    network = regex.findall(vlan_cfg)
-                    network.remove(trunk_port)
-                    return network
+            for vlan in vlan_cfg:
+                if port in vlan_cfg[vlan]:
+                    return filter(lambda p: p != trunk_port, vlan_cfg[vlan])
             return []
         
         def create_networks(): 

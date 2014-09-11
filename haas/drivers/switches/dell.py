@@ -117,11 +117,12 @@ def get_switch_vlans(config, vlan_list):
     cmd_prompt = cmd_prompt.strip(' \r\n\t')
 
     # get possible vlans from config
-    vlan_cfgs = []
+    vlan_cfgs = {}
+    regex = re.compile(r'gi\d+\/\d+\/\d+-?\d?\d?')
     for vlan in get_vlan_list():
         console.sendline('show vlan tag %d' % vlan)
         console.expect(cmd_prompt)
-        vlan_cfgs.append(console.before)
+        vlan_cfgs[vlan] = regex.findall(console.before)
 
     # close session
     console.sendline('exit')
