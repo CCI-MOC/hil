@@ -38,3 +38,14 @@ def apply_networking(net_map):
     config = json.loads(cfg.get('driver simple_vlan', 'switch'))
     driver = importlib.import_module('haas.drivers.switches.' + config["switch"])
     driver.apply_networking(net_map, config)
+
+def get_switch_vlans(vlan_list):
+    config = json.loads(cfg.get('driver simple_vlan', 'switch'))
+    driver = importlib.import_module('haas.drivers.switches.' + config['switch'])
+    returnee = driver.get_switch_vlans(config, vlan_list)
+    # Remove the trunk port from the vlan_lists
+    trunk_port = cfg.get('driver simple_vlan', 'trunk_port')
+    for vlan in returnee:
+        if trunk_port in returnee[vlan]:
+            returnee[vlan].remove(trunk_port)
+    return returnee
