@@ -96,6 +96,7 @@ def deployment_test(f):
 
         api.switch_register(layout['switch'], layout['driver'])
 
+        netmap = {}
         for node in layout['nodes']:
             api.node_register(node['name'], node['ipmi']['host'],
                 node['ipmi']['user'], node['ipmi']['pass'])
@@ -105,6 +106,13 @@ def deployment_test(f):
                 api.port_connect_nic(
                     layout['switch'], nic['port'],
                     node['name'], nic['name'])
+                netmap[nic['port']] = None
+
+        # Now ensure that all of these ports are turned off
+        driver_name = cfg.get('general', 'driver')
+        driver = importlib.import_module('haas.drivers.' + driver_name)
+        driver.apply_networking(netmap)
+
 
     @wraps(f)
     @clear_configuration
