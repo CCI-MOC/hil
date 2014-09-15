@@ -47,18 +47,17 @@ class TestNetwork:
     @headnode_cleanup
     def test_isolated_networks(self, db):
 
+        driver_name = cfg.get('general', 'driver')
+        driver = importlib.import_module('haas.drivers.' + driver_name)
+
         def get_switch_vlans():
-            config = json.loads(cfg.get('driver simple_vlan', 'switch'))
-            vlan_list = get_vlan_list()
-            driver = importlib.import_module('haas.drivers.switches.' + config['switch'])
-            return driver.get_switch_vlans(config, vlan_list)
+            return driver.get_switch_vlans(get_vlan_list())
 
         def get_network(port, vlan_cfg):
             """Returns all interfaces on the same network as a given port"""
-            trunk_port = cfg.get('driver simple_vlan', 'trunk_port')
             for vlan in vlan_cfg:
                 if port in vlan_cfg[vlan]:
-                    return filter(lambda p: p != trunk_port, vlan_cfg[vlan])
+                    return vlan_cfg[vlan]
             return []
         
         def create_networks(): 
