@@ -118,6 +118,8 @@ def get_switch_vlans(config, vlan_list):
 
     # get possible vlans from config
     vlan_cfgs = {}
+    # This regex matches the notation for ports on the Dell switch.  For
+    # example, 'gi1/0/24'
     regex = re.compile(r'gi\d+\/\d+\/\d+-?\d?\d?')
     for vlan in get_vlan_list():
         console.sendline('show vlan tag %d' % vlan)
