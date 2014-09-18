@@ -790,6 +790,14 @@ def list_project_nodes(project):
     nodes = [n.label for n in nodes]
     return json.dumps(nodes)
 
+@rest_call('GET', '/project/<project>/networks')
+def list_project_networks(project):
+    """List all networks belonging to a project."""
+    db = model.Session()
+    project = _must_find(db, model.Project, project)
+    networks = project.networks
+    networks = [n.label for n in networks]
+    return json.dumps(networks)
 
 @rest_call('GET', '/node/<nodename>')
 def show_node(nodename):

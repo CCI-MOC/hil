@@ -303,6 +303,12 @@ def list_project_nodes(project):
     check_status_code(requests.get(url))
 
 @cmd
+def list_project_networks(project):
+    """List all networks attached to a <project>"""
+    url = object_url('project', project, 'networks')
+    check_status_code(requests.get(url))
+
+@cmd
 def show_node(node):
     """Display information about a <node>"""
     url = object_url('node', node)

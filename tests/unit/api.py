@@ -1399,6 +1399,31 @@ class TestQuery:
         assert result == ['data', 'robocop']
 
     @database_only
+    def test_project_list_networks(self, db):
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+
+        api.network_create('pxe', 'anvil-nextgen')
+        api.network_create('public', 'anvil-nextgen')
+        api.network_create('private', 'anvil-nextgen')
+
+        result = json.loads(api.list_project_networks('anvil-nextgen'))
+        # For the lists to be equal, the ordering must be the same:
+        result.sort()
+        assert result == [
+                'private',
+                'public',
+                'pxe'
+        ]
+
+    @database_only
+    def test_no_project_networks(self, db):
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        assert json.loads(api.list_project_nodes('anvil-nextgen')) == []
+
+
+    @database_only
     def test_show_headnode(self, db):
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
