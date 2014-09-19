@@ -198,7 +198,7 @@ class Group(Model):
 
 class Headnode(Model):
     project_id = Column(String, ForeignKey('project.id'), nullable=False)
-    project = relationship("Project", backref=backref('headnode', uselist=False))
+    project = relationship("Project", backref=backref('headnode', uselist=True))
     dirty = Column(Boolean, nullable=False)
 
     # We need a guaranteed unique name to generate the libvirt machine name

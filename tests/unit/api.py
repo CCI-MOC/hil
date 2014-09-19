@@ -687,8 +687,7 @@ class TestHeadnodeCreateDelete:
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.headnode_create('hn-0', 'anvil-nextgen')
-        with pytest.raises(api.DuplicateError):
-            api.headnode_create('hn-1', 'anvil-nextgen')
+        api.headnode_create('hn-1', 'anvil-nextgen')
 
 
     @database_only
