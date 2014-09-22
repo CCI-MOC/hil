@@ -208,7 +208,8 @@ def group_add_user(group, user):
     user = _must_find(db, model.User, user)
     group = _must_find(db, model.Group, group)
     if group in user.groups:
-        raise DuplicateError(user.label)
+        raise DuplicateError('User %s is already in group %s',
+                             (user.label, group.label))
     user.groups.append(group)
     db.commit()
 
@@ -223,7 +224,8 @@ def group_remove_user(group, user):
     user = _must_find(db, model.User, user)
     group = _must_find(db, model.Group, group)
     if group not in user.groups:
-        raise NotFoundError(user.label)
+        raise NotFoundError("User %s is not in group %s",
+                            (user.label, group.label))
     user.groups.remove(group)
     db.commit()
 
@@ -833,7 +835,7 @@ def _assert_absent(session, cls, name):
     """
     obj = session.query(cls).filter_by(label=name).first()
     if obj:
-        raise DuplicateError(cls.__name__ + ': ' + name)
+        raise DuplicateError("%s %s already exists." % (cls.__name__, name))
 
 
 def _must_find(session, cls, name):
@@ -850,7 +852,7 @@ def _must_find(session, cls, name):
     """
     obj = session.query(cls).filter_by(label=name).first()
     if not obj:
-        raise NotFoundError(cls.__name__ + ': ' + name)
+        raise NotFoundError("%s %s does not exist." % (cls.__name__, name))
     return obj
 
 def _namespaced_query(session, obj_outer, cls_inner, name_inner):
@@ -873,7 +875,9 @@ def _assert_absent_n(session, obj_outer, cls_inner, name_inner):
     """
     obj_inner = _namespaced_query(session, obj_outer, cls_inner, name_inner)
     if obj_inner is not None:
-        raise DuplicateError(cls_inner.__name__ + " " + obj_outer.label + " " + name_inner)
+        raise DuplicateError("%s %s on %s %s already exists" %
+                             (cls_inner.__name__, name_inner,
+                              obj_outer.__class__.__name__, obj_outer.label))
 
 def _must_find_n(session, obj_outer, cls_inner, name_inner):
     """Searches the database for a "namespaced" object, such as a nic on a node.
@@ -889,5 +893,7 @@ def _must_find_n(session, obj_outer, cls_inner, name_inner):
     """
     obj_inner = _namespaced_query(session, obj_outer, cls_inner, name_inner)
     if obj_inner is None:
-        raise NotFoundError(cls_inner.__name__ + " " + obj_outer.label + " " + name_inner)
+        raise NotFoundError("%s %s on %s %s does not exist." %
+                            (cls_inner.__name__, name_inner,
+                             obj_outer.__class__.__name__, obj_outer.label))
     return obj_inner
