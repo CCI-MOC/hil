@@ -1,8 +1,8 @@
-flask
-sqlalchemy
-importlib
-passlib
-pexpect
-requests
-pytest
-pytest-cov
+Flask==0.10.1
+SQLAlchemy==0.9.7
+importlib==1.0.3
+passlib==1.6.2
+pexpect==3.3
+requests==2.4.1
+pytest==2.6.2
+pytest-cov==1.8.0
