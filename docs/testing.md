@@ -1,28 +1,19 @@
 # Overview
 
 Testing for HaaS is done using [pytest][1]. All tests
-are placed in the "tests" subdirectory, which has 3 directories: unit,
-functional and integration.
+are placed in the "tests" subdirectory, which is subdivided into:
 
-Unit tests focus on testing indvidual functions. For example, testing
-user_create() would entail a test that creates a user and perhaps trying
-to create a user twice. Unit tests might also include other function calls
-as well if they are necessary. Testing user_delete() might first require
-calling user_create().
+    * `unit` - for basic unit tests. These are safe to run without a
+      full HaaS enviornment (i.e. you don't need libvirt etc).
+    * `deployment` - for tests that need to run against an actual setup.
+      Right now these aren't really generalized well enough to run
+      outside of the development environment we have set up at the MOC.
+      Patches welcome!
 
-Functional tests verify higher levels of functionality and integration. This
-might include calling not only user_create() and user_delete(), but also
-changing the password, adding a user to a group, and so forth. The intention
-is to ensure particular user stories function as they are supposed to,
-and ensure that scenarios which shouldn't happen don't.
-
-Integration tests exercise the entire stack, from the highest level API to
-the lowest level driver. These tests will likely require physical switch
-hardware (or a mock switch driver) to run, and thus won't run by default.
-
-It is intended (and the default configuration) to run unit and functional
-tests before any commit. Developers should also introduce unit tests for any
-new functions/methods they write, or any new or fixed functionality. Ideally,
+Developers should run at least the unit tests before making a commit.
+Ideally, the deployment tests should also be run, though we're less
+strict about this. Developers should also introduce tests for any new
+functions/methods they write, or any new or fixed functionality. Ideally,
 bug fixes should include a test (whether unit or functional) that reproduces
 the problem scenario so that we can ensure the bug doesn't return!
 
@@ -47,24 +38,23 @@ To run just a subset of them, specify a particular file or directory:
     py.test tests/unit
     py.test tests/unit/api.py
 
+As stated above, running at least `tests/unit` is mandatory before each
+commit.
+
 # Code Coverage
 
 The pytest-cov plugin (included in requirements.txt) allows us to
 generate reports indicating what code is/is not executed by our tests.
-the most basic usage is:
-
-    py.test --cov haas tests/
-
-You can get information on which specific lines were not executed via:
-
-    py.test --cov-report term-missing --cov haas tests/
+`setup.cfg` configures pytest to output coverage information by default,
+so you mostly don't need to worry about this from a usage perspective --
+just make sure you pay attention to the output.
 
 More information is available on the projects [PyPI page][2].
 
 # Test structure
 
 Tests are kept in the `tests` directory, which is further organized into
-3 subdirectories: * unit * functional * integration \(*Not run by default*\)
+2 subdirectories: `unit` and `deployment` \(*Not run by default*\)
 
 For each file in the haas code, there should be a file with the same name in
 the unit directory. Within those files, classes \(class names **must** begin
