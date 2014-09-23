@@ -33,16 +33,17 @@ class APIError(Exception):
     i.e. If such an error occurs in a rest API call, it should be reported as
     part of the HTTP response.
     """
-    status_code = 400
+    status_code = 400 # Bad Request
 
 
 class NotFoundError(APIError):
     """An exception indicating that a given resource does not exist."""
-    status_code = 404
+    status_code = 404 # Not Found
 
 
 class DuplicateError(APIError):
     """An exception indicating that a given resource already exists."""
+    status_code = 409 # Conflict
 
 
 class AllocationError(APIError):
@@ -52,22 +53,26 @@ class AllocationError(APIError):
 class BadArgumentError(APIError):
     """An exception indicating an invalid request on the part of the user."""
 
+
 class ProjectMismatchError(APIError):
     """An exception indicating that the resources given don't belong to the
     same project.
     """
+    status_code = 409 # Conflict
 
 class BlockedError(APIError):
     """An exception indicating that the requested action cannot happen until
     some other change.  For example, deletion is blocked until the components
     are deleted, and possibly until the dirty flag is cleared as well.
     """
+    status_code = 409 # Conflict
 
 class IllegalStateError(APIError):
     """The request is invalid due to the state of the system.
 
     The request might otherwise be perfectly valid.
     """
+    status_code = 409 # Conflict
 
 
 app = Flask(__name__)
