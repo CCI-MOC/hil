@@ -14,8 +14,6 @@
 
 """This module provides the HaaS service's public API.
 
-Most of the HTTP logic is in haas.http, with a small number of exceptions.
-
 TODO: Spec out and document what sanitization is required.
 """
 import importlib
