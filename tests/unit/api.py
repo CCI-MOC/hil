@@ -1002,7 +1002,7 @@ class TestNetworkCreateDelete:
         api.project_create('anvil-nextgen', 'acme-code')
         api.network_create('hammernet', 'anvil-nextgen')
         net = api._must_find(db, model.Network, 'hammernet')
-        assert net.project.label == 'anvil-nextgen'
+        assert net.creator.label == 'anvil-nextgen'
 
     @database_only
     def test_network_create_badproject(self, db):

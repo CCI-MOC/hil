@@ -185,14 +185,26 @@ class Project(Model):
 class Network(Model):
     """A link-layer network."""
 
-    # The project to which the network belongs:
-    project_id    = Column(String,ForeignKey('project.id'), nullable=False)
-    project = relationship("Project",backref=backref('networks'))
+    # The project to which the network belongs, or None if the network was
+    # created by the administrator.
+    creator_id = Column(String,ForeignKey('project.id'))
+    creator    = relationship("Project",
+                              backref=backref('networks_created'),
+                              foreign_keys=[creator_id])
+    # The project that has access to the network, or None if the network is
+    # public.
+    access_id = Column(String, ForeignKey('project.id'))
+    access    = relationship("Project",
+                             backref=backref('networks_access'),
+                             foreign_keys=[access_id])
+    # True if the VLAN-id came from the allocation pool; False if it was
+    # imported
+    allocated = Column(Boolean)
 
     # An identifier meaningful to the networking driver:
     network_id    = Column(String, nullable=False)
 
-    def __init__(self, project, network_id, label):
+    def __init__(self, creator, access, allocated, network_id, label):
         """Create a network.
 
         The network will belong to `project`, and have a symbolic name of
@@ -200,7 +212,9 @@ class Network(Model):
         the driver.
         """
         self.network_id = network_id
-        self.project = project
+        self.creator = creator
+        self.access = access
+        self.allocated = allocated
         self.label = label
 
 

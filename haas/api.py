@@ -180,7 +180,7 @@ def project_delete(project):
     project = _must_find(db, model.Project, project)
     if project.nodes:
         raise BlockedError("Project has nodes still")
-    if project.networks:
+    if project.networks_created:
         raise BlockedError("Project still has networks")
     if project.headnode:
         ### FIXME: If you ever create a headnode, you can't delete it right
@@ -302,10 +302,10 @@ def node_connect_network(node, nic, network):
     if not node.project:
         raise ProjectMismatchError("Node not in project")
 
-    if node.project.label is not network.project.label:
-        raise ProjectMismatchError("Node and network in different projects")
-
     project = node.project
+
+    if (network.access is not None) and (network.access is not project):
+        raise ProjectMismatchError("Project does not have access to given network.")
 
     nic.network = network
     db.commit()
@@ -480,8 +480,10 @@ def headnode_connect_network(headnode, hnic, network):
     if not headnode.dirty:
         raise IllegalStateError
 
-    if headnode.project.label is not network.project.label:
-        raise ProjectMismatchError("Headnode and network in different projects")
+    project = headnode.project
+
+    if (network.access is not None) and (network.access is not project):
+        raise ProjectMismatchError("Project does not have access to given network.")
 
     hnic.network = network
     db.commit()
@@ -526,7 +528,7 @@ def network_create(network, project):
     if network_id is None:
         raise AllocationError('No more networks')
 
-    network = model.Network(project, network_id, network)
+    network = model.Network(project, project, True, network_id, network)
     db.add(network)
     db.commit()
 
@@ -675,10 +677,10 @@ def list_project_nodes(project):
 
 @rest_call('GET', '/project/<project>/networks')
 def list_project_networks(project):
-    """List all networks belonging to a project."""
+    """List all networks the project can access."""
     db = model.Session()
     project = _must_find(db, model.Project, project)
-    networks = project.networks
+    networks = project.networks_access
     networks = [n.label for n in networks]
     return json.dumps(networks)
 
