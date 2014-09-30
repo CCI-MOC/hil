@@ -176,9 +176,6 @@ class Project(Model):
     changes to headnodes are generally immediate.
     """
 
-    # A project is "dirty" if it has unapplied changes:
-    dirty = Column(Boolean, nullable=False)
-
     # The group to which the project belongs:
     group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
     group = relationship("Group", backref=backref("projects"))
@@ -187,7 +184,6 @@ class Project(Model):
         """Create a project with the given label belonging to `group`."""
         self.group = group
         self.label = label
-        self.dirty = False
 
 
 class Network(Model):

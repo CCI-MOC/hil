@@ -183,18 +183,17 @@ class TestProjectCreateDelete:
             api.project_delete('anvil-nextgen')
 
 
-class TestProjectApply:
+class TestNetworking:
 
     @database_only
-    def test_project_apply(self, db):
+    def test_networking_apply(self, db):
         # Test that it doesn't crash, at least
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
-        api.project_apply('anvil-nextgen')
 
 
     @database_only
-    def test_project_apply_involved(self, db):
+    def test_networking_involved(self, db):
         api.switch_register('switch', 'null')
         api.port_register('switch', '1')
         api.port_register('switch', '2')
@@ -216,10 +215,9 @@ class TestProjectApply:
         api.network_create('hammernet', 'anvil-nextgen')
         api.network_create('spiderwebs', 'anvil-nextgen')
         api.node_connect_network('node-98', 'eth0', 'hammernet')
-        api.project_apply('anvil-nextgen')
 
     @database_only
-    def test_project_apply_nic_no_port(self, db):
+    def test_networking_nic_no_port(self, db):
         api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
 
@@ -229,8 +227,6 @@ class TestProjectApply:
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.network_create('hammernet', 'anvil-nextgen')
         api.node_connect_network('node-99', 'eth0', 'hammernet')
-
-        api.project_apply('anvil-nextgen')
 
 
 class TestProjectConnectDetachNode:
@@ -320,7 +316,7 @@ class TestProjectConnectDetachNode:
         api.project_detach_node('anvil-nextgen', 'node-99')
 
     @database_only
-    def test_project_detach_node_not_on_network_but_still_dirty(self, db):
+    def test_project_detach_node_removed_from_network(self, db):
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
         api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
@@ -329,8 +325,8 @@ class TestProjectConnectDetachNode:
         api.network_create('hammernet', 'anvil-nextgen')
         api.node_connect_network('node-99', 'eth0', 'hammernet')
         api.node_detach_network('node-99', 'eth0')
-        with pytest.raises(api.BlockedError):
-            api.project_detach_node('anvil-nextgen', 'node-99')
+
+        api.project_detach_node('anvil-nextgen', 'node-99')
 
 
 class TestNodeRegisterDelete:
@@ -1040,6 +1036,18 @@ class TestNetworkCreateDelete:
         api._assert_absent(db, model.Network, 'hammernet')
 
     @database_only
+    def test_network_delete_project_complex_success(self, db):
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.network_create('hammernet', 'anvil-nextgen')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
+        api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.node_connect_network('node-99', 'eth0', 'hammernet')
+        api.node_detach_network('node-99', 'eth0')
+        api.network_delete('hammernet')
+
+    @database_only
     def test_network_delete_nonexistent(self, db):
         """Tests that deleting a nonexistent network fails"""
         with pytest.raises(api.NotFoundError):
@@ -1068,18 +1076,6 @@ class TestNetworkCreateDelete:
         with pytest.raises(api.BlockedError):
             api.network_delete('hammernet')
 
-    @database_only
-    def test_network_delete_project_dirty(self, db):
-        api.group_create('acme-code')
-        api.project_create('anvil-nextgen', 'acme-code')
-        api.network_create('hammernet', 'anvil-nextgen')
-        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
-        api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
-        api.project_connect_node('anvil-nextgen', 'node-99')
-        api.node_connect_network('node-99', 'eth0', 'hammernet')
-        api.node_detach_network('node-99', 'eth0')
-        with pytest.raises(api.BlockedError):
-            api.network_delete('hammernet')
 
 #   Tests removed for not applying in general case.  (Specific to dell switch)
 #

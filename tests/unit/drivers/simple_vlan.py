@@ -52,15 +52,14 @@ def vlan_test(vlan_list):
 
     return dec
 
-class TestApply:
-    """Tests network_apply"""
+class TestNetwork:
+    """Tests network operations"""
 
     @vlan_test('84')
     def test_network_apply_simple(self, db):
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.network_create('hammernet', 'anvil-nextgen')
-        api.project_apply('anvil-nextgen')
 
     @vlan_test('84')
     def test_network_apply_complex(self, db):
@@ -77,4 +76,3 @@ class TestApply:
             api.port_connect_nic('sw01', nodename, nodename, 'eth0')
         api.project_detach_node('anvil-nextgen', 'node-97')
         api.node_connect_network('node-98', 'eth0', 'hammernet')
-        api.project_apply('anvil-nextgen')
