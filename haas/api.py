@@ -487,10 +487,6 @@ def headnode_create(headnode, project):
     _assert_absent(db, model.Headnode, headnode)
     project = _must_find(db, model.Project, project)
 
-    if project.headnode is not None:
-        raise DuplicateError('project %s already has a headnode' %
-                             (project.label))
-
     headnode = model.Headnode(project, headnode)
 
     db.add(headnode)
