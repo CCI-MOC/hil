@@ -16,24 +16,13 @@
 
 TODO: Spec out and document what sanitization is required.
 """
-from flask import Flask, request
-from functools import wraps
-import inspect
 import importlib
 import json
 import logging
 
 from haas import model
 from haas.config import cfg
-
-
-class APIError(Exception):
-    """An exception indicating an error that should be reported to the user.
-
-    i.e. If such an error occurs in a rest API call, it should be reported as
-    part of the HTTP response.
-    """
-    status_code = 400 # Bad Request
+from haas.http import APIError, rest_call
 
 
 class NotFoundError(APIError):
@@ -60,6 +49,7 @@ class ProjectMismatchError(APIError):
     """
     status_code = 409 # Conflict
 
+
 class BlockedError(APIError):
     """An exception indicating that the requested action cannot happen until
     some other change.  For example, deletion is blocked until the components
@@ -67,92 +57,13 @@ class BlockedError(APIError):
     """
     status_code = 409 # Conflict
 
+
 class IllegalStateError(APIError):
     """The request is invalid due to the state of the system.
 
     The request might otherwise be perfectly valid.
     """
     status_code = 409 # Conflict
-
-
-app = Flask(__name__)
-
-
-def handle_client_errors(f):
-    """A decorator which adds some error handling.
-
-    If the function decorated with `handle_client_errors` raises an exception
-    of type `APIError`, the error will be reported to the client, whereas
-    other exceptions (being indications of a bug in the HaaS) will not be.
-    """
-    @wraps(f)
-    def wrapped(*args, **kwargs):
-        logger = logging.getLogger(__name__)
-        logger.debug('Received API call %s(*%r, **%r)' %
-                     (f.__name__, args, kwargs))
-        try:
-            resp = f(*args, **kwargs)
-        except APIError as e:
-            # Right now we're always returning 400 (Bad Request). This probably
-            # isn't actually the right thing to do.
-            #
-            # Additionally, we're getting deprecation errors about the use of
-            # the message attribute. TODO: figure out what the right way to do
-            # this is.
-            logger.debug('API call invalid: %s' % e.message)
-            return json.dumps({
-                'type': e.__class__.__name__,
-                'msg': e.message,
-            }), e.status_code
-        if resp:
-            logger.debug('API call succesful: %s', resp)
-            return resp
-        else:
-            logger.debug('API call succesful, no response body')
-            return ''
-    return wrapped
-
-def rest_call(method, path):
-    """A decorator which generates a rest mapping to a python api call.
-
-    path - the url-path to map the function to. The format is the same as for
-           flask's router (e.g. app.route('/foo/<bar>/baz',...))
-    method - the HTTP method for the api call
-
-    Any parameters to the function not designated in the url will be pull from
-    the form data.
-
-    For example, given:
-
-        @rest_call('POST', '/some-url/<baz>/<bar>')
-        def foo(bar, baz, quux):
-            pass
-
-    When a POST request to /some-url/*/* occurs, `foo` will be invoked
-    with its bar and baz arguments pulleed from the url, and its quux from
-    the form data in the body.
-
-    The original function will returned by the call, not the wrapper. This
-    way the test suite doesn't have to deal with the things flask has done
-    to it - it can invoke the raw api calls..
-    """
-    def wrapper(func):
-        argnames, _, _, _ = inspect.getargspec(func)
-
-        @app.route(path, methods=[method])
-        @handle_client_errors
-        @wraps(func)
-        def wrapped(*args, **kwargs):
-            positional_args = []
-            for name in argnames:
-                if name in kwargs:
-                    positional_args.append(kwargs[name])
-                    del kwargs[name]
-                else:
-                    positional_args.append(request.form[name])
-            return func(*positional_args, **kwargs)
-        return func
-    return wrapper
 
 
 @rest_call('PUT', '/user/<user>')

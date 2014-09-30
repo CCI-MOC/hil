@@ -79,9 +79,11 @@ def serve():
         debug = cfg.getboolean('devel', 'debug')
     else:
         debug = False
-    from haas import model, api
+    # We need to import api here so that the functions within it get registered
+    # (via `rest_call`), though we don't use it directly:
+    from haas import model, http, api
     model.init_db()
-    api.app.run(debug=debug)
+    http.serve(debug=debug)
 
 @cmd
 def init_db():
