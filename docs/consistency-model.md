@@ -1,31 +1,4 @@
-Here is the consistency model for our database.
-
-  - The entire project has a 'dirty bit', which represents if the networking
-    information has been applied.  Operations that do not mention the dirty
-    bit neither check nor set it.
-
-  - ``project_apply``: Take the networking state as the database sees it, and
-    make the world match.  If the operation succeeds, this clears the dirty
-    bit.  (If it fails, it does not alter the dirty bit.)  It is idempotent,
-    so it can be re-run as desired.  Notably, it can be used both to apply
-    changes made to a project, as well as to restore networking state that was
-    upset by some manual change.
-
-  - ``node_connect_network``, ``node_detach_network``: When these operations
-    are run, they immediately change the database.  But, the actual networking
-    of the project does not change until ``project_apply`` is run.  So, these
-    two operations set the dirty bit, because the real world and the database
-    now disagree.
-
-  - ``project_connect_node``, ``network_create``: These don't have any effect
-    on the outside world, so they happen immediately.
-
-  - ``project_detach_node``, ``network_delete``: These also don't have any
-    effect on the outside world, so they also happen immediately.  However,
-    these commands can only be run on node/networks that are completely
-    unattached (for security reasons).  Furthermore, these cannot happen if
-    the the project is dirty (to ensure that they're unattached in the real
-    world, as well as in the database).
+Here is the consistency model for headnodes.
 
   - ``headnode_create``: After running this, you can then run
     ``headnode_create_nic``, ``headnode_delete_nic``,
