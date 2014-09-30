@@ -400,7 +400,11 @@ def node_delete_nic(node, nic):
 
 @rest_call('POST', '/node/<node>/nic/<nic>/connect_network')
 def node_connect_network(node, nic, network):
-    """Connect a physical NIC to a network."""
+    """Connect a physical NIC to a network.
+
+    Raises ProjectMismatchError if the node is not in a project, or if the
+    project does not have access rights to the given network.
+    """
     db = model.Session()
 
     node = _must_find(db, model.Node, node)
@@ -415,11 +419,6 @@ def node_connect_network(node, nic, network):
 
     project = node.project
 
-    if nic.network:
-        # The nic is already part of a network; report an error to the user.
-        raise DuplicateError('nic %s on node %s is already part of a network' %
-                (nic.label, node.label))
-
     nic.network = network
     project.dirty = True
     db.commit()
@@ -427,16 +426,9 @@ def node_connect_network(node, nic, network):
 
 @rest_call('POST', '/node/<node>/nic/<nic>/detach_network')
 def node_detach_network(node, nic):
-    """Detach a physical nic from the network it's on.
-
-    Raises NotFoundError if the node or the nic does not exist.
-
-    Raises NotFoundError if the nic is not on a network.
+    """Detach a physical nic from any network it's on.
 
     Raises ProjectMismatchError if the node is not in a project.
-
-    If the nic is not already a member of a network, this function does
-    nothing.
     """
     db = model.Session()
     node = _must_find(db, model.Node, node)
@@ -446,9 +438,6 @@ def node_detach_network(node, nic):
         raise ProjectMismatchError("Node not in project")
 
     project = nic.owner.project
-
-    if nic.network is None:
-        raise NotFoundError('nic %s on node %s is not attached' % (nic.label, node.label))
 
     nic.network = None
     project.dirty = True

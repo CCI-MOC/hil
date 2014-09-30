@@ -539,8 +539,7 @@ class TestNodeConnectDetachNetwork:
         api.network_create('hammernet', 'anvil-nextgen')
         api.node_connect_network('node-99', '99-eth0', 'hammernet') # added
 
-        with pytest.raises(api.DuplicateError):
-            api.node_connect_network('node-99', '99-eth0', 'hammernet')
+        api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
     @database_only
     def test_node_connect_network_already_attached_differently(self, db):
@@ -553,8 +552,7 @@ class TestNodeConnectDetachNetwork:
         api.network_create('hammernet2', 'anvil-nextgen') #added
         api.node_connect_network('node-99', '99-eth0', 'hammernet') # added
 
-        with pytest.raises(api.DuplicateError):
-            api.node_connect_network('node-99', '99-eth0', 'hammernet2')
+        api.node_connect_network('node-99', '99-eth0', 'hammernet2')
 
 
     @database_only
@@ -583,8 +581,7 @@ class TestNodeConnectDetachNetwork:
         api.network_create('hammernet', 'anvil-nextgen')
 #        api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
-        with pytest.raises(api.NotFoundError):
-            api.node_detach_network('node-99', '99-eth0')
+        api.node_detach_network('node-99', '99-eth0')
 
     @database_only
     def test_node_detach_network_wrong_node_in_project(self, db):
