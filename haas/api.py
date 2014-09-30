@@ -559,7 +559,13 @@ def headnode_delete_hnic(headnode, hnic):
 
 @rest_call('POST', '/headnode/<headnode>/hnic/<hnic>/connect_network')
 def headnode_connect_network(headnode, hnic, network):
-    """Connect a headnode's hnic to a network."""
+    """Connect a headnode's hnic to a network.
+
+    Raises IllegalStateError if the headnode has already been started.
+
+    Raises ProjectMismatchError if the project does not have access rights to
+    the given network.
+    """
     db = model.Session()
 
     headnode = _must_find(db, model.Headnode, headnode)
@@ -572,10 +578,6 @@ def headnode_connect_network(headnode, hnic, network):
     if headnode.project.label is not network.project.label:
         raise ProjectMismatchError("Headnode and network in different projects")
 
-    if hnic.network:
-        # The nic is already part of a network; report an error to the user.
-        raise DuplicateError('hnic %s on headnode %s is already part of a network' %
-                (hnic.label, headnode.label))
     hnic.network = network
     headnode.project.dirty = True
     db.commit()
@@ -583,14 +585,9 @@ def headnode_connect_network(headnode, hnic, network):
 
 @rest_call('POST', '/headnode/<headnode>/hnic/<hnic>/detach_network')
 def headnode_detach_network(headnode, hnic):
-    """Detach a heanode's nic from the network it's on.
+    """Detach a heanode's nic from any network it's on.
 
-    Raises NotFoundError if the headnode or the hnic don't exist.
-
-    Raises NotFoundError if the hnic is not on a network.
-
-    If the nic is not already a member of a network, this function does
-    nothing.
+    Raises IllegalStateError if the headnode has already been started.
     """
     db = model.Session()
 
@@ -599,10 +596,6 @@ def headnode_detach_network(headnode, hnic):
 
     if not headnode.dirty:
         raise IllegalStateError
-
-    if hnic.network is None:
-        raise NotFoundError('hnic %s on headnode %s not attached'
-                            % (hnic.label, headnode.label))
 
     hnic.network = None
     headnode.project.dirty = True

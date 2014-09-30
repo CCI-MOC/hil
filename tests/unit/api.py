@@ -840,8 +840,7 @@ class TestHeadnodeConnectDetachNetwork:
         api.network_create('hammernet', 'anvil-nextgen')
         api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet') # added
 
-        with pytest.raises(api.DuplicateError):
-            api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
+        api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
 
     @database_only
     def test_headnode_connect_network_already_attached_differently(self, db):
@@ -853,8 +852,7 @@ class TestHeadnodeConnectDetachNetwork:
         api.network_create('hammernet2', 'anvil-nextgen')
         api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet') # added
 
-        with pytest.raises(api.DuplicateError):
-            api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet2') # changed
+        api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet2') # changed
 
     @database_only
     def test_headnode_connect_network_different_projects(self, db):
@@ -893,8 +891,7 @@ class TestHeadnodeConnectDetachNetwork:
         api.network_create('hammernet', 'anvil-nextgen')
 #        api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
 
-        with pytest.raises(api.NotFoundError):
-            api.headnode_detach_network('hn-0', 'hn-0-eth0')
+        api.headnode_detach_network('hn-0', 'hn-0-eth0')
 
     @database_only
     def test_headnode_detach_network_no_such_headnode(self, db):
