@@ -286,7 +286,7 @@ class Headnode(Model):
 
     # The project to which this Headnode belongs:
     project_id = Column(String, ForeignKey('project.id'), nullable=False)
-    project = relationship("Project", backref=backref('headnode', uselist=False))
+    project = relationship("Project", backref=backref('headnode', uselist=True))
 
     # True iff there are unapplied changes to the Headnode:
     dirty = Column(Boolean, nullable=False)
