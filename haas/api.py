@@ -190,39 +190,6 @@ def project_delete(project):
     db.commit()
 
 
-@rest_call('POST', '/project/<project>/apply')
-def project_apply(project):
-    """Apply networking of project.
-
-    If the project does not exist, a NotFoundError will be raised.
-
-    TODO: there are other possible errors, document them and how they are
-    handled.
-    """
-    driver_name = cfg.get('general', 'driver')
-    driver = importlib.import_module('haas.drivers.' + driver_name)
-
-    db = model.Session()
-    project = _must_find(db, model.Project, project)
-
-    net_map = {}
-    for node in project.nodes:
-        for nic in node.nics:
-            if not nic.port:
-                # This setup suggests a badly made HaaS setup.  NICs with no
-                # port might as well not exist.
-                logging.getLogger(__name__).warn(
-                    'Not attaching NIC %s to network %s; NIC not on a port.' %
-                    (nic.label, nic.network.label))
-            elif nic.network:
-                net_map[nic.port.label] = nic.network.network_id
-            else:
-                net_map[nic.port.label] = None
-    driver.apply_networking(net_map)
-
-    project.dirty = False
-    db.commit()
-
 @rest_call('POST', '/project/<project>/connect_node')
 def project_connect_node(project, node):
     """Add a node to a project.
@@ -250,8 +217,6 @@ def project_detach_node(project, node):
     for nic in node.nics:
         if nic.network is not None:
             raise BlockedError("Node attached to a network")
-    if project.dirty:
-        raise BlockedError("Project dirty")
     project.nodes.remove(node)
     db.commit()
 
@@ -343,8 +308,18 @@ def node_connect_network(node, nic, network):
     project = node.project
 
     nic.network = network
-    project.dirty = True
     db.commit()
+
+    if nic.port is None:
+        # This setup suggests a badly made HaaS setup. NICs with no port might
+        # as well not exist.
+        logging.getLogger(__name__).warn(
+            'Not attaching NIC %s to network %s; NIC not on a port.' %
+            (nic.label, network.label))
+    else:
+        driver_name = cfg.get('general', 'driver')
+        driver = importlib.import_module('haas.drivers.' + driver_name)
+        driver.apply_networking({nic.port.label : network.network_id})
 
 
 @rest_call('POST', '/node/<node>/nic/<nic>/detach_network')
@@ -363,8 +338,19 @@ def node_detach_network(node, nic):
     project = nic.owner.project
 
     nic.network = None
-    project.dirty = True
     db.commit()
+
+    if nic.port is None:
+        # This setup suggests a badly made HaaS setup. NICs with no port might
+        # as well not exist.
+        logging.getLogger(__name__).warn(
+            'Not detaching NIC %s from network; NIC not on a port.' %
+            nic.label)
+    else:
+        driver_name = cfg.get('general', 'driver')
+        driver = importlib.import_module('haas.drivers.' + driver_name)
+        driver.apply_networking({nic.port.label : None})
+
 
                             # Head Node Code #
                             ##################
@@ -498,7 +484,6 @@ def headnode_connect_network(headnode, hnic, network):
         raise ProjectMismatchError("Headnode and network in different projects")
 
     hnic.network = network
-    headnode.project.dirty = True
     db.commit()
 
 
@@ -517,7 +502,6 @@ def headnode_detach_network(headnode, hnic):
         raise IllegalStateError
 
     hnic.network = None
-    headnode.project.dirty = True
     db.commit()
 
                             # Network Code #
@@ -560,8 +544,6 @@ def network_delete(network):
         raise BlockedError("Network still connected to nodes")
     if network.hnics:
         raise BlockedError("Network still connected to headnodes")
-    if network.project.dirty:
-        raise BlockedError("Project dirty")
 
     driver_name = cfg.get('general', 'driver')
     driver = importlib.import_module('haas.drivers.' + driver_name)

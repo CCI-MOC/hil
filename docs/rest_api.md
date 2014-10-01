@@ -37,9 +37,6 @@ Full Api spec:
     [POST] /project/<project_label>/connect_node {node=<node_label>}
     [POST] /project/<project_label>/detach_node {node=<node_label>}
 
-    project_apply <project_label>
-    [POST] /project/<project_label>/apply
-
     node_connect_network <node_label> <nic_label> <network_label>
     node_detach_network  <node_label> <nic_label>
     [POST] /node/<node_label>/nic/<nic_label>/connect_network {network=<network_label>}

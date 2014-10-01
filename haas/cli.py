@@ -152,12 +152,6 @@ def group_delete(group):
     check_status_code(requests.delete(url))
 
 @cmd
-def project_apply(project):
-    """Apply the networking of a <project>"""
-    url = object_url('project', project, 'apply')
-    check_status_code(requests.post(url))
-
-@cmd
 def headnode_create(headnode, project):
     """Create a <headnode> belonging to <project>"""
     url = object_url('headnode', headnode)

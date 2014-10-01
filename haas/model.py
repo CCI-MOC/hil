@@ -170,14 +170,7 @@ class Project(Model):
     """a collection of resources
 
     A project may contain allocated nodes, networks, and headnodes.
-    Originally, the primary functionality offered by projects was to
-    stage changes to be made to a project, and then apply them all at
-    once. The HaaS has drifted from this somewhat; in particular
-    changes to headnodes are generally immediate.
     """
-
-    # A project is "dirty" if it has unapplied changes:
-    dirty = Column(Boolean, nullable=False)
 
     # The group to which the project belongs:
     group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
@@ -187,7 +180,6 @@ class Project(Model):
         """Create a project with the given label belonging to `group`."""
         self.group = group
         self.label = label
-        self.dirty = False
 
 
 class Network(Model):

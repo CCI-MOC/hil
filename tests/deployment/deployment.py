@@ -97,9 +97,6 @@ class TestNetwork:
             api.node_connect_network(nodes[0]['label'], nodes[0]['nic'], 'net-0')
             api.node_connect_network(nodes[1]['label'], nodes[1]['nic'], 'net-1')
             
-            # Apply current configuration
-            api.project_apply('anvil-nextgen')
-    
             # Assert that n0 and n1 are on isolated networks
             vlan_cfgs = get_switch_vlans()
             assert get_network(nodes[0]['port'], vlan_cfgs) == [nodes[0]['port']]
@@ -108,9 +105,6 @@ class TestNetwork:
             # Add n2 and n3 to the same networks as n0 and n1 respectively
             api.node_connect_network(nodes[2]['label'], nodes[2]['nic'], 'net-0')
             api.node_connect_network(nodes[3]['label'], nodes[3]['nic'], 'net-1')
-    
-            # Apply current configuration
-            api.project_apply('anvil-nextgen')
     
             # Assert that n2 and n3 have been added to n0 and n1's networks
             # respectively
@@ -129,9 +123,6 @@ class TestNetwork:
                 if node.nics[0].network is not None:
                     api.node_detach_network(node.label, node.nics[0].label)
     
-            # Apply current configuration
-            api.project_apply('anvil-nextgen')
-    
             # Assert that none of the nodes are on any network
             vlan_cfgs = get_switch_vlans()
             for node in nodes:
@@ -141,61 +132,9 @@ class TestNetwork:
             api.network_delete('net-0')
             api.network_delete('net-1')
             
-            # Apply current configuration
-            api.project_apply('anvil-nextgen')
-
-        
         # Create group and project
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         
         create_networks()
         delete_networks()
-
-    @deployment_test
-    @headnode_cleanup
-    def test_network_allocation(self, db):
-        try:
-            api.group_create('acme-code')
-            api.project_create('anvil-nextgen', 'acme-code')
-            
-            vlans = get_vlan_list()
-            num_vlans = len(vlans)
-
-            for network in range(0,num_vlans):
-                api.network_create('net-%d' % network, 'anvil-nextgen')
-     
-            # Ensure that error is raised if too many networks allocated
-            with pytest.raises(api.AllocationError):
-                api.network_create('net-%d' % num_vlans, 'anvil-nextgen')
-     
-            # Ensure that project_apply doesn't affect network allocation
-            api.project_apply('anvil-nextgen')
-            with pytest.raises(api.AllocationError):
-                api.network_create('net-%d' % num_vlans, 'anvil-nextgen')
-     
-            # Ensure that network_delete doesn't affect network allocation
-            api.network_delete('net-%d' % (num_vlans-1))
-            api.network_create('net-%d' % (num_vlans-1), 'anvil-nextgen')
-            with pytest.raises(api.AllocationError):
-                api.network_create('net-%d' % num_vlans, 'anvil-nextgen')
-     
-            # Ensure that network_delete+project_apply doesn't affect network
-            # allocation
-            api.network_delete('net-%d' % (num_vlans-1))
-            api.project_apply('anvil-nextgen')
-            api.network_create('net-%d' % (num_vlans-1), 'anvil-nextgen')
-            with pytest.raises(api.AllocationError):
-                api.network_create('net-%d' % num_vlans, 'anvil-nextgen')
-    
-            api.network_delete('net-%d' % (num_vlans-1))
-            api.network_create('net-%d' % (num_vlans-1), 'anvil-nextgen')
-            api.project_apply('anvil-nextgen')
-            with pytest.raises(api.AllocationError):
-                api.network_create('net-%d' % num_vlans, 'anvil-nextgen')
-
-        finally:
-            # Clean up networks
-            for network in range(0,num_vlans):
-                api.network_delete('net-%d' % network)
-            api.project_apply('anvil-nextgen')
