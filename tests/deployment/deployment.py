@@ -138,31 +138,3 @@ class TestNetwork:
         
         create_networks()
         delete_networks()
-
-    @deployment_test
-    @headnode_cleanup
-    def test_network_allocation(self, db):
-        try:
-            api.group_create('acme-code')
-            api.project_create('anvil-nextgen', 'acme-code')
-            
-            vlans = get_vlan_list()
-            num_vlans = len(vlans)
-
-            for network in range(0,num_vlans):
-                api.network_create('net-%d' % network, 'anvil-nextgen')
-     
-            # Ensure that error is raised if too many networks allocated
-            with pytest.raises(api.AllocationError):
-                api.network_create('net-%d' % num_vlans, 'anvil-nextgen')
-     
-            # Ensure that network_delete doesn't affect network allocation
-            api.network_delete('net-%d' % (num_vlans-1))
-            api.network_create('net-%d' % (num_vlans-1), 'anvil-nextgen')
-            with pytest.raises(api.AllocationError):
-                api.network_create('net-%d' % num_vlans, 'anvil-nextgen')
-     
-        finally:
-            # Clean up networks
-            for network in range(0,num_vlans):
-                api.network_delete('net-%d' % network)
