@@ -22,7 +22,7 @@ to the switch (see below), and the login node will boot.
 
 Right now, we're using 802.1q VLANs to achieve network isolation. The
 HaaS communicates with a managed switch, to which the physical
-hardware is attached. When an "apply" operation is performed, the
+hardware is attached. When networking operations are performed, the
 HaaS sends commands to the switch which configure the relevant ports
 as needed to create the logical networks.
 
