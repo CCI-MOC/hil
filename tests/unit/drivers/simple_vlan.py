@@ -52,17 +52,11 @@ def vlan_test(vlan_list):
 
     return dec
 
-class TestNetwork:
-    """Tests network operations"""
+class TestSimpleVLAN:
+    """Tests basic operation of Simple VLAN driver"""
 
     @vlan_test('84')
-    def test_network_apply_simple(self, db):
-        api.group_create('acme-code')
-        api.project_create('anvil-nextgen', 'acme-code')
-        api.network_create('hammernet', 'anvil-nextgen')
-
-    @vlan_test('84')
-    def test_network_apply_complex(self, db):
+    def test_simple_vlan_network_operations(self, db):
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         api.network_create('hammernet', 'anvil-nextgen')

@@ -186,13 +186,6 @@ class TestProjectCreateDelete:
 class TestNetworking:
 
     @database_only
-    def test_networking_apply(self, db):
-        # Test that it doesn't crash, at least
-        api.group_create('acme-corp')
-        api.project_create('anvil-nextgen', 'acme-corp')
-
-
-    @database_only
     def test_networking_involved(self, db):
         api.switch_register('switch', 'null')
         api.port_register('switch', '1')
@@ -1076,26 +1069,6 @@ class TestNetworkCreateDelete:
         with pytest.raises(api.BlockedError):
             api.network_delete('hammernet')
 
-
-#   Tests removed for not applying in general case.  (Specific to dell switch)
-#
-#    @database_only
-#    def test_network_basic_vlan_leak(self, db):
-#        api.group_create('acme-code')
-#        api.project_create('anvil-nextgen', 'acme-code')
-#        api.network_create('hammernet', 'anvil-nextgen')
-#        api.network_delete('hammernet')
-#        # For this to work, the vlan will need to have been released:
-#        api.network_create('sledge', 'anvil-nextgen')
-#
-#    @database_only
-#    def test_network_no_duplicates(self, db):
-#        api.group_create('acme-code')
-#        api.project_create('anvil-nextgen', 'acme-code')
-#        api.network_create('hammernet', 'anvil-nextgen')
-#        with pytest.raises(api.AllocationError):
-#            api.network_create('sledge', 'anvil-nextgen')
-#
 
 class TestSwitchRegisterDelete:
     """Tests for the haas.api.switch_* functions."""
