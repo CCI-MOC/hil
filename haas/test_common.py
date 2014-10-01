@@ -18,6 +18,10 @@ from haas.config import cfg
 from haas import api
 import json
 
+def network_create_simple(network, project):
+    """Create a network, as if using the old API"""
+    api.network_create(network, project, project, "")
+
 def newDB():
     """Configures and returns an in-memory DB connection"""
     init_db(create=True,uri="sqlite:///:memory:")

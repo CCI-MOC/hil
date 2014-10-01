@@ -511,24 +511,48 @@ def headnode_detach_network(headnode, hnic):
 
 
 @rest_call('PUT', '/network/<network>')
-def network_create(network, project):
-    """Create a network belonging to a project.
+def network_create(network, creator, access, net_id):
+    """Create a network.
 
-    If the network already exists, a DuplicateError will be raised.
-    If the network cannot be allocated (due to resource exhaustion), an
-    AllocationError will be raised.
+    If the network with that name already exists, a DuplicateError will be
+    raised.
+
+    If the combination of creator, access, and net_id is illegal, a
+    BadArgumentError will be raised.
+
+    If network ID allocation was requested, and the network cannot be
+    allocated (due to resource exhaustion), an AllocationError will be raised.
     """
     db = model.Session()
     _assert_absent(db, model.Network, network)
-    project = _must_find(db, model.Project, project)
 
-    driver_name = cfg.get('general', 'driver')
-    driver = importlib.import_module('haas.drivers.' + driver_name)
-    network_id = driver.get_new_network_id(db)
-    if network_id is None:
-        raise AllocationError('No more networks')
+    # Check legality of arguments, and find correct 'access' and 'creator'
+    if creator != "":
+        if access != creator:
+            raise BadArgumentError("Project-created networks must be accessed only by that project.")
+        if net_id != "":
+            raise BadArgumentError("Project-created networks must use network ID allocation")
+        creator = _must_find(db, model.Project, creator)
+        access = _must_find(db, model.Project, access)
+    else:
+        creator = None
+        if access == "":
+            access = None
+        else:
+            access = _must_find(db, model.Project, access)
 
-    network = model.Network(project, project, True, network_id, network)
+    # Allocate net_id, if requested
+    if net_id == "":
+        driver_name = cfg.get('general', 'driver')
+        driver = importlib.import_module('haas.drivers.' + driver_name)
+        net_id = driver.get_new_network_id(db)
+        if net_id is None:
+            raise AllocationError('No more networks')
+        allocated = True
+    else:
+        allocated = False
+
+    network = model.Network(creator, access, allocated, net_id, network)
     db.add(network)
     db.commit()
 
@@ -547,9 +571,10 @@ def network_delete(network):
     if network.hnics:
         raise BlockedError("Network still connected to headnodes")
 
-    driver_name = cfg.get('general', 'driver')
-    driver = importlib.import_module('haas.drivers.' + driver_name)
-    driver.free_network_id(db, network.network_id)
+    if network.allocated:
+        driver_name = cfg.get('general', 'driver')
+        driver = importlib.import_module('haas.drivers.' + driver_name)
+        driver.free_network_id(db, network.network_id)
 
     db.delete(network)
     db.commit()
