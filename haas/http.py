@@ -8,6 +8,7 @@ interest in this module.
 """
 import logging
 import inspect
+import json
 from functools import wraps
 
 from werkzeug.wrappers import Request, Response
