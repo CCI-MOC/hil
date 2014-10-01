@@ -326,14 +326,14 @@ def show_headnode(headnode):
 def help(*commands):
     """Display usage of all following <commands>, or of all commands if none are given"""
     if not commands:
-        sys.stderr.write('Usage: %s <command> <arguments...> \n' % sys.argv[0])
-        sys.stderr.write('Where <command> is one of:\n')
+        sys.stdout.write('Usage: %s <command> <arguments...> \n' % sys.argv[0])
+        sys.stdout.write('Where <command> is one of:\n')
         commands = sorted(command_dict.keys())
     for name in commands:
         # For each command, print out a summary including the name, arguments,
         # and the docstring (as a #comment).
-        sys.stderr.write('  %s\n' % usage_dict[name])
-        sys.stderr.write('      %s\n' % command_dict[name].__doc__)
+        sys.stdout.write('  %s\n' % usage_dict[name])
+        sys.stdout.write('      %s\n' % command_dict[name].__doc__)
 
 
 def main():
