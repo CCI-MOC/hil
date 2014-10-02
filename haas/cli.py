@@ -197,6 +197,11 @@ def node_register(node, ipmi_host, ipmi_user, ipmi_pass):
         'ipmi_pass': ipmi_pass}))
 
 @cmd
+def node_delete(node):
+    url = object_url('node', node)
+    check_status_code(requests.delete(url))
+
+@cmd
 def node_power_cycle(node):
     """Power cycle <node>"""
     url = object_url('node', node, 'power_cycle')
