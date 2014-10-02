@@ -83,6 +83,13 @@ def serve():
     # (via `rest_call`), though we don't use it directly:
     from haas import model, http, api
     model.init_db()
+    # Start logging consoles
+    db = model.Session()
+    nodes = db.query(model.Node).filter(model.Node.project_id != None).all()
+    for node in nodes:
+        node.stop_console_log()
+        node.start_console_log()
+    # Start server
     http.serve(debug=debug)
 
 @cmd
@@ -314,6 +321,12 @@ def show_node(node):
 def show_headnode(headnode):
     """Display information about a <headnode>"""
     url = object_url('headnode', headnode)
+    check_status_code(requests.get(url))
+
+@cmd
+def show_console(node):
+    """Display console log for <node>"""
+    url = object_url('node', node, 'console')
     check_status_code(requests.get(url))
 
 @cmd

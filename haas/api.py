@@ -19,10 +19,12 @@ TODO: Spec out and document what sanitization is required.
 import importlib
 import json
 import logging
+import os
 
 from haas import model
 from haas.config import cfg
 from haas.http import APIError, rest_call
+from subprocess import Popen, PIPE
 
 
 class NotFoundError(APIError):
@@ -199,6 +201,7 @@ def project_connect_node(project, node):
     db = model.Session()
     project = _must_find(db, model.Project, project)
     node = _must_find(db, model.Node, node)
+    node.start_console_log() 
     project.nodes.append(node)
     db.commit()
 
@@ -217,6 +220,8 @@ def project_detach_node(project, node):
     for nic in node.nics:
         if nic.network is not None:
             raise BlockedError("Node attached to a network")
+    node.stop_console_log()
+    node.delete_console_log()
     project.nodes.remove(node)
     db.commit()
 
@@ -254,6 +259,8 @@ def node_delete(node):
     """
     db = model.Session()
     node = _must_find(db, model.Node, node)
+    node.stop_console_log()
+    node.delete_console_log()
     db.delete(node)
     db.commit()
 
@@ -705,6 +712,21 @@ def show_headnode(nodename):
         'hnics': [n.label for n in headnode.hnics],
         'vncport': headnode.get_vncport(),
     })
+
+
+    # Console code #
+    ################
+
+@rest_call('GET', '/node/<nodename>/console')
+def show_console(nodename):
+    """Show the contents of the console log."""
+    db = model.Session()
+    node = _must_find(db, model.Node, nodename)
+    filename = 'console_logs/%s.log' % node.ipmi_host
+    if not os.path.isfile(filename):
+        raise NotFoundError('The console log for %s does not exist.' % nodename)
+    with open(filename, 'r') as log:
+        return json.dumps(log.read())
 
 
     # Helper functions #

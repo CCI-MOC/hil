@@ -17,7 +17,7 @@ from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import relationship, sessionmaker,backref
 from passlib.hash import sha512_crypt
-from subprocess import call, check_call
+from subprocess import call, check_call, Popen, PIPE
 import subprocess
 from haas.config import cfg
 from haas.dev_support import no_dry_run
@@ -25,6 +25,7 @@ import importlib
 import uuid
 import xml.etree.ElementTree
 import logging
+import os
 
 Base=declarative_base()
 Session = sessionmaker()
@@ -165,6 +166,36 @@ class Node(Model):
             status = self._ipmitool(['chassis', 'power', 'on'])
         return status == 0
 
+    def start_console_log(self):
+        """Starts logging the IPMI console."""
+        if not os.path.exists('console_logs/'):
+            os.makedirs('console_logs/')
+        Popen(
+            ['ipmitool',
+            '-H', self.ipmi_host,
+            '-U', self.ipmi_user,
+            '-P', self.ipmi_pass,
+            '-I', 'lanplus',
+            'sol', 'activate'],
+            stdout=open('console_logs/%s.log' % self.ipmi_host, 'a'),
+            stderr=PIPE)
+
+    def stop_console_log(self):
+        call(['pkill', '-f', 'ipmitool -H %s' %self.ipmi_host])
+        proc = Popen(
+            ['ipmitool',
+            '-H', self.ipmi_host,
+            '-U', self.ipmi_user,
+            '-P', self.ipmi_pass,
+            '-I', 'lanplus',
+            'sol', 'deactivate'])
+        proc.wait()
+
+    def delete_console_log(self):
+        filename = 'console_logs/%s.log' % self.ipmi_host
+        if os.path.isfile(filename):
+            check_call(['shred', filename])
+            os.remove(filename)
 
 class Project(Model):
     """a collection of resources
@@ -362,8 +393,7 @@ class Headnode(Model):
         if self.dirty:
             return None
 
-        p = subprocess.Popen(['virsh', 'dumpxml', self._vmname()],
-                             stdout=subprocess.PIPE)
+        p = Popen(['virsh', 'dumpxml', self._vmname()], stdout=PIPE)
         xmldump, _ = p.communicate()
         root = xml.etree.ElementTree.fromstring(xmldump)
         port = root.findall("./devices/graphics")[0].get('port')
