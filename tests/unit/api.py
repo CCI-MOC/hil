@@ -1413,3 +1413,52 @@ class TestQuery:
     def test_show_nonexistant_headnode(self, db):
         with pytest.raises(api.NotFoundError):
             api.show_headnode('BGH')
+
+
+class TestFancyNetworkCreate:
+    """Test creating network with advanced parameters"""
+
+    @database_only
+    def test_project_network(self, db):
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        api.network_create('hammernet', 'anvil-nextgen', 'anvil-nextgen', '')
+        project = api._must_find(db, model.Project, 'anvil-nextgen')
+        network = api._must_find(db, model.Network, 'hammernet')
+        assert network.creator is project
+        assert network.access is project
+        assert network.allocated is True
+
+    @database_only
+    def test_project_network_imported_fails(self, db):
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        with pytest.raises(api.BadArgumentError):
+            api.network_create('hammernet', 'anvil-nextgen', 'anvil-nextgen', '35')
+
+    @database_only
+    def test_project_network_bad_access_fails(self, db):
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        api.project_create('anvil-oldtimer', 'acme-corp')
+        for access in ['', 'anvil-oldtimer']:
+            for net_id in ['', '35']:
+                with pytest.raises(api.BadArgumentError):
+                    api.network_create('hammernet', 'anvil-nextgen', access, net_id)
+
+    @database_only
+    def test_admin_network(self, db):
+        api.group_create('acme-corp')
+        api.project_create('anvil-nextgen', 'acme-corp')
+        project = api._must_find(db, model.Project, 'anvil-nextgen')
+        for a, b in [('', None), ('anvil-nextgen', project)]:
+            for i, j in [('', True), ('35', False)]:
+                network = 'hammernet' + a + i
+                api.network_create(network, '', a, i)
+                network = api._must_find(db, model.Network, network)
+                assert network.creator is None
+                assert network.access is b
+                assert network.allocated is j
+            network = api._must_find(db, model.Network, 'hammernet' + a + '35')
+            assert network.network_id == '35'
+
