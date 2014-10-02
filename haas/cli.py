@@ -198,6 +198,7 @@ def node_register(node, ipmi_host, ipmi_user, ipmi_pass):
 
 @cmd
 def node_delete(node):
+    """Delete <node>"""
     url = object_url('node', node)
     check_status_code(requests.delete(url))
 
