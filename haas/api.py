@@ -182,6 +182,17 @@ def project_delete(project):
         raise BlockedError("Project has nodes still")
     if project.networks_created:
         raise BlockedError("Project still has networks")
+    if project.networks_access:
+        ### FIXME: This is not the user's fault, and they cannot fix it.  The
+        ### only reason we need to error here is that, with how network access
+        ### is done, the following bad thing happens.  If there's a network
+        ### that only the project can access, its "access" field will be the
+        ### project.  When you then delete that project, "access" will be set
+        ### to None instead.  Counter-intuitively, this then makes that
+        ### network accessible to ALL PROJECTS!  Once we use real ACLs, this
+        ### will not be an issue---instead, the network will be accessible by
+        ### NO projects.
+        raise BlockedError("Project can still access networks")
     if project.headnode:
         ### FIXME: If you ever create a headnode, you can't delete it right
         ### now.  This essentially makes deletion of projects impossible.
