@@ -721,8 +721,8 @@ def show_console(nodename):
     node = _must_find(db, model.Node, nodename)
     log = node.get_console()
     if log is None:
-        raise NotFoundError('The console log for '\
-                '%s does not exist.' % nodename)
+        raise NotFoundError('The console log for %s '
+                            'does not exist.' % nodename)
     return log
 
 @rest_call('PUT', '/node/<nodename>/console')
