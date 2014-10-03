@@ -172,6 +172,10 @@ class Node(Model):
 
     def start_console(self):
         """Starts logging the IPMI console."""
+        # stdin and stderr are redirected to a PIPE that is never read in order
+        # to prevent stdout from becoming garbled.  This happens because
+        # ipmitool sets shell settings to behave like a tty when communicateing
+        # over Serial over Lan
         Popen(
             ['ipmitool',
             '-H', self.ipmi_host,
@@ -179,9 +183,12 @@ class Node(Model):
             '-P', self.ipmi_pass,
             '-I', 'lanplus',
             'sol', 'activate'],
+            stdin=PIPE,
             stdout=open(self.console_log, 'a'),
             stderr=PIPE)
 
+    # stdin, stdout, and stderr are redirected to a pipe that is never read
+    # because we are not interested in the ouput of this command.
     def stop_console(self):
         call(['pkill', '-f', 'ipmitool -H %s' %self.ipmi_host])
         proc = Popen(
@@ -191,6 +198,7 @@ class Node(Model):
             '-P', self.ipmi_pass,
             '-I', 'lanplus',
             'sol', 'deactivate'],
+            stdin=PIPE,
             stdout=PIPE,
             stderr=PIPE)
         proc.wait()
