@@ -29,7 +29,7 @@ class TestHeadNode:
 
     @deployment_test
     @headnode_cleanup
-    def test_headnode_start(self, db):
+    def test_headnode(self, db):
         # XXX: This test will fail when py.test is ran with '--cov-report
         # term-missing --cov haas'.  Specifically, headnode_create() will throw
         # an exception because check_call(['virt-clone', ...]') returns a
@@ -41,7 +41,6 @@ class TestHeadNode:
         #       ImportError: No module named virtinst.CloneManager
         # This test can be run successfully by commenting out 'addopts =
         # --cov-report term-missing --cov haas' in setup.cfg.
-
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         network_create_simple('spider-web', 'anvil-nextgen')
@@ -51,6 +50,8 @@ class TestHeadNode:
         assert json.loads(api.show_headnode('hn-0'))['vncport'] is None
         api.headnode_start('hn-0')
         assert json.loads(api.show_headnode('hn-0'))['vncport'] is not None
+        api.headnode_stop('hn-0')
+        api.headnode_delete('hn-0')
 
 
 class TestNetwork:

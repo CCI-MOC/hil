@@ -368,26 +368,17 @@ class Headnode(Model):
 
         The vm is not started at this time.
         """
-        # Before doing anything else, make sure the VM doesn't already
-        # exist. This gives us the nice property that create will not fail
-        # because of state left behind by previous failures (much like
-        # applying a project):
-        call(['virsh', 'undefine', self._vmname(), '--remove-all-storage'])
-        # The --remove-all-storage flag above *should* take care of this,
-        # but doesn't seem to on our development setup. XXX.
-        call(['rm', '-f', '/var/lib/libvirt/images/%s.img' % self._vmname()])
-
         check_call(['virt-clone', '-o', 'base-headnode', '-n', self._vmname(), '--auto-clone'])
         for hnic in self.hnics:
             hnic.create()
 
     def delete(self):
         """Delete the vm, including associated storage"""
-        # XXX: This doesn't actually work. I (ian) copied this from the
-        # headnode  module so I could finally delete it, but I haven't
-        # actually made the  slight changes needed to get it to work
-        # again (variable renames, mostly).
-        cmd(['virsh', 'undefine', self.name, '--remove-all-storage'])
+        # Don't check return value.  If the headnode was powered off, this
+        # will fail, and we don't care.  If it fails for some other reason,
+        # then the following line will also fail, and we'll catch that error.
+        call(['virsh', 'destroy', self._vmname()])
+        check_call(['virsh', 'undefine', self._vmname(), '--remove-all-storage'])
 
     @no_dry_run
     def start(self):
