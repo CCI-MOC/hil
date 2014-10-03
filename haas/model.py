@@ -122,9 +122,6 @@ class Node(Model):
     ipmi_user = Column(String, nullable=False)
     ipmi_pass = Column(String, nullable=False)
 
-    # console log information
-    console_log = Column(String, nullable=False)
-
     def __init__(self, label, ipmi_host, ipmi_user, ipmi_pass):
         """Register the given node.
 
@@ -137,7 +134,6 @@ class Node(Model):
         self.ipmi_host = ipmi_host
         self.ipmi_user = ipmi_user
         self.ipmi_pass = ipmi_pass
-        self.console_log = '/var/run/haas_console_logs/%s.log' % ipmi_host
 
     def _ipmitool(self, args):
         """Invoke ipmitool with the right host/pass etc. for this node.
@@ -184,7 +180,7 @@ class Node(Model):
             '-I', 'lanplus',
             'sol', 'activate'],
             stdin=PIPE,
-            stdout=open(self.console_log, 'a'),
+            stdout=open(self.get_console_log_filename(), 'a'),
             stderr=PIPE)
 
     # stdin, stdout, and stderr are redirected to a pipe that is never read
@@ -204,15 +200,18 @@ class Node(Model):
         proc.wait()
 
     def delete_console(self):
-        if os.path.isfile(self.console_log):
-            os.remove(self.console_log)
+        if os.path.isfile(self.get_console_log_filename()):
+            os.remove(self.get_console_log_filename())
 
     def get_console(self):
-        if not os.path.isfile(self.console_log):
+        if not os.path.isfile(self.get_console_log_filename()):
             return None
-        with open(self.console_log, 'r') as log:
+        with open(self.get_console_log_filename(), 'r') as log:
             return log.read()
- 
+
+    def get_console_log_filename(self):
+        return '/var/run/haas_console_logs/%s.log' % self.ipmi_host
+         
 
 class Project(Model):
     """a collection of resources
