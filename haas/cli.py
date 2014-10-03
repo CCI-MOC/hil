@@ -99,10 +99,18 @@ def user_create(username, password):
 
 @cmd
 def network_create(network, creator, access, net_id):
-    """Create <network> with attributes <creator>, <access>, <net_id>."""
+    """Create a link-layer <network>.  See docs/networks.md for details"""
     url = object_url('network', network)
     check_status_code(requests.put(url, data={'creator': creator,
                                               'access': access,
+                                              'net_id': net_id}))
+
+@cmd
+def network_create_simple(network, project):
+    """Create <network> owned by project.  Specific case of network_create"""
+    url = object_url('network', network)
+    check_status_code(requests.put(url, data={'creator': project,
+                                              'access': project,
                                               'net_id': net_id}))
 
 @cmd

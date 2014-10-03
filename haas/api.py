@@ -533,12 +533,20 @@ def network_create(network, creator, access, net_id):
 
     If network ID allocation was requested, and the network cannot be
     allocated (due to resource exhaustion), an AllocationError will be raised.
+
+    Pass 'admin' as creator for an administrator-owned network.  Pass '' as
+    access for a publicly accessible network.  Pass '' as net_id if you wish
+    to use the HaaS's network-id allocation pool.
+
+    Details of the various combinations of network attributes are in
+    docs/networks.md
     """
     db = model.Session()
     _assert_absent(db, model.Network, network)
 
     # Check legality of arguments, and find correct 'access' and 'creator'
-    if creator != "":
+    if creator != "admin":
+        # Project-owned network
         if access != creator:
             raise BadArgumentError("Project-created networks must be accessed only by that project.")
         if net_id != "":
@@ -546,6 +554,7 @@ def network_create(network, creator, access, net_id):
         creator = _must_find(db, model.Project, creator)
         access = _must_find(db, model.Project, access)
     else:
+        # Administrator-owned network
         creator = None
         if access == "":
             access = None

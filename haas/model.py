@@ -183,22 +183,27 @@ class Project(Model):
 
 
 class Network(Model):
-    """A link-layer network."""
+    """A link-layer network.
+
+    See docs/networks.md for more information on the parameters.
+    """
 
     # The project to which the network belongs, or None if the network was
-    # created by the administrator.
+    # created by the administrator.  This field determines who can delete a
+    # network.
     creator_id = Column(String,ForeignKey('project.id'))
     creator    = relationship("Project",
                               backref=backref('networks_created'),
                               foreign_keys=[creator_id])
     # The project that has access to the network, or None if the network is
-    # public.
+    # public.  This field determines who can connect a node or headnode to a
+    # network.
     access_id = Column(String, ForeignKey('project.id'))
     access    = relationship("Project",
                              backref=backref('networks_access'),
                              foreign_keys=[access_id])
     # True if the VLAN-id came from the allocation pool; False if it was
-    # imported
+    # imported.
     allocated = Column(Boolean)
 
     # An identifier meaningful to the networking driver:

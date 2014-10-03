@@ -1466,7 +1466,7 @@ class TestFancyNetworkCreate:
         for project_api, project_db in [('', None), ('anvil-nextgen', project)]:
             for net_id, allocated in [('', True), ('35', False)]:
                 network = 'hammernet' + project_api + net_id
-                api.network_create(network, '', project_api, net_id)
+                api.network_create(network, 'admin', project_api, net_id)
                 network = api._must_find(db, model.Network, network)
                 assert network.creator is None
                 assert network.access is project_db

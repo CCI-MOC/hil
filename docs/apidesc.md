@@ -78,7 +78,7 @@ time.
  
     # create and delete logical networks
     network_create              <network_label> <proj_creator> <proj_access> <id>
-    # Set 'proj_creator' as empty string for admin-created
+    # Set 'proj_creator' as 'admin' for admin-created
     # Set 'proj_access' as empty string for public-access
     # Set 'id' as empty string to have one allocated for you
     network_delete              <network_label>
