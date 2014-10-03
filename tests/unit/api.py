@@ -1473,4 +1473,3 @@ class TestFancyNetworkCreate:
                 assert network.allocated is allocated
             network = api._must_find(db, model.Network, 'hammernet' + project_api + '35')
             assert network.network_id == '35'
-
