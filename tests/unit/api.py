@@ -1416,10 +1416,19 @@ class TestQuery:
 
 
 class TestFancyNetworkCreate:
-    """Test creating network with advanced parameters"""
+    """Test creating network with advanced parameters.
+
+    These test the 10 possible combinations of creator project, access
+    project, and underlying net-id.  It confirms that the legal ones are
+    allowed, and that their parameters are passed into the database
+    succesfully, and confirms the the prohibited ones are disallowed.
+
+    The details of these combinations are shown in docs/networks.md
+    """
 
     @database_only
     def test_project_network(self, db):
+        """Succesfully create a project-owned network."""
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
         api.network_create('hammernet', 'anvil-nextgen', 'anvil-nextgen', '')
@@ -1431,6 +1440,7 @@ class TestFancyNetworkCreate:
 
     @database_only
     def test_project_network_imported_fails(self, db):
+        """Fail to make a project-owned network with a supplied net-id."""
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
         with pytest.raises(api.BadArgumentError):
@@ -1438,6 +1448,7 @@ class TestFancyNetworkCreate:
 
     @database_only
     def test_project_network_bad_access_fails(self, db):
+        """Fail to make a project-owned network that others can access."""
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
         api.project_create('anvil-oldtimer', 'acme-corp')
@@ -1448,17 +1459,18 @@ class TestFancyNetworkCreate:
 
     @database_only
     def test_admin_network(self, db):
+        """Succesfully create all 4 varieties of administrator-owned networks."""
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
         project = api._must_find(db, model.Project, 'anvil-nextgen')
-        for a, b in [('', None), ('anvil-nextgen', project)]:
-            for i, j in [('', True), ('35', False)]:
-                network = 'hammernet' + a + i
-                api.network_create(network, '', a, i)
+        for project_api, project_db in [('', None), ('anvil-nextgen', project)]:
+            for net_id, allocated in [('', True), ('35', False)]:
+                network = 'hammernet' + project_api + net_id
+                api.network_create(network, '', project_api, net_id)
                 network = api._must_find(db, model.Network, network)
                 assert network.creator is None
-                assert network.access is b
-                assert network.allocated is j
-            network = api._must_find(db, model.Network, 'hammernet' + a + '35')
+                assert network.access is project_db
+                assert network.allocated is allocated
+            network = api._must_find(db, model.Network, 'hammernet' + project_api + '35')
             assert network.network_id == '35'
 
