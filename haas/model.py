@@ -122,6 +122,9 @@ class Node(Model):
     ipmi_user = Column(String, nullable=False)
     ipmi_pass = Column(String, nullable=False)
 
+    # console log information
+    console_log = Column(String, nullable=False)
+
     def __init__(self, label, ipmi_host, ipmi_user, ipmi_pass):
         """Register the given node.
 
@@ -134,6 +137,7 @@ class Node(Model):
         self.ipmi_host = ipmi_host
         self.ipmi_user = ipmi_user
         self.ipmi_pass = ipmi_pass
+        self.console_log = '/var/run/haas_console_logs/%s.log' % ipmi_host
 
     def _ipmitool(self, args):
         """Invoke ipmitool with the right host/pass etc. for this node.
@@ -166,10 +170,8 @@ class Node(Model):
             status = self._ipmitool(['chassis', 'power', 'on'])
         return status == 0
 
-    def start_console_log(self):
+    def start_console(self):
         """Starts logging the IPMI console."""
-        if not os.path.exists('console_logs/'):
-            os.makedirs('console_logs/')
         Popen(
             ['ipmitool',
             '-H', self.ipmi_host,
@@ -177,10 +179,10 @@ class Node(Model):
             '-P', self.ipmi_pass,
             '-I', 'lanplus',
             'sol', 'activate'],
-            stdout=open('console_logs/%s.log' % self.ipmi_host, 'a'),
+            stdout=open(self.console_log, 'a'),
             stderr=PIPE)
 
-    def stop_console_log(self):
+    def stop_console(self):
         call(['pkill', '-f', 'ipmitool -H %s' %self.ipmi_host])
         proc = Popen(
             ['ipmitool',
@@ -188,14 +190,21 @@ class Node(Model):
             '-U', self.ipmi_user,
             '-P', self.ipmi_pass,
             '-I', 'lanplus',
-            'sol', 'deactivate'])
+            'sol', 'deactivate'],
+            stdout=PIPE,
+            stderr=PIPE)
         proc.wait()
 
-    def delete_console_log(self):
-        filename = 'console_logs/%s.log' % self.ipmi_host
-        if os.path.isfile(filename):
-            check_call(['shred', filename])
-            os.remove(filename)
+    def delete_console(self):
+        if os.path.isfile(self.console_log):
+            os.remove(self.console_log)
+
+    def get_console(self):
+        if not os.path.isfile(self.console_log):
+            return None
+        with open(self.console_log, 'r') as log:
+            return log.read()
+ 
 
 class Project(Model):
     """a collection of resources

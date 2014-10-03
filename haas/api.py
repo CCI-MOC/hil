@@ -24,7 +24,6 @@ import os
 from haas import model
 from haas.config import cfg
 from haas.http import APIError, rest_call
-from subprocess import Popen, PIPE
 
 
 class NotFoundError(APIError):
@@ -201,7 +200,6 @@ def project_connect_node(project, node):
     db = model.Session()
     project = _must_find(db, model.Project, project)
     node = _must_find(db, model.Node, node)
-    node.start_console_log() 
     project.nodes.append(node)
     db.commit()
 
@@ -220,8 +218,8 @@ def project_detach_node(project, node):
     for nic in node.nics:
         if nic.network is not None:
             raise BlockedError("Node attached to a network")
-    node.stop_console_log()
-    node.delete_console_log()
+    node.stop_console()
+    node.delete_console()
     project.nodes.remove(node)
     db.commit()
 
@@ -259,8 +257,8 @@ def node_delete(node):
     """
     db = model.Session()
     node = _must_find(db, model.Node, node)
-    node.stop_console_log()
-    node.delete_console_log()
+    node.stop_console()
+    node.delete_console()
     db.delete(node)
     db.commit()
 
@@ -722,12 +720,27 @@ def show_console(nodename):
     """Show the contents of the console log."""
     db = model.Session()
     node = _must_find(db, model.Node, nodename)
-    filename = 'console_logs/%s.log' % node.ipmi_host
-    if not os.path.isfile(filename):
-        raise NotFoundError('The console log for %s does not exist.' % nodename)
-    with open(filename, 'r') as log:
-        return json.dumps(log.read())
+    log = node.get_console()
+    if log is None:
+        raise NotFoundError('The console log for '\
+                '%s does not exist.' % nodename)
+    return log
 
+@rest_call('PUT', '/node/<nodename>/console')
+def start_console(nodename):
+    """Start logging output from the console."""
+    db = model.Session()
+    node = _must_find(db, model.Node, nodename)
+    node.start_console()
+
+@rest_call('DELETE', '/node/<nodename>/console')
+def stop_console(nodename):
+    """Stop logging output from the console and delete the log."""
+    db = model.Session()
+    node = _must_find(db, model.Node, nodename)
+    node.stop_console()
+    node.delete_console()
+ 
 
     # Helper functions #
     ####################
