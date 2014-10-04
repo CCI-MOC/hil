@@ -83,6 +83,13 @@ def serve():
     # (via `rest_call`), though we don't use it directly:
     from haas import model, http, api
     model.init_db()
+    # Stop all orphan console logging processes on startup
+    db = model.Session()
+    nodes = db.query(model.Node).all()
+    for node in nodes:
+        node.stop_console()
+        node.delete_console()
+    # Start server
     http.serve(debug=debug)
 
 @cmd
@@ -321,6 +328,24 @@ def show_headnode(headnode):
     """Display information about a <headnode>"""
     url = object_url('headnode', headnode)
     check_status_code(requests.get(url))
+
+@cmd
+def show_console(node):
+    """Display console log for <node>"""
+    url = object_url('node', node, 'console')
+    check_status_code(requests.get(url))
+
+@cmd
+def start_console(node):
+    """Start logging console output from <node>"""
+    url = object_url('node', node, 'console')
+    check_status_code(requests.put(url))
+
+@cmd
+def stop_console(node):
+    """Stop logging console output from <node> and delete the log"""
+    url = object_url('node', node, 'console')
+    check_status_code(requests.delete(url))
 
 @cmd
 def help(*commands):

@@ -17,7 +17,7 @@ from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import relationship, sessionmaker,backref
 from passlib.hash import sha512_crypt
-from subprocess import call, check_call
+from subprocess import call, check_call, Popen, PIPE
 import subprocess
 from haas.config import cfg
 from haas.dev_support import no_dry_run
@@ -25,6 +25,7 @@ import importlib
 import uuid
 import xml.etree.ElementTree
 import logging
+import os
 
 Base=declarative_base()
 Session = sessionmaker()
@@ -165,6 +166,52 @@ class Node(Model):
             status = self._ipmitool(['chassis', 'power', 'on'])
         return status == 0
 
+    def start_console(self):
+        """Starts logging the IPMI console."""
+        # stdin and stderr are redirected to a PIPE that is never read in order
+        # to prevent stdout from becoming garbled.  This happens because
+        # ipmitool sets shell settings to behave like a tty when communicateing
+        # over Serial over Lan
+        Popen(
+            ['ipmitool',
+            '-H', self.ipmi_host,
+            '-U', self.ipmi_user,
+            '-P', self.ipmi_pass,
+            '-I', 'lanplus',
+            'sol', 'activate'],
+            stdin=PIPE,
+            stdout=open(self.get_console_log_filename(), 'a'),
+            stderr=PIPE)
+
+    # stdin, stdout, and stderr are redirected to a pipe that is never read
+    # because we are not interested in the ouput of this command.
+    def stop_console(self):
+        call(['pkill', '-f', 'ipmitool -H %s' %self.ipmi_host])
+        proc = Popen(
+            ['ipmitool',
+            '-H', self.ipmi_host,
+            '-U', self.ipmi_user,
+            '-P', self.ipmi_pass,
+            '-I', 'lanplus',
+            'sol', 'deactivate'],
+            stdin=PIPE,
+            stdout=PIPE,
+            stderr=PIPE)
+        proc.wait()
+
+    def delete_console(self):
+        if os.path.isfile(self.get_console_log_filename()):
+            os.remove(self.get_console_log_filename())
+
+    def get_console(self):
+        if not os.path.isfile(self.get_console_log_filename()):
+            return None
+        with open(self.get_console_log_filename(), 'r') as log:
+            return log.read()
+
+    def get_console_log_filename(self):
+        return '/var/run/haas_console_logs/%s.log' % self.ipmi_host
+         
 
 class Project(Model):
     """a collection of resources
@@ -362,8 +409,7 @@ class Headnode(Model):
         if self.dirty:
             return None
 
-        p = subprocess.Popen(['virsh', 'dumpxml', self._vmname()],
-                             stdout=subprocess.PIPE)
+        p = Popen(['virsh', 'dumpxml', self._vmname()], stdout=PIPE)
         xmldump, _ = p.communicate()
         root = xml.etree.ElementTree.fromstring(xmldump)
         port = root.findall("./devices/graphics")[0].get('port')
