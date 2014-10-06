@@ -204,10 +204,12 @@ class Node(Model):
             os.remove(self.get_console_log_filename())
 
     def get_console(self):
+        def removeNonAscii(s): 
+            return "".join(i for i in s if ord(i)<128)
         if not os.path.isfile(self.get_console_log_filename()):
             return None
         with open(self.get_console_log_filename(), 'r') as log:
-            return log.read()
+            return removeNonAscii(log.read())
 
     def get_console_log_filename(self):
         return '/var/run/haas_console_logs/%s.log' % self.ipmi_host
