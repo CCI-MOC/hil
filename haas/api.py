@@ -694,7 +694,9 @@ def show_node(nodename):
     return json.dumps({
         'name': node.label,
         'free': node.project_id is None,
-        'nics': [n.label for n in node.nics],
+        'nics': [{'label': n.label,
+                  'macaddr': n.mac_addr,
+                  } for n in node.nics],
     })
 
 
@@ -739,7 +741,7 @@ def stop_console(nodename):
     node = _must_find(db, model.Node, nodename)
     node.stop_console()
     node.delete_console()
- 
+
 
     # Helper functions #
     ####################
