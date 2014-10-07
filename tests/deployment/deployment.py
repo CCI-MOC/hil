@@ -32,7 +32,7 @@ class TestHeadNode:
     def test_headnode_start(self, db):
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
-        api.network_create('spider-web', 'anvil-nextgen')
+        network_create_simple('spider-web', 'anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen')
         api.headnode_create_hnic('hn-0', 'hnic-0')
         api.headnode_connect_network('hn-0', 'hnic-0', 'spider-web')
@@ -78,8 +78,8 @@ class TestNetwork:
                     'provided.') % len(nodes))
 
             # Create two networks
-            api.network_create('net-0', 'anvil-nextgen')
-            api.network_create('net-1', 'anvil-nextgen')
+            network_create_simple('net-0', 'anvil-nextgen')
+            network_create_simple('net-1', 'anvil-nextgen')
 
             # Convert each node to a dict for ease of access
             nodes = [{'label': n.label,
