@@ -166,6 +166,7 @@ class Node(Model):
             status = self._ipmitool(['chassis', 'power', 'on'])
         return status == 0
 
+    @no_dry_run
     def start_console(self):
         """Starts logging the IPMI console."""
         # stdin and stderr are redirected to a PIPE that is never read in order
@@ -185,6 +186,7 @@ class Node(Model):
 
     # stdin, stdout, and stderr are redirected to a pipe that is never read
     # because we are not interested in the ouput of this command.
+    @no_dry_run
     def stop_console(self):
         call(['pkill', '-f', 'ipmitool -H %s' %self.ipmi_host])
         proc = Popen(
@@ -211,7 +213,7 @@ class Node(Model):
 
     def get_console_log_filename(self):
         return '/var/run/haas_console_logs/%s.log' % self.ipmi_host
-         
+
 
 class Project(Model):
     """a collection of resources
