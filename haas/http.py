@@ -104,21 +104,12 @@ def request_handler(request):
         logger.debug('Recieved api call %s(%s)',
                      endpoint.__name__,
                       ', '.join([repr(arg) for arg in positional_args]))
-        resp = endpoint(*positional_args)
-
-        # The api call can return nothing, just a body (as a string), or a body
-        # and a status code. This is a holdover from our flask days, but it is
-        # still sensible enough. We provide defaults for any missing
-        # information:
-        if isinstance(resp, tuple):
-            body, status = resp
-        else:
-            body, status = resp, 200
+        body = endpoint(*positional_args)
         if not body:
             body = ""
         logger.debug("completed call to api function %s, "
-                     "status: %d, body: %r", endpoint.__name__, status, body)
-        return Response(body, status=status)
+                     "body: %r", endpoint.__name__, body)
+        return Response(body, status=200)
     except APIError, e:
         # TODO: We're getting deprecation errors about the use of e.message. We
         # should figure out what the right way to do this is.

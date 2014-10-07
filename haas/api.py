@@ -66,6 +66,15 @@ class IllegalStateError(APIError):
     status_code = 409 # Conflict
 
 
+class ServerError(APIError):
+    """An error occurred when trying to process the request.
+
+    This likely not the client's fault; as such the HTTP status is 500.
+    The semantics are much the same as the corresponding HTTP error.
+    """
+    status_code = 500
+
+
 @rest_call('PUT', '/user/<user>')
 def user_create(user, password):
     """Create user with given password.
@@ -256,7 +265,7 @@ def node_power_cycle(node):
     db = model.Session()
     node = _must_find(db, model.Node, node)
     if not node.power_cycle():
-        return 'Could not power cycle node %s' % node.label, 500
+        raise ServerError('Could not power cycle node %s' % node.label)
 
 
 @rest_call('DELETE', '/node/<node>')
