@@ -180,8 +180,19 @@ def project_delete(project):
     project = _must_find(db, model.Project, project)
     if project.nodes:
         raise BlockedError("Project has nodes still")
-    if project.networks:
+    if project.networks_created:
         raise BlockedError("Project still has networks")
+    if project.networks_access:
+        ### FIXME: This is not the user's fault, and they cannot fix it.  The
+        ### only reason we need to error here is that, with how network access
+        ### is done, the following bad thing happens.  If there's a network
+        ### that only the project can access, its "access" field will be the
+        ### project.  When you then delete that project, "access" will be set
+        ### to None instead.  Counter-intuitively, this then makes that
+        ### network accessible to ALL PROJECTS!  Once we use real ACLs, this
+        ### will not be an issue---instead, the network will be accessible by
+        ### NO projects.
+        raise BlockedError("Project can still access networks")
     if project.headnode:
         ### FIXME: If you ever create a headnode, you can't delete it right
         ### now.  This essentially makes deletion of projects impossible.
@@ -306,10 +317,10 @@ def node_connect_network(node, nic, network):
     if not node.project:
         raise ProjectMismatchError("Node not in project")
 
-    if node.project.label is not network.project.label:
-        raise ProjectMismatchError("Node and network in different projects")
-
     project = node.project
+
+    if (network.access is not None) and (network.access is not project):
+        raise ProjectMismatchError("Project does not have access to given network.")
 
     nic.network = network
     db.commit()
@@ -484,8 +495,10 @@ def headnode_connect_network(headnode, hnic, network):
     if not headnode.dirty:
         raise IllegalStateError
 
-    if headnode.project.label is not network.project.label:
-        raise ProjectMismatchError("Headnode and network in different projects")
+    project = headnode.project
+
+    if (network.access is not None) and (network.access is not project):
+        raise ProjectMismatchError("Project does not have access to given network.")
 
     hnic.network = network
     db.commit()
@@ -513,24 +526,57 @@ def headnode_detach_network(headnode, hnic):
 
 
 @rest_call('PUT', '/network/<network>')
-def network_create(network, project):
-    """Create a network belonging to a project.
+def network_create(network, creator, access, net_id):
+    """Create a network.
 
-    If the network already exists, a DuplicateError will be raised.
-    If the network cannot be allocated (due to resource exhaustion), an
-    AllocationError will be raised.
+    If the network with that name already exists, a DuplicateError will be
+    raised.
+
+    If the combination of creator, access, and net_id is illegal, a
+    BadArgumentError will be raised.
+
+    If network ID allocation was requested, and the network cannot be
+    allocated (due to resource exhaustion), an AllocationError will be raised.
+
+    Pass 'admin' as creator for an administrator-owned network.  Pass '' as
+    access for a publicly accessible network.  Pass '' as net_id if you wish
+    to use the HaaS's network-id allocation pool.
+
+    Details of the various combinations of network attributes are in
+    docs/networks.md
     """
     db = model.Session()
     _assert_absent(db, model.Network, network)
-    project = _must_find(db, model.Project, project)
 
-    driver_name = cfg.get('general', 'driver')
-    driver = importlib.import_module('haas.drivers.' + driver_name)
-    network_id = driver.get_new_network_id(db)
-    if network_id is None:
-        raise AllocationError('No more networks')
+    # Check legality of arguments, and find correct 'access' and 'creator'
+    if creator != "admin":
+        # Project-owned network
+        if access != creator:
+            raise BadArgumentError("Project-created networks must be accessed only by that project.")
+        if net_id != "":
+            raise BadArgumentError("Project-created networks must use network ID allocation")
+        creator = _must_find(db, model.Project, creator)
+        access = _must_find(db, model.Project, access)
+    else:
+        # Administrator-owned network
+        creator = None
+        if access == "":
+            access = None
+        else:
+            access = _must_find(db, model.Project, access)
 
-    network = model.Network(project, network_id, network)
+    # Allocate net_id, if requested
+    if net_id == "":
+        driver_name = cfg.get('general', 'driver')
+        driver = importlib.import_module('haas.drivers.' + driver_name)
+        net_id = driver.get_new_network_id(db)
+        if net_id is None:
+            raise AllocationError('No more networks')
+        allocated = True
+    else:
+        allocated = False
+
+    network = model.Network(creator, access, allocated, net_id, network)
     db.add(network)
     db.commit()
 
@@ -549,9 +595,10 @@ def network_delete(network):
     if network.hnics:
         raise BlockedError("Network still connected to headnodes")
 
-    driver_name = cfg.get('general', 'driver')
-    driver = importlib.import_module('haas.drivers.' + driver_name)
-    driver.free_network_id(db, network.network_id)
+    if network.allocated:
+        driver_name = cfg.get('general', 'driver')
+        driver = importlib.import_module('haas.drivers.' + driver_name)
+        driver.free_network_id(db, network.network_id)
 
     db.delete(network)
     db.commit()
@@ -679,10 +726,10 @@ def list_project_nodes(project):
 
 @rest_call('GET', '/project/<project>/networks')
 def list_project_networks(project):
-    """List all networks belonging to a project."""
+    """List all networks the project can access."""
     db = model.Session()
     project = _must_find(db, model.Project, project)
-    networks = project.networks
+    networks = project.networks_access
     networks = [n.label for n in networks]
     return json.dumps(networks)
 

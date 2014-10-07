@@ -209,7 +209,7 @@ class Node(Model):
         if not os.path.isfile(self.get_console_log_filename()):
             return None
         with open(self.get_console_log_filename(), 'r') as log:
-            return log.read()
+            return "".join(i for i in log.read() if ord(i)<128)
 
     def get_console_log_filename(self):
         return '/var/run/haas_console_logs/%s.log' % self.ipmi_host
@@ -232,16 +232,33 @@ class Project(Model):
 
 
 class Network(Model):
-    """A link-layer network."""
+    """A link-layer network.
 
-    # The project to which the network belongs:
-    project_id    = Column(String,ForeignKey('project.id'), nullable=False)
-    project = relationship("Project",backref=backref('networks'))
+    See docs/networks.md for more information on the parameters.
+    """
+
+    # The project to which the network belongs, or None if the network was
+    # created by the administrator.  This field determines who can delete a
+    # network.
+    creator_id = Column(String,ForeignKey('project.id'))
+    creator    = relationship("Project",
+                              backref=backref('networks_created'),
+                              foreign_keys=[creator_id])
+    # The project that has access to the network, or None if the network is
+    # public.  This field determines who can connect a node or headnode to a
+    # network.
+    access_id = Column(String, ForeignKey('project.id'))
+    access    = relationship("Project",
+                             backref=backref('networks_access'),
+                             foreign_keys=[access_id])
+    # True if the VLAN-id came from the allocation pool; False if it was
+    # imported.
+    allocated = Column(Boolean)
 
     # An identifier meaningful to the networking driver:
     network_id    = Column(String, nullable=False)
 
-    def __init__(self, project, network_id, label):
+    def __init__(self, creator, access, allocated, network_id, label):
         """Create a network.
 
         The network will belong to `project`, and have a symbolic name of
@@ -249,7 +266,9 @@ class Network(Model):
         the driver.
         """
         self.network_id = network_id
-        self.project = project
+        self.creator = creator
+        self.access = access
+        self.allocated = allocated
         self.label = label
 
 

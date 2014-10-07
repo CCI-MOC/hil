@@ -18,6 +18,20 @@ from haas.config import cfg
 from haas import api
 import json
 
+def network_create_simple(network, project):
+    """Create a simple project-owned network.
+
+    This is a shorthand for the network_create API call, that defaults
+    parameters to the most common case---namely, that the network is owned by
+    a project, has access only by that project, and uses an allocated
+    underlying net_id.  Note that this is the only valid set of parameters for
+    a network that belongs to a project.
+
+    The test-suite uses this extensively, for tests that don't care about more
+    complicated features of networks.
+    """
+    api.network_create(network, project, project, "")
+
 def newDB():
     """Configures and returns an in-memory DB connection"""
     init_db(create=True,uri="sqlite:///:memory:")

@@ -18,9 +18,11 @@ Full Api spec:
     [PUT]    /project/<project_label> {group=<group_label>}
     [DELETE] /project/<project_label>
 
-    network_create <network_label> <project_label>
+    network_create <network_label> <proj_creator> <proj_access> <net_id>
     network_delete <network_label>
-    [PUT]    /network/<network_label> {project=<project_label>}
+    [PUT]    /network/<network_label> {creator=<proj_creator>,
+                                       access=<proj_access>,
+                                       net_id=<net_id>}
     [DELETE] /network/<network_label>
 
     headnode_create <hn_label> <project_label>
