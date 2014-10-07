@@ -39,6 +39,8 @@ def vlan_test(vlan_list):
             cfg.set('vlan', 'vlans', vlan_list)
             cfg.add_section('driver simple_vlan')
             cfg.set('driver simple_vlan', 'switch', '{"switch":"null"}')
+            cfg.add_section('devel')
+            cfg.set('devel', 'dry_run')
 
         @wraps(f)
         @clear_configuration
