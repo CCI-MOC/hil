@@ -1241,6 +1241,26 @@ class TestPortConnectDetachNic:
 class TestQuery:
     """test the query api"""
 
+    def _compare_node_dumps(self, actual, expected):
+        """This is a helper method which compares the parsed json output of
+        two show_headnode calls for equality. There are a couple issue to work
+        around to get an accurate result - in particular, we often don't care
+        about the order of lists, which needs special handling (especially when
+        the arguments aren't orderable).
+        """
+        # For two lists to be equal, their elements have to be in the same
+        # order. However, there is no ordering defined on dictionaries, so we
+        # can't just sort the lists. instead we check our desired notion of
+        # equality manually, and then clear both hnic lists before comparing
+        # the rest of the data:
+        for nic in actual['nics']:
+            assert nic in expected['nics']
+            expected['nics'].remove(nic)
+        assert len(expected['nics']) == 0
+        actual['nics'] = []
+        assert expected == actual
+
+
     @database_only
     def test_free_nodes(self, db):
         api.node_register('master-control-program', 'ipmihost', 'root', 'tapeworm')
@@ -1279,17 +1299,23 @@ class TestQuery:
         api.node_register_nic('robocop', 'eth0', 'DE:AD:BE:EF:20:14')
         api.node_register_nic('robocop', 'wlan0', 'DE:AD:BE:EF:20:15')
 
-        result = json.loads(api.show_node('robocop'))
-        # For the lists to be equal, the ordering must be the same:
-        result['nics'].sort()
-        assert result == {
+        actual = json.loads(api.show_node('robocop'))
+        expected = {
             'name': 'robocop',
             'free': True,
             'nics': [
-                'eth0',
-                'wlan0',
+                {
+                    'label':'eth0',
+                    'macaddr': 'DE:AD:BE:EF:20:14',
+                },
+                {
+                    'label':'wlan0',
+                    'macaddr': 'DE:AD:BE:EF:20:15'
+                }
             ],
         }
+        self._compare_node_dumps(actual, expected)
+
 
     @database_only
     def test_show_node_unavailable(self, db):
@@ -1301,17 +1327,22 @@ class TestQuery:
         api.project_create('anvil-nextgen', 'acme-corp')
         api.project_connect_node('anvil-nextgen', 'robocop')
 
-        result = json.loads(api.show_node('robocop'))
-        # For the lists to be equal, the ordering must be the same:
-        result['nics'].sort()
-        assert result == {
+        actual = json.loads(api.show_node('robocop'))
+        expected = {
             'name': 'robocop',
             'free': False,
             'nics': [
-                'eth0',
-                'wlan0',
+                {
+                    'label': 'eth0',
+                    'macaddr': 'DE:AD:BE:EF:20:14',
+                },
+                {
+                    'label': 'wlan0',
+                    'macaddr': 'DE:AD:BE:EF:20:15',
+                },
             ],
         }
+        self._compare_node_dumps(actual, expected)
 
     @database_only
     def test_show_nonexistant_node(self, db):
