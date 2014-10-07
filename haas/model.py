@@ -450,26 +450,14 @@ class Hnic(Model):
     owner_id    = Column(Integer, ForeignKey('headnode.id'), nullable=False)
     owner       = relationship("Headnode", backref = backref('hnics'))
 
-    # The mac address of this Hnic. XXX: This isn't actually used for anything
-    # currently; we should either remove it or make it do something.
-    # intuitively, it should actually define the mac address in the VM, right
-    # now it just serves to confuse users.
-    mac_addr    = Column(String)
-
     # The network to which this Hnic is attached.
     network_id  = Column(Integer, ForeignKey('network.id'))
     network     = relationship("Network", backref=backref('hnics'))
 
-    def __init__(self, headnode, label, mac_addr):
-        """Create an Hnic attached to the given headnode.
-
-        The Hnic will have the given label and mac_addr.
-        Note that the mac_addr field is not currently respected; it has no
-        effect on the Headnode.
-        """
+    def __init__(self, headnode, label):
+        """Create an Hnic attached to the given headnode. with the given label."""
         self.owner    = headnode
         self.label    = label
-        self.mac_addr = mac_addr
 
     @no_dry_run
     def create(self):

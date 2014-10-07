@@ -238,10 +238,10 @@ def node_delete_nic(node, nic):
     check_status_code(requests.delete(url))
 
 @cmd
-def headnode_create_hnic(headnode, nic, macaddr):
-    """Create a <nic> with the given <macaddr> on the given <headnode>"""
+def headnode_create_hnic(headnode, nic):
+    """Create a <nic> on the given <headnode>"""
     url = object_url('headnode', headnode, 'hnic', nic)
-    check_status_code(requests.put(url, data={'macaddr':macaddr}))
+    check_status_code(requests.put(url))
 
 @cmd
 def headnode_delete_hnic(headnode, nic):

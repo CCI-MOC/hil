@@ -438,7 +438,7 @@ def headnode_stop(headnode):
 
 
 @rest_call('PUT', '/headnode/<headnode>/hnic/<hnic>')
-def headnode_create_hnic(headnode, hnic, macaddr):
+def headnode_create_hnic(headnode, hnic):
     """Create hnic attached to given headnode.
 
     If the node does not exist, a NotFoundError will be raised.
@@ -453,7 +453,7 @@ def headnode_create_hnic(headnode, hnic, macaddr):
     if not headnode.dirty:
         raise IllegalStateError
 
-    hnic = model.Hnic(headnode, hnic, macaddr)
+    hnic = model.Hnic(headnode, hnic)
     db.add(hnic)
     db.commit()
 
@@ -786,7 +786,7 @@ def stop_console(nodename):
     node = _must_find(db, model.Node, nodename)
     node.stop_console()
     node.delete_console()
- 
+
 
     # Helper functions #
     ####################
