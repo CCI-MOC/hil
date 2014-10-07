@@ -26,21 +26,23 @@ import pytest
 import re
 
 class TestHeadNode:
+    # XXX: These tests will fail when py.test is ran with '--cov-report
+    # term-missing --cov haas'.  Specifically, headnode_create() will throw an
+    # exception because check_call(['virt-clone', ...]') returns a non-zero
+    # status code.  The error presented is:
+
+    #       'import site' failed; use -v for traceback
+    #       Traceback (most recent call last):
+    #           File "/usr/bin/virt-clone", line 25, in <module>
+    #           import virtinst.CloneManager as clmgr
+    #       ImportError: No module named virtinst.CloneManager
+
+    # The tests can be run successfully by commenting out 'addopts =
+    # --cov-report term-missing --cov haas' in setup.cfg.
 
     @deployment_test
     @headnode_cleanup
     def test_headnode(self, db):
-        # XXX: This test will fail when py.test is ran with '--cov-report
-        # term-missing --cov haas'.  Specifically, headnode_create() will throw
-        # an exception because check_call(['virt-clone', ...]') returns a
-        # non-zero status code.  The error presented is:
-        #       'import site' failed; use -v for traceback
-        #       Traceback (most recent call last):
-        #           File "/usr/bin/virt-clone", line 25, in <module>
-        #           import virtinst.CloneManager as clmgr
-        #       ImportError: No module named virtinst.CloneManager
-        # This test can be run successfully by commenting out 'addopts =
-        # --cov-report term-missing --cov haas' in setup.cfg.
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         network_create_simple('spider-web', 'anvil-nextgen')
@@ -51,6 +53,15 @@ class TestHeadNode:
         api.headnode_start('hn-0')
         assert json.loads(api.show_headnode('hn-0'))['vncport'] is not None
         api.headnode_stop('hn-0')
+        api.headnode_delete('hn-0')
+
+    @deployment_test
+    @headnode_cleanup
+    def test_headnode_deletion_while_running(self, db):
+        api.group_create('acme-code')
+        api.project_create('anvil-nextgen', 'acme-code')
+        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_start('hn-0')
         api.headnode_delete('hn-0')
 
 
