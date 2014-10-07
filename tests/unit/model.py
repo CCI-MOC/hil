@@ -102,7 +102,7 @@ class TestHnic(ModelTest):
 
     def sample_obj(self):
         return Hnic(Headnode(Project(Group('acme-corp'), 'anvil-nextgen'),
-            'hn-0'), 'storage', '00:11:22:33:44:55')
+            'hn-0'), 'storage')
 
 
 class TestNetwork(ModelTest):
