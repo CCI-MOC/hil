@@ -42,8 +42,7 @@ class TestHeadNode:
         # This test can be run successfully by commenting out 'addopts =
         # --cov-report term-missing --cov haas' in setup.cfg.
 
-        api.group_create('acme-code')
-        api.project_create('anvil-nextgen', 'acme-code')
+        api.project_create('anvil-nextgen')
         network_create_simple('spider-web', 'anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen')
         api.headnode_create_hnic('hn-0', 'hnic-0')
@@ -144,9 +143,8 @@ class TestNetwork:
             api.network_delete('net-0')
             api.network_delete('net-1')
 
-        # Create group and project
-        api.group_create('acme-code')
-        api.project_create('anvil-nextgen', 'acme-code')
+        # Create a project
+        api.project_create('anvil-nextgen')
 
         create_networks()
         delete_networks()

@@ -59,8 +59,7 @@ class TestSimpleVLAN:
 
     @vlan_test('84')
     def test_simple_vlan_network_operations(self, db):
-        api.group_create('acme-code')
-        api.project_create('anvil-nextgen', 'acme-code')
+        api.project_create('anvil-nextgen')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.switch_register('sw01', 'simple_vlan')
         for k in range(97,100):

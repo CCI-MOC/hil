@@ -99,82 +99,20 @@ def user_delete(user):
     db.delete(user)
     db.commit()
 
-                            # Group Code #
-                            ##############
-
-
-@rest_call('PUT', '/group/<group>')
-def group_create(group):
-    """Create group.
-
-    If the group already exists, a DuplicateError will be raised.
-    """
-    db = model.Session()
-    _assert_absent(db, model.Group, group)
-    group = model.Group(group)
-    db.add(group)
-    db.commit()
-
-
-@rest_call('DELETE', '/group/<group>')
-def group_delete(group):
-    """Delete group.
-
-    If the group does not exist, a NotFoundError will be raised.
-    """
-    db = model.Session()
-    group = _must_find(db, model.Group, group)
-    db.delete(group)
-    db.commit()
-
-
-@rest_call('POST', '/group/<group>/add_user')
-def group_add_user(group, user):
-    """Add a user to a group.
-
-    If the group or user does not exist, a NotFoundError will be raised.
-    """
-    db = model.Session()
-    user = _must_find(db, model.User, user)
-    group = _must_find(db, model.Group, group)
-    if group in user.groups:
-        raise DuplicateError('User %s is already in group %s',
-                             (user.label, group.label))
-    user.groups.append(group)
-    db.commit()
-
-
-@rest_call('POST', '/group/<group>/remove_user')
-def group_remove_user(group, user):
-    """Remove a user from a group.
-
-    If the group or user does not exist, a NotFoundError will be raised.
-    """
-    db = model.Session()
-    user = _must_find(db, model.User, user)
-    group = _must_find(db, model.Group, group)
-    if group not in user.groups:
-        raise NotFoundError("User %s is not in group %s",
-                            (user.label, group.label))
-    user.groups.remove(group)
-    db.commit()
 
                             # Project Code #
                             ################
 
 
 @rest_call('PUT', '/project/<project>')
-def project_create(project, group):
-    """Create project belonging to the given group.
+def project_create(project):
+    """Create a project.
 
     If the project already exists, a DuplicateError will be raised.
-
-    If the group does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
     _assert_absent(db, model.Project, project)
-    group = _must_find(db, model.Group, group)
-    project = model.Project(group, project)
+    project = model.Project(project)
     db.add(project)
     db.commit()
 
@@ -240,6 +178,38 @@ def project_detach_node(project, node):
     node.stop_console()
     node.delete_console()
     project.nodes.remove(node)
+    db.commit()
+
+
+@rest_call('POST', '/project/<project>/add_user')
+def project_add_user(project, user):
+    """Add a user to a project.
+
+    If the project or user does not exist, a NotFoundError will be raised.
+    """
+    db = model.Session()
+    user = _must_find(db, model.User, user)
+    project = _must_find(db, model.Project, project)
+    if project in user.projects:
+        raise DuplicateError('User %s is already in project %s',
+                             (user.label, project.label))
+    user.projects.append(project)
+    db.commit()
+
+
+@rest_call('POST', '/project/<project>/remove_user')
+def project_remove_user(project, user):
+    """Remove a user from a project.
+
+    If the project or user does not exist, a NotFoundError will be raised.
+    """
+    db = model.Session()
+    user = _must_find(db, model.User, user)
+    project = _must_find(db, model.Project, project)
+    if project not in user.projects:
+        raise NotFoundError("User %s is not in project %s",
+                            (user.label, project.label))
+    user.projects.remove(project)
     db.commit()
 
 
