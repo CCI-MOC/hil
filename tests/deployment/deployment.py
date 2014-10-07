@@ -30,6 +30,18 @@ class TestHeadNode:
     @deployment_test
     @headnode_cleanup
     def test_headnode_start(self, db):
+        # XXX: This test will fail when py.test is ran with '--cov-report
+        # term-missing --cov haas'.  Specifically, headnode_create() will throw
+        # an exception because check_call(['virt-clone', ...]') returns a
+        # non-zero status code.  The error presented is:
+        #       'import site' failed; use -v for traceback
+        #       Traceback (most recent call last):
+        #           File "/usr/bin/virt-clone", line 25, in <module>
+        #           import virtinst.CloneManager as clmgr
+        #       ImportError: No module named virtinst.CloneManager
+        # This test can be run successfully by commenting out 'addopts =
+        # --cov-report term-missing --cov haas' in setup.cfg.
+
         api.group_create('acme-code')
         api.project_create('anvil-nextgen', 'acme-code')
         network_create_simple('spider-web', 'anvil-nextgen')
