@@ -30,10 +30,10 @@ import os
 Base=declarative_base()
 Session = sessionmaker()
 
-# A joining table for users and groups, which have a many to many relationship:
-user_groups = Table('user_groups', Base.metadata,
+# A joining table for users and projects, which have a many to many relationship:
+user_projects = Table('user_projects', Base.metadata,
                     Column('user_id', Integer, ForeignKey('user.id')),
-                    Column('group_id', Integer, ForeignKey('group.id')))
+                    Column('project_id', Integer, ForeignKey('project.id')))
 
 
 def init_db(create=False, uri=None):
@@ -151,7 +151,6 @@ class Node(Model):
             logger.info('Nonzero exit status from ipmitool, args = %r', args)
         return status
 
-
     def power_cycle(self):
         """Reboot the node via ipmi.
 
@@ -221,13 +220,8 @@ class Project(Model):
     A project may contain allocated nodes, networks, and headnodes.
     """
 
-    # The group to which the project belongs:
-    group_id = Column(Integer, ForeignKey('group.id'), nullable=False)
-    group = relationship("Group", backref=backref("projects"))
-
-    def __init__(self, group, label):
-        """Create a project with the given label belonging to `group`."""
-        self.group = group
+    def __init__(self, label):
+        """Create a project with the given label."""
         self.label = label
 
 
@@ -272,7 +266,6 @@ class Network(Model):
         self.label = label
 
 
-
 class Port(Model):
     """a port on a switch
 
@@ -290,7 +283,6 @@ class Port(Model):
         self.label   = label
 
 
-
 class Switch(Model):
     driver = Column(String)
 
@@ -303,16 +295,16 @@ class User(Model):
     """A user of the HaaS.
 
     Right now we're not doing authentication, so this isn't really used. In
-    theory, a user must autheticate, and their membership within groups
+    theory, a user must autheticate, and their membership within projects
     determines what they are authorized to do.
     """
 
     # The user's salted & hashed password. We currently use sha512 as the
-    # hasing algorithm:
-    hashed_password    = Column(String)
+    # hashing algorithm:
+    hashed_password = Column(String)
 
-    # The groups of which the user is a member.
-    groups      = relationship('Group', secondary = user_groups, backref = 'users')
+    # The projects of which the user is a member.
+    projects = relationship('Project', secondary = user_projects, backref = 'users')
 
     def __init__(self, label, password):
         """Create a user `label` with the specified (plaintext) password."""
@@ -326,19 +318,6 @@ class User(Model):
     def set_password(self, password):
         """Set the user's password to `password` (which must be plaintext)."""
         self.hashed_password = sha512_crypt.encrypt(password)
-
-
-class Group(Model):
-    """a group of users
-
-    The main function of groups is to act as the owner of projects.
-    This is somewhat clumsy, and there are changes on the roadmap
-    that will likely result in the elimination of groups.
-    """
-
-    def __init__(self, label):
-        """Create a group with the specified label."""
-        self.label = label
 
 
 class Headnode(Model):
@@ -401,7 +380,6 @@ class Headnode(Model):
     def _vmname(self):
         """Returns the name (as recognized by libvirt) of this vm."""
         return 'headnode-%s' % self.uuid
-
 
     # This function returns a meaningful value, but also uses actual hardware.
     # It has no_dry_run because the unit test for 'show_headnode' will call
