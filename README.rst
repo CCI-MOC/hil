@@ -62,8 +62,17 @@ Next, each time you start working, enter the environment::
 
   source .venv/bin/activate
 
-The first time you enter the environment, install the ``haas`` code and all
-its dependencies into the virtual environment::
+The HaaS has an unspecified dependency on the ``moc-rest`` library:
+
+.. https://github.com/cci-moc/moc-rest
+
+The recommended way for developers to satisfy this is to clone that repository,
+and then (while in the virtual environment)::
+
+  pip install -e ${path_to_moc_rest_clone}
+
+Next, proceed with installing the HaaS and the rest of its dependencies into
+the virtual environment::
 
   pip install -e .
 
