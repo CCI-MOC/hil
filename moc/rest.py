@@ -134,12 +134,12 @@ def request_handler(request):
         return e
 
 def wsgi_handler(environ, start_response):
-    """The wsgi entry point to the HaaS."""
+    """The wsgi entry point to the API."""
     response = request_handler(Request(environ))
     return response(environ, start_response)
 
 def serve(debug=True):
-    """Start an http server running the HaaS api.
+    """Start an http server running the API.
 
     This is intended for development purposes *only* -- as such the default is
     to turn on the debugger (which allows arbitrary code execution from the
