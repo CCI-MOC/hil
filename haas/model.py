@@ -281,7 +281,7 @@ class Port(Model):
     """
 
     def __init__(self, label):
-        """Register a port on the given switch."""
+        """Register a port on a switch."""
         self.label   = label
 
 

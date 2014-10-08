@@ -672,7 +672,7 @@ def port_connect_nic(port, node, nic):
     db.commit()
 
 
-@rest_call('POST', '/switch/<switch>/port/<path:port>/detach_nic')
+@rest_call('POST', '/port/<path:port>/detach_nic')
 def port_detach_nic(port):
     """Detach a port from the nic it's attached to
 
