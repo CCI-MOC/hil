@@ -67,20 +67,15 @@ Full Api spec:
     [PUT]    /node/<node_label>/nic/<nic_label> {mac_addr=<mac_addr>}
     [DELETE] /node/<node_label>/nic/<nic_label>
 
-    switch_register  <switch_label> <driver>
-    switch_delete    <switch_label>
-    [PUT]    /switch/<switch_label> {driver=<driver>}
-    [DELETE] /switch/<switch_label>
+    port_register  <port_no>
+    port_delete    <port_no>
+    [PUT]    /port/<port_no>
+    [DELETE] /port/<port_no>
 
-    port_register  <switch_label> <port_no>
-    port_delete    <switch_label> <port_no>
-    [PUT]    /switch/<switch_label>/port/<port_no>
-    [DELETE] /switch/<switch_label>/port/<port_no>
-
-    port_connect_nic <switch_label> <port_no> <node_label> <nic_label>
-    port_detach_nic  <switch_label> <port_no>
-    [POST] /switch/<switch_label>/port/<port_no>/connect_nic
-    [POST] /switch/<switch_label>/port/<port_no>/detach_nic
+    port_connect_nic <port_no> <node_label> <nic_label>
+    port_detach_nic  <port_no>
+    [POST] /port/<port_no>/connect_nic
+    [POST] /port/<port_no>/detach_nic
 
     import_vlan <network_label> <vlan_label>
     block_user <user_label>

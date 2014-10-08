@@ -187,19 +187,18 @@ class TestNetworking:
 
     @database_only
     def test_networking_involved(self, db):
-        api.switch_register('switch', 'null')
-        api.port_register('switch', '1')
-        api.port_register('switch', '2')
-        api.port_register('switch', '3')
+        api.port_register('1')
+        api.port_register('2')
+        api.port_register('3')
         api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register('node-98', 'ipmihost', 'root', 'tapeworm')
         api.node_register('node-97', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
         api.node_register_nic('node-98', 'eth0', 'DE:AD:BE:EF:20:15')
         api.node_register_nic('node-97', 'eth0', 'DE:AD:BE:EF:20:16')
-        api.port_connect_nic('switch', '1', 'node-99', 'eth0')
-        api.port_connect_nic('switch', '2', 'node-98', 'eth0')
-        api.port_connect_nic('switch', '3', 'node-97', 'eth0')
+        api.port_connect_nic('1', 'node-99', 'eth0')
+        api.port_connect_nic('2', 'node-98', 'eth0')
+        api.port_connect_nic('3', 'node-97', 'eth0')
 
         api.group_create('acme-corp')
         api.project_create('anvil-nextgen', 'acme-corp')
@@ -1070,172 +1069,116 @@ class TestNetworkCreateDelete:
             api.network_delete('hammernet')
 
 
-class TestSwitchRegisterDelete:
-    """Tests for the haas.api.switch_* functions."""
-
-    @database_only
-    def test_switch_register_success(self, db):
-        api.switch_register('bait-and', 'big-iron')
-        api._must_find(db, model.Switch, 'bait-and')
-
-    @database_only
-    def test_duplicate_switch_register(self, db):
-        api.switch_register('bait-and', 'big-iron')
-        with pytest.raises(api.DuplicateError):
-            api.switch_register('bait-and', 'falling')
-
-    @database_only
-    def test_switch_delete(self, db):
-        api.switch_register('bait-and', 'big-iron')
-        api.switch_delete('bait-and')
-        with pytest.raises(api.NotFoundError):
-            api._must_find(db, model.Switch, 'bait-and')
-
-    @database_only
-    def test_swtich_delete_nexist(self, db):
-        with pytest.raises(api.NotFoundError):
-            api.switch_delete('bait_and')
-
-
 class TestPortRegisterDelete:
 
     @database_only
     def test_port_register_success(self, db):
-        api.switch_register('bait-and', 'big-iron')
-        api.port_register('bait-and', '3')
+        api.port_register('3')
 
     @database_only
     def test_port_register_duplicate(self, db):
-        api.switch_register('bait-and', 'big-iron')
-        api.port_register('bait-and', '3')
+        api.port_register('3')
         with pytest.raises(api.DuplicateError):
-            api.port_register('bait-and', '3')
-
-    @database_only
-    def test_port_register_no_such_switch(self, db):
-        with pytest.raises(api.NotFoundError):
-            api.port_register('bait-and', '3')
+            api.port_register('3')
 
     @database_only
     def test_port_delete_success(self, db):
-        api.switch_register('bait-and', 'big-iron')
-        api.port_register('bait-and', '3')
-        api.port_delete('bait-and', '3')
+        api.port_register('3')
+        api.port_delete('3')
 
     @database_only
     def test_port_delete_no_such_port(self, db):
-        api.switch_register('bait-and', 'big-iron')
         with pytest.raises(api.NotFoundError):
-            api.port_delete('bait-and', '3')
+            api.port_delete('3')
 
-    @database_only
-    def test_port_delete_no_such_switch(self, db):
-        with pytest.raises(api.NotFoundError):
-            api.port_delete('bait-and', '3')
 
 class TestPortConnectDetachNic:
 
     @database_only
     def test_port_connect_nic_success(self, db):
-        api.switch_register('bait-and', 'big-iron')
-        api.port_register('bait-and', '3')
+        api.port_register('3')
         api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
-        api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+        api.port_connect_nic('3', 'compute-01', 'eth0')
 
     @database_only
     def test_port_connect_nic_no_such_switch(self, db):
         api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         with pytest.raises(api.NotFoundError):
-            api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+            api.port_connect_nic('3', 'compute-01', 'eth0')
 
     @database_only
     def test_port_connect_nic_no_such_port(self, db):
-        api.switch_register('bait-and', 'big-iron')
         api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         with pytest.raises(api.NotFoundError):
-            api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+            api.port_connect_nic('3', 'compute-01', 'eth0')
 
     @database_only
     def test_port_connect_nic_no_such_node(self, db):
-        api.switch_register('bait-and', 'big-iron')
-        api.port_register('bait-and', '3')
+        api.port_register('3')
         with pytest.raises(api.NotFoundError):
-            api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+            api.port_connect_nic('3', 'compute-01', 'eth0')
 
     @database_only
     def test_port_connect_nic_no_such_nic(self, db):
-        api.switch_register('bait-and', 'big-iron')
-        api.port_register('bait-and', '3')
+        api.port_register('3')
         api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         with pytest.raises(api.NotFoundError):
-            api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+            api.port_connect_nic('3', 'compute-01', 'eth0')
 
     @database_only
     def test_port_connect_nic_already_attached_to_same(self, db):
-        api.switch_register('bait-and', 'big-iron')
-        api.port_register('bait-and', '3')
+        api.port_register('3')
         api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
-        api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+        api.port_connect_nic('3', 'compute-01', 'eth0')
         with pytest.raises(api.DuplicateError):
-            api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+            api.port_connect_nic('3', 'compute-01', 'eth0')
 
     @database_only
     def test_port_connect_nic_nic_already_attached_differently(self, db):
-        api.switch_register('bait-and', 'big-iron')
-        api.switch_register('-eroo', 'big-iron')
-        api.port_register('bait-and', '3')
-        api.port_register('-eroo', '4')
+        api.port_register('3')
+        api.port_register('4')
         api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
-        api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+        api.port_connect_nic('3', 'compute-01', 'eth0')
         with pytest.raises(api.DuplicateError):
-            api.port_connect_nic('-eroo', '4', 'compute-01', 'eth0')
+            api.port_connect_nic('4', 'compute-01', 'eth0')
 
     @database_only
     def test_port_connect_nic_port_already_attached_differently(self, db):
-        api.switch_register('bait-and', 'big-iron')
-        api.port_register('bait-and', '3')
+        api.port_register('3')
         api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register('compute-02', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         api.node_register_nic('compute-02', 'eth1', 'DE:AD:BE:EF:20:15')
-        api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
+        api.port_connect_nic('3', 'compute-01', 'eth0')
         with pytest.raises(api.DuplicateError):
-            api.port_connect_nic('bait-and', '3', 'compute-02', 'eth1')
+            api.port_connect_nic('3', 'compute-02', 'eth1')
 
 
     @database_only
     def test_port_detach_nic_success(self, db):
-        api.switch_register('bait-and', 'big-iron')
-        api.port_register('bait-and', '3')
+        api.port_register('3')
         api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
-        api.port_connect_nic('bait-and', '3', 'compute-01', 'eth0')
-        api.port_detach_nic('bait-and', '3')
-
-    @database_only
-    def test_port_detach_nic_no_such_switch(self, db):
-        with pytest.raises(api.NotFoundError):
-            api.port_detach_nic('bait-and', '3')
+        api.port_connect_nic('3', 'compute-01', 'eth0')
+        api.port_detach_nic('3')
 
     @database_only
     def test_port_detach_nic_no_such_port(self, db):
-        api.switch_register('bait-and', 'big-iron')
         with pytest.raises(api.NotFoundError):
-            api.port_detach_nic('bait-and', '3')
+            api.port_detach_nic('3')
 
     @database_only
     def test_port_detach_nic_not_attached(self, db):
-        api.switch_register('bait-and', 'big-iron')
-        api.port_register('bait-and', '3')
+        api.port_register('3')
         api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         with pytest.raises(api.NotFoundError):
-            api.port_detach_nic('bait-and', '3')
+            api.port_detach_nic('3')
 
 
 class TestQuery:

@@ -86,12 +86,6 @@ class TestProject(ModelTest):
         return Project(Group('acme_corp'), 'manhattan')
 
 
-class TestSwitch(ModelTest):
-
-    def sample_obj(self):
-        return Switch('dev-switch', 'acme_corp')
-
-
 class TestHeadnode(ModelTest):
 
     def sample_obj(self):
