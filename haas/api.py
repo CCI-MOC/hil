@@ -203,8 +203,6 @@ def project_delete(project):
         ### NO projects.
         raise BlockedError("Project can still access networks")
     if project.headnode:
-        ### FIXME: If you ever create a headnode, you can't delete it right
-        ### now.  This essentially makes deletion of projects impossible.
         raise BlockedError("Project still has a headnode")
     db.delete(project)
     db.commit()
@@ -409,9 +407,12 @@ def headnode_delete(headnode):
 
     If the node does not exist, a NotFoundError will be raised.
     """
-    ### XXX This should never succeed currently.
     db = model.Session()
     headnode = _must_find(db, model.Headnode, headnode)
+    if not headnode.dirty:
+        headnode.delete()
+    for hnic in headnode.hnics:
+        db.delete(hnic)
     db.delete(headnode)
     db.commit()
 
