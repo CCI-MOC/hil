@@ -81,7 +81,8 @@ def serve():
         debug = False
     # We need to import api here so that the functions within it get registered
     # (via `rest_call`), though we don't use it directly:
-    from haas import model, http, api
+    from haas import model, api
+    from moc import rest
     model.init_db()
     # Stop all orphan console logging processes on startup
     db = model.Session()
@@ -90,7 +91,7 @@ def serve():
         node.stop_console()
         node.delete_console()
     # Start server
-    http.serve(debug=debug)
+    rest.serve(debug=debug)
 
 @cmd
 def init_db():
@@ -133,39 +134,27 @@ def user_delete(username):
     check_status_code(requests.delete(url))
 
 @cmd
-def group_add_user(group, user):
-    """Add <user> to <group>"""
-    url = object_url('group', group, 'add_user')
+def project_add_user(project, user):
+    """Add <user> to <project>"""
+    url = object_url('project', project, 'add_user')
     check_status_code(requests.post(url, data={'user': user}))
 
 @cmd
-def group_remove_user(group, user):
-    """Remove <user> from <group>"""
-    url = object_url('group', group, 'remove_user')
+def project_remove_user(project, user):
+    """Remove <user> from <project>"""
+    url = object_url('project', project, 'remove_user')
     check_status_code(requests.post(url, data={'user': user}))
 
 @cmd
-def project_create(project, group):
-    """Create <project> belonging to <group>"""
+def project_create(project):
+    """Create a <project>"""
     url = object_url('project', project)
-    check_status_code(requests.put(url, data={'group': group}))
+    check_status_code(requests.put(url))
 
 @cmd
 def project_delete(project):
     """Delete <project>"""
     url = object_url('project', project)
-    check_status_code(requests.delete(url))
-
-@cmd
-def group_create(group):
-    """Create <group>"""
-    url = object_url('group', group)
-    check_status_code(requests.put(url))
-
-@cmd
-def group_delete(group):
-    """Delete <group>"""
-    url = object_url('group', group)
     check_status_code(requests.delete(url))
 
 @cmd

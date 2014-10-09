@@ -1,4 +1,3 @@
-Werkzeug==0.9.4
 SQLAlchemy==0.9.7
 importlib==1.0.3
 passlib==1.6.2
