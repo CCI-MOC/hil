@@ -75,6 +75,8 @@ def database_only(f):
         cfg.set('general', 'driver', 'null')
         cfg.add_section('devel')
         cfg.set('devel', 'dry_run', True)
+        cfg.add_section('headnode')
+        cfg.set('headnode', 'base_imgs', 'base-headnode')
 
     @wraps(f)
     @clear_configuration
