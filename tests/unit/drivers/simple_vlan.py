@@ -40,7 +40,7 @@ def vlan_test(vlan_list):
             cfg.add_section('driver simple_vlan')
             cfg.set('driver simple_vlan', 'switch', '{"switch":"null"}')
             cfg.add_section('devel')
-            cfg.set('devel', 'dry_run')
+            cfg.set('devel', 'dry_run', 'True')
 
         @wraps(f)
         @clear_configuration
@@ -59,8 +59,7 @@ class TestSimpleVLAN:
 
     @vlan_test('84')
     def test_simple_vlan_network_operations(self, db):
-        api.group_create('acme-code')
-        api.project_create('anvil-nextgen', 'acme-code')
+        api.project_create('anvil-nextgen')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.switch_register('sw01', 'simple_vlan')
         for k in range(97,100):

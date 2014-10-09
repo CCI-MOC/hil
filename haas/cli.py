@@ -134,39 +134,27 @@ def user_delete(username):
     check_status_code(requests.delete(url))
 
 @cmd
-def group_add_user(group, user):
-    """Add <user> to <group>"""
-    url = object_url('group', group, 'add_user')
+def project_add_user(project, user):
+    """Add <user> to <project>"""
+    url = object_url('project', project, 'add_user')
     check_status_code(requests.post(url, data={'user': user}))
 
 @cmd
-def group_remove_user(group, user):
-    """Remove <user> from <group>"""
-    url = object_url('group', group, 'remove_user')
+def project_remove_user(project, user):
+    """Remove <user> from <project>"""
+    url = object_url('project', project, 'remove_user')
     check_status_code(requests.post(url, data={'user': user}))
 
 @cmd
-def project_create(project, group):
-    """Create <project> belonging to <group>"""
+def project_create(project):
+    """Create a <project>"""
     url = object_url('project', project)
-    check_status_code(requests.put(url, data={'group': group}))
+    check_status_code(requests.put(url))
 
 @cmd
 def project_delete(project):
     """Delete <project>"""
     url = object_url('project', project)
-    check_status_code(requests.delete(url))
-
-@cmd
-def group_create(group):
-    """Create <group>"""
-    url = object_url('group', group)
-    check_status_code(requests.put(url))
-
-@cmd
-def group_delete(group):
-    """Delete <group>"""
-    url = object_url('group', group)
     check_status_code(requests.delete(url))
 
 @cmd

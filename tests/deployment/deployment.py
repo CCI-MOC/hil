@@ -43,8 +43,7 @@ class TestHeadNode:
     @deployment_test
     @headnode_cleanup
     def test_headnode(self, db):
-        api.group_create('acme-code')
-        api.project_create('anvil-nextgen', 'acme-code')
+        api.project_create('anvil-nextgen')
         network_create_simple('spider-web', 'anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen')
         api.headnode_create_hnic('hn-0', 'hnic-0')
@@ -58,8 +57,7 @@ class TestHeadNode:
     @deployment_test
     @headnode_cleanup
     def test_headnode_deletion_while_running(self, db):
-        api.group_create('acme-code')
-        api.project_create('anvil-nextgen', 'acme-code')
+        api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen')
         api.headnode_start('hn-0')
         api.headnode_delete('hn-0')
@@ -156,9 +154,8 @@ class TestNetwork:
             api.network_delete('net-0')
             api.network_delete('net-1')
 
-        # Create group and project
-        api.group_create('acme-code')
-        api.project_create('anvil-nextgen', 'acme-code')
+        # Create a project
+        api.project_create('anvil-nextgen')
 
         create_networks()
         delete_networks()
