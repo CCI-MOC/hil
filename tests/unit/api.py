@@ -111,7 +111,7 @@ class TestProjectCreateDelete:
     @database_only
     def test_project_delete_hasheadnode(self, db):
         api.project_create('anvil-nextgen')
-        api.headnode_create('hn-01', 'anvil-nextgen')
+        api.headnode_create('hn-01', 'anvil-nextgen', 'base-headnode')
         with pytest.raises(api.BlockedError):
             api.project_delete('anvil-nextgen')
 
@@ -605,7 +605,7 @@ class TestHeadnodeCreateDelete:
     @database_only
     def test_headnode_create_success(self, db):
         api.project_create('anvil-nextgen')
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         hn = api._must_find(db, model.Headnode, 'hn-0')
         assert hn.project.label == 'anvil-nextgen'
 
@@ -613,29 +613,29 @@ class TestHeadnodeCreateDelete:
     def test_headnode_create_badproject(self, db):
         """Tests that creating a headnode with a nonexistent project fails"""
         with pytest.raises(api.NotFoundError):
-            api.headnode_create('hn-0', 'anvil-nextgen')
+            api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
 
     @database_only
     def test_headnode_create_duplicate(self, db):
         """Tests that creating a headnode with a duplicate name fails"""
         api.project_create('anvil-nextgen')
         api.project_create('anvil-oldtimer')
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         with pytest.raises(api.DuplicateError):
-            api.headnode_create('hn-0', 'anvil-oldtimer')
+            api.headnode_create('hn-0', 'anvil-oldtimer', 'base-headnode')
 
     @database_only
     def test_headnode_create_second(self, db):
         """Tests that creating a second headnode one one project fails"""
         api.project_create('anvil-nextgen')
-        api.headnode_create('hn-0', 'anvil-nextgen')
-        api.headnode_create('hn-1', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
+        api.headnode_create('hn-1', 'anvil-nextgen', 'base-headnode')
 
 
     @database_only
     def test_headnode_delete_success(self, db):
         api.project_create('anvil-nextgen')
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_delete('hn-0')
         api._assert_absent(db, model.Headnode, 'hn-0')
 
@@ -651,7 +651,7 @@ class TestHeadnodeCreateDeleteHnic:
     @database_only
     def test_headnode_create_hnic_success(self, db):
         api.project_create('anvil-nextgen')
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         nic = api._must_find(db, model.Hnic, 'hn-0-eth0')
         assert nic.owner.label == 'hn-0'
@@ -664,7 +664,7 @@ class TestHeadnodeCreateDeleteHnic:
     @database_only
     def test_headnode_create_hnic_duplicate_hnic(self, db):
         api.project_create('anvil-nextgen')
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         with pytest.raises(api.DuplicateError):
             api.headnode_create_hnic('hn-0', 'hn-0-eth0')
@@ -672,7 +672,7 @@ class TestHeadnodeCreateDeleteHnic:
     @database_only
     def test_headnode_delete_hnic_success(self, db):
         api.project_create('anvil-nextgen')
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         api.headnode_delete_hnic('hn-0', 'hn-0-eth0')
         api._assert_absent(db, model.Hnic, 'hn-0-eth0')
@@ -681,7 +681,7 @@ class TestHeadnodeCreateDeleteHnic:
     @database_only
     def test_headnode_delete_hnic_hnic_nexist(self, db):
         api.project_create('anvil-nextgen')
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         with pytest.raises(api.NotFoundError):
             api.headnode_delete_hnic('hn-0', 'hn-0-eth0')
 
@@ -694,8 +694,8 @@ class TestHeadnodeCreateDeleteHnic:
     def test_headnode_delete_hnic_wrong_headnode(self, db):
         api.project_create('anvil-nextgen')
         api.project_create('anvil-oldtimer')
-        api.headnode_create('hn-0', 'anvil-nextgen')
-        api.headnode_create('hn-1', 'anvil-oldtimer')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
+        api.headnode_create('hn-1', 'anvil-oldtimer', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         with pytest.raises(api.NotFoundError):
             api.headnode_delete_hnic('hn-1', 'hn-0-eth0')
@@ -703,7 +703,7 @@ class TestHeadnodeCreateDeleteHnic:
     @database_only
     def test_headnode_delete_hnic_wrong_nexist_headnode(self, db):
         api.project_create('anvil-nextgen')
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         with pytest.raises(api.NotFoundError):
             api.headnode_delete_hnic('hn-1', 'hn-0-eth0')
@@ -712,8 +712,8 @@ class TestHeadnodeCreateDeleteHnic:
     def test_headnode_create_hnic_diff_headnodes(self, db):
         api.project_create('anvil-legacy')
         api.project_create('anvil-nextgen')
-        api.headnode_create('hn-0', 'anvil-legacy')
-        api.headnode_create('hn-1', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-legacy', 'base-headnode')
+        api.headnode_create('hn-1', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'eth0')
         api.headnode_create_hnic('hn-1', 'eth0')
 
@@ -723,7 +723,7 @@ class TestHeadnodeConnectDetachNetwork:
     @database_only
     def test_headnode_connect_network_success(self, db):
         api.project_create('anvil-nextgen')
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         network_create_simple('hammernet', 'anvil-nextgen')
 
@@ -736,7 +736,7 @@ class TestHeadnodeConnectDetachNetwork:
     @database_only
     def test_headnode_connect_network_no_such_headnode(self, db):
         api.project_create('anvil-nextgen')
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         network_create_simple('hammernet', 'anvil-nextgen')
 
@@ -746,7 +746,7 @@ class TestHeadnodeConnectDetachNetwork:
     @database_only
     def test_headnode_connect_network_no_such_hnic(self, db):
         api.project_create('anvil-nextgen')
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         network_create_simple('hammernet', 'anvil-nextgen')
 
@@ -756,7 +756,7 @@ class TestHeadnodeConnectDetachNetwork:
     @database_only
     def test_headnode_connect_network_no_such_network(self, db):
         api.project_create('anvil-nextgen')
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         network_create_simple('hammernet', 'anvil-nextgen')
 
@@ -766,7 +766,7 @@ class TestHeadnodeConnectDetachNetwork:
     @database_only
     def test_headnode_connect_network_already_attached_to_same(self, db):
         api.project_create('anvil-nextgen')
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet') # added
@@ -776,7 +776,7 @@ class TestHeadnodeConnectDetachNetwork:
     @database_only
     def test_headnode_connect_network_already_attached_differently(self, db):
         api.project_create('anvil-nextgen')
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         network_create_simple('hammernet', 'anvil-nextgen')
         network_create_simple('hammernet2', 'anvil-nextgen')
@@ -788,7 +788,7 @@ class TestHeadnodeConnectDetachNetwork:
     def test_headnode_connect_network_different_projects(self, db):
         api.project_create('anvil-nextgen')
         api.project_create('anvil-oldtimer') # added
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         network_create_simple('hammernet', 'anvil-oldtimer') #changed
 
@@ -799,7 +799,7 @@ class TestHeadnodeConnectDetachNetwork:
     @database_only
     def test_headnode_detach_network_success(self, db):
         api.project_create('anvil-nextgen')
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
@@ -813,7 +813,7 @@ class TestHeadnodeConnectDetachNetwork:
     @database_only
     def test_headnode_detach_network_not_attached(self, db):
         api.project_create('anvil-nextgen')
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         network_create_simple('hammernet', 'anvil-nextgen')
 #        api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
@@ -823,7 +823,7 @@ class TestHeadnodeConnectDetachNetwork:
     @database_only
     def test_headnode_detach_network_no_such_headnode(self, db):
         api.project_create('anvil-nextgen')
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
@@ -834,7 +834,7 @@ class TestHeadnodeConnectDetachNetwork:
     @database_only
     def test_headnode_detach_network_no_such_hnic(self, db):
         api.project_create('anvil-nextgen')
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
@@ -857,7 +857,7 @@ class TestHeadnodeFreeze:
     def _prep(self):
         """Helper to set up common state."""
         api.project_create('anvil-nextgen')
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
 
     def _prep_delete_hnic(self):
         self._prep()
@@ -993,7 +993,7 @@ class TestNetworkCreateDelete:
     def test_network_delete_headnode_on_network(self, db):
         api.project_create('anvil-nextgen')
         network_create_simple('hammernet', 'anvil-nextgen')
-        api.headnode_create('hn-0', 'anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'eth0')
         api.headnode_connect_network('hn-0', 'eth0', 'hammernet')
         with pytest.raises(api.BlockedError):
@@ -1343,7 +1343,7 @@ class TestQuery:
     def test_show_headnode(self, db):
         api.project_create('anvil-nextgen')
         network_create_simple('spiderwebs', 'anvil-nextgen')
-        api.headnode_create('BGH', 'anvil-nextgen')
+        api.headnode_create('BGH', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('BGH', 'eth0')
         api.headnode_create_hnic('BGH', 'wlan0')
         api.headnode_connect_network('BGH', 'eth0', 'spiderwebs')
