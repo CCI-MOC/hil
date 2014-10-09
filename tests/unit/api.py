@@ -1369,8 +1369,8 @@ class TestQuery:
 
 
     @database_only
-    def test_list_headnode_images(self, db)
-        result = json.loads(api.show_headnode_images())
+    def test_list_headnode_images(self, db):
+        result = json.loads(api.list_headnode_images())
         assert result == [ 'img1', 'img2', 'img3', 'img4' ]
 
 
