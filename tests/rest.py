@@ -48,7 +48,7 @@ def wsgi_mkenv(method, path, data=None):
     if data is None:
         env['wsgi.input'] = StringIO()
     else:
-        env['wsgi.input'] = StringIO(json.dumps(data))
+        env['wsgi.input'] = StringIO(data)
     return env
 
 
@@ -170,8 +170,8 @@ class TestBodyArgs(HttpEquivalenceTest, HttpTest):
         return json.dumps(['bonnie', 'clide'])
 
     def request(self):
-        return wsgi_mkenv('POST', '/func/foo', data={'bar': 'bonnie',
-                                                     'baz': 'clide'})
+        return wsgi_mkenv('POST', '/func/foo',
+                          data=json.dumps({'bar': 'bonnie', 'baz': 'clide'}))
 
 
 class TestEquiv_basic_APIError(HttpEquivalenceTest, HttpTest):
@@ -189,3 +189,56 @@ class TestEquiv_basic_APIError(HttpEquivalenceTest, HttpTest):
 
     def request(self):
         return wsgi_mkenv('GET', '/some_error')
+
+
+def _is_error(resp, errtype):
+    """Return True iff the Response `resp` represents an `errtype`.
+
+    `resp` should be a response returned by `request_handler`.
+    `errtype` should be a subclass of APIError.
+    """
+    try:
+        return json.loads(resp.get_data())['type'] == errtype.__name__
+    except:
+        # It's possible that this response isn't even an error, in which case
+        # the data may not parse as the above statement is expecting. Well,
+        # it's not an error, so:
+        return False
+
+
+class TestValidationError(HttpTest):
+    """basic tests for input validation."""
+
+    def setUp(self):
+        HttpTest.setUp(self)
+
+        @rest.rest_call('POST', '/give-me-an-e')
+        def api_call(foo, bar):
+            pass
+
+    def _do_request(self, data):
+        """Make a request to the endpoint with `data` in the body.
+
+        `data` should be a string -- the server will expect valid json, but
+        we want to write test cases with invalid input as well.
+        """
+        req = Request(wsgi_mkenv('POST', '/give-me-an-e', data=data))
+        return rest.request_handler(req)
+
+    def test_ok(self):
+        assert not _is_error(self._do_request(json.dumps({'foo': 'alice',
+                                                          'bar': 'bob'})),
+                             rest.ValidationError)
+
+    def test_bad_json(self):
+        assert _is_error(self._do_request('xploit'), rest.ValidationError)
+
+    def test_missing_bar(self):
+        assert _is_error(self._do_request(json.dumps({'foo': 'hello'})),
+                         rest.ValidationError)
+
+    def test_extra_baz(self):
+        assert _is_error(self._do_request(json.dumps({'foo': 'alice',
+                                                      'bar': 'bob',
+                                                      'baz': 'eve'})),
+                         rest.ValidationError)

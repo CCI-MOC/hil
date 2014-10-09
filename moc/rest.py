@@ -26,7 +26,7 @@ from werkzeug.wrappers import Request, Response
 from werkzeug.routing import Map, Rule, parse_rule
 from werkzeug.exceptions import HTTPException, InternalServerError
 
-from schema import Schema
+from schema import Schema, SchemaError
 
 logger = logging.getLogger(__name__)
 
@@ -42,14 +42,16 @@ class APIError(Exception):
     i.e. If such an error occurs in a rest API call, it should be reported as
     part of the HTTP response.
     """
-    status_code = 400 # Bad Request
+    status_code = 400  # Bad Request
 
-class MissingArgumentError(APIError):
-    """Indicates that a required parameter was missing from the request."""
-    # This is only used within this module; arguably we should be giving it a
-    # name that suggest being private, e.g. _MissingArgumentError, but we're
-    # handing the class name back to the client, so we leave it as something
-    # less peculiar for now.
+    def response(self):
+        return Response(json.dumps({'type': self.__class__.__name__,
+                                    'msg': self.message,
+                                    }), status=self.status_code)
+
+
+class ValidationError(APIError):
+    """An exception indicating that the body of the request was invalid."""
 
 
 def rest_call(method, path):
@@ -145,7 +147,14 @@ def request_handler(request):
             request_body = request_body.read(MAX_CONTENT_LENGTH)
 
             # Parse the body as json and validate it with the schema:
-            request_body = schema.validate(json.loads(request_body))
+            try:
+                request_body = schema.validate(json.loads(request_body))
+            except (ValueError, SchemaError):
+                # The try branch can raise one of the above two exceptions,
+                # depending on whether parsing the body as json fails, or
+                # validating the schema fails.
+                raise ValidationError("The request body %r is not valid for "
+                                      "This request." % request_body)
         else:
             # Nothing is needed from the body. We set it to an empty dict:
             request_body = {}
@@ -179,10 +188,7 @@ def request_handler(request):
         # should figure out what the right way to do this is.
         logger.debug('Invalid call to api function %s, raised exception: %r',
                      f.__name__, e)
-        return Response(json.dumps({
-                'type': e.__class__.__name__,
-                'msg': e.message,
-            }), status=e.status_code)
+        return e.response()
     except HTTPException, e:
         return e
 
