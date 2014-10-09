@@ -1368,6 +1368,12 @@ class TestQuery:
             api.show_headnode('BGH')
 
 
+    @database_only
+    def test_list_headnode_images(self, db)
+        result = json.loads(api.show_headnode_images())
+        assert result == [ 'img1', 'img2', 'img3', 'img4' ]
+
+
 class TestFancyNetworkCreate:
     """Test creating network with advanced parameters.
 
