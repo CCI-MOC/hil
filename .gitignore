@@ -7,4 +7,3 @@ build
 dist
 .venv
 .coverage
-*.cfg
