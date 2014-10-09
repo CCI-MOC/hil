@@ -76,7 +76,7 @@ def database_only(f):
         cfg.add_section('devel')
         cfg.set('devel', 'dry_run', True)
         cfg.add_section('headnode')
-        cfg.set('headnode', 'base_imgs', 'img1, img2, img3, img4')
+        cfg.set('headnode', 'base_imgs', 'base-headnode, img1, img2, img3, img4')
 
     @wraps(f)
     @clear_configuration
