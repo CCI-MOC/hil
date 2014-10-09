@@ -61,12 +61,6 @@ class TestUsers(ModelTest):
         return User('bob', 'secret')
 
 
-class TestGroup(ModelTest):
-
-    def sample_obj(self):
-        return Group('moc-hackers')
-
-
 class TestNic(ModelTest):
 
     def sample_obj(self):
@@ -83,7 +77,7 @@ class TestNode(ModelTest):
 class TestProject(ModelTest):
 
     def sample_obj(self):
-        return Project(Group('acme_corp'), 'manhattan')
+        return Project('manhattan')
 
 
 class TestSwitch(ModelTest):
@@ -95,18 +89,18 @@ class TestSwitch(ModelTest):
 class TestHeadnode(ModelTest):
 
     def sample_obj(self):
-        return Headnode(Project(Group('acme_corp'), 'anvil-nextgen'), 'hn-example', 'base-headnode')
+        return Headnode(Project('anvil-nextgen'), 'hn-example', 'base-headnode')
 
 
 class TestHnic(ModelTest):
 
     def sample_obj(self):
-        return Hnic(Headnode(Project(Group('acme-corp'), 'anvil-nextgen'),
+        return Hnic(Headnode(Project('anvil-nextgen'),
             'hn-0', 'base-headnode'), 'storage')
 
 
 class TestNetwork(ModelTest):
 
     def sample_obj(self):
-        pj = Project(Group('acme_corp'), 'anvil-nextgen')
+        pj = Project('anvil-nextgen')
         return Network(pj, pj, True, '102', 'hammernet')

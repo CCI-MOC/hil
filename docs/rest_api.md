@@ -8,14 +8,9 @@ Full Api spec:
     [PUT]    /user/<user_label> {password=<password>}
     [DELETE] /user/<user_label>
 
-    group_add_user    <group_label> <user_label>
-    group_remove_user <group_label> <user_label>
-    [POST] /group/<group_label>/add_user {user=<user_label>}
-    [POST] /group/<group_label>/remove_user {user=<user_label>}
-
-    project_create <project_label> <group_label>
+    project_create <project_label>
     project_delete <project_label>
-    [PUT]    /project/<project_label> {group=<group_label>}
+    [PUT]    /project/<project_label>
     [DELETE] /project/<project_label>
 
     network_create <network_label> <proj_creator> <proj_access> <net_id>
