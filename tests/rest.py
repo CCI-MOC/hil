@@ -14,7 +14,6 @@
 from moc import rest
 
 from abc import ABCMeta, abstractmethod
-from urllib import urlencode
 from StringIO import StringIO
 import unittest
 import json
@@ -49,8 +48,7 @@ def wsgi_mkenv(method, path, data=None):
     if data is None:
         env['wsgi.input'] = StringIO()
     else:
-        env['CONTENT_TYPE'] = 'application/x-www-form-urlencoded'
-        env['wsgi.input'] = StringIO(urlencode(data))
+        env['wsgi.input'] = StringIO(json.dumps(data))
     return env
 
 
@@ -156,6 +154,24 @@ class TestUrlArgs(HttpEquivalenceTest, HttpTest):
 
     def request(self):
         return wsgi_mkenv('GET', '/func/alice/bob')
+
+
+class TestBodyArgs(HttpEquivalenceTest, HttpTest):
+    """Test that arguments supplied in the body are passed correctly."""
+
+    def setUp(self):
+        HttpTest.setUp(self)
+
+        @rest.rest_call('POST', '/func/foo')
+        def foo(bar, baz):
+            return json.dumps([bar, baz])
+
+    def api_call(self):
+        return json.dumps(['bonnie', 'clide'])
+
+    def request(self):
+        return wsgi_mkenv('POST', '/func/foo', data={'bar': 'bonnie',
+                                                     'baz': 'clide'})
 
 
 class TestEquiv_basic_APIError(HttpEquivalenceTest, HttpTest):
