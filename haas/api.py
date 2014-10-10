@@ -590,77 +590,52 @@ def network_delete(network):
     db.commit()
 
 
-                            # Switch code #
-                            ###############
-
-@rest_call('PUT', '/switch/<switch>')
-def switch_register(switch, driver):
-    """Register a switch.
-
-    If the switch already exists, a DuplicateError will be raised.
-    """
-    db = model.Session()
-    _assert_absent(db, model.Switch, switch)
-    switch = model.Switch(switch, driver)
-    db.add(switch)
-    db.commit()
+                            # Port code #
+                            #############
 
 
-@rest_call('DELETE', '/switch/<switch>')
-def switch_delete(switch):
-    """Delete a switch."""
-    db = model.Session()
-    switch = _must_find(db, model.Switch, switch)
-    db.delete(switch)
-    db.commit()
-
-
-@rest_call('PUT', '/switch/<switch>/port/<path:port>')
-def port_register(switch, port):
+@rest_call('PUT', '/port/<path:port>')
+def port_register(port):
     """Register a port on a switch.
 
     If the port already exists, a DuplicateError will be raised.
-
-    If the switch does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
 
-    switch = _must_find(db, model.Switch, switch)
-    _assert_absent_n(db, switch, model.Port, port)
+    _assert_absent(db, model.Port, port)
+    port = model.Port(port)
 
-    port = model.Port(switch, port)
     db.add(port)
     db.commit()
 
 
-@rest_call('DELETE', '/switch/<switch>/port/<path:port>')
-def port_delete(switch, port):
+@rest_call('DELETE', '/port/<path:port>')
+def port_delete(port):
     """Delete a port on a switch.
 
-    If the port does not exist, or if the switch does not exist, a
-    NotFoundError will be raised.
+    If the port does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
 
-    port = _must_find_n(db, _must_find(db, model.Switch, switch), model.Port, port)
+    port = _must_find(db, model.Port, port)
 
     db.delete(port)
     db.commit()
 
 
-@rest_call('POST', '/switch/<switch>/port/<path:port>/connect_nic')
-def port_connect_nic(switch, port, node, nic):
+@rest_call('POST', '/port/<path:port>/connect_nic')
+def port_connect_nic(port, node, nic):
     """Connect a port on a switch to a nic on a node.
 
-    If any of the four arguments does not exist, a NotFoundError will be
+    If any of the three arguments does not exist, a NotFoundError will be
     raised.
 
-    If the port or the nic are already connected to something, a
-    DuplicateError will be raised.
+    If the port or the nic is already connected to something, a DuplicateError will be
+    raised.
     """
     db = model.Session()
 
-    port = _must_find_n(db, _must_find(db, model.Switch, switch), model.Port, port)
+    port = _must_find(db, model.Port, port)
     nic = _must_find_n(db, _must_find(db, model.Node, node), model.Nic, nic)
 
     if nic.port is not None:
@@ -673,17 +648,17 @@ def port_connect_nic(switch, port, node, nic):
     db.commit()
 
 
-@rest_call('POST', '/switch/<switch>/port/<path:port>/detach_nic')
-def port_detach_nic(switch, port):
-    """Detach attached nic from a port.
+@rest_call('POST', '/port/<path:port>/detach_nic')
+def port_detach_nic(port):
+    """Detach a port from the nic it's attached to
 
-    If the port or switch are not found, a NotFoundError will be raised.
+    If the port does not exist, a NotFoundError will be raised.
 
     If the port is not connected to anything, a NotFoundError will be raised.
     """
     db = model.Session()
 
-    port = _must_find_n(db, _must_find(db, model.Switch, switch), model.Port, port)
+    port = _must_find(db, model.Port, port)
 
     if port.nic is None:
         raise NotFoundError(port.label + " not attached")

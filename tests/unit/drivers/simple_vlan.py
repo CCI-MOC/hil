@@ -61,13 +61,12 @@ class TestSimpleVLAN:
     def test_simple_vlan_network_operations(self, db):
         api.project_create('anvil-nextgen')
         network_create_simple('hammernet', 'anvil-nextgen')
-        api.switch_register('sw01', 'simple_vlan')
         for k in range(97,100):
             nodename = 'node-' + str(k)
             api.node_register(nodename, 'ipmihost', 'root', 'tapeworm')
             api.node_register_nic(nodename, 'eth0', 'DE:AD:BE:EF:20:14')
             api.project_connect_node('anvil-nextgen', nodename)
-            api.port_register('sw01', nodename)
-            api.port_connect_nic('sw01', nodename, nodename, 'eth0')
+            api.port_register(nodename)
+            api.port_connect_nic(nodename, nodename, 'eth0')
         api.project_detach_node('anvil-nextgen', 'node-97')
         api.node_connect_network('node-98', 'eth0', 'hammernet')

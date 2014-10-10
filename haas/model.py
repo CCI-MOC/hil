@@ -273,22 +273,9 @@ class Port(Model):
     corresponding switch's driver.
     """
 
-    # The switch to which the port belongs:
-    owner_id     = Column(String,ForeignKey('switch.id'), nullable=False)
-    owner        = relationship("Switch",backref=backref('ports'))
-
-    def __init__(self, switch, label):
-        """Register a port on the given switch."""
-        self.owner = switch
+    def __init__(self, label):
+        """Register a port on a switch."""
         self.label   = label
-
-
-class Switch(Model):
-    driver = Column(String)
-
-    def __init__(self, label, driver):
-        self.label = label
-        self.driver = driver
 
 
 class User(Model):

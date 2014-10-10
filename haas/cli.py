@@ -264,39 +264,27 @@ def headnode_detach_network(headnode, nic):
     check_status_code(requests.post(url))
 
 @cmd
-def switch_register(name, driver):
-    """Register a switch using driver <driver> under the name <name>"""
-    url = object_url('switch', name)
-    check_status_code(requests.put(url, data={'driver': driver}))
-
-@cmd
-def switch_delete(name):
-    """Delete the switch named <name>"""
-    url = object_url('switch', name)
-    check_status_code(requests.delete(url))
-
-@cmd
-def port_register(switch, port):
-    """Register a <port> on a <switch>"""
-    url = object_url('switch', switch, 'port', port)
+def port_register(port):
+    """Register a <port> on a switch"""
+    url = object_url('port', port)
     check_status_code(requests.put(url))
 
 @cmd
-def port_delete(switch, port):
-    """Delete a <port> on a <switch>"""
-    url = object_url('switch', switch, 'port', port)
+def port_delete(port):
+    """Delete a <port> on a switch"""
+    url = object_url('port', port)
     check_status_code(requests.delete(url))
 
 @cmd
-def port_connect_nic(switch, port, node, nic):
-    """Connect a <port> on a <switch> to a <nic> on a <node>"""
-    url = object_url('switch', switch, 'port', port, 'connect_nic')
+def port_connect_nic(port, node, nic):
+    """Connect a <port> on a switch to a <nic> on a <node>"""
+    url = object_url('port', port, 'connect_nic')
     check_status_code(requests.post(url, data={'node': node, 'nic': nic}))
 
 @cmd
-def port_detach_nic(switch, port):
-    """Detach a <port> on a <switch> from whatever's connected to it"""
-    url = object_url('switch', switch, 'port', port, 'detach_nic')
+def port_detach_nic(port):
+    """Detach a <port> on a switch from whatever's connected to it"""
+    url = object_url('port', port, 'detach_nic')
     check_status_code(requests.post(url))
 
 @cmd
