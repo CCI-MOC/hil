@@ -710,6 +710,7 @@ def list_project_nodes(project):
     nodes = [n.label for n in nodes]
     return json.dumps(nodes)
 
+
 @rest_call('GET', '/project/<project>/networks')
 def list_project_networks(project):
     """List all networks the project can access."""
@@ -718,6 +719,7 @@ def list_project_networks(project):
     networks = project.networks_access
     networks = [n.label for n in networks]
     return json.dumps(networks)
+
 
 @rest_call('GET', '/node/<nodename>')
 def show_node(nodename):
@@ -744,6 +746,14 @@ def show_headnode(nodename):
         'hnics': [n.label for n in headnode.hnics],
         'vncport': headnode.get_vncport(),
     })
+
+
+@rest_call('GET', '/headnode_images/')
+def list_headnode_images():
+    """Show headnode images listed in config file."""
+    valid_imgs = cfg.get('headnode', 'base_imgs')
+    valid_imgs = [img.strip() for img in valid_imgs.split(',')]
+    return json.dumps(valid_imgs)
 
 
     # Console code #

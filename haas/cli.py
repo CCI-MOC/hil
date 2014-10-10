@@ -330,6 +330,12 @@ def show_headnode(headnode):
     check_status_code(requests.get(url))
 
 @cmd
+def list_headnode_images():
+    """Display registered headnode images"""
+    url = object_url('headnode_images')
+    check_status_code(requests.get(url))
+
+@cmd
 def show_console(node):
     """Display console log for <node>"""
     url = object_url('node', node, 'console')
