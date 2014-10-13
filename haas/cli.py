@@ -119,7 +119,7 @@ def network_create_simple(network, project):
     url = object_url('network', network)
     check_status_code(requests.put(url, data={'creator': project,
                                               'access': project,
-                                              'net_id': net_id}))
+                                              'net_id': ""}))
 
 @cmd
 def network_delete(network):
