@@ -16,7 +16,7 @@
 internal setup only and will most likely not work on
 other HaaS configurations."""
 
-from haas import api, model
+from haas import api, model, deferred
 from haas.drivers.driver_tools.vlan import get_vlan_list
 from haas.test_common import *
 import importlib
@@ -118,6 +118,7 @@ class TestNetwork:
             # Connect n0 and n1 to net-0 and net-1 respectively
             api.node_connect_network(nodes[0]['label'], nodes[0]['nic'], 'net-0')
             api.node_connect_network(nodes[1]['label'], nodes[1]['nic'], 'net-1')
+            deferred.apply_networking()
 
             # Assert that n0 and n1 are on isolated networks
             vlan_cfgs = get_switch_vlans()
@@ -127,6 +128,7 @@ class TestNetwork:
             # Add n2 and n3 to the same networks as n0 and n1 respectively
             api.node_connect_network(nodes[2]['label'], nodes[2]['nic'], 'net-0')
             api.node_connect_network(nodes[3]['label'], nodes[3]['nic'], 'net-1')
+            deferred.apply_networking()
 
             # Assert that n2 and n3 have been added to n0 and n1's networks
             # respectively
@@ -144,6 +146,7 @@ class TestNetwork:
             for node in nodes:
                 if node.nics[0].network is not None:
                     api.node_detach_network(node.label, node.nics[0].label)
+            deferred.apply_networking()
 
             # Assert that none of the nodes are on any network
             vlan_cfgs = get_switch_vlans()
