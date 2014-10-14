@@ -61,28 +61,37 @@ def init_db(create=False, uri=None):
     driver.init_db(create=create)
 
 
-class Model(Base):
-    """All of our database models are descendants of this class.
+class AnonModel(Base):
+    """A database model with a primary key, 'id', but no user-visible label
+
+    All our database models descend from this class.
 
     Its main purpose is to reduce boilerplate by doing things such as
     auto-generating table names.
-
-    It also declares two columns which are common to every model:
-
-        * id, which is an arbitrary integer primary key.
-        * label, which is a symbolic name for the object.
     """
     __abstract__ = True
     id = Column(Integer, primary_key=True, nullable=False)
-    label = Column(String, nullable=False)
 
     def __repr__(self):
-        return '%s<%r>' % (self.__class__.__name__, self.label)
+        return '%s<%r>' % (self.__class__.__name__, self.id)
 
     @declared_attr
     def __tablename__(cls):
         """Automatically generate the table name."""
         return cls.__name__.lower()
+
+
+class Model(AnonModel):
+    """A database model with a primary key 'id' and a user-visible label.
+
+    All objects in the HaaS API are referenced by their 'label', so all such
+    objects descend from this class.
+    """
+    __abstract__ = True
+    label = Column(String, nullable=False)
+
+    def __repr__(self):
+        return '%s<%r>' % (self.__class__.__name__, self.label)
 
 
 class Nic(Model):
@@ -447,11 +456,10 @@ class Hnic(Model):
         check_call(['virsh', 'attach-interface', self.owner._vmname(), 'bridge', bridge, '--config'])
 
 
-class NetworkingAction(Base):
+class NetworkingAction(AnonModel):
     """A journal entry representing a networking change."""
 
-    id = Column(Integer, primary_key=True, nullable=False)
-    __tablename__ = "networkingaction"
+    # This model is not visible in the API, so inherit from AnonModel
 
     nic_id = Column(Integer, ForeignKey('nic.id'), nullable=False)
     nic    = relationship("Nic", backref=backref('current_action',
