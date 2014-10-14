@@ -445,3 +445,26 @@ class Hnic(Model):
         vlan_no = str(self.network.network_id)
         bridge = 'br-vlan%s' % vlan_no
         check_call(['virsh', 'attach-interface', self.owner._vmname(), 'bridge', bridge, '--config'])
+
+
+class NetworkingAction(Base):
+    """A journal entry representing a networking change."""
+
+    id = Column(Integer, primary_key=True, nullable=False)
+    __tablename__ = "networkingaction"
+
+    nic_id = Column(Integer, ForeignKey('nic.id'), nullable=False)
+    nic    = relationship("Nic", backref=backref('current_action',
+                                                 uselist=False))
+
+    new_network_id = Column(Integer,
+                            ForeignKey('network.id'),
+                            nullable=True)
+    new_network = relationship("Network",
+                               backref=backref('scheduled_nics',
+                                               uselist=True))
+
+    def __init__(self, nic, new_network):
+        """Schedule an action, to attach a nic to a new network (or to nothing)"""
+        self.nic = nic
+        self.new_network = new_network
