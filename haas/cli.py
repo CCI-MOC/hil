@@ -93,6 +93,20 @@ def serve():
     # Start server
     rest.serve(debug=debug)
 
+
+@cmd
+def serve_networks():
+    """Start the HaaS networking server"""
+    from haas import model, deferred
+    from time import sleep
+    model.init_db()
+    while True:
+        # Empty the journal until it's empty; then delay so we don't tight
+        # loop.
+        while deferred.apply_networking():
+            pass
+        sleep(2)
+
 @cmd
 def init_db():
     """Initialize the database"""
