@@ -25,6 +25,10 @@ import json
 from werkzeug.wrappers import Request, Response
 from werkzeug.routing import Map, Rule
 from werkzeug.exceptions import HTTPException
+from werkzeug.local import Local, LocalManager
+
+local = Local()
+local_manager = LocalManager([local])
 
 logger = logging.getLogger(__name__)
 
@@ -133,6 +137,7 @@ def request_handler(request):
     except HTTPException, e:
         return e
 
+@local_manager.middleware
 def wsgi_handler(environ, start_response):
     """The wsgi entry point to the API."""
     response = request_handler(Request(environ))
