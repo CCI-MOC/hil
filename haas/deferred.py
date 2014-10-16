@@ -20,10 +20,19 @@ import logging, importlib
 def apply_networking():
     """Do each networking action in the journal, then cross them off.
 
-    Returns False if the journal was empty, and True if it wasn't.  This way,
-    the caller knows whether anything was done.  If something was done, then
-    the caller can run this function again immediately.  If nothing was done,
-    then the caller should not do that.
+    Returns False if the journal was empty, and True if there were journal
+    entries.  Equivalently, returns True if an action was performed, and False
+    if no action was performed.
+
+    The networking server calls this function in a loop, to ensure that all
+    pending network operations get processed within a reasonable amount of
+    time.  The return value from this function lets the server know whether it
+    should check for new journal entries, or if it should wait.  If this
+    function does work, the server should immediately check again, because new
+    entries might have been added in the meantime.  But, if this function
+    returns immediately, the server should sleep, because there was no time
+    for new entries to be added.  This keeps the networking server from
+    tight-looping.
     """
     db = model.Session()
 

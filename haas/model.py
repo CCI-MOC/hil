@@ -457,7 +457,7 @@ class Hnic(Model):
 
 
 class NetworkingAction(AnonModel):
-    """A journal entry representing a networking change."""
+    """A journal entry representing a pending networking change."""
 
     # This model is not visible in the API, so inherit from AnonModel
 
