@@ -173,6 +173,8 @@ def project_detach_node(project, node):
     for nic in node.nics:
         if nic.network is not None:
             raise BlockedError("Node attached to a network")
+        if nic.current_action is not None:
+            raise BlockedError("Node has a networking operation active on it.")
     node.stop_console()
     node.delete_console()
     project.nodes.remove(node)
@@ -296,23 +298,14 @@ def node_connect_network(node, nic, network):
 
     project = node.project
 
+    if nic.current_action:
+        raise BlockedError("A networking operation is already active on the nic.")
+
     if (network.access is not None) and (network.access is not project):
         raise ProjectMismatchError("Project does not have access to given network.")
 
-    nic.network = network
+    db.add(model.NetworkingAction(nic, network))
     db.commit()
-
-    if nic.port is None:
-        # This setup suggests a badly made HaaS setup. NICs with no port might
-        # as well not exist.
-        logging.getLogger(__name__).warn(
-            'Not attaching NIC %s to network %s; NIC not on a port.' %
-            (nic.label, network.label))
-    else:
-        driver_name = cfg.get('general', 'driver')
-        driver = importlib.import_module('haas.drivers.' + driver_name)
-        driver.apply_networking({nic.port.label : network.network_id})
-
 
 @rest_call('POST', '/node/<node>/nic/<nic>/detach_network')
 def node_detach_network(node, nic):
@@ -329,19 +322,11 @@ def node_detach_network(node, nic):
 
     project = nic.owner.project
 
-    nic.network = None
-    db.commit()
+    if nic.current_action:
+        raise BlockedError("A networking operation is already active on the nic.")
 
-    if nic.port is None:
-        # This setup suggests a badly made HaaS setup. NICs with no port might
-        # as well not exist.
-        logging.getLogger(__name__).warn(
-            'Not detaching NIC %s from network; NIC not on a port.' %
-            nic.label)
-    else:
-        driver_name = cfg.get('general', 'driver')
-        driver = importlib.import_module('haas.drivers.' + driver_name)
-        driver.apply_networking({nic.port.label : None})
+    db.add(model.NetworkingAction(nic, None))
+    db.commit()
 
 
                             # Head Node Code #
@@ -580,7 +565,8 @@ def network_delete(network):
         raise BlockedError("Network still connected to nodes")
     if network.hnics:
         raise BlockedError("Network still connected to headnodes")
-
+    if network.scheduled_nics:
+        raise BlockedError("Network scheduled to become connected to nodes.")
     if network.allocated:
         driver_name = cfg.get('general', 'driver')
         driver = importlib.import_module('haas.drivers.' + driver_name)

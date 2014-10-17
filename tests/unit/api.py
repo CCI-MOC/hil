@@ -14,7 +14,7 @@
 
 """Unit tests for api.py"""
 
-from haas import model, api
+from haas import model, api, deferred
 from haas.test_common import *
 import pytest
 import json
@@ -292,7 +292,9 @@ class TestProjectConnectDetachNode:
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.node_connect_network('node-99', 'eth0', 'hammernet')
+        deferred.apply_networking()
         api.node_detach_network('node-99', 'eth0')
+        deferred.apply_networking()
 
         api.project_detach_node('anvil-nextgen', 'node-99')
 
@@ -399,6 +401,7 @@ class TestNodeConnectDetachNetwork:
         network_create_simple('hammernet', 'anvil-nextgen')
 
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
+        deferred.apply_networking()
         network = api._must_find(db, model.Network, 'hammernet')
         nic = api._must_find(db, model.Nic, '99-eth0')
         assert nic.network is network
@@ -493,6 +496,7 @@ class TestNodeConnectDetachNetwork:
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.node_connect_network('node-99', '99-eth0', 'hammernet') # added
+        deferred.apply_networking() # added
 
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
@@ -505,6 +509,7 @@ class TestNodeConnectDetachNetwork:
         network_create_simple('hammernet', 'anvil-nextgen')
         network_create_simple('hammernet2', 'anvil-nextgen') #added
         api.node_connect_network('node-99', '99-eth0', 'hammernet') # added
+        deferred.apply_networking() # added
 
         api.node_connect_network('node-99', '99-eth0', 'hammernet2')
 
@@ -517,8 +522,10 @@ class TestNodeConnectDetachNetwork:
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
+        deferred.apply_networking() # added
 
         api.node_detach_network('node-99', '99-eth0')
+        deferred.apply_networking()
         network = api._must_find(db, model.Network, 'hammernet')
         nic = api._must_find(db, model.Nic, '99-eth0')
         assert nic.network is not network
@@ -968,7 +975,9 @@ class TestNetworkCreateDelete:
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.node_connect_network('node-99', 'eth0', 'hammernet')
+        deferred.apply_networking()
         api.node_detach_network('node-99', 'eth0')
+        deferred.apply_networking()
         api.network_delete('hammernet')
 
     @database_only
