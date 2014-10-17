@@ -38,7 +38,8 @@ def apply_networking():
 
     # Get the journal enries
     network_map = {}
-    actions = db.query(model.NetworkingAction).all()
+    actions = db.query(model.NetworkingAction).\
+        order_by(model.NetworkingAction.id).all()
 
     if actions == []:
         # No actions to perform.  Return False immediately.
