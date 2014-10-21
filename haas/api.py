@@ -191,7 +191,7 @@ def project_add_user(project, user):
     user = _must_find(db, model.User, user)
     project = _must_find(db, model.Project, project)
     if project in user.projects:
-        raise DuplicateError('User %s is already in project %s',
+        raise DuplicateError('User %s is already in project %s'%
                              (user.label, project.label))
     user.projects.append(project)
     db.commit()
@@ -207,7 +207,7 @@ def project_remove_user(project, user):
     user = _must_find(db, model.User, user)
     project = _must_find(db, model.Project, project)
     if project not in user.projects:
-        raise NotFoundError("User %s is not in project %s",
+        raise NotFoundError("User %s is not in project %s"%
                             (user.label, project.label))
     user.projects.remove(project)
     db.commit()
