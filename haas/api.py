@@ -655,7 +655,13 @@ def port_detach_nic(port):
 
 @rest_call('GET', '/free_nodes')
 def list_free_nodes():
-    """List all nodes not in a project."""
+    """List all nodes not in a project.
+
+    Returns a JSON array string representing a list of nodes.
+
+    Example:  '["node1", "node2", "node3"]'
+
+    """
     db = model.Session()
     nodes = db.query(model.Node).filter_by(project_id=None).all()
     nodes = [n.label for n in nodes]
@@ -664,7 +670,13 @@ def list_free_nodes():
 
 @rest_call('GET', '/project/<project>/nodes')
 def list_project_nodes(project):
-    """List all nodes belonging to a project."""
+    """List all nodes belonging to a project.
+
+    Returns a JSON array string representing a list of nodes.
+
+    Example:  '["node1", "node2", "node3"]'
+
+    """
     db = model.Session()
     project = _must_find(db, model.Project, project)
     nodes = project.nodes
@@ -674,7 +686,13 @@ def list_project_nodes(project):
 
 @rest_call('GET', '/project/<project>/networks')
 def list_project_networks(project):
-    """List all networks the project can access."""
+    """List all networks the project can access.
+
+    Returns a JSON array string representing a list of networks.
+
+    Example:  '["net1", "net2", "net3"]'
+
+    """
     db = model.Session()
     project = _must_find(db, model.Project, project)
     networks = project.networks_access
@@ -684,7 +702,15 @@ def list_project_networks(project):
 
 @rest_call('GET', '/node/<nodename>')
 def show_node(nodename):
-    """Show details of a node."""
+    """Show details of a node.
+
+    Returns a JSON object string representing a node.
+
+    Example:  '{"name": "node1", "free": "True", "nics": [{"label": "nic1",
+               "macaddr": "01:23:45:67:89"}, {"label": "nic2",
+               "macaddr": "12:34:56:78:90"}]}'
+
+    """
     db = model.Session()
     node = _must_find(db, model.Node, nodename)
     return json.dumps({
@@ -698,7 +724,14 @@ def show_node(nodename):
 
 @rest_call('GET', '/headnode/<nodename>')
 def show_headnode(nodename):
-    """Show details of a headnode."""
+    """Show details of a headnode.
+
+    Returns a JSON object string representing a headnode.
+
+    Example:  '{"name": "headnode1", "project": "project1", "hnics": ["hnic1",
+               "hnic2"], "vncport": "0"}'
+
+    """
     db = model.Session()
     headnode = _must_find(db, model.Headnode, nodename)
     return json.dumps({
@@ -711,7 +744,13 @@ def show_headnode(nodename):
 
 @rest_call('GET', '/headnode_images/')
 def list_headnode_images():
-    """Show headnode images listed in config file."""
+    """Show headnode images listed in config file.
+
+    Returns a JSON array string representing a list of headnode images.
+
+    Example:  '["headnode1.img", "headnode2.img", "headnode3.img"]'
+
+    """
     valid_imgs = cfg.get('headnode', 'base_imgs')
     valid_imgs = [img.strip() for img in valid_imgs.split(',')]
     return json.dumps(valid_imgs)
@@ -793,7 +832,7 @@ def _namespaced_query(session, obj_outer, cls_inner, name_inner):
 def _assert_absent_n(session, obj_outer, cls_inner, name_inner):
     """Raises DuplicateError if a "namespaced" object, such as a node's nic, exists.
 
-    Otherwise returns succesfully.
+    Otherwise returns successfully.
 
     Arguments:
 
