@@ -706,9 +706,11 @@ def show_node(nodename):
 
     Returns a JSON object string representing a node.
 
-    Example:  '{"name": "node1", "free": "True", "nics": [{"label": "nic1",
-               "macaddr": "01:23:45:67:89"}, {"label": "nic2",
-               "macaddr": "12:34:56:78:90"}]}'
+    Example:  '{"name": "node1",
+                "free": "True",
+                "nics": [{"label": "nic1", "macaddr": "01:23:45:67:89"},
+                         {"label": "nic2", "macaddr": "12:34:56:78:90"}]
+               }'
 
     """
     db = model.Session()
@@ -728,8 +730,11 @@ def show_headnode(nodename):
 
     Returns a JSON object string representing a headnode.
 
-    Example:  '{"name": "headnode1", "project": "project1", "hnics": ["hnic1",
-               "hnic2"], "vncport": "0"}'
+    Example:  '{"name": "headnode1",
+                "project": "project1",
+                "hnics": ["hnic1", "hnic2"],
+                "vncport": "0"
+               }'
 
     """
     db = model.Session()
