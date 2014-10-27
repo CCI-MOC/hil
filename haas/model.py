@@ -254,8 +254,8 @@ class Network(Model):
     access    = relationship("Project",
                              backref=backref('networks_access'),
                              foreign_keys=[access_id])
-    # True if the VLAN-id came from the allocation pool; False if it was
-    # imported.
+    # True if network_id was allocated by the driver; False if it was
+    # assigned by an administrator.
     allocated = Column(Boolean)
 
     # An identifier meaningful to the networking driver:
