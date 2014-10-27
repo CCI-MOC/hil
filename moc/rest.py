@@ -37,9 +37,6 @@ logger = logging.getLogger(__name__)
 _url_map = Map()
 
 
-MAX_CONTENT_LENGTH = 8192
-
-
 class APIError(Exception):
     """An exception indicating an error that should be reported to the user.
 
@@ -146,13 +143,10 @@ def request_handler(request):
         (f, schema), values = adapter.match()
 
         if schema is not None:
-            # Make sure we don't get DOS'd by a huge request body:
-            request_body = request.environ['wsgi.input']
-            request_body = request_body.read(MAX_CONTENT_LENGTH)
-
             # Parse the body as json and validate it with the schema:
             try:
-                request_body = schema.validate(json.loads(request_body))
+                request_body = request.environ['wsgi.input']
+                request_body = schema.validate(json.load(request_body))
             except (ValueError, SchemaError):
                 # The try branch can raise one of the above two exceptions,
                 # depending on whether parsing the body as json fails, or
