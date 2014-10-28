@@ -167,11 +167,11 @@ class TestBodyArgs(HttpEquivalenceTest, HttpTest):
             return json.dumps([bar, baz])
 
     def api_call(self):
-        return json.dumps(['bonnie', 'clide'])
+        return json.dumps(['bonnie', 'clyde'])
 
     def request(self):
         return wsgi_mkenv('POST', '/func/foo',
-                          data=json.dumps({'bar': 'bonnie', 'baz': 'clide'}))
+                          data=json.dumps({'bar': 'bonnie', 'baz': 'clyde'}))
 
 
 class TestEquiv_basic_APIError(HttpEquivalenceTest, HttpTest):
