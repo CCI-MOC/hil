@@ -23,7 +23,7 @@ import ConfigParser
 
 cfg = ConfigParser.RawConfigParser()
 
-def load():
+def load(filename='haas.cfg'):
     """Load the configuration from the file 'haas.cfg' in the current directory.
 
     This must be called once at program startup; no configuration options will
@@ -32,4 +32,4 @@ def load():
     If the configuration file is not available, this function will simply load
     an empty configuration (i.e. one with no options).
     """
-    cfg.read('haas.cfg')
+    cfg.read(filename)
