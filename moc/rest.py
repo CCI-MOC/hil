@@ -73,7 +73,7 @@ def rest_call(method, path):
 
     For example, given:
 
-        @rest_call('POST', '/some-url/<baz>/<bar>')
+        @rest_call('POST', '/some-url/<bar>/<baz>')
         def foo(bar, baz, quux):
             pass
 
