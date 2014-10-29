@@ -21,6 +21,7 @@ import inspect
 import sys
 import urllib
 import requests
+import json
 
 from functools import wraps
 
@@ -72,10 +73,10 @@ def object_url(*args):
     return url
 
 def do_put(url, data={}):
-    return check_status_code(requests.put(url, data=data))
+    return check_status_code(requests.put(url, data=json.dumps(data)))
 
 def do_post(url, data={}):
-    return check_status_code(requests.post(url, data=data))
+    return check_status_code(requests.post(url, data=json.dumps(data)))
 
 def do_get(url):
     return check_status_code(requests.get(url))
