@@ -801,6 +801,32 @@ class TestHeadnodeConnectDetachNetwork:
         with pytest.raises(api.ProjectMismatchError):
             api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
 
+    @database_only
+    def test_headnode_connect_network_non_allocated(self, db):
+        """Connecting a headnode to a non-allocated network should fail.
+
+        Right now the create_bridges script will only create bridges
+        for vlans in the database, so any specified by the administrator
+        will not exist. Since the haas does not create the bridges during
+        execution, attempting to attach a headnode to a network whose vlan
+        does not have an existing bridge will fail. An administrator could
+        work around this by creating the bridges manually, but we wish to
+        treat the naming of the bridges as an implementation detail as much
+        as possible, and thus discourage this.
+
+        For now connecting headnodes to non-allocated networks is simply
+        not supported; this will change in the future. In the meantime,
+        we should report a sensible error, and this test checks for that.
+
+        See also issue #333
+        """
+        api.project_create('anvil-nextgen')
+        api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
+        api.headnode_create_hnic('hn-0', 'hn-0-eth0')
+        api.network_create('hammernet', 'admin', 'anvil-nextgen', '7')
+        with pytest.raises(api.BadArgumentError):
+            api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
+
 
     @database_only
     def test_headnode_detach_network_success(self, db):
