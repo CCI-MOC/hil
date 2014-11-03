@@ -456,12 +456,20 @@ def headnode_connect_network(headnode, hnic, network):
 
     Raises ProjectMismatchError if the project does not have access rights to
     the given network.
+
+    Raises BadArgumentError if the network is a non-allocated network. This
+    is currently unsupported due to an implementation limitation, but will be
+    supported in a future release. See issue #333.
     """
     db = model.Session()
 
     headnode = _must_find(db, model.Headnode, headnode)
     hnic = _must_find_n(db, headnode, model.Hnic, hnic)
     network = _must_find(db, model.Network, network)
+
+    if not network.allocated:
+        raise BadArgumentError("Headnodes may only be connected to networks "
+                               "allocated by the project.")
 
     if not headnode.dirty:
         raise IllegalStateError
