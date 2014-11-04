@@ -14,8 +14,12 @@
 
 from setuptools import setup, find_packages
 from pip.req import parse_requirements
+from os import path
 
-requirements = [str(r.req) for r in parse_requirements('requirements.txt')]
+# requirements_file is the relative path from where setup.py is being
+# called from, to where requirements.txt resides
+requirements_file = '%s/requirements.txt' % path.dirname(__file__)
+requirements = [str(r.req) for r in parse_requirements(requirements_file)]
 
 setup(name='haas',
       version='1.0',
