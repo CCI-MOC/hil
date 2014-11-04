@@ -743,7 +743,7 @@ def show_headnode(nodename):
     Example:  '{"name": "headnode1",
                 "project": "project1",
                 "hnics": ["hnic1", "hnic2"],
-                "vncport": "0"
+                "vncport": 5900
                }'
     """
     db = model.Session()
