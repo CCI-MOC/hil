@@ -145,18 +145,21 @@ def request_handler(request):
         if schema is not None:
             # Parse the body as json and validate it with the schema:
             try:
-                request_body = request.environ['wsgi.input']
-                request_body = request_body.read(request.content_length)
-                request_body = schema.validate(json.loads(request_body))
-            except (ValueError, SchemaError):
-                # The try branch can raise one of the above two exceptions,
-                # depending on whether parsing the body as json fails, or
-                # validating the schema fails.
+                request_handle = request.environ['wsgi.input']
+                request_json = request_handle.read(request.content_length)
+                request_dict = schema.validate(json.loads(request_json))
+            except ValueError:
+                # This error is raised in the try clause when parsing the
+                # JSON fails.
+                raise ValidationError("Unable to parse request.")
+            except SchemaError:
+                # This error is raised in the try clause when validating the
+                # schema fails.
                 raise ValidationError("The request body %r is not valid for "
-                                      "This request." % request_body)
+                                      "this request." % request_json)
         else:
             # Nothing is needed from the body. We set it to an empty dict:
-            request_body = {}
+            request_dict = {}
 
         # marshall the arguments to the api call from the request, and then
         # call it. See the docstring for rest_call for more explanation.
@@ -165,8 +168,8 @@ def request_handler(request):
         for name in argnames:
             if name in values:
                 positional_args.append(values[name])
-            elif name in request_body:
-                positional_args.append(request_body[name])
+            elif name in request_dict:
+                positional_args.append(request_dict[name])
             else:
                 logger.error("The required parameter %r to api call %s was "
                              "missing from the request, but the schema didn't "
