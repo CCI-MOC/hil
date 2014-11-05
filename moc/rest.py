@@ -210,5 +210,3 @@ def serve(debug=True):
     run_simple('127.0.0.1', 5000, wsgi_handler,
                use_debugger=debug,
                use_reloader=debug)
-
-    serve()
