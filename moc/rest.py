@@ -146,7 +146,8 @@ def request_handler(request):
             # Parse the body as json and validate it with the schema:
             try:
                 request_body = request.environ['wsgi.input']
-                request_body = schema.validate(json.load(request_body))
+                request_body = request_body.read(request.content_length)
+                request_body = schema.validate(json.loads(request_body))
             except (ValueError, SchemaError):
                 # The try branch can raise one of the above two exceptions,
                 # depending on whether parsing the body as json fails, or
