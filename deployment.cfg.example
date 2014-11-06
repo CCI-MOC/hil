@@ -17,6 +17,9 @@ driver = simple_vlan
 # be bridged to to gain access to their networks.
 trunk_nic = em3
 base_imgs = base-headnode, base-headnode-2
+# libvirt instance to connect to.  This is the only value that is tested, and
+# the installation guide assumes that you are using it.
+libvirt_endpoint = qemu:///system
 
 [driver simple_vlan]
 switch = {"switch": "dell", "ip": "192.168.0.1", "user": "foo", "pass": "bar"}

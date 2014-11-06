@@ -316,6 +316,16 @@ class User(Model):
         self.hashed_password = sha512_crypt.encrypt(password)
 
 
+def _on_virt_uri(args_list):
+    """Make an argument list to libvirt tools use right URI.
+
+    This will work for virt-clone and virsh, at least.  It gets the
+    appropriate endpoint URI from the config file.
+    """
+    libvirt_endpoint = cfg.get('headnode', 'libvirt_endpoint')
+    return [args_list[0], '--connect', libvirt_endpoint] + args_list[1:]
+
+
 class Headnode(Model):
     """A virtual machine used to administer a project."""
 
@@ -339,13 +349,17 @@ class Headnode(Model):
         self.uuid = str(uuid.uuid1())
         self.base_img = base_img
 
+
     @no_dry_run
     def create(self):
         """Creates the vm within libvirt, by cloning the base image.
 
         The vm is not started at this time.
         """
-        check_call(['virt-clone', '-o', self.base_img, '-n', self._vmname(), '--auto-clone'])
+        check_call(_on_virt_uri(['virt-clone',
+                                 '-o', self.base_img,
+                                 '-n', self._vmname(),
+                                 '--auto-clone']))
         for hnic in self.hnics:
             hnic.create()
 
@@ -354,8 +368,10 @@ class Headnode(Model):
         # Don't check return value.  If the headnode was powered off, this
         # will fail, and we don't care.  If it fails for some other reason,
         # then the following line will also fail, and we'll catch that error.
-        call(['virsh', 'destroy', self._vmname()])
-        check_call(['virsh', 'undefine', self._vmname(), '--remove-all-storage'])
+        call(_on_virt_uri(['virsh', 'destroy', self._vmname()]))
+        check_call(_on_virt_uri(['virsh',
+                                 'undefine', self._vmname(),
+                                 '--remove-all-storage']))
 
     @no_dry_run
     def start(self):
@@ -364,7 +380,7 @@ class Headnode(Model):
         Once the headnode has been started once it is "frozen," and no changes
         may be made to it, other than starting, stopping or deleting it.
         """
-        check_call(['virsh', 'start', self._vmname()])
+        check_call(_on_virt_uri(['virsh', 'start', self._vmname()]))
         self.dirty = False
 
     @no_dry_run
@@ -373,7 +389,7 @@ class Headnode(Model):
 
         This does a hard poweroff; the OS is not given a chance to react.
         """
-        check_call(['virsh', 'destroy', self._vmname()])
+        check_call(_on_virt_uri(['virsh', 'destroy', self._vmname()]))
 
     def _vmname(self):
         """Returns the name (as recognized by libvirt) of this vm."""
@@ -397,7 +413,8 @@ class Headnode(Model):
         if self.dirty:
             return None
 
-        p = Popen(['virsh', 'dumpxml', self._vmname()], stdout=PIPE)
+        p = Popen(_on_virt_uri(['virsh', 'dumpxml', self._vmname()]),
+                  stdout=PIPE)
         xmldump, _ = p.communicate()
         root = xml.etree.ElementTree.fromstring(xmldump)
         port = root.findall("./devices/graphics")[0].get('port')
@@ -440,7 +457,10 @@ class Hnic(Model):
             return
         vlan_no = str(self.network.network_id)
         bridge = 'br-vlan%s' % vlan_no
-        check_call(['virsh', 'attach-interface', self.owner._vmname(), 'bridge', bridge, '--config'])
+        check_call(_on_virt_uri(['virsh',
+                                 'attach-interface', self.owner._vmname(),
+                                 'bridge', bridge,
+                                 '--config']))
 
 
 class NetworkingAction(AnonModel):

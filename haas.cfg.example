@@ -27,6 +27,9 @@ log_level = info
 trunk_nic = eth0
 # Base images; headnodes may be created as clones of any of these.
 base_imgs = img1, img2, img3, img4
+# libvirt instance to connect to.  This is the only value that is tested, and
+# the installation guide assumes that you are using it.
+libvirt_endpoint = qemu:///system
 
 [client]
 # The http endpoint that the command line tool should connect to. Note
