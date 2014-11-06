@@ -61,28 +61,37 @@ def init_db(create=False, uri=None):
     driver.init_db(create=create)
 
 
-class Model(Base):
-    """All of our database models are descendants of this class.
+class AnonModel(Base):
+    """A database model with a primary key, 'id', but no user-visible label
+
+    All our database models descend from this class.
 
     Its main purpose is to reduce boilerplate by doing things such as
     auto-generating table names.
-
-    It also declares two columns which are common to every model:
-
-        * id, which is an arbitrary integer primary key.
-        * label, which is a symbolic name for the object.
     """
     __abstract__ = True
     id = Column(Integer, primary_key=True, nullable=False)
-    label = Column(String, nullable=False)
 
     def __repr__(self):
-        return '%s<%r>' % (self.__class__.__name__, self.label)
+        return '%s<%r>' % (self.__class__.__name__, self.id)
 
     @declared_attr
     def __tablename__(cls):
         """Automatically generate the table name."""
         return cls.__name__.lower()
+
+
+class Model(AnonModel):
+    """A database model with a primary key 'id' and a user-visible label.
+
+    All objects in the HaaS API are referenced by their 'label', so all such
+    objects descend from this class.
+    """
+    __abstract__ = True
+    label = Column(String, nullable=False)
+
+    def __repr__(self):
+        return '%s<%r>' % (self.__class__.__name__, self.label)
 
 
 class Nic(Model):
@@ -245,8 +254,8 @@ class Network(Model):
     access    = relationship("Project",
                              backref=backref('networks_access'),
                              foreign_keys=[access_id])
-    # True if the VLAN-id came from the allocation pool; False if it was
-    # imported.
+    # True if network_id was allocated by the driver; False if it was
+    # assigned by an administrator.
     allocated = Column(Boolean)
 
     # An identifier meaningful to the networking driver:
@@ -307,6 +316,16 @@ class User(Model):
         self.hashed_password = sha512_crypt.encrypt(password)
 
 
+def _on_virt_uri(args_list):
+    """Make an argument list to libvirt tools use right URI.
+
+    This will work for virt-clone and virsh, at least.  It gets the
+    appropriate endpoint URI from the config file.
+    """
+    libvirt_endpoint = cfg.get('headnode', 'libvirt_endpoint')
+    return [args_list[0], '--connect', libvirt_endpoint] + args_list[1:]
+
+
 class Headnode(Model):
     """A virtual machine used to administer a project."""
 
@@ -330,13 +349,17 @@ class Headnode(Model):
         self.uuid = str(uuid.uuid1())
         self.base_img = base_img
 
+
     @no_dry_run
     def create(self):
         """Creates the vm within libvirt, by cloning the base image.
 
         The vm is not started at this time.
         """
-        check_call(['virt-clone', '-o', self.base_img, '-n', self._vmname(), '--auto-clone'])
+        check_call(_on_virt_uri(['virt-clone',
+                                 '-o', self.base_img,
+                                 '-n', self._vmname(),
+                                 '--auto-clone']))
         for hnic in self.hnics:
             hnic.create()
 
@@ -345,8 +368,10 @@ class Headnode(Model):
         # Don't check return value.  If the headnode was powered off, this
         # will fail, and we don't care.  If it fails for some other reason,
         # then the following line will also fail, and we'll catch that error.
-        call(['virsh', 'destroy', self._vmname()])
-        check_call(['virsh', 'undefine', self._vmname(), '--remove-all-storage'])
+        call(_on_virt_uri(['virsh', 'destroy', self._vmname()]))
+        check_call(_on_virt_uri(['virsh',
+                                 'undefine', self._vmname(),
+                                 '--remove-all-storage']))
 
     @no_dry_run
     def start(self):
@@ -355,7 +380,7 @@ class Headnode(Model):
         Once the headnode has been started once it is "frozen," and no changes
         may be made to it, other than starting, stopping or deleting it.
         """
-        check_call(['virsh', 'start', self._vmname()])
+        check_call(_on_virt_uri(['virsh', 'start', self._vmname()]))
         self.dirty = False
 
     @no_dry_run
@@ -364,7 +389,7 @@ class Headnode(Model):
 
         This does a hard poweroff; the OS is not given a chance to react.
         """
-        check_call(['virsh', 'destroy', self._vmname()])
+        check_call(_on_virt_uri(['virsh', 'destroy', self._vmname()]))
 
     def _vmname(self):
         """Returns the name (as recognized by libvirt) of this vm."""
@@ -388,7 +413,8 @@ class Headnode(Model):
         if self.dirty:
             return None
 
-        p = Popen(['virsh', 'dumpxml', self._vmname()], stdout=PIPE)
+        p = Popen(_on_virt_uri(['virsh', 'dumpxml', self._vmname()]),
+                  stdout=PIPE)
         xmldump, _ = p.communicate()
         root = xml.etree.ElementTree.fromstring(xmldump)
         port = root.findall("./devices/graphics")[0].get('port')
@@ -431,4 +457,29 @@ class Hnic(Model):
             return
         vlan_no = str(self.network.network_id)
         bridge = 'br-vlan%s' % vlan_no
-        check_call(['virsh', 'attach-interface', self.owner._vmname(), 'bridge', bridge, '--config'])
+        check_call(_on_virt_uri(['virsh',
+                                 'attach-interface', self.owner._vmname(),
+                                 'bridge', bridge,
+                                 '--config']))
+
+
+class NetworkingAction(AnonModel):
+    """A journal entry representing a pending networking change."""
+
+    # This model is not visible in the API, so inherit from AnonModel
+
+    nic_id = Column(Integer, ForeignKey('nic.id'), nullable=False)
+    nic    = relationship("Nic", backref=backref('current_action',
+                                                 uselist=False))
+
+    new_network_id = Column(Integer,
+                            ForeignKey('network.id'),
+                            nullable=True)
+    new_network = relationship("Network",
+                               backref=backref('scheduled_nics',
+                                               uselist=True))
+
+    def __init__(self, nic, new_network):
+        """Schedule an action, to attach a nic to a new network (or to nothing)"""
+        self.nic = nic
+        self.new_network = new_network

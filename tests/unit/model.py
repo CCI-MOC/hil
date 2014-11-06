@@ -98,3 +98,12 @@ class TestNetwork(ModelTest):
     def sample_obj(self):
         pj = Project('anvil-nextgen')
         return Network(pj, pj, True, '102', 'hammernet')
+
+class TestNetworkingAction(ModelTest):
+
+    def sample_obj(self):
+        nic = Nic(Node('node-99', 'ipmihost', 'root', 'tapeworm'),
+                  'ipmi', '00:11:22:33:44:55')
+        project = Project('anvil-nextgen')
+        network = Network(project, project, True, '102', 'hammernet')
+        return NetworkingAction(nic, network)
