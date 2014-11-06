@@ -738,7 +738,9 @@ def show_headnode(nodename):
         * "project", the project to which the headnode belongs.
         * "hnics", a JSON array of hnic labels that are attached to this
             headnode.
-        * "vncport", the vnc port that the headnode VM is listening on.
+        * "vncport", the vnc port that the headnode VM is listening on; this
+            value can be None if the VM is powered off or has not been
+            created yet.
 
     Example:  '{"name": "headnode1",
                 "project": "project1",
