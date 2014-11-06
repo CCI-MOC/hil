@@ -10,38 +10,47 @@
 # the options under [client] are required for making client-side requests with
 # the cli tool (anything but haas serve). Switch specific options are mandatory
 # if and only if that switch driver is in use. The database section is needed to
-# run the server at all, while the remaining options can be ommited if
-# project_deploy is never invoked (or the dry_run option is enabled).
+# run the server at all, while the remaining options can be omitted if the
+# dry_run option is enabled.
 
 [general]
-# The driver to use for the network switch. The value must be the name of one of
-# the modules in haas.drivers:
+# The driver to use for networking operations. The value must be the name of
+# one of the modules in haas.drivers:
 driver = simple_vlan
 # How verbosely to log.  Log messages of the given severity or more will be
 # logged.  Options include: debug, info, warn/warning, error, critical/fatal.
 log_level = info
 
 [headnode]
-# The trunked network interface on the host. This is the nic that the VMs will
-# be bridged to to gain access to their networks.
+# The trunk NIC on the host. This is the nic that the VMs will be bridged to
+# to gain access to their networks.
 trunk_nic = eth0
-# Base image to be selected to boot from
+# Base images; headnodes may be created as clones of any of these.
 base_imgs = img1, img2, img3, img4
 
 [client]
-# The http endpoint that the client should talk to 
+# The http endpoint that the command line tool should connect to. Note
+# that this is not used by the server; setting this will not affect the
+# address/port on which the server listens.
 endpoint = http://127.0.0.1:5000
 
 [database]
-# A SQLAlchemy database URI, specifying the database for the server to connect to.
-uri = sqlite:///haas.db
+# A SQLAlchemy database URI, specifying the database for the server to
+# connect to. At present, only sqlite is supported.
+uri = sqlite:////var/lib/haas/haas.db
 
 # Settings for the driver in question
 [driver simple_vlan]
-# In this case, we use a JSON dictionary describing the switch
+# In this case, we use a JSON dictionary describing the switch. the
+# "switch" field must be the name of a module in haas.drivers.switches.
+# The remaining fields are specific to the dell switch, and are:
+#
+# "ip" -- the ip address to connect to (via telnet, on the standard port 23).
+# "user" -- the user to log in as
+# "pass" -- the password to log in with
 switch = {"switch": "dell", "ip": "192.168.0.1", "user": "foo", "pass": "bar"}
 
-#VLANs aviailable for use for the active, VLAN-based driver
+# VLANs aviailable for use for the active, VLAN-based driver
 [vlan]
 vlans = 100-109
 # Another valid list:  14,35-40, 100-900, 904, 65-85
