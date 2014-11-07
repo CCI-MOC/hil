@@ -89,5 +89,5 @@ These components will be configured as follows:
     connected to the trunked port) will be created, and the
     corresponding nic on the virtual machine will be connected to it
     * The vm's nic is connected indirectly, through a bridge device;
-      libvirt is unable to attach directly to physcal nics. This is an
+      libvirt is unable to attach directly to physical nics. This is an
       implementation detail, but worth knowing.
