@@ -7,7 +7,7 @@
 # The comments in this file are targeted at developers; Take a look at
 # haas.cfg.example for something more production/end-user oriented.
 #
-# the options under [client] are required for making client-side requests with
+# The options under [client] are required for making client-side requests with
 # the cli tool (anything but ``haas serve`` or ``haas serve_networks``). Driver
 # specific options are mandatory if and only if that driver is in use.  The
 # database section is needed to run the server at all, while the remaining
@@ -82,14 +82,15 @@ switch = {"switch": "dell", "ip": "192.168.0.1", "user": "foo", "pass": "bar"}
 #
 #   vlans = 14,35-40, 100-900, 904, 65-85
 #
-# When running the deployment tests, a smaller  number of vlans may be
-# desirable, as it reduces running time substantially.
+# When running the deployment tests, a smaller number of VLANs may be
+# desirable, as it reduces running time substantially. A minumum of four VLANs
+# are required.
 vlans = 100-109
 
 [devel]
 # A handful of functions which touch external state (start vms, communicate with
 # swithces...) can be disabled for development purposes. When this is done, the
-# calls to the function will be logged, but not actually executed. to do this,
+# calls to the function will be logged, but not actually executed. To do this,
 # uncomment the following:
 #
 # dry_run=
