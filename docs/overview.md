@@ -16,10 +16,6 @@ From a user's perspective, the HaaS allows one to:
   * connect physical nodes to those logical networks (on a per-nic basis)
 * connect login/management nodes to those networks.
 
-Once everything is configured as desired, the user "applies" the
-configuration, at which point the necessary adjustments will be made
-to the switch (see below), and the login node will boot.
-
 Right now, we're using 802.1q VLANs to achieve network isolation. The
 HaaS communicates with a managed switch, to which the physical
 hardware is attached. When networking operations are performed, the
@@ -31,21 +27,21 @@ as needed to create the logical networks.
 
                               SWITCH
                            _____________
-      <ipmi-nic>-----------] access{N} |
+      <nic1>---------------] access{N} |
     =node-1=               |           |
-      <primary-nic>--------]           |
+      <nic2>---------------]           |
                            |           |
                            |           |             (                                      )
                            |           |             (    ^br-vlanM^------^trunk-nic.M^     )
-      <ipmi-nic>-----------] access{M} |             ( %hn-B%                               )
+      <nic1>---------------] access{M} |             ( %hn-B%                               )
     =node-2=               |           |             (                                      )
-      <primary-nic>--------]           |             ( %hn-A%                               )
+      <nic2>---------------]           |             ( %hn-A%                               )
                            |           |             (    ^br-vlanN^------^trunk-nic.N^     )
                            |           |             (                                      )
                            |           |             (                                      )
-      <ipmi-nic>-----------]     trunk [--------<trunk-nic>=haas-master=
+      <nic1>---------------]     trunk [--------<trunk-nic>=haas-master=
     =node-3=               |           |
-      <primary-nic>--------]___________[
+      <nic2>---------------]___________[
 
         Legend:
 
@@ -62,11 +58,9 @@ as needed to create the logical networks.
 
 A typical installation of the HaaS will have the following components:
 
-* One machine which acts as the "HaaS master". This machine will be
-  running the HaaS api server itself.
-* A headnode host, running the headnode vm's
+* The HaaS API server and headnode VM host
 * A managed switch
-* One or more physical nodes, each of which may have one or more network
+* One or more physical nodes, each of which has one or more network
   interfaces.
 
 These components will be configured as follows:
@@ -74,20 +68,15 @@ These components will be configured as follows:
 * All of the physical nodes will have some subset (possibly all) of
   their nics connected to the managed switch.
   * The ports that these are connected to will be set to access mode.
-* The HaaS master will have one nic connected to the managed switch.
+* The HaaS headnode host will have one nic connected to the managed switch.
   * The corresponding port will be set to trunk mode, with all vlans
     enabled.
-* The HaaS master will be running the libvirt daemon, which will have at
-  least one VM, powered off, called "base-headnode", which can be cloned
-  and started to provide login/management nodes.
-* A network object in the HaaS corresponds to a vlan id. When a network
-  is applied, the following will occur:
-  * All ports connected corresponding nics on the logical network will
-    have their access vlan set to the vlan id associated with the
-    network.
-  * On the HaaS master, a vlan'd nic (e.g. eth0.104, given that eth0 is
-    connected to the trunked port) will be created, and the
-    corresponding nic on the virtual machine will be connected to it
-    * The vm's nic is connected indirectly, through a bridge device;
-      libvirt is unable to attach directly to physical nics. This is an
-      implementation detail, but worth knowing.
+* The HaaS master will be running the libvirt daemon, which will have at least
+  one VM, powered off, which can be cloned and started to provide
+  login/management nodes.
+* A network object in the HaaS corresponds to a vlan id.  (In future versions,
+  we will also allow other mechanisms, such as VXLAN.)  Network operations
+  have the following effects
+  * Ports added to the network will have their access vlan set to the vlan id
+    associated with the network.
+  * Ports removed from the network will be set to access no vlans.
