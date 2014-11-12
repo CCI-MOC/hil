@@ -74,7 +74,8 @@ These components will be configured as follows:
 * The HaaS master will be running the libvirt daemon, which will have at least
   one VM, powered off, which can be cloned and started to provide
   login/management nodes.
-* A network object in the HaaS corresponds to a vlan id.  Network operations
+* A network object in the HaaS corresponds to a vlan id.  (In future versions,
+  we will also allow other mechanisms, such as VXLAN.)  Network operations
   have the following effects
   * Ports added to the network will have their access vlan set to the vlan id
     associated with the network.
