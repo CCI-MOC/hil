@@ -4,25 +4,24 @@
 # ``/etc/haas.cfg``. This will change in the future; it isn't considered
 # reasonable behavior.
 #
-# The comments in this file assume a production/end-user deployment. Have a look
-# at haas.cfg.dev-example for a development-oriented example.
+# The comments in this file are targeted at developers; Take a look at
+# haas.cfg.example for something more production/end-user oriented.
 #
-# the options under [client] are required for making client-side requests with
-# the cli tool (anything but haas serve). Switch specific options are mandatory
-# if and only if that switch driver is in use. The database section is needed to
-# run the server at all, while the remaining options can be omitted if the
-# dry_run option is enabled.
+# The options under [client] are required for making client-side requests with
+# the cli tool (anything but ``haas serve`` or ``haas serve_networks``). Driver
+# specific options are mandatory if and only if that driver is in use.  The
+# database section is needed to run the server at all, while the remaining
+# options can be omitted if the dry_run option is enabled.
 
 [general]
-# The driver to use for networking operations. For now, the only driver of
-# interest to non-developers is ``simple_vlan``. You'll also need to set
-# corresponding options in the driver specific section (in this case,
-# ``[driver simple_vlan]``).
+# The driver to use for networking operations. This should be the name of a
+# module in ``haas.drivers``. You'll also need to set  corresponding options
+# in the driver specific section (i.e. ``[driver ${your_driver}]``).
 driver = simple_vlan
 
 # How verbosely to log.  Log messages of the given severity or more will be
 # logged.  Options include: debug, info, warn/warning, error, critical/fatal.
-log_level = info
+log_level = debug
 
 [headnode]
 # The trunk NIC on the host. This is the nic that the VMs will be bridged to
@@ -51,16 +50,16 @@ libvirt_endpoint = qemu:///system
 #   haas list_free_nodes
 #
 # from within the directory containing haas.cfg.
-endpoint = http://127.0.0.1
+#
+# The default below will be correct if the API Server was launched with the
+# ``haas serve`` command.
+endpoint = http://127.0.0.1:5000
 
 [database]
 # A SQLAlchemy database URI, specifying the database for the server to
-# connect to. At present, only sqlite is supported. Both the API server
-# and ``haas serve_networks`` need write access to the database.
-#
-# The suggested value below assumes both will run as a system user
-# whose home directory is ``/var/lib/haas``.
-uri = sqlite:////var/lib/haas/haas.db
+# connect to. At present, only sqlite is supported. The example below is a
+# relative path, which looks for the database in the current directory.
+uri = sqlite:///haas.db
 
 [driver simple_vlan]
 # Driver specific settings for the ``simple_vlan`` driver.
@@ -82,4 +81,16 @@ switch = {"switch": "dell", "ip": "192.168.0.1", "user": "foo", "pass": "bar"}
 # comma-separated list of individual VLAN numbers or ranges, e.g::
 #
 #   vlans = 14,35-40, 100-900, 904, 65-85
+#
+# When running the deployment tests, a smaller number of VLANs may be
+# desirable, as it reduces running time substantially. A minumum of four VLANs
+# are required.
 vlans = 100-109
+
+[devel]
+# A handful of functions which touch external state (start vms, communicate with
+# swithces...) can be disabled for development purposes. When this is done, the
+# calls to the function will be logged, but not actually executed. To do this,
+# uncomment the following:
+#
+# dry_run=
