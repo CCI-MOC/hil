@@ -49,9 +49,11 @@ API to http requests.
 ===========
 
 This project is part of the larger Massachusetts Open Cloud, for a list
-of authors, description of the team, development workflow, ... look here_  
+of authors, description of the team, development workflow, etc. see:
 
-The file ``HACKING.rst`` Describes the technical details of running HaaS in
-development.
+https://github.com/CCI-MOC/moc-public/blob/master/README.md
+
+The file ``HACKING.rst`` In this directory describes the technical details
+of running HaaS in development.
 
 There is also some assorted documentation in the `doc/` directory.
