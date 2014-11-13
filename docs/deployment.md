@@ -5,7 +5,8 @@ This is a guide to the best practices for deploying Hardware as a Service
 made in terms of how HaaS would be used, how it would be deployed, and the
 configuration of the hardware systems it would be managing.
 
-For instructions on installing HaaS, take a look at [Install.rst](Install.rst). For a general overview, please take a look at [Readme.rst](../Readme.rst).
+For instructions on installing HaaS, take a look at [INSTALL.rst](INSTALL.rst).
+For a general overview, please take a look at [README.rst](README.rst).
 
 # Nodes
 ## BIOS/Firmware

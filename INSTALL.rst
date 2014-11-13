@@ -1,6 +1,6 @@
 This document describes the installation and setup of HaaS on CentOS 6.5.
 HaaS should work on other distros, but is not well tested or supported.
-For development environments, see the Hacking section in `README.rst <../README.rst>`_
+For development environments, see ``HACKING.rst``.
 
 The HaaS Service node
 =====================

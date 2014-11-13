@@ -40,7 +40,7 @@ Documentation
 =============
 
 * `overview.md <docs/overview.md>`_ gives a sense as to how HaaS operates
-* `INSTALL.rst <docs/INSTALL.rst>`_ for details on setting up HaaS
+* `INSTALL.rst <INSTALL.rst>`_ for details on setting up HaaS
 * `using.rst <docs/USING.rst>`_ for details on using HaaS as a client 
 * `apidesc.md <docs/apidesc.md>`_ describes the API at a conceptual level (enough to use it via the ``haas`` command line tool)
 * `rest_api.md <docs/rest_api.md>`_ provides a detailed mapping of that API to http requests.
