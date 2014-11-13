@@ -67,10 +67,14 @@ First create a system user ``haas_user`` with::
 haas.cfg
 --------
 
-HaaS is configured with ``haas.cfg``. This file
-contains settings for both the CLI client and the server. Carefully read the file
-``haas.cfg.example`` (at the top of the source tree), to understand and correctly
-set all of the options.
+HaaS is configured with ``haas.cfg``. This file contains settings for both the
+CLI client and the server. Carefully read the file ``haas.cfg.example`` (at
+the top of the source tree), to understand and correctly set all of the
+options.  In particular, the following two fields in the ``headnode`` section
+are very important: ``trunk_nic`` must match your choice of trunk NIC in the
+"Networking - Bridges" instructions below; ``base_imgs`` must match the name
+of the base headnode libvirt instance created in the "Libvirt" instructions
+below.
 
 The file should be placed at ``/etc/haas.cfg``; The ``haas.wsgi``
 script, described below, requires this. Awkwardly, the ``haas``
