@@ -1,4 +1,4 @@
-**HaaS**
+HaaS
 ========
 
 HaaS is a low-level tool for reserving physical machines and connecting
@@ -36,16 +36,18 @@ administrator must populate initially.
 #. Log in to the headnode, set up a PXE server, reboot the nodes, and deploy an
    operating system on them via the network.
 
-**Getting Started**
-===================
+Documentation
+=============
 
-See ``INSTALL.rst`` for details on setting up HaaS. You should also read
-``docs/overview.md`` to get a sense of how HaaS operates. ``docs/apidesc.md``
-describes the API at a conceptual level (enough to use it via the ``haas``
-command line tool), and ``docs/rest_api.md`` provides a detailed mapping of that
-API to http requests.
+* `overview.md <docs/overview.md>`_ gives a sense as to how HaaS operates
+* `INSTALL.rst <docs/INSTALL.rst>`_ for details on setting up HaaS
+* `using.rst <docs/USING.rst>`_ for details on using HaaS as a client 
+* `apidesc.md <docs/apidesc.md>`_ describes the API at a conceptual level (enough to use it via the ``haas`` command line tool)
+* `rest_api.md <docs/rest_api.md>`_ provides a detailed mapping of that API to http requests.
 
-**Hacking**
+Please note that some of the documentation is written in Markdown and some in the reStructured Text format preferred by the python and OpenStack communities.
+
+Hacking
 ===========
 
 This project is part of the larger Massachusetts Open Cloud, for a list
