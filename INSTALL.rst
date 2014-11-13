@@ -45,6 +45,18 @@ The HaaS software can then be installed similarly:
     cd haas
     sudo python setup.py install
 
+Disable SELinux
+---------------
+
+The setup described below runs into problems with SELinux related to the sqlite
+database. For now the recommended solution is to simply disable SELinux. In
+future releases, we will support and recommend the use of SELinux with another
+DBMS, such as MySQL.
+
+::
+
+    sudo setenforce 0
+
 Create User
 -----------
 
