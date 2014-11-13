@@ -45,7 +45,10 @@ Documentation
 * `apidesc.md <docs/apidesc.md>`_ describes the API at a conceptual level (enough to use it via the ``haas`` command line tool)
 * `rest_api.md <docs/rest_api.md>`_ provides a detailed mapping of that API to http requests.
 
-Please note that some of the documentation is written in Markdown and some in the reStructured Text format preferred by the python and OpenStack communities.
+Please note that we're in the middle of transitioning our documentation
+from Markdown to reStructured Text, since the latter of which is
+preferred by the python and OpenStack communities. As such, the documentation is
+currently a mix of the two.
 
 Hacking
 ===========
