@@ -33,7 +33,7 @@ via:
 
 ::
 
-    git clone git://github.com/CCI-MOC/moc-rest
+    git clone https://github.com/CCI-MOC/moc-rest
     cd moc-rest
     sudo python setup.py install
 
@@ -41,7 +41,7 @@ The HaaS software can then be installed similarly:
 
 ::
 
-    git clone git://github.com/CCI-MOC/haas
+    git clone https://github.com/CCI-MOC/haas
     cd haas
     sudo python setup.py install
 
@@ -249,6 +249,10 @@ former is a WSGI application, which we recommend running with Apache's
 
 (The file may already exist, with just the ``LoadModule`` option. If so, it is
 safe to replace it.)
+
+If you haven't already, create the directory that will contain the HaaS WSGI module::
+
+ sudo mkdir /var/www/haas/
 
 Copy the file ``haas.wsgi`` from the top of the haas source tree to the
 location indicated by the ``WSGIScriptAlias`` option. The virtual host and
