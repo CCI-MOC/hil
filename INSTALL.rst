@@ -94,7 +94,7 @@ of all sections except for the ``[client]`` section.  Additionally, the
 ``/etc/haas.cfg`` should have its permissions set to read-only and ownership
 set to the ``haas_user``::
 
-  sudo chown haas_user /etc/haas.cfg
+  sudo chown haas_user:haas_user /etc/haas.cfg
   sudo chmod 400 /etc/haas.cfg
 
 All HaaS commands in these instructions should be run in this directory::
