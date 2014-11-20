@@ -192,7 +192,7 @@ where ``base.xml`` contains a description of the headnode::
     <devices>
       <emulator>/usr/libexec/qemu-kvm</emulator>
       <disk type='file' device='disk'>
-        <driver name='qemu' type='qcow'/>
+        <driver name='qemu' type='raw'/>
         <source file='/var/lib/libvirt/images/base.img'/>
         <target dev='vda' bus='virtio'/>
       </disk>
@@ -210,9 +210,21 @@ where ``base.xml`` contains a description of the headnode::
     </devices>
   </domain>
 
-Many of these fields are probably not needed, but we have not tested this
-thoroughly. Further, this set of XML duplicates the path to storage
-directory; this seems unnecessary.
+Note that the above specifies the format of the disk image as ``raw``; if
+you're using an image in another format (such as ``qcow``) you will have
+to adjust this.
+
+Many of these fields are probably not needed, but we have not thouroughly
+tested which ones. Furthermore, this set of XML duplicates the path to
+storage directory; this seems unnecessary.
+
+The scripts in ``examples/ubuntu-headnode`` can be used to build an ubuntu
+14.04 disk image with a default root password. Read the README in that
+directory for more information.
+
+Users may find the scripts in ``examples/puppet_headnode`` useful for
+configuring the ubuntu headnode to act as a PXE server; see the README in
+that directory for more information.
 
 Database
 ------------
