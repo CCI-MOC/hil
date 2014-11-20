@@ -20,8 +20,10 @@ Once `load` has been called, it will be ready to use.
 """
 
 import ConfigParser
+import logging
 
 cfg = ConfigParser.RawConfigParser()
+
 
 def load(filename='haas.cfg'):
     """Load the configuration from the file 'haas.cfg' in the current directory.
@@ -33,3 +35,25 @@ def load(filename='haas.cfg'):
     an empty configuration (i.e. one with no options).
     """
     cfg.read(filename)
+
+
+def configure_logging():
+    """Configure the logger according to the settings in the config file.
+
+    This must be called *after* the config is loaded.
+    """
+    if cfg.has_option('general', 'log_level'):
+        LOG_SET = ["CRITICAL", "DEBUG", "ERROR", "FATAL", "INFO", "WARN",
+                   "WARNING"]
+        log_level = cfg.get('general', 'log_level').upper()
+        if log_level in LOG_SET:
+            # Set to mnemonic log level
+            logging.basicConfig(level=getattr(logging, log_level))
+        else:
+            # Set to 'warning', and warn that the config is bad
+            logging.basicConfig(level=logging.WARNING)
+            logging.getLogger(__name__).warning(
+                "Invalid debugging level %s defaulted to WARNING" % log_level)
+    else:
+        # Default to 'warning'
+        logging.basicConfig(level=logging.WARNING)
