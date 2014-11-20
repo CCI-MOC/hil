@@ -1,12 +1,17 @@
-# This is an example configuration file for HaaS. The ``haas.wsgi`` script
-# will look for it at `/etc/haas.cfg``.
+# This is an example configuration file for HaaS. The ``haas`` command will
+# read its  configuration from a file called ``haas.cfg``, in the current
+# working directory. The ``haas.wsgi`` script will look for it at
+# ``/etc/haas.cfg``. This will change in the future; it isn't considered
+# reasonable behavior.
 #
 # The comments in this file assume a production/end-user deployment. Have a look
 # at haas.cfg.dev-example for a development-oriented example.
 #
-# Switch specific options are mandatory if and only if that switch driver is in
-# use. The database section is needed to run the server at all, while the
-# remaining options can be omitted if the dry_run option is enabled.
+# the options under [client] are required for making client-side requests with
+# the cli tool (anything but haas serve). Switch specific options are mandatory
+# if and only if that switch driver is in use. The database section is needed to
+# run the server at all, while the remaining options can be omitted if the
+# dry_run option is enabled.
 
 [general]
 # The driver to use for networking operations. For now, the only driver of
@@ -35,6 +40,18 @@ base_imgs = img1, img2, img3, img4
 # libvirt the value below is correct. While running it on a separate host should
 # be possible, it is untested.
 libvirt_endpoint = qemu:///system
+
+[client]
+# Options used by the ``haas`` command line tool on the client side.
+
+# The http endpoint that the command line tool should connect to. The server
+# doesn't use this; it must be configured separately. To double check that you
+# have the right value, make sure the API server is running, and execute::
+# 
+#   haas list_free_nodes
+#
+# from within the directory containing haas.cfg.
+endpoint = http://127.0.0.1
 
 [database]
 # A SQLAlchemy database URI, specifying the database for the server to

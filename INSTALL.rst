@@ -67,28 +67,27 @@ First create a system user ``haas_user`` with::
 haas.cfg
 --------
 
-HaaS is configured with two separate ``haas.cfg`` files. One file contains
-settings for the CLI client, and the other file contains settings for the
-server. Carefully read the files ``haas.cfg.server-example`` and
-``haas.cfg.client-example`` (at the top of the source tree), to understand
-and correctly set all of the options.  In particular, the following two
-fields in the ``headnode`` section of ``haas.cfg.server-example`` are very
-important: ``trunk_nic`` must match your choice of trunk NIC in the
+HaaS is configured with ``haas.cfg``. This file contains settings for both the
+CLI client and the server. Carefully read the file ``haas.cfg.example`` (at
+the top of the source tree), to understand and correctly set all of the
+options.  In particular, the following two fields in the ``headnode`` section
+are very important: ``trunk_nic`` must match your choice of trunk NIC in the
 "Networking - Bridges" instructions below; ``base_imgs`` must match the name
 of the base headnode libvirt instance created in the "Libvirt" instructions
 below.
 
-The ``haas.cfg.server-example`` file should be placed at ``/etc/haas.cfg``,
-and the ``haas.cfg.server-example`` file should be placed at
-``/var/lib/haas/haas.cfg``; The ``haas.wsgi`` script, described below,
-requires this.
+The file should be placed at ``/etc/haas.cfg``; The ``haas.wsgi``
+script, described below, requires this. Awkwardly, the ``haas``
+command line tool expects the file to be present in its current
+working directory. This will be fixed in the next release, but for
+now, put the file in ``/etc`` and create a symlink to it in the
+HaaS user's home directory::
 
-It's a good idea to set the owner of the file to ``haas_user`` and to set
-file permissions such that other users are restricted from reading its
-sensitive contents, such as usernames and passwords::
+  sudo ln -s /etc/haas.cfg /var/lib/haas/
 
-  chown haas_user /etc/haas.cfg
-  chmod 600 /etc/haas.cfg
+All HaaS commands in these instructions should be run in this directory::
+
+  cd /var/lib/haas
 
 Networking - Bridges
 --------------------
