@@ -85,6 +85,18 @@ HaaS user's home directory::
 
   sudo ln -s /etc/haas.cfg /var/lib/haas/
 
+It should be noted that HaaS end users will also require a ``haas.cfg`` file
+in their local directory in order to communicate with the HaaS server.
+However, creating another symlink to the ``/etc/haas.cfg`` exposes sensitive
+administrative information to users, such as usernames and passwords. To
+avoid this, users should have their own copy of ``haas.cfg`` that is stripped
+of all sections except for the ``[client]`` section.  Additionally, the
+``/etc/haas.cfg`` should have its permissions set to read-only and ownership
+set to the ``haas_user``::
+
+  sudo chown haas_user /etc/haas.cfg
+  sudo chmod 400 /etc/haas.cfg
+
 All HaaS commands in these instructions should be run in this directory::
 
   cd /var/lib/haas
