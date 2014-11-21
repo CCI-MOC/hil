@@ -174,9 +174,12 @@ activate on boot, with::
   virsh --connect qemu:///system pool-start haas_headnodes
   virsh --connect qemu:///system pool-autostart haas_headnodes
 
-Get a base image from
-http://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img,
-and put it in the storage pool directory::
+The scripts in ``examples/ubuntu-headnode`` can be used to build an ubuntu
+14.04 disk image with a default root password. Read the README in that
+directory for more information.
+
+Once the disk image is built, copy ito the storage pool directory (here we
+assume it is caled ``base.img``)::
 
   mv base.img /var/lib/libvirt/images/
 
@@ -229,10 +232,6 @@ to adjust this.
 Many of these fields are probably not needed, but we have not thouroughly
 tested which ones. Furthermore, this set of XML duplicates the path to
 storage directory; this seems unnecessary.
-
-The scripts in ``examples/ubuntu-headnode`` can be used to build an ubuntu
-14.04 disk image with a default root password. Read the README in that
-directory for more information.
 
 Users may find the scripts in ``examples/puppet_headnode`` useful for
 configuring the ubuntu headnode to act as a PXE server; see the README in
