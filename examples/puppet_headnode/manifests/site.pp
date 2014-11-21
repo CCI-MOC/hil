@@ -115,11 +115,12 @@ file { "/etc/rc.local":
 }
 
 ## put the bootloader in the tftp dir.
-
-
 define pxecopy() {
   file { "/var/lib/tftpboot/${title}":
-    require => Package['syslinux-common'],
+    # Really, this doesn't depend on the pxelinux.cfg dir, but it's parent dir.
+    # This is a bit nicer than having to specify another resource, however,
+    # since the directory will be created anyway.
+    require => [Package['syslinux-common'], File['/var/lib/tftpboot/pxelinux.cfg']],
     source => "/usr/lib/syslinux/${title}",
     mode => 644,
   }
