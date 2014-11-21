@@ -22,7 +22,7 @@ requirements_file = path.join(path.dirname(__file__), 'requirements.txt')
 requirements = [str(r.req) for r in parse_requirements(requirements_file)]
 
 setup(name='haas',
-      version='1.0',
+      version='0.1',
       url='https://github.com/CCI-MOC/haas',
       packages=find_packages(),
       scripts=['scripts/haas', 'scripts/create_bridges'],
