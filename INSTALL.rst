@@ -281,14 +281,13 @@ former is a WSGI application, which we recommend running with Apache's
 safe to replace it.)
 
 **Note:** certain calls to HaaS such as *port_register()* may pass arbitrary
-strings that should be escaped (see [issue
-361](https://github.com/CCI-MOC/haas/issues/360)). By default, Apache[Doesn't
-allow](https://stackoverflow.com/questions/4390436/need-to-allow-encoded-slashes-on-apache)
+strings that should be escaped (see `issue 361 <https://github.com/CCI-MOC/haas/issues/360>`_). By default, Apache `Doesn't
+allow <https://stackoverflow.com/questions/4390436/need-to-allow-encoded-slashes-on-apache>`_
 this due to security concerns. ``AllowEncodedSlashes On`` enables the passing
 of these arguments. If your Apache version is 2.2.18 or later (released in May, 2011, though not included with CentOS 6.5), you should
 replace ``AllowEncodedSlashes On`` with ``AllowEncodedSlashes NoDecode``, which
-is safer for the long term (see [the
-docs](https://httpd.apache.org/docs/2.2/mod/core.html#AllowEncodedSlashes) for
+is safer for the long term (see `the
+docs <https://httpd.apache.org/docs/2.2/mod/core.html#AllowEncodedSlashes>`_ for
 more information).
 
 If you haven't already, create the directory that will contain the HaaS WSGI module::
