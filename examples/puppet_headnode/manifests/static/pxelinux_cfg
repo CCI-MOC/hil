@@ -1,0 +1,8 @@
+# D-I config version 2.0
+default centos
+prompt 0
+timeout 0
+
+label centos
+        kernel centos/vmlinuz
+        append ks=http://192.168.1.15/ks.cfg initrd=centos/initrd.img ksdevice=eth0

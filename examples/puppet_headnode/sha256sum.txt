@@ -1,0 +1,1 @@
+5458f357e8a55e3a866dd856896c7e0ac88e7f9220a3dd74c58a3b0acede8e4d  CentOS-6.6-x86_64-minimal.iso

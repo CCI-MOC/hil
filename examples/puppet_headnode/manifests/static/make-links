@@ -1,0 +1,3 @@
+#!/bin/bash -e
+cd /var/lib/tftpboot/pxelinux.cfg
+tr ABCDEF abcdef |sed 's/^/01-/ ; s/:/-/g'|xargs -n 1 ln -s ../centos/pxelinux.cfg
