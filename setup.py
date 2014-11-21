@@ -18,7 +18,7 @@ from pip.req import parse_requirements
 requirements = [str(r.req) for r in parse_requirements('requirements.txt')]
 
 setup(name='moc-rest',
-      version='1.0',
+      version='0.1',
       url='https://github.com/CCI-MOC/moc-rest',
       packages=find_packages(),
       install_requires=requirements,
