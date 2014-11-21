@@ -149,6 +149,10 @@ Then create the group 'libvirt' and add the HaaS user to that group::
 Finally, restart ``libvirt`` with::
 
   sudo service libvirtd restart
+  
+You should also set libvirt to start on boot::
+
+  sudo chkconfig libvirtd on
 
 Headnode image
 ^^^^^^^^^^^^^^
