@@ -27,7 +27,6 @@ build: $(IMG_IN).raw
 	mount -o loop,offset=$$((512 * 2048)) $< mnt
 	mount -t sysfs none mnt/sys
 	mount -t proc none mnt/proc
-	chroot mnt /usr/sbin/useradd -m mocuser
 	chroot mnt /usr/bin/passwd
 	umount mnt/sys
 	umount mnt/proc
