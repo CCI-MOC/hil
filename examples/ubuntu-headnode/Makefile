@@ -29,4 +29,6 @@ build: $(IMG_IN).raw
 	mount -t proc none mnt/proc
 	chroot mnt /usr/sbin/useradd -m mocuser
 	chroot mnt /usr/bin/passwd
-	umount -R mnt
+	umount mnt/sys
+	umount mnt/proc
+	umount mnt
