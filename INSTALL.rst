@@ -57,6 +57,8 @@ DBMS, such as MySQL.
 
     sudo setenforce 0
 
+Make sure SELinux is also disabled on startup.
+
 Create User
 -----------
 
