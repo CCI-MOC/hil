@@ -16,33 +16,33 @@
 
 from functools import wraps
 
-from haas import model, api
 from haas.test_common import *
 import pytest
 
 from haas.config import cfg
 
-from haas.drivers.simple_vlan import *
-
+from haas.drivers.complex_vlan import apply_networking, get_switch_vlans
 from haas.drivers.switches.test import reinitialize
 
 def vlan_test(vlan_list):
-    """A decorator for tests of the simple_vlan driver.  Pass in a string for
+    """A decorator for tests of the complex_vlan driver.  Pass in a string for
     the vlan_list configuration option, which determines which vlans can be
     used for networking.
     """
 
     def dec(f):
         def config_initialize():
-            # Use the 'dell' backend for these tests
+            # Use the complex vlan driver for these tests
             cfg.add_section('general')
-            cfg.set('general', 'driver', 'simple_vlan')
+            cfg.set('general', 'driver', 'complex_vlan')
             cfg.add_section('vlan')
             cfg.set('vlan', 'vlans', vlan_list)
-            cfg.add_section('driver simple_vlan')
-            cfg.set('driver simple_vlan', 'switch',
-                    '{"name":"1", "switch":"test"}')
-            cfg.set('driver simple_vlan', 'trunk_port', 'unused')
+            cfg.add_section('driver complex_vlan')
+            cfg.set('driver complex_vlan', 'switch', '[' \
+                        '{"name":"0", "switch":"test"}, ' \
+                        '{"name":"1", "switch":"test"}, ' \
+                        '{"name":"2", "switch":"test"}]')
+            cfg.set('driver complex_vlan', 'trunk_ports', '[]')
 
         @wraps(f)
         @clear_configuration
@@ -57,23 +57,23 @@ def vlan_test(vlan_list):
 
     return dec
 
-class TestSimpleVLAN:
-    """Tests basic operation of Simple VLAN driver"""
+class TestApply:
+    """Tests network_apply"""
 
     @vlan_test('84, 85')
-    def test_simple_vlan_network_operations(self, db):
+    def test_network_apply_complex(self, db):
         """Test switch dispatch logic.
 
         Make two apply_networking calls, then use get_switch_vlans to check
-        that the changes were routed to the underlying switch.
+        that the correct changes were routed to the correct underlying
+        switches.
         """
-
-        apply_networking({"1":'84', "2":'84', "3":'84'})
+        apply_networking({"1::1": '84', "1::2": '84', "2::1": '84'})
         switch_vlans = get_switch_vlans(['84', '85'])
-        assert sorted(switch_vlans['84']) == sorted(["1", "2", "3"])
+        assert sorted(switch_vlans['84']) == sorted(["1::1", "1::2", "2::1"])
         assert switch_vlans['85'] == []
 
-        apply_networking({"2":'85', "3":None, "4":'85'})
+        apply_networking({"1::2": '85', "2::1": None, "0::2": '85'})
         switch_vlans = get_switch_vlans(['84', '85'])
-        assert switch_vlans['84'] == ["1"]
-        assert sorted(switch_vlans['85']) == sorted(["2", "4"])
+        assert switch_vlans['84'] == ["1::1"]
+        assert sorted(switch_vlans['85']) == sorted(["1::2", "0::2"])

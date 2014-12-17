@@ -78,6 +78,9 @@ are very important: ``trunk_nic`` must match your choice of trunk NIC in the
 of the base headnode libvirt instance created in the "Libvirt" instructions
 below.
 
+For a detailed description of the configuration needed for various switch
+setups, see ``docs/network-drivers.md``.
+
 The file should be placed at ``/etc/haas.cfg``; The ``haas.wsgi``
 script, described below, requires this. Awkwardly, the ``haas``
 command line tool expects the file to be present in its current
