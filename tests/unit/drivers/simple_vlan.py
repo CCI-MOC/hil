@@ -24,6 +24,8 @@ from haas.config import cfg
 
 from haas.drivers.simple_vlan import *
 
+from haas.drivers.switches.test import reinitialize
+
 def vlan_test(vlan_list):
     """A decorator for tests of the simple_vlan driver.  Pass in a string for
     the vlan_list configuration option, which determines which vlans can be
@@ -38,15 +40,16 @@ def vlan_test(vlan_list):
             cfg.add_section('vlan')
             cfg.set('vlan', 'vlans', vlan_list)
             cfg.add_section('driver simple_vlan')
-            cfg.set('driver simple_vlan', 'switch', '{"switch":"null"}')
-            cfg.add_section('devel')
-            cfg.set('devel', 'dry_run', 'True')
+            cfg.set('driver simple_vlan', 'switch',
+                    '{"name":"1", "switch":"test"}')
+            cfg.set('driver simple_vlan', 'trunk_port', 'unused')
 
         @wraps(f)
         @clear_configuration
         def wrapped(self):
             config_initialize()
             db = newDB()
+            reinitialize()
             f(self, db)
             releaseDB(db)
 
@@ -57,16 +60,20 @@ def vlan_test(vlan_list):
 class TestSimpleVLAN:
     """Tests basic operation of Simple VLAN driver"""
 
-    @vlan_test('84')
+    @vlan_test('84, 85')
     def test_simple_vlan_network_operations(self, db):
-        api.project_create('anvil-nextgen')
-        network_create_simple('hammernet', 'anvil-nextgen')
-        for k in range(97,100):
-            nodename = 'node-' + str(k)
-            api.node_register(nodename, 'ipmihost', 'root', 'tapeworm')
-            api.node_register_nic(nodename, 'eth0', 'DE:AD:BE:EF:20:14')
-            api.project_connect_node('anvil-nextgen', nodename)
-            api.port_register(nodename)
-            api.port_connect_nic(nodename, nodename, 'eth0')
-        api.project_detach_node('anvil-nextgen', 'node-97')
-        api.node_connect_network('node-98', 'eth0', 'hammernet')
+        """Test switch dispatch logic.
+
+        Make two apply_networking calls, then use get_switch_vlans to check
+        that the changes were routed to the underlying switch.
+        """
+
+        apply_networking({"1":'84', "2":'84', "3":'84'})
+        switch_vlans = get_switch_vlans(['84', '85'])
+        assert sorted(switch_vlans['84']) == sorted(["1", "2", "3"])
+        assert switch_vlans['85'] == []
+
+        apply_networking({"2":'85', "3":None, "4":'85'})
+        switch_vlans = get_switch_vlans(['84', '85'])
+        assert switch_vlans['84'] == ["1"]
+        assert sorted(switch_vlans['85']) == sorted(["2", "4"])
