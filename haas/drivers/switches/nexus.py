@@ -22,10 +22,7 @@ import os
 import pexpect
 import re
 
-
 from haas.dev_support import no_dry_run
-
-from haas.drivers.driver_tools.vlan import *
 
 @no_dry_run
 def apply_networking(net_map, config):
