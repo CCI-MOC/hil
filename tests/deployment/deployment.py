@@ -133,8 +133,8 @@ class TestNetwork:
             # Assert that n2 and n3 have been added to n0 and n1's networks
             # respectively
             vlan_cfgs = get_switch_vlans()
-            assert get_network(nodes[0]['port'], vlan_cfgs) == [nodes[0]['port'], nodes[2]['port']]
-            assert get_network(nodes[1]['port'], vlan_cfgs) == [nodes[1]['port'], nodes[3]['port']]
+            assert sorted(get_network(nodes[0]['port'], vlan_cfgs)) == sorted([nodes[0]['port'], nodes[2]['port']])
+            assert sorted(get_network(nodes[1]['port'], vlan_cfgs)) == sorted([nodes[1]['port'], nodes[3]['port']])
 
 
         def delete_networks():
