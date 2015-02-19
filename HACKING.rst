@@ -43,10 +43,15 @@ you may need to run::
 
 
 Now the ``haas`` executable should be in your path.  First, create a
-configuration file by copying ``haas.cfg.example`` to ``haas.cfg``, and
-editing it as appropriate.  (In particular, if you are testing deployment, you
-should read the comments in ``haas.cfg.example`` to see what options are
-relevant.)  Then initialize the database with the required tables, with ``haas
+configuration file ``haas.cfg``. There are two examples for you to work from,
+``haas.cfg.dev-example``, which is oriented towards developemnt, and
+``haas.cfg.example`` which is more production oriented. These files are well
+commented; read them carefully. In relation to testing, one option is worth
+calling out specifically: the ``dry_run`` option in the ``[devel]`` section,
+which allows most unit tests (which only touch the database) to be run on one's
+local machine, without needing to have a full HaaS setup available.
+
+Next initialize the database with the required tables, with ``haas
 init_db``.  Run the server with ``haas serve``.  Finally, see ``haas help``
 for the various API commands one can test.  Here is an example session,
 testing ``headnode_delete_hnic``::
@@ -58,5 +63,8 @@ testing ``headnode_delete_hnic``::
 
 
 Additionally, before each commit, run the automated test suite with ``py.test
-tests``.  This will do only the most basic level of testing.  For additional
-features, including coverage reporting, see ``docs/testing.md``
+tests/unit``. If at all possible, run the deployment tests as well (``py.test
+tests/deployment``), but this requires access to a sepcialized setup, so if the
+patch is sufficiently unintrusive it may be acceptable to skip this step.
+
+The file ``doc/testing.md`` contains more information about testing HaaS.
