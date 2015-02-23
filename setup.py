@@ -1,4 +1,4 @@
-# Copyright 2013-2014 Massachusetts Open Cloud Contributors
+# Copyright 2013-2015 Massachusetts Open Cloud Contributors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the
@@ -13,18 +13,17 @@
 # governing permissions and limitations under the License.
 
 from setuptools import setup, find_packages
-from pip.req import parse_requirements
-from os import path
-
-# requirements_file is the relative path from where setup.py is being
-# called from, to where requirements.txt resides
-requirements_file = path.join(path.dirname(__file__), 'requirements.txt')
-requirements = [str(r.req) for r in parse_requirements(requirements_file)]
 
 setup(name='haas',
       version='0.1',
       url='https://github.com/CCI-MOC/haas',
       packages=find_packages(),
       scripts=['scripts/haas', 'scripts/create_bridges'],
-      install_requires=requirements,
-      )
+      install_requires=['SQLAlchemy==0.9.7',
+                        'importlib==1.0.3',
+                        'passlib==1.6.2',
+                        'pexpect==3.3',
+                        'requests==2.4.1',
+                        'pytest==2.6.2',
+                        'pytest-cov==1.8.0',
+                        ])
