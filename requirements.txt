@@ -1,4 +1,0 @@
-Werkzeug==0.9.4
-pytest==2.6.2
-pytest-cov==1.8.0
-schema==0.3.1
