@@ -1,9 +1,0 @@
-*.swp
-*.pyc
-*.~
-.ropeproject
-*.egg-info
-build
-dist
-.venv
-.coverage
