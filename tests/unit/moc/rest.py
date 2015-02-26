@@ -22,6 +22,8 @@ import sys
 from werkzeug.routing import Map
 from werkzeug.wrappers import Request
 
+from schema import Schema, Optional
+
 # We don't directly use this, but unless we import it, the coverage tool
 # complains and doesn't give us a report.
 import pytest
@@ -172,6 +174,28 @@ class TestBodyArgs(HttpEquivalenceTest, HttpTest):
     def request(self):
         return wsgi_mkenv('POST', '/func/foo',
                           data=json.dumps({'bar': 'bonnie', 'baz': 'clyde'}))
+
+
+class TestRestCallSchema(HttpEquivalenceTest, HttpTest):
+    """Test that an alternate schema is used ifone is provided to rest_call."""
+
+    def setUp(self):
+        HttpTest.setUp(self)
+
+        @rest.rest_call('POST', '/product', schema=Schema({
+            'x': int,
+            'y': int,
+            Optional('z'): int,
+        }))
+        def product(x, y, z=1):
+            return json.dumps(x * y * z)
+
+    def api_call(self):
+        return json.dumps(14)
+
+    def request(self):
+        return wsgi_mkenv('POST', '/product',
+                            data=json.dumps({'x': 2, 'y': 7}))
 
 
 class TestEquiv_basic_APIError(HttpEquivalenceTest, HttpTest):
