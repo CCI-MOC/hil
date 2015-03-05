@@ -28,16 +28,7 @@ available as RPMs as well, but we recommend installing them with pip, since
 this will install the versions that HaaS has been tested with.  This is done
 automatically by the instructions below.
 
-First, HaaS depends on a utility library called moc-rest. It can be installed
-via:
-
-::
-
-    git clone https://github.com/CCI-MOC/moc-rest
-    cd moc-rest
-    sudo python setup.py install
-
-The HaaS software can then be installed similarly:
+The HaaS software can then be installed by running:
 
 ::
 
