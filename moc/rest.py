@@ -46,8 +46,8 @@ class APIError(Exception):
     status_code = 400  # Bad Request
 
     def response(self):
-        # TODO: We're getting deprecation errors about the use of e.message. We
-        # should figure out what the right way to do this is.
+        # TODO: We're getting deprecation errors about the use of self.message.
+        # We should figure out what the right way to do this is.
         return Response(json.dumps({'type': self.__class__.__name__,
                                     'msg': self.message,
                                     }), status=self.status_code)
