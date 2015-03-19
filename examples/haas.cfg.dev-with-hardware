@@ -1,11 +1,17 @@
-# This is an example configuration file for HaaS. The ``haas`` command will
-# read its  configuration from a file called ``haas.cfg``, in the current
-# working directory. The ``haas.wsgi`` script will look for it at
-# ``/etc/haas.cfg``. This will change in the future; it isn't considered
-# reasonable behavior.
+# This is an example configuration file for HaaS developers.  It enables debug
+# output, points client operations to the default port used by "haas serve"
+# (5000) and utilizes a sqlite DB in the current directory. Note that this
+# still requires a real network switch and real hardware nodes to operate
+# against. For a configuration that removes the need for real hardware by
+# supressing hardware operations, see ``haas.cfg.dev-no-hardware``.
 #
-# The comments in this file are targeted at developers; Take a look at
-# haas.cfg.example for something more production/end-user oriented.
+# The ``haas`` command will read its  configuration from a file called
+# ``haas.cfg``, in the current working directory. The ``haas.wsgi`` script will
+# look for it at ``/etc/haas.cfg``. This will change in the future; it isn't
+# considered reasonable behavior.
+#
+# The comments in this file are targeted at developers; Take a look at haas.cfg
+# for something more production/end-user oriented.
 #
 # The options under [client] are required for making client-side requests with
 # the cli tool (anything but ``haas serve`` or ``haas serve_networks``). Driver
@@ -15,8 +21,10 @@
 
 [general]
 # The driver to use for networking operations. This should be the name of a
-# module in ``haas.drivers``. You'll also need to set  corresponding options
-# in the driver specific section (i.e. ``[driver ${your_driver}]``).
+# module in ``haas.drivers``. You'll also need to set  corresponding options in
+# the driver specific section (i.e. ``[driver ${your_driver}]``).  Note that
+# either the ``null`` or ``null_vlan`` driver can be used in testing and
+# development to keep HaaS from trying to access a real switch.
 driver = simple_vlan
 
 # How verbosely to log.  Log messages of the given severity or more will be
@@ -93,4 +101,4 @@ vlans = 100-109
 # calls to the function will be logged, but not actually executed. To do this,
 # uncomment the following:
 #
-# dry_run=
+# dry_run=True

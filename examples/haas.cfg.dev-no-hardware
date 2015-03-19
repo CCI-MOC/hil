@@ -1,0 +1,106 @@
+# This is an example configuration file for HaaS developers.  It enables debug
+# output, points client operations to the default port used by "haas serve"
+# (5000), utilizes a sqlite DB in the current directory.  It also removes the
+# need for real nodes by supressing node-oriented non-DB actions like IPMI and
+# headnode operations (by setting dry_run) as well as supressing network
+# operations by using the null_vlan driver. For a configuration that uses real
+# hardware, see ``haas.cfg.dev``.
+#
+#The ``haas`` command will
+# read its  configuration from a file called ``haas.cfg``, in the current
+# working directory. The ``haas.wsgi`` script will look for it at
+# ``/etc/haas.cfg``. This will change in the future; it isn't considered
+# reasonable behavior.
+#
+# The comments in this file are targeted at developers; Take a look at
+# haas.cfg.example for something more production/end-user oriented.
+#
+# The options under [client] are required for making client-side requests with
+# the cli tool (anything but ``haas serve`` or ``haas serve_networks``). Driver
+# specific options are mandatory if and only if that driver is in use.  The
+# database section is needed to run the server at all, while the remaining
+# options can be omitted if the dry_run option is enabled.
+
+[general]
+# The driver to use for networking operations. This should be the name of a
+# module in ``haas.drivers``. You'll also need to set  corresponding options in
+# the driver specific section (i.e. ``[driver ${your_driver}]``).  Note that
+# either the ``null`` or ``null_vlan`` driver can be used in testing and
+# development to keep HaaS from trying to access a real switch.
+driver = null_vlan
+
+# How verbosely to log.  Log messages of the given severity or more will be
+# logged.  Options include: debug, info, warn/warning, error, critical/fatal.
+log_level = debug
+
+[headnode]
+# The trunk NIC on the host. This is the nic that the VMs will be bridged to
+# to gain access to their networks. See INSTALL.rst for more information.
+trunk_nic = eth0
+
+# Names of base headnode instances (as a comma separated list). These are
+# VM instances within libvirt, which should be powered off, that can be
+# cloned to create a headnode.
+base_imgs = img1, img2, img3, img4
+
+# The libvirt instance to connect to this *needs* to be a system instance for
+# the haas to work -- user sessions provide too little networking functionality
+# to support HaaS. If you're running the HaaS API Server on the same machine as
+# libvirt the value below is correct. While running it on a separate host should
+# be possible, it is untested.
+libvirt_endpoint = qemu:///system
+
+[client]
+# Options used by the ``haas`` command line tool on the client side.
+
+# The http endpoint that the command line tool should connect to. The server
+# doesn't use this; it must be configured separately. To double check that you
+# have the right value, make sure the API server is running, and execute::
+# 
+#   haas list_free_nodes
+#
+# from within the directory containing haas.cfg.
+#
+# The default below will be correct if the API Server was launched with the
+# ``haas serve`` command.
+endpoint = http://127.0.0.1:5000
+
+[database]
+# A SQLAlchemy database URI, specifying the database for the server to
+# connect to. At present, only sqlite is supported. The example below is a
+# relative path, which looks for the database in the current directory.
+uri = sqlite:///haas.db
+
+#[driver simple_vlan]
+# Driver specific settings for the ``simple_vlan`` driver.
+
+# A JSON object describing the switch. The specific fields are:
+# "switch" -- the type of switch. Right now, the only meaningful value is
+#             ``dell``, which indicates a Dell Powerconnect 5500 series switch.
+#
+# "ip" -- the ip address to connect to (via telnet, on the standard port 23).
+# "user" -- the user to log in as
+# "pass" -- the password to log in with
+#
+# You will *definitely* need to change this -- if you're unsure of the correct
+# values, please ask your local system administrator.
+#switch = {"switch": "dell", "ip": "192.168.0.1", "user": "foo", "pass": "bar"}
+
+[vlan]
+# VLANs available for use for allocation by the driver. This is a
+# comma-separated list of individual VLAN numbers or ranges, e.g::
+#
+#   vlans = 14,35-40, 100-900, 904, 65-85
+#
+# When running the deployment tests, a smaller number of VLANs may be
+# desirable, as it reduces running time substantially. A minumum of four VLANs
+# are required.
+vlans = 100-200
+
+[devel]
+# A handful of functions which touch external state (start vms, communicate with
+# swithces...) can be disabled for development purposes. When this is done, the
+# calls to the function will be logged, but not actually executed. To do this,
+# uncomment the following:
+#
+dry_run=True

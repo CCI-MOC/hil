@@ -9,6 +9,10 @@ any solution of their choosing.
 HaaS keeps track of available resources in a database, which a system
 administrator must populate initially. 
 
+This project is part of the larger Massachusetts Open Cloud, for a list
+of authors, description of the team, development workflow, etc. see
+``https://github.com/CCI-MOC/moc-public/blob/master/README.md``.
+
 **This includes information such as:**
 
 - What machines are available
@@ -44,21 +48,9 @@ Documentation
 * `using.rst <docs/USING.rst>`_ for details on using HaaS as a client 
 * `apidesc.md <docs/apidesc.md>`_ describes the API at a conceptual level (enough to use it via the ``haas`` command line tool)
 * `rest_api.md <docs/rest_api.md>`_ provides a detailed mapping of that API to http requests.
+* `HACKING.rst <HACKING.rst>`_ has information about running HaaS in a development environment, including flags that remove the need to have real hardware.
+* `examples <examples/>`_ contains examples of config files, templates for creating headnode VM images and a script to register nodes with HaaS.
 
-Please note that we're in the middle of transitioning our documentation
-from Markdown to reStructured Text, since the latter of which is
-preferred by the python and OpenStack communities. As such, the documentation is
-currently a mix of the two.
-
-Hacking
-===========
-
-This project is part of the larger Massachusetts Open Cloud, for a list
-of authors, description of the team, development workflow, etc. see:
-
-https://github.com/CCI-MOC/moc-public/blob/master/README.md
-
-The file ``HACKING.rst`` In this directory describes the technical details
-of running HaaS in development.
-
-There is also some assorted documentation in the `doc/` directory.
+Please note that the documentation is a mix of Markdown and reStructured Text,
+since the latter is preferred by the python and OpenStack communities and the
+former was what was originally used.
