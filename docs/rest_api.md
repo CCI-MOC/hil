@@ -1,6 +1,6 @@
 
-* `{foo=bar, baz=quux}` denotes a JSON object (in the body of the
-  request).
+* `{"foo": <bar>, "baz": <quux>}` denotes a JSON object (in the body of 
+  the request).
 
 Full Api spec:
 
@@ -16,28 +16,28 @@ Full Api spec:
 
     network_create <network_label> <proj_creator> <proj_access> <net_id>
     network_delete <network_label>
-    [PUT]    /network/<network_label> {creator=<proj_creator>,
-                                       access=<proj_access>,
-                                       net_id=<net_id>}
+    [PUT]    /network/<network_label> {"creator":<proj_creator>,
+                                       "access":<proj_access>,
+                                       "net_id":<net_id>}
     [DELETE] /network/<network_label>
 
     headnode_create <hn_label> <project_label> <base_img>
     headnode_delete <hn_label>
     headnode_start <hn_label>
     headnode_stop <hn_label>
-    [PUT]    /headnode/<hn_label> {project=<project_label>, base_img=<base_img>}
+    [PUT]    /headnode/<hn_label> {"project":<project_label>, "base_img":<base_img>}
     [DELETE] /headnode/<hn_label>
     [POST] /headnode/<hn_label>/start
     [POST] /headnode/<hn_label>/stop
 
     project_connect_node <project_label> <node_label>
     project_detach_node  <project_label> <node_label>
-    [POST] /project/<project_label>/connect_node {node=<node_label>}
-    [POST] /project/<project_label>/detach_node {node=<node_label>}
+    [POST] /project/<project_label>/connect_node {"node":<node_label>}
+    [POST] /project/<project_label>/detach_node {"node":<node_label>}
 
     node_connect_network <node_label> <nic_label> <network_label>
     node_detach_network  <node_label> <nic_label>
-    [POST] /node/<node_label>/nic/<nic_label>/connect_network {network=<network_label>}
+    [POST] /node/<node_label>/nic/<nic_label>/connect_network {"network":<network_label>}
     [POST] /node/<node_label>/nic/<nic_label>/detach_network
 
     node_power_cycle <node_label>
@@ -50,7 +50,7 @@ Full Api spec:
 
     headnode_connect_network <hn_label> <hnic_label> <network_label>
     headnode_detach_network  <hn_label> <hnic_label>
-    [POST] /headnode/<hn_label>/hnic/<hnic_label>/connect_network {network=<network_label>}
+    [POST] /headnode/<hn_label>/hnic/<hnic_label>/connect_network {"network":<network_label>}
     [POST] /headnode/<hn_label>/hnic/<hnic_label>/detach_network
 
     node_register <node_label>
@@ -60,7 +60,7 @@ Full Api spec:
 
     node_register_nic <node_label> <nic_label> <mac_addr>
     node_delete_nic   <node_label> <nic_label>
-    [PUT]    /node/<node_label>/nic/<nic_label> {mac_addr=<mac_addr>}
+    [PUT]    /node/<node_label>/nic/<nic_label> {"mac_addr":<mac_addr>}
     [DELETE] /node/<node_label>/nic/<nic_label>
 
     port_register  <port_no>
