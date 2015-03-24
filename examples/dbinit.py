@@ -32,9 +32,9 @@ def haas(*args):
 for node in range(N_NODES):
     ipmi_ip = "10.0.0." + str(node+1)
 
-    nic_port = "R10SW1::GI1/0/%d" % (n)
+    nic_port = "R10SW1::GI1/0/%d" % (node)
     nic_name = 'nic1'
-    haas('node_register', node, ipmi_ip, ipmi-user, ipmi_pass)
+    haas('node_register', node, ipmi_ip, ipmi_user, ipmi_pass)
     haas('node_register_nic', node, nic_name, 'FillThisInLater')
     haas('port_register', nic_port)
     haas('port_connect_nic', nic_port, node, nic_name)
