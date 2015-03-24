@@ -1,5 +1,6 @@
 
-* `{foo=bar, baz=quux}` denotes http form data (in the body of the request).
+* `{foo=bar, baz=quux}` denotes a JSON object (in the body of the
+  request).
 
 Full Api spec:
 
