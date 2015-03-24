@@ -7,7 +7,7 @@
 # ``haas.cfg.dev*``.
 #
 # The comments in this file assume a production/end-user deployment. Have a
-# look at haas.cfg.dev* for a development-oriented examples.
+# look at haas.cfg.dev* for development-oriented examples.
 #
 # the options under [client] are required for making client-side requests with
 # the cli tool (anything but haas serve). Switch specific options are mandatory

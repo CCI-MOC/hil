@@ -9,10 +9,6 @@ any solution of their choosing.
 HaaS keeps track of available resources in a database, which a system
 administrator must populate initially. 
 
-This project is part of the larger Massachusetts Open Cloud, for a list
-of authors, description of the team, development workflow, etc. see
-``https://github.com/CCI-MOC/moc-public/blob/master/README.md``.
-
 **This includes information such as:**
 
 - What machines are available
@@ -50,7 +46,17 @@ Documentation
 * `rest_api.md <docs/rest_api.md>`_ provides a detailed mapping of that API to http requests.
 * `HACKING.rst <HACKING.rst>`_ has information about running HaaS in a development environment, including flags that remove the need to have real hardware.
 * `examples <examples/>`_ contains examples of config files, templates for creating headnode VM images and a script to register nodes with HaaS.
+* `The docs directory <docs/>`_ contains assorted other documentation
 
 Please note that the documentation is a mix of Markdown and reStructured Text,
 since the latter is preferred by the python and OpenStack communities and the
 former was what was originally used.
+
+Mass Open Cloud
+===============
+
+This project is part of the larger `Massachusetts Open Cloud
+<http://www.massopencloud.org>`_. For a description of the team, development
+workflow, etc. see
+`<https://github.com/CCI-MOC/moc-public/blob/master/README.md>`_.
+

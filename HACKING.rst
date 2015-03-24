@@ -37,7 +37,8 @@ Configuring HaaS
 Now the ``haas`` executable should be in your path.  First, create a
 configuration file ``haas.cfg``. There are two examples for you to work from,
 ``examples/haas.cfg.dev-example``, which is oriented towards development, and
-``examples/haas.cfg.example`` which is more production oriented.
+``examples/haas.cfg.example`` which is more production oriented.  These config
+files are well commented; read them carefully. 
 
 HaaS can be configured to not perform state-changing operations on nodes,
 headnodes and networks, allowing developers to run and test parts of a haas
@@ -45,15 +46,13 @@ server without requiring physical hardware. To supress actual node and headnode
 operations, set ``dry_run = True`` in the ``[devel]`` section. For supressing
 actual network switch operations, use either the ``null`` or ``null_vlan``
 network driver by setting either ``driver = null`` or ``driver = null_vlan``,
-respectively, in the ``[general]`` section.  When using ``null_vlan``, one must
-also set ``vlans = X-Y`` in the ``[vlan]`` section, such as ``vlans =
-100-200``.
+respectively, in the ``[general]`` section.  When using ``null_vlan``, also set
+``vlans`` in the ``[vlan]`` section (for example ``vlans = 100-200``).
 
-These config files are well commented; read them carefully. Next initialize the
-database with the required tables, with ``haas init_db``. Run the server with
-``haas serve`` and ``haas serve_networks`` in separate windows.  Finally, see
-``haas help`` for the various API commands one can test.  Here is an example
-session, testing ``headnode_delete_hnic``::
+Next initialize the database with the required tables, with ``haas init_db``.
+Run the server with ``haas serve`` and ``haas serve_networks`` in separate
+windows.  Finally, see ``haas help`` for the various API commands one can test.
+Here is an example session, testing ``headnode_delete_hnic``::
 
   haas project_create proj
   haas headnode_create hn proj
