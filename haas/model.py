@@ -160,6 +160,7 @@ class Node(Model):
             logger.info('Nonzero exit status from ipmitool, args = %r', args)
         return status
 
+    @no_dry_run
     def power_cycle(self):
         """Reboot the node via ipmi.
 
