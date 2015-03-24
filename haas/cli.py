@@ -106,8 +106,13 @@ def serve():
 
 
 @cmd
-def serve_networks():
-    """Start the HaaS networking server"""
+def serve_networks(sleep_time=2):
+    """Start the HaaS networking server
+
+    Periodically attempts to execute network operations read from a journal.
+
+    sleep_time - amount of time to sleep after attempting to empty the journal
+    """
     from haas import model, deferred
     from time import sleep
     model.init_db()
@@ -116,7 +121,7 @@ def serve_networks():
         # loop.
         while deferred.apply_networking():
             pass
-        sleep(2)
+        sleep(sleep_time)
 
 @cmd
 def init_db():
