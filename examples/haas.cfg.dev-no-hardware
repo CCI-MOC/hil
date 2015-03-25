@@ -1,10 +1,10 @@
 # This is an example configuration file for HaaS developers.  It enables
 # debug output, points client operations to the default port used by "haas
 # serve" (5000), and utilizes a sqlite DB in the current directory.  It also
-# removes the need for real nodes by supressing node and headnode-oriented
-# non-DB actions like IPMI and headnode operations (by setting dry_run) as
-# well as supressing network operations by using the null_vlan driver. For a
-# configuration that uses real hardware, see ``haas.cfg.dev``.
+# removes the need for real hardware by supressing non-DB actions like IPMI
+# and headnode operations (via dry_run) as well as network operations
+# (by using the null_vlan driver). For a  configuration that uses real
+# hardware, see ``haas.cfg.dev``.
 #
 # The ``haas`` command will read its  configuration from a file called
 # ``haas.cfg``, in the current working directory. The ``haas.wsgi`` script
