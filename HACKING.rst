@@ -51,7 +51,7 @@ respectively, in the ``[general]`` section.  When using ``null_vlan``, also set
 
 Next initialize the database with the required tables, with ``haas init_db``.
 Run the server with ``haas serve`` and ``haas serve_networks`` in separate
-windows.  Finally, see ``haas help`` for the various API commands one can test.
+terminals.  Finally, ``haas help`` lists the various API commands one can use.
 Here is an example session, testing ``headnode_delete_hnic``::
 
   haas project_create proj
