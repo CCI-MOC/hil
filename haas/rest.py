@@ -198,8 +198,6 @@ def request_handler(request):
                      "response body: %r", f.__name__, response_body)
         return Response(response_body, status=200)
     except APIError as e:
-        # TODO: We're getting deprecation errors about the use of e.message. We
-        # should figure out what the right way to do this is.
         logger.debug('Invalid call to api function %s, raised exception: %r',
                      f.__name__, e)
         return e.response()
