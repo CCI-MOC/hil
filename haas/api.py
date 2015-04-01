@@ -22,7 +22,7 @@ import logging
 
 from haas import model
 from haas.config import cfg
-from moc.rest import APIError, rest_call
+from haas.rest import APIError, rest_call
 
 
 class NotFoundError(APIError):

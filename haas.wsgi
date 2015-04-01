@@ -4,4 +4,4 @@ from haas import config, model
 config.load('/etc/haas.cfg')
 config.configure_logging()
 model.init_db()
-from moc.rest import wsgi_handler as application
+from haas.rest import wsgi_handler as application
