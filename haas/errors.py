@@ -56,7 +56,8 @@ class BlockedError(APIError):
 class IllegalStateError(APIError):
     """The request is invalid due to the state of the system.
 
-    The request might otherwise be perfectly valid.
+    The request might be perfectly valid in another context. For example,
+    trying to remove a nic from a running headnode might raise this error.
     """
     status_code = 409 # Conflict
 

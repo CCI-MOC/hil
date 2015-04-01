@@ -336,7 +336,7 @@ def headnode_start(headnode):
     This actually boots up the headnode virtual machine. The VM is created
     within libvirt if needed. Once the VM has been started once, it is
     "frozen," and all other headnode-related api calls will fail (by raising
-    an IllegalStateException), with the exception of headnode_stop.
+    an IllegalStateError), with the exception of headnode_stop.
     """
     db = model.Session()
     headnode = _must_find(db, model.Headnode, headnode)
