@@ -54,7 +54,7 @@ class APIError(Exception):
 class ServerError(Exception):
     """An error occurred when trying to process the request.
 
-    This likely not the client's fault; as such the HTTP status is 500.
+    This is likely not the client's fault; as such the HTTP status is 500.
     The semantics are much the same as the corresponding HTTP error.
 
     In general, we do *not* want to report the details to the client,
