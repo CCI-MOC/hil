@@ -22,7 +22,7 @@ import logging
 
 from haas import model
 from haas.config import cfg
-from haas.rest import rest_call, ServerError
+from haas.rest import rest_call
 from haas.errors import *
 
 
@@ -186,7 +186,7 @@ def node_power_cycle(node):
     db = model.Session()
     node = _must_find(db, model.Node, node)
     if not node.power_cycle():
-        raise ServerError('Could not power cycle node %s' % node.label)
+        raise OBMError('Could not power cycle node %s' % node.label)
 
 
 @rest_call('DELETE', '/node/<node>')

@@ -17,7 +17,7 @@ This module defines several exceptions decending from the exception
 types in haas.rest, used for specific failures.
 """
 
-from haas.rest import APIError
+from haas.rest import APIError, ServerError
 
 
 class NotFoundError(APIError):
@@ -60,3 +60,6 @@ class IllegalStateError(APIError):
     """
     status_code = 409 # Conflict
 
+
+class OBMError(ServerError):
+    """An error occured communicating with the OBM for a node."""
