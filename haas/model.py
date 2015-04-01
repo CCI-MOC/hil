@@ -21,6 +21,7 @@ from subprocess import call, check_call, Popen, PIPE
 import subprocess
 from haas.config import cfg
 from haas.dev_support import no_dry_run
+from haas.errors import OBMError
 import importlib
 import uuid
 import xml.etree.ElementTree
@@ -173,7 +174,9 @@ class Node(Model):
             # just turn it on in that case. This way we can save power by
             # turning things off without breaking the HaaS.
             status = self._ipmitool(['chassis', 'power', 'on'])
-        return status == 0
+            if status != 0:
+                # If it still doesn't work, then it's a real error:
+                raise OBMError('Could not power cycle node %s' % node.label)
 
     @no_dry_run
     def start_console(self):

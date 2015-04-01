@@ -184,8 +184,7 @@ def node_register(node, ipmi_host, ipmi_user, ipmi_pass):
 def node_power_cycle(node):
     db = model.Session()
     node = _must_find(db, model.Node, node)
-    if not node.power_cycle():
-        raise OBMError('Could not power cycle node %s' % node.label)
+    node.power_cycle()
 
 
 @rest_call('DELETE', '/node/<node>')
