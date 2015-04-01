@@ -18,7 +18,6 @@ TODO: Spec out and document what sanitization is required.
 """
 import importlib
 import json
-import logging
 
 from haas import model
 from haas.config import cfg
