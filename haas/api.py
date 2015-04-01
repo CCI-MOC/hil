@@ -22,57 +22,8 @@ import logging
 
 from haas import model
 from haas.config import cfg
-from haas.rest import APIError, rest_call
-
-
-class NotFoundError(APIError):
-    """An exception indicating that a given resource does not exist."""
-    status_code = 404 # Not Found
-
-
-class DuplicateError(APIError):
-    """An exception indicating that a given resource already exists."""
-    status_code = 409 # Conflict
-
-
-class AllocationError(APIError):
-    """An exception indicating resource exhaustion."""
-
-
-class BadArgumentError(APIError):
-    """An exception indicating an invalid request on the part of the user."""
-
-
-class ProjectMismatchError(APIError):
-    """An exception indicating that the resources given don't belong to the
-    same project.
-    """
-    status_code = 409 # Conflict
-
-
-class BlockedError(APIError):
-    """An exception indicating that the requested action cannot happen until
-    some other change.  For example, deletion is blocked until the components
-    are deleted, and possibly until the dirty flag is cleared as well.
-    """
-    status_code = 409 # Conflict
-
-
-class IllegalStateError(APIError):
-    """The request is invalid due to the state of the system.
-
-    The request might otherwise be perfectly valid.
-    """
-    status_code = 409 # Conflict
-
-
-class ServerError(APIError):
-    """An error occurred when trying to process the request.
-
-    This likely not the client's fault; as such the HTTP status is 500.
-    The semantics are much the same as the corresponding HTTP error.
-    """
-    status_code = 500
+from haas.rest import rest_call
+from haas.errors import *
 
 
 @rest_call('PUT', '/user/<user>')
