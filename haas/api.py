@@ -22,7 +22,7 @@ import logging
 
 from haas import model
 from haas.config import cfg
-from haas.rest import rest_call
+from haas.rest import rest_call, ServerError
 from haas.errors import *
 
 

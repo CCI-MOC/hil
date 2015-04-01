@@ -13,8 +13,8 @@
 # governing permissions and limitations under the License.
 """Exceptions thrown by HaaS api calls.
 
-This module defines several exceptions decending from haas.rest.APIError,
-used for specific failures.
+This module defines several exceptions decending from the exception
+types in haas.rest, used for specific failures.
 """
 
 from haas.rest import APIError
@@ -60,11 +60,3 @@ class IllegalStateError(APIError):
     """
     status_code = 409 # Conflict
 
-
-class ServerError(APIError):
-    """An error occurred when trying to process the request.
-
-    This likely not the client's fault; as such the HTTP status is 500.
-    The semantics are much the same as the corresponding HTTP error.
-    """
-    status_code = 500
