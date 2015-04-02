@@ -12,8 +12,8 @@
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
 
-"""This module contains a set of tools that are used by specific switch 
-drivers.  Functions contained within this module are generic, and are 
+"""This module contains a set of tools that are used by specific switch
+drivers.  Functions contained within this module are generic, and are
 not specific to any one switch."""
 
 import logging
