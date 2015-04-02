@@ -97,3 +97,10 @@ Full Api spec:
             "nics": ["ipmi", "pxe", "public", ...]
         }
     [GET] /headnode/<headnode>
+
+    show_network <network> ->
+        {
+            "name": "my-net",
+            "access": "my-proj", # optional; absence means a public network.
+            "creator": "my-proj" # either a project or "admin"
+        }

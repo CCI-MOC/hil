@@ -98,6 +98,7 @@ one exception is NICs, where the label is unique only on a per-node basis.
     list_project_networks      <project>
     show_node                  <node>
     show_headnode              <headnode>
+    show_network               <network>
 
 
 ## Authorization-related operations:
