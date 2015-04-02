@@ -40,3 +40,26 @@ Here are the illegal ones:
 
 - (project, all, yes): In the same vein, user-created public networks are also
       not allowed.
+
+
+# Channels
+
+In some contexts it's possible to connect more than one logical network
+to a physical interface, and somehow "tag" the traffic, such that the
+host can manage these separate networks. One example of this is 802.1q
+VLANs.
+
+The common abstraction for this is called a "channel." A channel is a
+driver-specific identifier which describes how traffic will be tagged on
+the network. It is used by HaaS in the following ways:
+
+- The `node_connect_network` api call accepts an optional channel argument,
+  which determines how the network will be associated with the given
+  port. The headnode equivalents may support this eventually, but do not
+  as of yet.
+
+  If this argument is left out, a sensible default will be chosen.
+
+- The output `show_network` api call contains a list of valid channels
+  for the network. The argument to `node_connect_network` must be one
+  of these values.

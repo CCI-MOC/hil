@@ -34,10 +34,47 @@ external state may need to do some difficult work to make this work.
 
 
 def apply_networking(net_map):
-    """Takes in a dictionary, mapping port IDs to network IDs.
+    """Apply a partial network specification.
 
-    For each key-value pair (port, network) in the dictionary, set that port
-    to access that network.  If network is None, set it to access nothing.
+    Takes in a dictionary whose keys are port idenifiers, and whose values
+    are lists of of dictionaries with two keys:
+
+        * 'net_id', a network id to attach to the port,
+        * 'channel', the channel via which to attach it.
+
+    Each entry indicates that the port should be attached to exactly the
+    networks specified, on the channels specified. Any previously attached
+    networks not listed should be detached. Note however, that ports absent
+    from the dictionary entirely are not modified.
+
+    For example, the dictionary:
+
+        net_map == {
+            'port1': [
+                {
+                    'net_id': 'foo',
+                    'channel': 'bar',
+                },
+                {
+                    'net_id': 'baz',
+                    'channel': 'quux',
+                },
+            ],
+            'port2': [
+                {
+                    'net_id': 'spiderwebs',
+                    'channel': 'venom',
+                },
+            ],
+            'port3': []
+        }
+
+    specifies:
+        * port 'port1' should be attached to the networks 'foo' (on channel
+          'bar') and 'baz' (on channel 'quux')
+        * port 'port2' should be attached to the network 'spiderwebs' on
+          channel 'venom'
+        * port 'port3' should be detached from all networks.
     """
 
 def get_new_network_id(db):
@@ -51,6 +88,11 @@ def free_network_id(db, net_id):
     network.  Can be a no-op on some drivers.  Pass in the database
     connection, to make the freeing part of the current transaction.
     """
+
+
+def get_network_channels(db, net_id):
+    """Return a list of valid channels for the given network."""
+
 
 def init_db(create=False):
     """Called upon startup with 'create=False', and upon 'haas init_db' with
