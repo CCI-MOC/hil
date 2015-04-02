@@ -1335,7 +1335,7 @@ class TestQuery:
             'project': 'anvil-nextgen',
             'hnics': [
                 'eth0',
-        'wlan0',
+                'wlan0',
             ],
             'vncport': None
         }
