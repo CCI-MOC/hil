@@ -59,7 +59,12 @@ def free_network_id(db, net_id):
         return
     vlan.available = True
 
-    
+
+def get_network_channels(db, net_id):
+    vlan_num = int(net_id)
+    return ['native', vlan_num]
+
+
 def get_vlan_list():
     vlan_str = cfg.get('vlan', 'vlans')
     returnee = []
