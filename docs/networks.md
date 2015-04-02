@@ -60,6 +60,10 @@ the network. It is used by HaaS in the following ways:
 
   If this argument is left out, a sensible default will be chosen.
 
+- Similarly, `node_detach_network` allows the user to specify which
+  networks to detach (defaults to all). See `docs/rest_api.md`
+  for details.
+
 - The output `show_network` api call contains a list of valid channels
   for the network. The argument to `node_connect_network` must be one
   of these values.
