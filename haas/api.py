@@ -544,6 +544,33 @@ def network_delete(network):
     db.commit()
 
 
+@rest_call('GET', '/network/<network>')
+def show_network(network):
+    """Show details of a network.
+
+    Returns a JSON object representing a network.
+    The object will have at least the following fields:
+        * "name", the name/label of the network (string).
+        * "creator", the name of the project which created the network, or
+          "admin", if it was created by an administrator.
+    It may also have the fields:
+        * "access" -- if this is present, it is the name of the project which
+          has access to the network. Otherwise, the network is public.
+    """
+    db = model.Session()
+    network = _must_find(db, model.Network, network)
+    result = {
+        'name': network.label,
+    }
+    if network.creator is None:
+        result['creator'] = 'admin'
+    else:
+        result['creator'] = network.creator.label
+    if network.access is not None:
+        result['access'] = network.access.label
+    return json.dumps(result)
+
+
 @rest_call('PUT', '/switch/<switch>', schema=Schema({
     'type': basestring,
     Optional(object): object,

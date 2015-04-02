@@ -1331,6 +1331,51 @@ class TestQuery:
         assert result == [ 'base-headnode', 'img1', 'img2', 'img3', 'img4' ]
 
 
+class Test_show_network:
+    """Test the show_network api cal."""
+
+    def test_show_network_simple(self, db):
+        api.project_create('anvil-nextgen')
+        network_create_simple('spiderwebs', 'anvil-nextgen')
+
+        result = json.loads(api.show_network('spiderwebs'))
+        assert result == {
+            'name': 'spiderwebs',
+            'creator': 'anvil-nextgen',
+            'access': 'anvil-nextgen',
+        }
+
+    def test_show_network_provider(self, db):
+        api.project_create('anvil-nextgen')
+        api.network_create(
+            network='spiderwebs',
+            creator='admin',
+            access='anvil-nextgen',
+            net_id='tubes',
+        )
+
+        result = json.loads(api.show_network('spiderwebs'))
+        assert result == {
+            'name': 'spiderwebs',
+            'creator': 'admin',
+            'access': 'anvil-nextgen',
+        }
+
+    def test_show_network_public(self, db):
+        api.network_create(
+            network='spiderwebs',
+            creator='admin',
+            access='',
+            net_id='',
+        )
+
+        result = json.loads(api.show_network('spiderwebs'))
+        assert result == {
+            'name': 'spiderwebs',
+            'creator': 'admin',
+        }
+
+
 class TestFancyNetworkCreate:
     """Test creating network with advanced parameters.
 
