@@ -168,15 +168,15 @@ class Node(Model):
         Returns True if successful, False otherwise.
         """
         self._ipmitool(['chassis', 'bootdev', 'pxe'])
-        status = self._ipmitool(['chassis', 'power', 'cycle'])
-        if status != 0:
+        if self._ipmitool(['chassis', 'power', 'cycle']) == 0:
+            return
+        if self._ipmitool(['chassis', 'power', 'on']) == 0:
             # power cycle will fail if the machine isn't running, so let's
             # just turn it on in that case. This way we can save power by
             # turning things off without breaking the HaaS.
-            status = self._ipmitool(['chassis', 'power', 'on'])
-            if status != 0:
-                # If it still doesn't work, then it's a real error:
-                raise OBMError('Could not power cycle node %s' % node.label)
+            return
+        # If it still doesn't work, then it's a real error:
+        raise OBMError('Could not power cycle node %s' % node.label)
 
     @no_dry_run
     def start_console(self):
