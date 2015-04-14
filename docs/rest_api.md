@@ -2,12 +2,124 @@
 * `{"foo": <bar>, "baz": <quux>}` denotes a JSON object (in the body of 
   the request).
 
-Full Api spec:
+# Full Api spec:
 
-    user_create  <user_label> <password>
-    user_delete  <user_label>
-    [PUT]    /user/<user_label> {password=<password>}
-    [DELETE] /user/<user_label>
+## Users
+
+### user_create
+
+`PUT /user/<username>`
+
+Request body:
+
+    {
+        "password": <plaintext-password>
+    }
+
+Create a new user whose password is `<plaintext-password>`.
+
+Possible errors:
+
+* 409, if the user already exists
+
+### user_delete
+
+`DELETE /user/<username>`
+
+Delete the user whose username is `<username>`
+
+Possible errors:
+
+* 404, if the user does not exist
+
+## Networks
+
+### show_network
+
+`GET /network/<network>`
+
+View detailed information about `<network>`.
+
+The result contains the following information:
+
+* The name of the network
+* A description of legal channel identifiers for this network. This is a list
+  of channel identifiers, with possible wildcards. The format of these is
+  driver specific, see below.
+
+Response body (on success):
+
+    {
+        "name": <network>
+        "channels": <chanel-id-list>
+    }
+
+Possible errors:
+
+* 404, if the network does not exist.
+
+#### Channel Formats
+
+##### 802.1q VLAN based drivers
+
+Channel identifiers for the VLAN based drivers are one of:
+
+* `vlan/native`, to attach the network as the native (untagged) VLAN
+* `vlan/<vlan_id>` where `<vlan_id>` is a VLAN id number. This attaches
+   the network in tagged, mode, with the given VLAN id.
+
+Additionally, the `show_networks` api call may return the channel identifier
+`vlan/*`, which indicates that any VLAN-based channel id may be used.
+
+### node_connect_network
+
+`POST /node/<node>/nic/<nic>/connect_network`
+
+Request body:
+
+    {
+        "network": <network>,
+        "channel": <channel> (Optional)
+    }
+
+Connect the network named `<network>` to `<nic>` on `<channel>`.
+
+`<channel>` should be a legal channel identifier specified by the output 
+of `show_network`, above. If `<channel>` is omitted, the driver will choose
+a default, typically some form of "untagged."
+
+Possible errors:
+
+* 409, if:
+  * The current project does not control `<node>`.
+  * The current project does not have access to `<network>`.
+  * There is already a pending network operation on `<nic>`.
+  * `<network>` is already attached to `<nic>` (possibly on a different channel).
+  * The channel identifier is not legal for this network.
+
+### node_detach_network
+
+`POST /node/<node>/nic/<nic>/detach_network`
+
+Request body:
+
+    {
+        "network": <network>
+    }
+
+Detach `<network>` from `<nic>`.
+
+Possible Errors:
+
+* 409, if:
+  * The current project does not control `<node>`.
+  * There is already a pending network operation on `<nic>`.
+  * `<network>` is not attached to `<nic>`.
+
+# TODO
+
+These api calls still need to be documented in detail, but the below 
+provides a summary:
 
     project_create <project_label>
     project_delete <project_label>
@@ -34,11 +146,6 @@ Full Api spec:
     project_detach_node  <project_label> <node_label>
     [POST] /project/<project_label>/connect_node {"node":<node_label>}
     [POST] /project/<project_label>/detach_node {"node":<node_label>}
-
-    node_connect_network <node_label> <nic_label> <network_label>
-    node_detach_network  <node_label> <nic_label>
-    [POST] /node/<node_label>/nic/<nic_label>/connect_network {"network":<network_label>}
-    [POST] /node/<node_label>/nic/<nic_label>/detach_network
 
     node_power_cycle <node_label>
     [POST] /node/<node_label>/power_cycle
@@ -176,10 +283,3 @@ Possible Errors:
             "nics": ["ipmi", "pxe", "public", ...]
         }
     [GET] /headnode/<headnode>
-
-    show_network <network> ->
-        {
-            "name": "my-net",
-            "access": "my-proj", # optional; absence means a public network.
-            "creator": "my-proj" # either a project or "admin"
-        }
