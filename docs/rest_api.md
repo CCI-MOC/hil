@@ -71,6 +71,9 @@ Channel identifiers for the VLAN based drivers are one of:
 Additionally, the `show_networks` api call may return the channel identifier
 `vlan/*`, which indicates that any VLAN-based channel id may be used.
 
+Where documentation specifies that the network driver should choose a
+default channel, the VLAN drivers choose `vlan/native`.
+
 ### node_connect_network
 
 `POST /node/<node>/nic/<nic>/connect_network`
