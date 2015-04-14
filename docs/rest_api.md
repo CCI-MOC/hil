@@ -91,6 +91,12 @@ Connect the network named `<network>` to `<nic>` on `<channel>`.
 of `show_network`, above. If `<channel>` is omitted, the driver will choose
 a default, which should be some form of "untagged."
 
+Networks are connected and detached asynchronously. If successful, this 
+API call returns a status code of 202 Accepted, and queues the network 
+operation to be preformed. Each nic may have no more than one pending 
+network operation; an attempt to queue a second action will result in an 
+error.
+
 Possible errors:
 
 * 409, if:
@@ -111,6 +117,12 @@ Request body:
     }
 
 Detach `<network>` from `<nic>`.
+
+Networks are connected and detached asynchronously. If successful, this 
+API call returns a status code of 202 Accepted, and queues the network 
+operation to be preformed. Each nic may have no more than one pending 
+network operation; an attempt to queue a second action will result in an 
+error.
 
 Possible Errors:
 
