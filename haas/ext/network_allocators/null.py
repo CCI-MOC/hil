@@ -13,7 +13,8 @@
 # governing permissions and limitations under the License.
 """A null network allocator.  Network IDs are random and arbitrary.
 
-Applying the network state does nothing. For unit testing purposes.
+A null switch driver.  Network IDs are random and arbitrary.  Applying the
+network state does nothing. "null" is the only channel id.
 """
 
 import uuid
@@ -33,6 +34,15 @@ class NullNetworkAllocator(NetworkAllocator):
 
     def populate(self, db):
         pass
+
+    def legal_channels_for(db, net_id):
+        return ["null"]
+
+    def is_legal_channel_for(db, channel_id, net_id):
+        return channel_id == "null"
+
+    def get_default_channel(db):
+        return "null"
 
 
 def setup(*args, **kwargs):

@@ -1,4 +1,4 @@
-# Copyright 2013-2014 Massachusetts Open Cloud Contributors
+# Copyright 2013-2015 Massachusetts Open Cloud Contributors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the
@@ -34,10 +34,11 @@ external state may need to do some difficult work to make this work.
 
 
 def apply_networking(net_map):
-    """Takes in a dictionary, mapping port IDs to network IDs.
+    """Takes in a dictionary, mapping port IDs to network ID, channel pairs.
 
-    For each key-value pair (port, network) in the dictionary, set that port
-    to access that network.  If network is None, set it to access nothing.
+    For each element (port, (network, channel)) in the dictionary, attach that
+    port to the given network in the given channel.  If channel is None, disable
+    that channel on that port.
     """
 
 def get_new_network_id(db):
@@ -51,6 +52,7 @@ def free_network_id(db, net_id):
     network.  Can be a no-op on some drivers.  Pass in the database
     connection, to make the freeing part of the current transaction.
     """
+
 
 def init_db(create=False):
     """Called upon startup with 'create=False', and upon 'haas init_db' with

@@ -49,6 +49,15 @@ class VlanAllocator(NetworkAllocator):
             db.add(Vlan(vlan))
         db.commit()
 
+    def legal_channels_for(self, db, net_id):
+        return ["vlan/native"]
+
+    def is_legal_channel_for(self, db, channel_id, net_id):
+        return channel_id == "vlan/native"
+
+    def get_default_channel(self, db):
+        return "vlan/native"
+
 
 class Vlan(AnonModel):
     """A VLAN for the Dell switch

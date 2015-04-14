@@ -46,6 +46,29 @@ class NetworkAllocator(object):
         This is invoked once when the haas database is first initialized.
         """
 
+    @abstractmethod
+    def legal_channels_for(self, db, net_id):
+        """Returns a list of legal channel specifications for ``net_id``.
+
+        Note that this is not necessarily a list of each possible channel id;
+        it may include wildcards. A consumer of the allocator should
+        invoke ``is_legal_channel_for`` to check if a given identifier is legal.
+
+        See ``docs/rest_api.md`` for details.
+        """
+
+    @abstractmethod
+    def is_legal_channel_for(self, db, channel_id, net_id):
+        """Returns True if ``channel_id`` is legal for ``net_id``, False otherwise.
+
+        ``db`` is a database session which the allocator may use if desired.
+        """
+
+    @abstractmethod
+    def get_default_channel(self, db):
+        """Return the "default" channel which is used if a channel is unspecified."""
+
+
 _network_allocator = None
 
 

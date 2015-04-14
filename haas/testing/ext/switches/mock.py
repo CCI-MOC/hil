@@ -54,7 +54,12 @@ class MockSwitch(Switch):
             LOCAL_STATE[self.label] = {}
 
         for port in net_map:
-            LOCAL_STATE[self.label][port] = net_map[port]
+            channel = net_map[port]['channel']
+            network = net_map[port]['network']
+            if channel is None:
+                del LOCAL_STATE[self.label][port][network]
+            else:
+                LOCAL_STATE[self.label][port][network] = channel
 
     def disconnect(self):
         pass

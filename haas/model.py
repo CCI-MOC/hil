@@ -329,7 +329,10 @@ class Switch(Model):
                 '''Apply the changes specified in ``net_map`` to the switch.
 
                 ``net_map`` must be a dictionary mapping port labels (strings)
-                to network identifiers.
+                to (network identifier, channel identifier) pairs. For each
+                pair, if the channel identifier is ``None``, the switch should
+                detach the given network from the port. Otherwise, the network
+                should be attached on the specified channel.
                 '''
 
             def disconnect(self):
