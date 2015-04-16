@@ -306,6 +306,7 @@ def node_detach_network(node, nic, network):
     """
     db = model.Session()
     node = _must_find(db, model.Node, node)
+    network = _must_find(db, model.Network, network)
     nic = _must_find_n(db, node, model.Nic, nic)
 
     if not node.project:
