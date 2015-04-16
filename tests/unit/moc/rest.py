@@ -177,7 +177,7 @@ class TestBodyArgs(HttpEquivalenceTest, HttpTest):
 
 
 class TestRestCallSchema(HttpEquivalenceTest, HttpTest):
-    """Test that an alternate schema is used ifone is provided to rest_call."""
+    """Test that an alternate schema is used if one is provided to rest_call."""
 
     def setUp(self):
         HttpTest.setUp(self)
