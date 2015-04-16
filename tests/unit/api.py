@@ -473,7 +473,8 @@ class TestNodeConnectDetachNetwork:
         api.node_connect_network('node-99', '99-eth0', 'hammernet') # added
         deferred.apply_networking() # added
 
-        api.node_connect_network('node-99', '99-eth0', 'hammernet')
+        with pytest.raises(api.BlockedError):
+            api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
     def test_node_connect_network_already_attached_differently(self, db):
         api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
@@ -485,7 +486,8 @@ class TestNodeConnectDetachNetwork:
         api.node_connect_network('node-99', '99-eth0', 'hammernet') # added
         deferred.apply_networking() # added
 
-        api.node_connect_network('node-99', '99-eth0', 'hammernet2')
+        with pytest.raises(api.BlockedError):
+            api.node_connect_network('node-99', '99-eth0', 'hammernet2')
 
 
     def test_node_detach_network_success(self, db):
@@ -512,7 +514,8 @@ class TestNodeConnectDetachNetwork:
         network_create_simple('hammernet', 'anvil-nextgen')
 #        api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
-        api.node_detach_network('node-99', '99-eth0', 'hammernet')
+        with pytest.raises(api.BadArgumentError):
+            api.node_detach_network('node-99', '99-eth0', 'hammernet')
 
     def test_node_detach_network_wrong_node_in_project(self, db):
         api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
