@@ -290,7 +290,7 @@ class TestProjectConnectDetachNode:
         network_create_simple('hammernet', 'anvil-nextgen')
         api.node_connect_network('node-99', 'eth0', 'hammernet')
         deferred.apply_networking()
-        api.node_detach_network('node-99', 'eth0')
+        api.node_detach_network('node-99', 'eth0', 'hammernet')
         deferred.apply_networking()
 
         api.project_detach_node('anvil-nextgen', 'node-99')
@@ -497,7 +497,7 @@ class TestNodeConnectDetachNetwork:
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
         deferred.apply_networking() # added
 
-        api.node_detach_network('node-99', '99-eth0')
+        api.node_detach_network('node-99', '99-eth0', 'hammernet')
         deferred.apply_networking()
         network = api._must_find(db, model.Network, 'hammernet')
         nic = api._must_find(db, model.Nic, '99-eth0')
@@ -512,7 +512,7 @@ class TestNodeConnectDetachNetwork:
         network_create_simple('hammernet', 'anvil-nextgen')
 #        api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
-        api.node_detach_network('node-99', '99-eth0')
+        api.node_detach_network('node-99', '99-eth0', 'hammernet')
 
     def test_node_detach_network_wrong_node_in_project(self, db):
         api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
@@ -525,7 +525,7 @@ class TestNodeConnectDetachNetwork:
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
         with pytest.raises(api.NotFoundError):
-            api.node_detach_network('node-98', '99-eth0') # changed
+            api.node_detach_network('node-98', '99-eth0', 'hammernet') # changed
 
     def test_node_detach_network_wrong_node_not_in_project(self, db):
         api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
@@ -537,7 +537,7 @@ class TestNodeConnectDetachNetwork:
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
         with pytest.raises(api.NotFoundError):
-            api.node_detach_network('node-98', '99-eth0') # changed
+            api.node_detach_network('node-98', '99-eth0', 'hammernet') # changed
 
     def test_node_detach_network_no_such_node(self, db):
         api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
@@ -548,7 +548,7 @@ class TestNodeConnectDetachNetwork:
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
         with pytest.raises(api.NotFoundError):
-            api.node_detach_network('node-98', '99-eth0') # changed
+            api.node_detach_network('node-98', '99-eth0', 'hammernet') # changed
 
     def test_node_detach_network_no_such_nic(self, db):
         api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
@@ -559,18 +559,18 @@ class TestNodeConnectDetachNetwork:
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
         with pytest.raises(api.NotFoundError):
-            api.node_detach_network('node-99', '99-eth1') # changed
+            api.node_detach_network('node-99', '99-eth1', 'hammernet') # changed
 
     def test_node_detach_network_node_not_in_project(self, db):
         api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
         api.project_create('anvil-nextgen')
 #        api.project_connect_node('anvil-nextgen', 'node-99')
-#        network_create_simple('hammernet', 'anvil-nextgen')
+        network_create_simple('hammernet', 'anvil-nextgen')
 #        api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
         with pytest.raises(api.ProjectMismatchError):
-            api.node_detach_network('node-99', '99-eth0')
+            api.node_detach_network('node-99', '99-eth0', 'hammernet')
 
 
 class TestHeadnodeCreateDelete:
@@ -929,7 +929,7 @@ class TestNetworkCreateDelete:
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.node_connect_network('node-99', 'eth0', 'hammernet')
         deferred.apply_networking()
-        api.node_detach_network('node-99', 'eth0')
+        api.node_detach_network('node-99', 'eth0', 'hammernet')
         deferred.apply_networking()
         api.network_delete('hammernet')
 
