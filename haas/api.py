@@ -589,17 +589,10 @@ def show_network(network):
     allocator = get_network_allocator()
 
     network = _must_find(db, model.Network, network)
-    result = {
+    return json.dumps({
         'name': network.label,
         'channels': allocator.legal_channels_for(db, network.network_id),
-    }
-    if network.creator is None:
-        result['creator'] = 'admin'
-    else:
-        result['creator'] = network.creator.label
-    if network.access is not None:
-        result['access'] = network.access.label
-    return json.dumps(result)
+    })
 
 
 @rest_call('PUT', '/switch/<switch>', schema=Schema({
