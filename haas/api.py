@@ -561,12 +561,10 @@ def network_delete(network):
     db = model.Session()
     network = _must_find(db, model.Network, network)
 
-    if network.nics:
+    if len(network.attachments) != 0:
         raise BlockedError("Network still connected to nodes")
     if network.hnics:
         raise BlockedError("Network still connected to headnodes")
-    if network.scheduled_nics:
-        raise BlockedError("Network scheduled to become connected to nodes.")
     if network.allocated:
         get_network_allocator().free_network_id(db, network.network_id)
 

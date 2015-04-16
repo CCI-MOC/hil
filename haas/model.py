@@ -109,10 +109,6 @@ class Nic(Model):
     port_id   = Column(Integer,ForeignKey('port.id'))
     port      = relationship("Port",backref=backref('nic',uselist=False))
 
-    # The Network to which the nic is attached:
-    network_id = Column(Integer, ForeignKey('network.id'))
-    network   = relationship("Network", backref=backref('nics'))
-
     def __init__(self, node, label, mac_addr):
         self.owner     = node
         self.label     = label
