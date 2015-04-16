@@ -240,6 +240,12 @@ class TestValidationError(HttpTest):
         def api_call(foo, bar):
             pass
 
+        @rest.rest_call('PUT', '/custom-schema', schema=Schema({
+            "the_value": int,
+        }))
+        def custom_schema(the_value):
+            return repr(the_value)
+
     def _do_request(self, data):
         """Make a request to the endpoint with `data` in the body.
 
@@ -266,3 +272,8 @@ class TestValidationError(HttpTest):
                                                       'bar': 'bob',
                                                       'baz': 'eve'})),
                          rest.ValidationError)
+
+    def test_custom_schema(self):
+        assert _is_error(self._do_request(json.dumps({
+            'the_value': 'Not an integer!',
+        })), rest.ValidationError)
