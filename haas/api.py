@@ -135,11 +135,14 @@ def project_detach_node(project, node):
     node = _must_find(db, model.Node, node)
     if node not in project.nodes:
         raise NotFoundError("Node not in project")
+    num_attachments = db.query(model.NetworkAttachment)\
+        .filter(model.Nic.owner == node,
+                model.NetworkAttachment.nic_id == model.Nic.id).count()
+    if num_attachments != 0:
+        raise BlockedError("Node attached to a network")
     for nic in node.nics:
-        if nic.network is not None:
-            raise BlockedError("Node attached to a network")
         if nic.current_action is not None:
-            raise BlockedError("Node has a networking operation active on it.")
+            raise BlockedError("Node has pending network actions")
     node.stop_console()
     node.delete_console()
     project.nodes.remove(node)
