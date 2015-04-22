@@ -22,6 +22,8 @@ import sys
 from werkzeug.routing import Map
 from werkzeug.wrappers import Request
 
+from schema import Schema, Optional
+
 # We don't directly use this, but unless we import it, the coverage tool
 # complains and doesn't give us a report.
 import pytest
@@ -174,6 +176,28 @@ class TestBodyArgs(HttpEquivalenceTest, HttpTest):
                           data=json.dumps({'bar': 'bonnie', 'baz': 'clyde'}))
 
 
+class TestRestCallSchema(HttpEquivalenceTest, HttpTest):
+    """Test that an alternate schema is used if one is provided to rest_call."""
+
+    def setUp(self):
+        HttpTest.setUp(self)
+
+        @rest.rest_call('POST', '/product', schema=Schema({
+            'x': int,
+            'y': int,
+            Optional('z'): int,
+        }))
+        def product(x, y, z=1):
+            return json.dumps(x * y * z)
+
+    def api_call(self):
+        return json.dumps(14)
+
+    def request(self):
+        return wsgi_mkenv('POST', '/product',
+                            data=json.dumps({'x': 2, 'y': 7}))
+
+
 class TestEquiv_basic_APIError(HttpEquivalenceTest, HttpTest):
     """Basic test to make sure the APIError handling code is excercised."""
 
@@ -216,6 +240,12 @@ class TestValidationError(HttpTest):
         def api_call(foo, bar):
             pass
 
+        @rest.rest_call('PUT', '/custom-schema', schema=Schema({
+            "the_value": int,
+        }))
+        def custom_schema(the_value):
+            return repr(the_value)
+
     def _do_request(self, data):
         """Make a request to the endpoint with `data` in the body.
 
@@ -242,3 +272,8 @@ class TestValidationError(HttpTest):
                                                       'bar': 'bob',
                                                       'baz': 'eve'})),
                          rest.ValidationError)
+
+    def test_custom_schema(self):
+        assert _is_error(self._do_request(json.dumps({
+            'the_value': 'Not an integer!',
+        })), rest.ValidationError)

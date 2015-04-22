@@ -46,6 +46,8 @@ class APIError(Exception):
     status_code = 400  # Bad Request
 
     def response(self):
+        # TODO: We're getting deprecation errors about the use of self.message.
+        # We should figure out what the right way to do this is.
         return Response(json.dumps({'type': self.__class__.__name__,
                                     'msg': self.message,
                                     }), status=self.status_code)
@@ -67,7 +69,7 @@ class ValidationError(APIError):
     """An exception indicating that the body of the request was invalid."""
 
 
-def rest_call(method, path):
+def rest_call(method, path, schema=None):
     """A decorator which registers an http mapping to a python api call.
 
     `rest_call` makes no modifications to the function itself, though the
@@ -76,29 +78,39 @@ def rest_call(method, path):
 
     Arguments:
 
-    path - the url-path to map the function to. The format is the same as for
-           werkzeug's router (e.g. '/foo/<bar>/baz')
-    method - the HTTP method for the api call (e.g. POST, GET...)
+    * path - the url-path to map the function to. The format is the same as for
+            werkzeug's router (e.g. '/foo/<bar>/baz')
+    * method - the HTTP method for the api call (e.g. POST, GET...)
+    * schema (optional) - an instance of ``schema.Schema`` with which to
+            validate the body of the request. It should assume its argument is
+            a JSON object, represented as a python ``dict``.
+
+            If this is omitted, ``moc-rest`` will generate a schema which
+            verifies that all of the expected arguments exist and are strings
+            (see below).
+
+            ``schema`` MUST ensure that none of the arguments in ``path`` are
+            also found in the body of the request.
 
     Any parameters to the function not designated in the url will be pulled
     from a json object in the body of the requests.
 
-    For example, given:
+    For example, given::
 
         @rest_call('POST', '/some-url/<bar>/<baz>')
         def foo(bar, baz, quux):
             pass
 
-    When a POST request to /some-url/*/* occurs, `foo` will be invoked
-    with its bar and baz arguments pulled from the url, and its quux from
-    the body. So, the request:
+    When a POST request to ``/some-url/*/*`` occurs, ``foo`` will be invoked
+    with its ``bar`` and ``baz`` arguments pulled from the url, and its
+    ``quux`` from the body. So, the request::
 
         POST /some-url/alice/bob HTTP/1.1
         <headers...>
 
         {"quux": "eve"}
 
-    Will invoke `foo('alice', 'bob', 'eve')`.
+    Will invoke ``foo('alice', 'bob', 'eve')``.
 
     If the function raises an `APIError`, the error will be reported to the
     client with the exception's status_code attribute as the return status, and
@@ -111,10 +123,16 @@ def rest_call(method, path):
 
     as the body, i.e. `type` will be the type of the exception, and `msg`
     will be a human-readable error message.
+
+    Otherwise, the return value should be a string constituting the body
+    of the request.
     """
     def register(f):
-        schema = _make_schema_for(path, f)
-        _url_map.add(Rule(path, endpoint=(f, schema), methods=[method]))
+        if schema is None:
+            _schema = _make_schema_for(path, f)
+        else:
+            _schema = schema
+        _url_map.add(Rule(path, endpoint=(f, _schema), methods=[method]))
         return f
     return register
 
@@ -144,6 +162,18 @@ def _make_schema_for(path, func):
     return Schema(schema)
 
 
+def _format_arglist(*args, **kwargs):
+    """Format the argument list in a human readable way.
+
+    Should look pretty much like what you'd see in the source, e.g.
+    (1, "hello", foo=[1,2])
+    """
+    args = list(args)
+    for k, v in kwargs.iteritems():
+        args.append('%s=%r' % (k, v))
+    return ', '.join(args)
+
+
 def request_handler(request):
     """Handle an http request.
 
@@ -153,45 +183,46 @@ def request_handler(request):
     adapter = _url_map.bind_to_environ(request.environ)
     try:
         (f, schema), values = adapter.match()
-
-        if schema is not None:
-            # Parse the body as json and validate it with the schema:
+        if schema is None:
+            # no data needed from the body:
+            request_data = {}
+            # XXX: It would be nice to detect if the body is erroneously
+            # non-empty, which is probably indicitave of a bug in the client.
+        else:
             try:
+                # Parse the body as json and validate it with the schema:
                 request_handle = request.environ['wsgi.input']
                 request_json = request_handle.read(request.content_length)
-                request_dict = schema.validate(json.loads(request_json))
+                request_data = schema.validate(json.loads(request_json))
+                if not isinstance(request_data, dict):
+                    raise ValidationError("The body of the request is not a JSON object.")
             except ValueError:
-                # This error is raised in the try clause when parsing the
-                # JSON fails.
-                raise ValidationError("Unable to parse request.")
+                # Parsing the json failed.
+                raise ValidationError("The body of the request is not valid JSON.")
             except SchemaError:
-                # This error is raised in the try clause when validating the
-                # schema fails.
+                # Validating the schema failed.
+
+                # It would be nice to return a more helpful error message here, but
+                # it's a little awkward to extract one from the exception. You can
+                # easily get something like:
+                #
+                #   'hello' should be instance of <type 'int'>
+                #
+                # which, while fairly clear and helpful, is obviously talking about
+                # python types, which is gross.
                 raise ValidationError("The request body %r is not valid for "
-                                      "this request." % request_json)
-        else:
-            # Nothing is needed from the body. We set it to an empty dict:
-            request_dict = {}
-
-        # marshall the arguments to the api call from the request, and then
-        # call it. See the docstring for rest_call for more explanation.
-        argnames, _, _, _ = inspect.getargspec(f)
-        positional_args = []
-        for name in argnames:
-            if name in values:
-                positional_args.append(values[name])
-            elif name in request_dict:
-                positional_args.append(request_dict[name])
-            else:
-                logger.error("The required parameter %r to api call %s was "
-                             "missing from the request, but the schema didn't "
-                             "catch it! This is a bug!", name, f.__name__)
+                                        "this request." % request_json)
+        for k, v in values.iteritems():
+            if k in request_data:
+                logger.error("Argument %r to api function %r exists in both "
+                             "the URL path and the body of the request. "
+                             "This is a BUG in the schema for %r; the schema "
+                             "is responsible for eliminating this possibility.",
+                             k, f.__name__, f.__name__)
                 raise InternalServerError()
-
-        logger.debug('Recieved api call %s(%s)',
-                     f.__name__,
-                     ', '.join([repr(arg) for arg in positional_args]))
-        response_body = f(*positional_args)
+            request_data[k] = v
+        logger.debug('Recieved api call %s(%s)', f.__name__, _format_arglist(**request_data))
+        response_body = f(**request_data)
         if not response_body:
             response_body = ""
         logger.debug("completed call to api function %s, "
