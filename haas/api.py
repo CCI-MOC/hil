@@ -18,61 +18,11 @@ TODO: Spec out and document what sanitization is required.
 """
 import importlib
 import json
-import logging
 
 from haas import model
 from haas.config import cfg
-from moc.rest import APIError, rest_call
-
-
-class NotFoundError(APIError):
-    """An exception indicating that a given resource does not exist."""
-    status_code = 404 # Not Found
-
-
-class DuplicateError(APIError):
-    """An exception indicating that a given resource already exists."""
-    status_code = 409 # Conflict
-
-
-class AllocationError(APIError):
-    """An exception indicating resource exhaustion."""
-
-
-class BadArgumentError(APIError):
-    """An exception indicating an invalid request on the part of the user."""
-
-
-class ProjectMismatchError(APIError):
-    """An exception indicating that the resources given don't belong to the
-    same project.
-    """
-    status_code = 409 # Conflict
-
-
-class BlockedError(APIError):
-    """An exception indicating that the requested action cannot happen until
-    some other change.  For example, deletion is blocked until the components
-    are deleted, and possibly until the dirty flag is cleared as well.
-    """
-    status_code = 409 # Conflict
-
-
-class IllegalStateError(APIError):
-    """The request is invalid due to the state of the system.
-
-    The request might otherwise be perfectly valid.
-    """
-    status_code = 409 # Conflict
-
-
-class ServerError(APIError):
-    """An error occurred when trying to process the request.
-
-    This likely not the client's fault; as such the HTTP status is 500.
-    The semantics are much the same as the corresponding HTTP error.
-    """
-    status_code = 500
+from haas.rest import rest_call
+from haas.errors import *
 
 
 @rest_call('PUT', '/user/<user>')
@@ -234,8 +184,7 @@ def node_register(node, ipmi_host, ipmi_user, ipmi_pass):
 def node_power_cycle(node):
     db = model.Session()
     node = _must_find(db, model.Node, node)
-    if not node.power_cycle():
-        raise ServerError('Could not power cycle node %s' % node.label)
+    node.power_cycle()
 
 
 @rest_call('DELETE', '/node/<node>')
@@ -385,7 +334,7 @@ def headnode_start(headnode):
     This actually boots up the headnode virtual machine. The VM is created
     within libvirt if needed. Once the VM has been started once, it is
     "frozen," and all other headnode-related api calls will fail (by raising
-    an IllegalStateException), with the exception of headnode_stop.
+    an IllegalStateError), with the exception of headnode_stop.
     """
     db = model.Session()
     headnode = _must_find(db, model.Headnode, headnode)
