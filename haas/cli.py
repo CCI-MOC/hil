@@ -92,8 +92,7 @@ def serve():
         debug = False
     # We need to import api here so that the functions within it get registered
     # (via `rest_call`), though we don't use it directly:
-    from haas import model, api
-    from moc import rest
+    from haas import model, api, rest
     model.init_db()
     # Stop all orphan console logging processes on startup
     db = model.Session()

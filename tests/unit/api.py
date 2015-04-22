@@ -1406,3 +1406,15 @@ class TestFancyNetworkCreate:
                 assert network.allocated is allocated
             network = api._must_find(db, model.Network, 'hammernet' + project_api + '35')
             assert network.network_id == '35'
+
+
+class TestDryRun:
+    """Test that api calls using functions with @no_dry_run behave reasonably."""
+
+    @database_only
+    def test_node_power_cycle(self, db):
+        """Check that power-cycle behaves reasonably under @no_dry_run."""
+        api.project_create('anvil-nextgen')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.node_power_cycle('node-99')

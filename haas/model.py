@@ -21,6 +21,7 @@ from subprocess import call, check_call, Popen, PIPE
 import subprocess
 from haas.config import cfg
 from haas.dev_support import no_dry_run
+from haas.errors import OBMError
 import importlib
 import uuid
 import xml.etree.ElementTree
@@ -160,19 +161,22 @@ class Node(Model):
             logger.info('Nonzero exit status from ipmitool, args = %r', args)
         return status
 
+    @no_dry_run
     def power_cycle(self):
         """Reboot the node via ipmi.
 
         Returns True if successful, False otherwise.
         """
         self._ipmitool(['chassis', 'bootdev', 'pxe'])
-        status = self._ipmitool(['chassis', 'power', 'cycle'])
-        if status != 0:
+        if self._ipmitool(['chassis', 'power', 'cycle']) == 0:
+            return
+        if self._ipmitool(['chassis', 'power', 'on']) == 0:
             # power cycle will fail if the machine isn't running, so let's
             # just turn it on in that case. This way we can save power by
             # turning things off without breaking the HaaS.
-            status = self._ipmitool(['chassis', 'power', 'on'])
-        return status == 0
+            return
+        # If it still doesn't work, then it's a real error:
+        raise OBMError('Could not power cycle node %s' % node.label)
 
     @no_dry_run
     def start_console(self):

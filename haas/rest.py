@@ -15,8 +15,8 @@
 
 The function `wsgi_handler` is the wsgi entry point to the app.
 
-The decorator `rest_call` and the class `APIError` are the main things of
-interest in this module.
+The decorator `rest_call` and the classes `APIError` and `ServerError`
+are the main things of interest in this module.
 """
 import logging
 import inspect
@@ -49,6 +49,18 @@ class APIError(Exception):
         return Response(json.dumps({'type': self.__class__.__name__,
                                     'msg': self.message,
                                     }), status=self.status_code)
+
+
+class ServerError(Exception):
+    """An error occurred when trying to process the request.
+
+    This is likely not the client's fault; as such the HTTP status is 500.
+    The semantics are much the same as the corresponding HTTP error.
+
+    In general, we do *not* want to report the details to the client,
+    though we should log them for our own purposes.
+    """
+    status_code = 500
 
 
 class ValidationError(APIError):
@@ -185,12 +197,14 @@ def request_handler(request):
         logger.debug("completed call to api function %s, "
                      "response body: %r", f.__name__, response_body)
         return Response(response_body, status=200)
-    except APIError, e:
-        # TODO: We're getting deprecation errors about the use of e.message. We
-        # should figure out what the right way to do this is.
+    except APIError as e:
         logger.debug('Invalid call to api function %s, raised exception: %r',
                      f.__name__, e)
         return e.response()
+    except ServerError as e:
+        logger.error('Server-side failure in function %s, raised exception: %r',
+                     f.__name__, e)
+        return InternalServerError()
     except HTTPException, e:
         return e
 
