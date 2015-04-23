@@ -17,10 +17,11 @@ from haas import config
 from haas.config import cfg
 
 import inspect
+import json
+import os
+import requests
 import sys
 import urllib
-import requests
-import json
 
 from functools import wraps
 
@@ -66,7 +67,11 @@ def check_status_code(response):
 # TODO: This function's name is no longer very accurate.  As soon as it is
 # safe, we should change it to something more generic.
 def object_url(*args):
-    url = cfg.get('client', 'endpoint')
+    # Prefer an environmental variable for getting the endpoint if available.
+    url = os.environ.get('HAAS_ENDPOINT')
+    if url is None:
+        url = cfg.get('client', 'endpoint')
+
     for arg in args:
         url += '/' + urllib.quote(arg,'')
     return url

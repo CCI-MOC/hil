@@ -6,10 +6,21 @@ API are documented in `apidesc.md <apidesc.md>`_, and the mapping to HTTP is
 described in `rest_api.md <rest_api.md>`_.
 
 The ``haas`` command line tool is a wrapper around this API. Running ``haas
-help`` will display an overview of the available commands. Just as with ``haas
-serve_networks``, ``haas.cfg`` must be in your working directory. But here,
-only the ``client`` section is needed, so users without access to the global
-configuration file may use a more minimal one.
+help`` will display an overview of the available commands. To tell ``haas``  which HaaS instance to use, be sure to do one of:
+
+1. Set the ``HAAS_ENDPOINT`` environmental variable. An example (using
+   the default port used when running ``haas serve``) would be ``http://127.0.0.1:5000``
+2. Ensure that there is a ``haas.cfg`` in the current directory which contains
+   a valid ``client`` section. A valid config file in this case could look
+   like
+
+::
+
+   [client]
+   endpoint = http://127.0.0.1:5000
+
+* If both configuration methods are present, the ``HAAS_ENDPOINT`` environmental variable will take precedence over whatever is contained within ``haas.cfg``.
+* Though insignificant in some circumstances, the presence or absence of trailing slashes within the endpoint URL can cause issues in communicating with the HaaS server. For example, using ``http://127.0.0.1:5000`` vs ``http://127.0.0.1:5000/``.
 
 Deploying Machines
 ------------------
