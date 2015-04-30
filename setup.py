@@ -15,7 +15,7 @@
 from setuptools import setup, find_packages
 
 setup(name='haas',
-      version='0.1',
+      version='0.2rc1',
       url='https://github.com/CCI-MOC/haas',
       packages=find_packages(),
       scripts=['scripts/haas', 'scripts/create_bridges'],
