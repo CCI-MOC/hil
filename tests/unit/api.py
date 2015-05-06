@@ -1275,9 +1275,30 @@ class TestQuery:
         ]
 
     @database_only
+    def test_project_headnodes_exist(self, db):
+        api.project_create('anvil-nextgen')
+        api.headnode_create('hn0', 'anvil-nextgen', 'base-headnode')
+        api.headnode_create('hn1', 'anvil-nextgen', 'base-headnode')
+        api.headnode_create('hn2', 'anvil-nextgen', 'base-headnode')
+
+        result = json.loads(api.list_project_headnodes('anvil-nextgen'))
+        # For the lists to be equal, the ordering must be the same:
+        result.sort()
+        assert result == [
+            'hn0',
+            'hn1',
+            'hn2',
+        ]
+
+    @database_only
     def test_no_project_nodes(self, db):
         api.project_create('anvil-nextgen')
         assert json.loads(api.list_project_nodes('anvil-nextgen')) == []
+
+    @database_only
+    def test_no_project_headnodes(self, db):
+        api.project_create('anvil-nextgen')
+        assert json.loads(api.list_project_headnodes('anvil-nextgen')) == []
 
     @database_only
     def test_some_nodes_in_project(self, db):

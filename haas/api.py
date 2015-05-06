@@ -90,7 +90,7 @@ def project_delete(project):
         ### will not be an issue---instead, the network will be accessible by
         ### NO projects.
         raise BlockedError("Project can still access networks")
-    if project.headnode:
+    if project.headnodes:
         raise BlockedError("Project still has a headnode")
     db.delete(project)
     db.commit()
@@ -683,6 +683,21 @@ def show_node(nodename):
                   'macaddr': n.mac_addr,
                   } for n in node.nics],
     })
+
+
+@rest_call('GET', '/project/<project>/headnodes')
+def list_project_headnodes(project):
+    """List all headnodes belonging the given project.
+
+    Returns a JSON array of strings representing a list of headnodes.
+
+    Example:  '["headnode1", "headnode2", "headnode3"]'
+    """
+    db = model.Session()
+    project = _must_find(db, model.Project, project)
+    headnodes = project.headnodes
+    headnodes = [hn.label for hn in headnodes]
+    return json.dumps(headnodes)
 
 
 @rest_call('GET', '/headnode/<nodename>')

@@ -96,6 +96,7 @@ one exception is NICs, where the label is unique only on a per-node basis.
     list_free_nodes
     list_project_nodes         <project>
     list_project_networks      <project>
+    list_project_headnodes     <project>
     show_node                  <node>
     show_headnode              <headnode>
 
