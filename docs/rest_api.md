@@ -83,6 +83,13 @@ Full Api spec:
     list_project_nodes <project> -> ["<node1_name>", "<node2_name>", ...]
     [GET] /project/<project>/nodes
 
+    list_project_headnodes <project> -> [
+            "<headnode1_name>",
+            "<headnode2_name>",
+            ...
+        ]
+    [GET] /project/<project>/headnodes
+
     show_node <node> ->
         {
             "name": "box02",

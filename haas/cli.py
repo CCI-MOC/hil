@@ -340,6 +340,12 @@ def show_node(node):
     do_get(url)
 
 @cmd
+def list_project_headnodes(project):
+    """List all headnodes attached to a <project>"""
+    url = object_url('project', project, 'headnodes')
+    do_get(url)
+
+@cmd
 def show_headnode(headnode):
     """Display information about a <headnode>"""
     url = object_url('headnode', headnode)
