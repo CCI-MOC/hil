@@ -90,7 +90,7 @@ def project_delete(project):
         ### will not be an issue---instead, the network will be accessible by
         ### NO projects.
         raise BlockedError("Project can still access networks")
-    if project.headnode:
+    if project.headnodes:
         raise BlockedError("Project still has a headnode")
     db.delete(project)
     db.commit()
