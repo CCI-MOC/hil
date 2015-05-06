@@ -80,6 +80,9 @@ Full Api spec:
     list_free_nodes -> ["<node1_name>", "<node2_name>", ...]
     [GET] /free_nodes
 
+    list_projects -> ["project-runway", "manhattan-project"]
+    [GET] /projects
+
     list_project_nodes <project> -> ["<node1_name>", "<node2_name>", ...]
     [GET] /project/<project>/nodes
 

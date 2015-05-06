@@ -1184,6 +1184,19 @@ class TestQuery:
         ]
 
     @database_only
+    def test_list_projects(self, db):
+        assert json.loads(api.list_projects()) == []
+        api.project_create('anvil-nextgen')
+        assert json.loads(api.list_projects()) == ['anvil-nextgen']
+        api.project_create('runway')
+        api.project_create('manhattan')
+        assert sorted(json.loads(api.list_projects())) == [
+            'anvil-nextgen',
+            'manhattan',
+            'runway',
+        ]
+
+    @database_only
     def test_no_free_nodes(self, db):
         assert json.loads(api.list_free_nodes()) == []
 

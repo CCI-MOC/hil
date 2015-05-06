@@ -118,6 +118,8 @@ one exception is NICs, where the label is unique only on a per-node basis.
 
 # Administrative operations to describe physical configuration
 
+    list_projects
+
     node_register      <node_label>
     node_delete        <node_label>
     node_register_nic  <node_label> <nic_label> <mac_addr>

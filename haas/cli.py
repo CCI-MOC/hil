@@ -163,6 +163,12 @@ def user_delete(username):
     do_delete(url)
 
 @cmd
+def list_projects():
+    """List all projects"""
+    url = object_url('projects')
+    do_get(url)
+
+@cmd
 def project_add_user(project, user):
     """Add <user> to <project>"""
     url = object_url('project', project, 'add_user')
