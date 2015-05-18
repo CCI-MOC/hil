@@ -89,7 +89,7 @@ def do_delete(url):
     return check_status_code(requests.delete(url))
 
 @cmd
-def serve():
+def serve(port):
     """Start the HaaS API server"""
     if cfg.has_option('devel', 'debug'):
         debug = cfg.getboolean('devel', 'debug')
@@ -106,7 +106,7 @@ def serve():
         node.stop_console()
         node.delete_console()
     # Start server
-    rest.serve(debug=debug)
+    rest.serve(int(port), debug=debug)
 
 
 @cmd
