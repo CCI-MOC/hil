@@ -27,6 +27,8 @@ from functools import wraps
 
 command_dict = {}
 usage_dict = {}
+MIN_PORT_NUMBER = 0
+MAX_PORT_NUMBER = 65525
 
 def cmd(f):
     """A decorator for CLI commands.
@@ -90,6 +92,17 @@ def do_delete(url):
 
 @cmd
 def serve(port):
+    isNotValidPort = False
+    if port.isdigit():
+        port = int(port)
+        if (port < MIN_PORT_NUMBER) or (port > MAX_PORT_NUMBER):
+            isNotValidPort = True
+    else:
+	isNotValidPort = True
+
+    if isNotValidPort:
+	sys.exit('Error: Invaid port. Must be in the range 0-65535.')
+
     """Start the HaaS API server"""
     if cfg.has_option('devel', 'debug'):
         debug = cfg.getboolean('devel', 'debug')
@@ -106,7 +119,7 @@ def serve(port):
         node.stop_console()
         node.delete_console()
     # Start server
-    rest.serve(int(port), debug=debug)
+    rest.serve(port, debug=debug)
 
 
 @cmd
