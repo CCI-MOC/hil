@@ -247,14 +247,14 @@ class Network(Model):
     # The project to which the network belongs, or None if the network was
     # created by the administrator.  This field determines who can delete a
     # network.
-    creator_id = Column(String,ForeignKey('project.id'))
+    creator_id = Column(Integer,ForeignKey('project.id'))
     creator    = relationship("Project",
                               backref=backref('networks_created'),
                               foreign_keys=[creator_id])
     # The project that has access to the network, or None if the network is
     # public.  This field determines who can connect a node or headnode to a
     # network.
-    access_id = Column(String, ForeignKey('project.id'))
+    access_id = Column(Integer, ForeignKey('project.id'))
     access    = relationship("Project",
                              backref=backref('networks_access'),
                              foreign_keys=[access_id])
@@ -334,7 +334,7 @@ class Headnode(Model):
     """A virtual machine used to administer a project."""
 
     # The project to which this Headnode belongs:
-    project_id = Column(String, ForeignKey('project.id'), nullable=False)
+    project_id = Column(Integer, ForeignKey('project.id'), nullable=False)
     project = relationship("Project", backref=backref('headnodes', uselist=True))
 
     # True iff there are unapplied changes to the Headnode:
