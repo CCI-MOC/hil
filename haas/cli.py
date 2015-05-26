@@ -95,8 +95,10 @@ def do_delete(url):
 def serve(port):
     try:
         port = schema.And(schema.Use(int), lambda n: MIN_PORT_NUMBER <= n <= MAX_PORT_NUMBER).validate(port)
-    except:
+    except schema.SchemaError:
 	sys.exit('Error: Invaid port. Must be in the range 1-65535.')
+    except as e:
+	sys.exit('Unxpected Error!!! \n %s' % e)
 
     """Start the HaaS API server"""
     if cfg.has_option('devel', 'debug'):
