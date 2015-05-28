@@ -45,15 +45,31 @@ def releaseDB(db):
     pass
 
 
+def config_clear():
+    """Clear the contents of the current HaaS configuration"""
+    for section in cfg.sections():
+        cfg.remove_section(section)
+
+
+def config_set(config_dict):
+    """Set the configuration according to ``config_dict``.
+
+    ``config_dict`` should be a dictionary mapping section names (strings)
+    to dictionaries mapping option names within a section (again, strings)
+    to their values.
+    """
+    config_clear()
+    for section in config_dict.keys():
+        cfg.add_section(section)
+        for option in config_dict[section].keys():
+            cfg.set(section, option, config_dict[section][option])
+
+
 def clear_configuration(f):
     """A decorator which clears all HaaS configuration both before and after
     calling the function.  Used for tests which require a specific
     configuration setup.
     """
-
-    def config_clear():
-        for section in cfg.sections():
-            cfg.remove_section(section)
 
     @wraps(f)
     def wrapped(self):
@@ -72,19 +88,21 @@ def database_only(f):
     the network driver.
     """
 
-    def config_initialize():
-        # Use the 'null' backend for these tests
-        cfg.add_section('general')
-        cfg.set('general', 'driver', 'null')
-        cfg.add_section('devel')
-        cfg.set('devel', 'dry_run', True)
-        cfg.add_section('headnode')
-        cfg.set('headnode', 'base_imgs', 'base-headnode, img1, img2, img3, img4')
-
     @wraps(f)
     @clear_configuration
     def wrapped(self):
-        config_initialize()
+        config_set({
+            # Use the 'null' backend for these tests
+            'general': {
+                'driver': 'null',
+            },
+            'devel': {
+                'dry_run': True,
+            },
+            'headnode': {
+                'base_imgs': 'base-headnode, img1, img2, img3, img4',
+            },
+        })
         db = newDB()
         f(self, db)
         releaseDB(db)
