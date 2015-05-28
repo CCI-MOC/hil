@@ -72,9 +72,9 @@ def clear_configuration(f):
     """
 
     @wraps(f)
-    def wrapped(self):
+    def wrapped(*args, **kwargs):
         config_clear()
-        f(self)
+        f(*args, **kwargs)
         config_clear()
 
     return wrapped
