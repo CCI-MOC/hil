@@ -12,54 +12,25 @@
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
 
-"""This module contains a set of tools that are used by specific switch 
-drivers.  Functions contained within this module are generic, and are 
+"""This module contains a set of tools that are used by specific switch
+drivers.  Functions contained within this module are generic, and are
 not specific to any one switch."""
 
 import logging
 from sqlalchemy import *
 from haas.model import *
+from haas import network_pool
 
-
-class Vlan(Model):
-    """A VLAN for the Dell switch
-
-    This is used to track which vlan numbers are available; when a Network is
-    created, it must allocate a Vlan, to ensure that:
-
-    1. The VLAN number it is using is unique, and
-    2. The VLAN number is actually allocated to the HaaS; on some deployments we
-       may have specific vlan numbers that we are allowed to use.
-    """
-    vlan_no = Column(Integer, nullable=False, unique=True)
-    available = Column(Boolean, nullable=False)
-
-    def __init__(self, vlan_no):
-        self.vlan_no = vlan_no
-        self.available = True
-        # XXX: This is pretty gross; it arguably doesn't even make sense for
-        # Vlan to have a label, but we need to do some refactoring for that.
-        self.label = str(vlan_no)
 
 
 def get_new_network_id(db):
-    vlan = db.query(Vlan).filter_by(available = True).first()
-    if not vlan:
-        return None
-    vlan.available = False
-    returnee = str(vlan.vlan_no)
-    return returnee
+    return network_pool.network_pool.get_new_network_id(db)
 
 
 def free_network_id(db, net_id):
-    vlan = db.query(Vlan).filter_by(vlan_no = net_id).first()
-    if not vlan:
-        logger = logging.getLogger(__name__)
-        logger.error('vlan %s does not exist in database' % net_id)
-        return
-    vlan.available = True
+    return network_pool.network_pool.free_network_id(db, net_id)
 
-    
+
 def get_vlan_list():
     vlan_str = cfg.get('vlan', 'vlans')
     returnee = []
@@ -73,10 +44,15 @@ def get_vlan_list():
 
 
 def init_db(create=False):
+    # I'm importing this here so we don't unduly invalidate testing of the
+    # extension mechansim. This is a temporary hack, soon the rest of this
+    # module will be moved to the network pool extension we're importing.
+    # XXX
+    from haas.ext import vlan_pool
     if not create:
         return
     vlan_list = get_vlan_list()
     db = Session()
     for vlan in vlan_list:
-        db.add(Vlan(vlan))
+        db.add(vlan_pool.Vlan(vlan))
     db.commit()

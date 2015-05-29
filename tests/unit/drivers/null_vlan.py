@@ -20,7 +20,7 @@ from haas import model, api
 from haas.test_common import *
 import pytest
 
-from haas.config import cfg
+from haas.config import cfg, load_extensions
 
 from haas.drivers.null_vlan import *
 
@@ -31,17 +31,21 @@ def vlan_test(vlan_list):
     """
 
     def dec(f):
-        def config_initialize():
-            # Use the 'dell' backend for these tests
-            cfg.add_section('general')
-            cfg.set('general', 'driver', 'null_vlan')
-            cfg.add_section('vlan')
-            cfg.set('vlan', 'vlans', vlan_list)
-
         @wraps(f)
         @clear_configuration
         def wrapped(self):
-            config_initialize()
+            config_set({
+                'general': {
+                    'driver': 'null_vlan',
+                },
+                'vlan': {
+                    'vlans': vlan_list,
+                },
+                'extensions': {
+                    'haas.ext.vlan_pool': '',
+                },
+            })
+            load_extensions()
             db = newDB()
             f(self, db)
             releaseDB(db)
