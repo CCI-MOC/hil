@@ -16,10 +16,13 @@ from functools import wraps
 from haas.model import *
 # XXX: This function has an underscore so that we don't import it elsewhere.
 # But... we need it here.  Oops.
-from haas.model import _on_virt_uri
+#from haas.model import _on_virt_uri
 from haas.config import cfg
 from haas import api
 import json
+
+#SQLITE_TEST_URI = 'sqlite:///:memory:'
+#POSTGRES_TEST_URI = ''
 
 def network_create_simple(network, project):
     """Create a simple project-owned network.
@@ -37,13 +40,13 @@ def network_create_simple(network, project):
 
 def newDB():
     """Configures and returns an in-memory DB connection"""
-    init_db(create=True,uri="sqlite:///:memory:")
+    init_db(create=True, uri=cfg.get('testing', 'db_uri'))
     return Session()
 
 def releaseDB(db):
     """Do we need to do anything here to release resources?"""
-    pass
-
+    db.close_all()
+    drop_all_tables()
 
 def clear_configuration(f):
     """A decorator which clears all HaaS configuration both before and after
