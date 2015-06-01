@@ -3,7 +3,7 @@
 import logging
 
 from haas.network_pool import NetworkPool, set_network_pool
-from haas.model import Model, Session
+from haas.model import AnonModel, Session
 from haas.config import cfg
 from sqlalchemy import Column, Integer, Boolean
 
@@ -47,7 +47,7 @@ class VlanPool(NetworkPool):
         db.commit()
 
 
-class Vlan(Model):
+class Vlan(AnonModel):
     """A VLAN for the Dell switch
 
     This is used to track which vlan numbers are available; when a Network is
@@ -63,8 +63,5 @@ class Vlan(Model):
     def __init__(self, vlan_no):
         self.vlan_no = vlan_no
         self.available = True
-        # XXX: This is pretty gross; it arguably doesn't even make sense for
-        # Vlan to have a label, but we need to do some refactoring for that.
-        self.label = str(vlan_no)
 
 set_network_pool(VlanPool())
