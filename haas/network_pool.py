@@ -3,10 +3,11 @@
 This module supplies a pool of network identifiers to be used by API calls such
 as ``network_create``.
 
-The ``network_pool`` variable will be used to allocate pools; an extension must
-initialize that variable with an instance of ``NetworkPool``.
+For HaaS to operate correctly, a network pool must be registered by calling
+``set_network_pool`` exactly once -- typically this is done by an extension.
 """
 
+import sys
 from abc import ABCMeta, abstractmethod
 
 class NetworkPool(object):
@@ -35,4 +36,19 @@ class NetworkPool(object):
         connection, to make the freeing part of the current transaction.
         """
 
-network_pool = None
+    @abstractmethod
+    def populate(self, db):
+        """Populate the inital network pool
+
+        This is invoked once when the haas database is first initialized.
+        """
+
+_network_pool = None
+
+
+def set_network_pool(network_pool):
+    global _network_pool
+    if _network_pool is not None:
+        sys.exit("Fatal Error: set_network_pool() called twice. Make sure "
+                 "you don't have conflicting extensions loaded.")
+    _network_pool = network_pool

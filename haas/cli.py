@@ -115,6 +115,7 @@ def serve_networks():
     """Start the HaaS networking server"""
     from haas import model, deferred
     from time import sleep
+    config.load_extensions()
     model.init_db()
     while True:
         # Empty the journal until it's empty; then delay so we don't tight
@@ -127,6 +128,7 @@ def serve_networks():
 def init_db():
     """Initialize the database"""
     from haas import model
+    config.load_extensions()
     model.init_db(create=True)
 
 @cmd

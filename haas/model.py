@@ -40,7 +40,8 @@ user_projects = Table('user_projects', Base.metadata,
 def init_db(create=False, uri=None):
     """Start up the DB connection.
 
-    If `create` is True, this will generate the schema for the database.
+    If `create` is True, this will generate the schema for the database, and
+    perform initial population of tables.
 
     `uri` is the uri to use for the databse. If it is None, the uri from the
     config file will be used.
@@ -58,8 +59,8 @@ def init_db(create=False, uri=None):
     if create:
         Base.metadata.create_all(engine)
     Session.configure(bind=engine)
-
-    driver.init_db(create=create)
+    if create:
+        driver.init_db(create=create)
 
 
 class AnonModel(Base):

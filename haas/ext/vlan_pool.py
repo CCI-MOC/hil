@@ -2,10 +2,23 @@
 
 import logging
 
-import haas.network_pool
-from haas.network_pool import NetworkPool
-from haas.model import Model
+from haas.network_pool import NetworkPool, set_network_pool
+from haas.model import Model, Session
+from haas.config import cfg
 from sqlalchemy import Column, Integer, Boolean
+
+
+def _get_vlan_list():
+    vlan_str = cfg.get('vlan', 'vlans')
+    returnee = []
+    for r in vlan_str.split(","):
+        r = r.strip().split("-")
+        if len(r) == 1:
+            returnee.append(int(r[0]))
+        else:
+            returnee += range(int(r[0]), int(r[1])+1)
+    return returnee
+
 
 class VlanPool(NetworkPool):
     """A pool of VLANs. The interface is as specified in ``NetworkPool``."""
@@ -25,6 +38,13 @@ class VlanPool(NetworkPool):
             logger.error('vlan %s does not exist in database' % net_id)
             return
         vlan.available = True
+
+    def populate(self):
+        vlan_list = _get_vlan_list()
+        db = Session()
+        for vlan in vlan_list:
+            db.add(Vlan(vlan))
+        db.commit()
 
 
 class Vlan(Model):
@@ -47,4 +67,4 @@ class Vlan(Model):
         # Vlan to have a label, but we need to do some refactoring for that.
         self.label = str(vlan_no)
 
-haas.network_pool.network_pool = VlanPool()
+set_network_pool(VlanPool())

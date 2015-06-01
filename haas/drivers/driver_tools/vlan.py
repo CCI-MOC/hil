@@ -16,43 +16,17 @@
 drivers.  Functions contained within this module are generic, and are
 not specific to any one switch."""
 
-import logging
-from sqlalchemy import *
-from haas.model import *
 from haas import network_pool
 
 
-
 def get_new_network_id(db):
-    return network_pool.network_pool.get_new_network_id(db)
+    return network_pool._network_pool.get_new_network_id(db)
 
 
 def free_network_id(db, net_id):
-    return network_pool.network_pool.free_network_id(db, net_id)
-
-
-def get_vlan_list():
-    vlan_str = cfg.get('vlan', 'vlans')
-    returnee = []
-    for r in vlan_str.split(","):
-        r = r.strip().split("-")
-        if len(r) == 1:
-            returnee.append(int(r[0]))
-        else:
-            returnee += range(int(r[0]), int(r[1])+1)
-    return returnee
+    return network_pool._network_pool.free_network_id(db, net_id)
 
 
 def init_db(create=False):
-    # I'm importing this here so we don't unduly invalidate testing of the
-    # extension mechansim. This is a temporary hack, soon the rest of this
-    # module will be moved to the network pool extension we're importing.
-    # XXX
-    from haas.ext import vlan_pool
-    if not create:
-        return
-    vlan_list = get_vlan_list()
-    db = Session()
-    for vlan in vlan_list:
-        db.add(vlan_pool.Vlan(vlan))
-    db.commit()
+    if create:
+        network_pool._network_pool.populate()
