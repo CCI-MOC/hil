@@ -103,3 +103,10 @@ vlans = 100-200
 # uncomment the following:
 #
 dry_run=True
+
+[testing]
+# A SQLAlchemy database URI, specifying the database for the server to
+# connect to. At present, only sqlite is supported. The example below is a
+# relative path, which looks for the database in the current directory.
+#uri = sqlite:///haas.db
+uri = postgresql://postgres:postgres@localhost/postgres
