@@ -24,7 +24,7 @@ class VlanPool(NetworkPool):
     """A pool of VLANs. The interface is as specified in ``NetworkPool``."""
 
     def get_new_network_id(self, db):
-        vlan = db.query(Vlan).filter_by(available = True).first()
+        vlan = db.query(Vlan).filter_by(available=True).first()
         if not vlan:
             return None
         vlan.available = False
@@ -32,7 +32,7 @@ class VlanPool(NetworkPool):
         return returnee
 
     def free_network_id(self, db, net_id):
-        vlan = db.query(Vlan).filter_by(vlan_no = net_id).first()
+        vlan = db.query(Vlan).filter_by(vlan_no=net_id).first()
         if not vlan:
             logger = logging.getLogger(__name__)
             logger.error('vlan %s does not exist in database' % net_id)
