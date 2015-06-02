@@ -12,6 +12,7 @@
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
 
+# $(distro).mk defines IMG_IN and MIRROR.
 include $(distro).mk
 
 all: build

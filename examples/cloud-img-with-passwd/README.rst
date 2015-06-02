@@ -11,3 +11,7 @@ at the end) with the root password you supply.
 
 The image will still run cloud-init, but when it boots (which may take some
 time) you will be able to log in as root with the chosen password.
+
+This can easily be extended to use other distros' cloud images; copy one of the
+.mk files, adjust the values of MIRROR and IMG_IN, and creata a
+SHA256SUMS.distro for your distro.
