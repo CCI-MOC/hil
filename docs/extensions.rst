@@ -11,10 +11,11 @@ specifies a list of modules to import on startup, for example::
     haas.ext.driver.obm.ipmi =
     some_3rd_party.haas.drivers.obm.robotic_power_button_pusher
 
-Documentation on what parts of the HaaS codebase extensions are allowed to use
-will be forthcoming; for now the answer is "none," which is not terribly useful.
-
 The module must initialize itself as a side-effect of being imported. Most
-modules shouldn't need to do much here; The plan is for drivers (as an example),
-defining subclasses of the appropriate types will be enough for them to be
-picked up automatically.
+modules shouldn't need to do much here; HaaS core should facilitate making
+load-time work minimal.
+
+All parts of the HaaS source tree which extensions are allowed to access clearly
+document this. Here is list of relevant modules:
+
+* haas.network_allocator
