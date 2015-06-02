@@ -15,6 +15,7 @@
 """This module implements the HaaS command line tool."""
 from haas import config
 from haas.config import cfg
+from haas.network_allocator import get_network_allocator
 
 import inspect
 import json
@@ -99,6 +100,10 @@ def serve():
     # (via `rest_call`), though we don't use it directly:
     from haas import model, api, rest
     config.load_extensions()
+    if get_network_allocator() is None:
+        sys.exit("ERROR: No network allocator registered; make sure your "
+                 "haas.cfg loads an extension which provides the network "
+                 "allocator.")
     model.init_db()
     # Stop all orphan console logging processes on startup
     db = model.Session()

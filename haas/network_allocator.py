@@ -50,8 +50,19 @@ _network_allocator = None
 
 
 def set_network_allocator(network_allocator):
+    """Set the current network allocator to ``network_allocator``.
+
+    This function must be called exactly once, typically from the extension
+    providing the network allocator. If it is called more than once, or has
+    not been called by the time all extensions have been loaded, HaaS will
+    exit with an error.
+    """
     global _network_allocator
     if _network_allocator is not None:
         sys.exit("Fatal Error: set_network_allocator() called twice. Make sure "
                  "you don't have conflicting extensions loaded.")
     _network_allocator = network_allocator
+
+
+def get_network_allocator():
+    return _network_allocator
