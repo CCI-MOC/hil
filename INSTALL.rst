@@ -178,7 +178,7 @@ an ubuntu 14.04 or centos 7 disk image with a default root password. Read
 the README in that directory for more information.
 
 Once the disk image is built, copy ito the storage pool directory (here we
-assume it is caled ``base.img``)::
+assume it is called ``base.img``)::
 
   mv base.img /var/lib/libvirt/images/
 
