@@ -1,23 +1,26 @@
-"""Network allocation pool
+"""Network allocator
 
-This module supplies a pool of network identifiers to be used by API calls such
-as ``network_create``.
+This module supplies an interface for an allocator of network identifiers to
+be used by API calls such as ``network_create``.
 
-For HaaS to operate correctly, a network pool must be registered by calling
-``set_network_pool`` exactly once -- typically this is done by an extension.
+For HaaS to operate correctly, a network allocator must be registered by
+calling ``set_network_allocator`` exactly once -- typically this is done by an
+extension.
 """
 
 import sys
 from abc import ABCMeta, abstractmethod
 
-class NetworkPool(object):
-    """A network pool allocates network identifiers for internal use by HaaS.
+
+class NetworkAllocator(object):
+    """A network allocator allocates network identifiers for use by HaaS.
 
     A network identifier is an implementation-specific string that is treated
     as opaque by the HaaS core.
 
     This class is abstract; extensions should subclass it and provide the
-    specified methods, then assign an instance to ``network_pool``.
+    specified methods, then call ``set_network_allocator`` to register the
+    allocator.
     """
 
     __metaclass__ = ABCMeta
@@ -38,17 +41,17 @@ class NetworkPool(object):
 
     @abstractmethod
     def populate(self, db):
-        """Populate the inital network pool
+        """Populate the database with any initial state needed by the allocator.
 
         This is invoked once when the haas database is first initialized.
         """
 
-_network_pool = None
+_network_allocator = None
 
 
-def set_network_pool(network_pool):
-    global _network_pool
-    if _network_pool is not None:
-        sys.exit("Fatal Error: set_network_pool() called twice. Make sure "
+def set_network_allocator(network_allocator):
+    global _network_allocator
+    if _network_allocator is not None:
+        sys.exit("Fatal Error: set_network_allocator() called twice. Make sure "
                  "you don't have conflicting extensions loaded.")
-    _network_pool = network_pool
+    _network_allocator = network_allocator

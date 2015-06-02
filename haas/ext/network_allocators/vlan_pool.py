@@ -1,8 +1,8 @@
-"""VLAN based ``network_pool`` implementation."""
+"""VLAN based ``network_allocator`` implementation."""
 
 import logging
 
-from haas.network_pool import NetworkPool, set_network_pool
+from haas.network_allocator import NetworkAllocator, set_network_allocator
 from haas.model import AnonModel, Session
 from haas.config import cfg
 from sqlalchemy import Column, Integer, Boolean
@@ -20,8 +20,8 @@ def _get_vlan_list():
     return returnee
 
 
-class VlanPool(NetworkPool):
-    """A pool of VLANs. The interface is as specified in ``NetworkPool``."""
+class VlanAllocator(NetworkAllocator):
+    """A allocator of VLANs. The interface is as specified in ``NetworkAllocator``."""
 
     def get_new_network_id(self, db):
         vlan = db.query(Vlan).filter_by(available=True).first()
@@ -64,4 +64,4 @@ class Vlan(AnonModel):
         self.vlan_no = vlan_no
         self.available = True
 
-set_network_pool(VlanPool())
+set_network_allocator(VlanAllocator())

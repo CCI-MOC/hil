@@ -42,7 +42,7 @@ def vlan_test(vlan_list):
                     'vlans': vlan_list,
                 },
                 'extensions': {
-                    'haas.ext.vlan_pool': '',
+                    'haas.ext.network_allocators.vlan_pool': '',
                 },
             })
             load_extensions()
