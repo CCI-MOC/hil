@@ -22,6 +22,7 @@ import json
 from haas import model
 from haas.config import cfg
 from haas.rest import rest_call
+from haas.network_allocator import get_network_allocator
 from haas.errors import *
 
 
@@ -506,9 +507,7 @@ def network_create(network, creator, access, net_id):
 
     # Allocate net_id, if requested
     if net_id == "":
-        driver_name = cfg.get('general', 'driver')
-        driver = importlib.import_module('haas.drivers.' + driver_name)
-        net_id = driver.get_new_network_id(db)
+        net_id = get_network_allocator().get_new_network_id(db)
         if net_id is None:
             raise AllocationError('No more networks')
         allocated = True
@@ -536,9 +535,7 @@ def network_delete(network):
     if network.scheduled_nics:
         raise BlockedError("Network scheduled to become connected to nodes.")
     if network.allocated:
-        driver_name = cfg.get('general', 'driver')
-        driver = importlib.import_module('haas.drivers.' + driver_name)
-        driver.free_network_id(db, network.network_id)
+        get_network_allocator().free_network_id(db, network.network_id)
 
     db.delete(network)
     db.commit()
