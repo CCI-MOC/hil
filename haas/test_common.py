@@ -21,9 +21,6 @@ from haas.config import cfg
 from haas import api
 import json
 
-#SQLITE_TEST_URI = 'sqlite:///:memory:'
-#POSTGRES_TEST_URI = ''
-
 def network_create_simple(network, project):
     """Create a simple project-owned network.
 
@@ -40,7 +37,7 @@ def network_create_simple(network, project):
 
 def newDB():
     """Configures and returns an in-memory DB connection"""
-    init_db(create=True, uri=cfg.get('testing', 'db_uri'))
+    init_db(create=True, uri=cfg.get('database', 'postgres'))
     return Session()
 
 def releaseDB(db):
@@ -78,11 +75,16 @@ def database_only(f):
     def config_initialize():
         # Use the 'null' backend for these tests
         cfg.add_section('general')
-        cfg.set('general', 'driver', 'null')
+        cfg.set('general', 'driver', 'null_vlan')
         cfg.add_section('devel')
         cfg.set('devel', 'dry_run', True)
         cfg.add_section('headnode')
         cfg.set('headnode', 'base_imgs', 'base-headnode, img1, img2, img3, img4')
+	cfg.add_section('database')
+	cfg.set('database', 'sqlite', 'sqlite:///:memory:')
+	cfg.set('database', 'postgres', 'postgresql://postgres:postgres@localhost/postgres')
+	cfg.add_section('vlans')
+	cfg.set('vlan', 'vlan', '1001-1100')
 
     @wraps(f)
     @clear_configuration
