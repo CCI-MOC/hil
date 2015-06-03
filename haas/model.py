@@ -61,19 +61,6 @@ def init_db(create=False, uri=None):
 
     driver.init_db(create=create)
 
-def drop_all_tables(bind=None, tables=None, checkfirst=True):
-    """Drops all tables by default. 
-
-	bind – A Connectable used to access the database; if None, uses the 
-		existing bind on this MetaData, if any.
-	tables¶ – Optional list of Table objects, which is a subset of the total 
-		tables in the MetaData (others are ignored).
-	checkfirst – Defaults to True, only issue DROPs for tables confirmed to 
-		be present in the target database.
-    """
-
-    Base.metadata.drop_all(bind, tables, checkfirst)
-
 class AnonModel(Base):
     """A database model with a primary key, 'id', but no user-visible label
 

@@ -43,7 +43,9 @@ def newDB():
 def releaseDB(db):
     """Do we need to do anything here to release resources?"""
     db.close_all()
-    drop_all_tables()
+    # According to the documentation, we shouldn't need the Session().bind, but this
+    # breaks without it.
+    Base.metadata.drop_all(Session().bind)
 
 def clear_configuration(f):
     """A decorator which clears all HaaS configuration both before and after
@@ -82,9 +84,9 @@ def database_only(f):
         cfg.set('headnode', 'base_imgs', 'base-headnode, img1, img2, img3, img4')
 	cfg.add_section('database')
 	cfg.set('database', 'sqlite', 'sqlite:///:memory:')
-	cfg.set('database', 'postgres', 'postgresql://postgres:postgres@localhost/postgres')
-	cfg.add_section('vlans')
-	cfg.set('vlan', 'vlan', '1001-1100')
+	cfg.set('database', 'postgres', 'postgresql://postgres:postgres@localhost/haas')
+	cfg.add_section('vlan')
+	cfg.set('vlan', 'vlans', '1001-1100')
 
     @wraps(f)
     @clear_configuration
