@@ -69,6 +69,7 @@ endpoint = http://127.0.0.1:5000
 # connect to. At present, only sqlite is supported. The example below is a
 # relative path, which looks for the database in the current directory.
 uri = sqlite:///haas.db
+#uri = postgresql://<username>:<password>@<address>/<dbname>
 
 #[driver simple_vlan]
 # Driver specific settings for the ``simple_vlan`` driver.

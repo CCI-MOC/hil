@@ -63,6 +63,7 @@ endpoint = http://127.0.0.1
 #
 # The suggested value below assumes both will run as a system user
 # whose home directory is ``/var/lib/haas``.
+#uri = postgresql://<username>:<password>@<address>/<dbname>
 uri = sqlite:////var/lib/haas/haas.db
 
 [driver simple_vlan]
