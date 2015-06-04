@@ -43,6 +43,9 @@ def vlan_test(vlan_list):
                         '{"name":"1", "switch":"test"}, ' \
                         '{"name":"2", "switch":"test"}]')
             cfg.set('driver complex_vlan', 'trunk_ports', '[]')
+            cfg.add_section('database')
+            cfg.set('database', 'sqlite', 'sqlite:///:memory:')
+            cfg.set('database', 'postgres', 'postgresql://postgres:postgres@localhost/haas')
 
         @wraps(f)
         @clear_configuration

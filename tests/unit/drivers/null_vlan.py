@@ -37,6 +37,9 @@ def vlan_test(vlan_list):
             cfg.set('general', 'driver', 'null_vlan')
             cfg.add_section('vlan')
             cfg.set('vlan', 'vlans', vlan_list)
+            cfg.add_section('database')
+            cfg.set('database', 'sqlite', 'sqlite:///:memory:')
+            cfg.set('database', 'postgres', 'postgresql://postgres:postgres@localhost/haas')
 
         @wraps(f)
         @clear_configuration
