@@ -17,16 +17,17 @@ drivers.  Functions contained within this module are generic, and are
 not specific to any one switch."""
 
 from haas import network_allocator
+from haas.model import Session
 
 
 def get_new_network_id(db):
-    return network_allocator._network_allocator.get_new_network_id(db)
+    return network_allocator.get_network_allocator().get_new_network_id(db)
 
 
 def free_network_id(db, net_id):
-    return network_allocator._network_allocator.free_network_id(db, net_id)
+    return network_allocator.get_network_allocator().free_network_id(db, net_id)
 
 
 def init_db(create=False):
     if create:
-        network_allocator._network_allocator.populate()
+        network_allocator.get_network_allocator().populate(Session())

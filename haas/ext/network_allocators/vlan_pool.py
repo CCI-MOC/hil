@@ -39,9 +39,8 @@ class VlanAllocator(NetworkAllocator):
             return
         vlan.available = True
 
-    def populate(self):
+    def populate(self, db):
         vlan_list = _get_vlan_list()
-        db = Session()
         for vlan in vlan_list:
             db.add(Vlan(vlan))
         db.commit()
