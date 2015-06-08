@@ -66,3 +66,9 @@ def set_network_allocator(network_allocator):
 
 def get_network_allocator():
     return _network_allocator
+
+
+def reset():
+    """Reset the network allocator to None. Only for use by the test suite."""
+    global _network_allocator
+    _network_allocator = None
