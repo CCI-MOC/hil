@@ -22,6 +22,7 @@ Once `load` has been called, it will be ready to use.
 import ConfigParser
 import logging
 import importlib
+import sys
 
 cfg = ConfigParser.RawConfigParser()
 
@@ -70,3 +71,6 @@ def load_extensions():
         return
     for name in cfg.options('extensions'):
         importlib.import_module(name)
+    for name in cfg.options('extensions'):
+        if hasattr(sys.modules[name], 'setup'):
+            sys.modules[name].setup()

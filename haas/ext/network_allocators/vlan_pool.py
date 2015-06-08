@@ -64,4 +64,6 @@ class Vlan(AnonModel):
         self.vlan_no = vlan_no
         self.available = True
 
-set_network_allocator(VlanAllocator())
+
+def setup(*args, **kwargs):
+    set_network_allocator(VlanAllocator())
