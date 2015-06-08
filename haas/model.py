@@ -70,6 +70,8 @@ class AnonModel(Base):
 
     Its main purpose is to reduce boilerplate by doing things such as
     auto-generating table names.
+
+    Extensions may inherit from this class to create new talbles.
     """
     __abstract__ = True
     id = Column(Integer, primary_key=True, nullable=False)
@@ -88,6 +90,8 @@ class Model(AnonModel):
 
     All objects in the HaaS API are referenced by their 'label', so all such
     objects descend from this class.
+
+    Extensions may inherit from this class to create new talbles.
     """
     __abstract__ = True
     label = Column(String, nullable=False)

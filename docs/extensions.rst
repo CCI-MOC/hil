@@ -16,6 +16,8 @@ modules shouldn't need to do much here; HaaS core should facilitate making
 load-time work minimal.
 
 All parts of the HaaS source tree which extensions are allowed to access clearly
-document this. Here is list of relevant modules:
+document this. Here is a summary (see the docstrings in the specific components
+for details):
 
-* haas.network_allocator
+* most of haas.network_allocator
+* Model and AnonModel from haas.model
