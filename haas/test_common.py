@@ -17,8 +17,9 @@ from haas.model import *
 # XXX: This function has an underscore so that we don't import it elsewhere.
 # But... we need it here.  Oops.
 from haas.model import _on_virt_uri
-from haas.config import cfg
+from haas.config import cfg, load_extensions
 from haas import api
+from haas import network_allocator
 import json
 
 def network_create_simple(network, project):
@@ -91,10 +92,16 @@ def database_only(f):
     @wraps(f)
     @clear_configuration
     def wrapped(self):
+        network_allocator.reset()
         config_set({
-            # Use the 'null' backend for these tests
             'general': {
+                # TODO: this is going away soon, but there are still a few
+                # parts of the code that use it.
                 'driver': 'null',
+            },
+            'extensions': {
+                # Use the null network allocator for these tests
+                'haas.ext.network_allocators.null': '',
             },
             'devel': {
                 'dry_run': True,
@@ -103,6 +110,7 @@ def database_only(f):
                 'base_imgs': 'base-headnode, img1, img2, img3, img4',
             },
         })
+        load_extensions()
         db = newDB()
         f(self, db)
         releaseDB(db)

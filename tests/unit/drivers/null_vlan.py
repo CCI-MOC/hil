@@ -16,7 +16,7 @@
 
 from functools import wraps
 
-from haas import model, api
+from haas import model, api, network_allocator
 from haas.test_common import *
 import pytest
 
@@ -34,6 +34,7 @@ def vlan_test(vlan_list):
         @wraps(f)
         @clear_configuration
         def wrapped(self):
+            network_allocator.reset()
             config_set({
                 'general': {
                     'driver': 'null_vlan',
