@@ -13,7 +13,6 @@
 # governing permissions and limitations under the License.
 
 from haas.dev_support import no_dry_run
-from haas.config import cfg
 import pytest
 from haas.test_common import *
 
@@ -38,17 +37,13 @@ def _method():
 
 
 # We test the decorator both with the option enabled and with it disabled.
-@clear_configuration
 def _dry(func):
-    cfg.add_section('devel')
-    cfg.set('devel', 'dry_run', True)
+    config_merge({'devel': {'dry_run': True}})
     func()
 
 
-@clear_configuration
 def _wet(func):
-    # The option does not exist by default, so we don't need to toggle the
-    # config for this.
+    config_merge({'devel': {'dry_run': None}})
     with pytest.raises(AssertionError):
         func()
 

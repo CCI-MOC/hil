@@ -62,14 +62,18 @@ def config_merge(config_dict):
     """
     for section in config_dict.keys():
         if config_dict[section] is None:
+            print('remove section: %r' % section)
             cfg.remove_section(section)
         else:
             if not cfg.has_section(section):
+                print('add section: %r' % section)
                 cfg.add_section(section)
             for option in config_dict[section].keys():
                 if config_dict[section][option] is None:
+                    print('remove option: %r' % option)
                     cfg.remove_option(section, option)
                 else:
+                    print('set option: %r' % option)
                     cfg.set(section, option, config_dict[section][option])
 
 
@@ -113,60 +117,28 @@ def releaseDB(db):
     pass
 
 
-def clear_configuration(f):
-    """A decorator which clears all HaaS configuration both before and after
-    calling the function.  Used for tests which require a specific
-    configuration setup.
+def fresh_database(request):
+    """A pytest fixture which runs the test against a newly populated DB.
+
+    This must run *after* the config file (or equivalent) has been loaded.
     """
-
-    def config_clear():
-        for section in cfg.sections():
-            cfg.remove_section(section)
-
-    @wraps(f)
-    def wrapped(self):
-        config_clear()
-        f(self)
-        config_clear()
-
-    return wrapped
+    db = newDB()
+    request.addfinalizer(lambda: releaseDB(db))
+    return db
 
 
-def database_only(f):
-    """A decorator which runs the given function on a fresh memory-backed
-    database, and a config that is empty except for making the 'null' backend
-    active,  and enabling the dry_run option.  Used for testing functions that
-    pertain to the database state, but not the state of the outside world, or
-    the network driver.
-    """
-    @wraps(f)
-    @clear_configuration
-    def wrapped(self):
-        # XXX: as a transitional step, we're calling testsuite_config from
-        # here, but we want these to be separate pytest fixtures.
-        testsuite_config()
-        db = newDB()
-        f(self, db)
-        releaseDB(db)
-
-    return wrapped
-
-
-def deployment_test(f):
-    """A decorator which runs the given function on a fresh memory-backed
+def deployment_test():
+    """A which runs the given function on a fresh memory-backed
     database and a config that is setup to operate with a dell switch.  Used
     for testing functions that pertain to the state of the outside world.
     These tests are very specific to our setup and are used for internal
     testing purposes. These tests are unlikely to work with other HaaS
     configurations.
     """
-
-    def config_initialize():
-        # Use the deployment config for these tests.  Setup such as the switch
-        # IP address and password must be in this file, as well as the allowed
-        # VLAN range.
-        # XXX: Currently, the deployment tests only support the Dell driver.
-        cfg.read('deployment.cfg')
+    # Use the deployment config for these tests.  Setup such as the switch
+    # IP address and password must be in this file, as well as the allowed
+    # VLAN range.
+    cfg.read('deployment.cfg')
 
     def allocate_nodes():
         layout_json_data = open('site-layout.json')
@@ -187,18 +159,6 @@ def deployment_test(f):
         driver_name = cfg.get('general', 'driver')
         driver = importlib.import_module('haas.drivers.' + driver_name)
         driver.apply_networking(netmap)
-
-
-    @wraps(f)
-    @clear_configuration
-    def wrapped(self):
-        config_initialize()
-        db = newDB()
-        allocate_nodes()
-        f(self, db)
-        releaseDB(db)
-
-    return wrapped
 
 
 def headnode_cleanup(request):

@@ -51,7 +51,6 @@ def vlan_test(vlan_list):
             })
 
         @wraps(f)
-        @clear_configuration
         def wrapped(self):
             config_initialize()
             db = newDB()
