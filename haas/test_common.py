@@ -68,7 +68,7 @@ def config_merge(config_dict):
                 cfg.add_section(section)
             for option in config_dict[section].keys():
                 if config_dict[section][option] is None:
-                    config.remove_option(section, option)
+                    cfg.remove_option(section, option)
                 else:
                     cfg.set(section, option, config_dict[section][option])
 
