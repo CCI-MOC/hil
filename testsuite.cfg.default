@@ -6,6 +6,7 @@
 driver = null
 [devel]
 dry_run = True
+[headnode]
 base_imgs = base-headnode, img1, img2, img3, img4
 [database]
 uri = sqlite:///:memory:
