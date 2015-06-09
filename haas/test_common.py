@@ -22,7 +22,7 @@ import os.path
 
 
 def testsuite_config():
-    """A pytest decorator which loads an initial config from ``testsuite.cfg``.
+    """A pytest fixture which loads an initial config from ``testsuite.cfg``.
 
     Tests which don't care about a specific configuration should leave the
     config alone. This allows the developer to test with different
