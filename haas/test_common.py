@@ -138,8 +138,9 @@ def deployment_test(f):
 
     return wrapped
 
-def headnode_cleanup(f):
-    """A decorator which cleans up headnode VMs left by tests.  This is to
+
+def headnode_cleanup(request):
+    """A pytest fixture which cleans up headnode VMs left by tests.  This is to
     work around an irritating bug in some versions of libvirt, which causes
     'virsh undefine' to fail if called too quickly.  This decorator depends on
     the database containing an accurate list of headnodes.
@@ -157,11 +158,4 @@ def headnode_cleanup(f):
             except subprocess.CalledProcessError:
                 pass
 
-    @wraps(f)
-    def wrapped(self, db):
-        try:
-            f(self, db)
-        finally:
-            undefine_headnodes(db)
-
-    return wrapped
+    request.addfinalizer(undefine_headnodes)
