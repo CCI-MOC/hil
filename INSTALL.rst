@@ -21,12 +21,19 @@ Then, the rest of the packages can be installed via:
 
 ::
 
-    yum install libvirt bridge-utils ipmitool telnet sqlite httpd mod_wsgi python-pip qemu-kvm python-virtinst
+    yum install libvirt bridge-utils ipmitool telnet httpd mod_wsgi python-pip qemu-kvm python-virtinst
 
 In addition, HaaS depends on a number of python libraries. Many of these are
 available as RPMs as well, but we recommend installing them with pip, since
 this will install the versions that HaaS has been tested with.  This is done
 automatically by the instructions below.
+
+HaaS supports both Sqlite and Postgresql. To install HaaS using Postgresql you need to setup
+Postgresql. You can find the details in HACKING.rst. But if you want to install HaaS using 
+SQLite, install it using the following command::
+
+    yum -y install sqlite
+
 
 The HaaS software can then be installed by running:
 
@@ -40,7 +47,7 @@ Disable SELinux
 ---------------
 
 The setup described below runs into problems with SELinux related to the sqlite
-database. For now the recommended solution is to simply disable SELinux. In
+database and apache. For now the recommended solution is to simply disable SELinux. In
 future releases, we will support and recommend the use of SELinux with another
 DBMS, such as MySQL.
 

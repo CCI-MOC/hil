@@ -1,4 +1,35 @@
-The first time you start working in the repository, set up a clean test
+A) MOC supports both sqlite and postgresql. If you are using sqlite, you 
+may skip this step and directly jump to step B.
+
+	Following are the steps to install and setup postgresql::
+	
+		yum -y update
+		yum -y gcc install postgresql postgresql-contrib postgresql-server postgresql-devel postgresql-libs python-psycopg2
+		service postgresql initdb
+		chkconfig postgresql on
+		serivce postgresql start
+		
+	Setup permission to allow postgresql to be accessed by other applicaitons::
+		
+		vi /var/lib/pgsql/data/pg_hba.conf
+		
+		By default postgresql uses IDENT based authentication. All you have 
+		to do is allow username and passowrd based authentication for your 
+		network or webserver. Replace ident or peer with trust in the above 
+		file. E.g. local all all peer -> local all all trust    
+			   host all 127.0.0.1/32 ident -> host all 127.0.0.1/32 trust
+
+	After editing this restart the postgresql server::
+
+			service postgresql restart
+				
+	A default user named 'postgres' is created. Set its password and create a database named 'haas' as follows::
+
+		passwd postgres
+		psql -h localhost -U postgres
+		create database haas;
+
+B) The first time you start working in the repository, set up a clean test
 environment::
 
   virtualenv .venv
