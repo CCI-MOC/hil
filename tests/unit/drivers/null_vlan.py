@@ -32,11 +32,15 @@ def vlan_test(vlan_list):
 
     def dec(f):
         def config_initialize():
-            # Use the 'dell' backend for these tests
-            cfg.add_section('general')
-            cfg.set('general', 'driver', 'null_vlan')
-            cfg.add_section('vlan')
-            cfg.set('vlan', 'vlans', vlan_list)
+            testsuite_config()
+            config_merge({
+                'general': {
+                    'driver': 'null_vlan',
+                },
+                'vlan': {
+                    'vlans': vlan_list,
+                },
+            })
 
         @wraps(f)
         @clear_configuration
