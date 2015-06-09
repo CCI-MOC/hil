@@ -14,12 +14,10 @@
 
 from functools import wraps
 from haas.model import *
-# XXX: This function has an underscore so that we don't import it elsewhere.
-# But... we need it here.  Oops.
-from haas.model import _on_virt_uri
 from haas.config import cfg
 from haas import api
 import json
+import subprocess
 
 def network_create_simple(network, project):
     """Create a simple project-owned network.
@@ -154,8 +152,10 @@ def headnode_cleanup(f):
             # completing successfully.  For this reason, we are ignoring any
             # errors thrown by 'virsh undefine'. This should be changed once
             # we start using a version of libvirt that has fixed this bug.
-            call(_on_virt_uri(['virsh', 'undefine', hn._vmname(),
-                               '--remove-all-storage']))
+            try:
+                hn.delete()
+            except subprocess.CalledProcessError:
+                pass
 
     @wraps(f)
     def wrapped(self, db):
@@ -165,4 +165,3 @@ def headnode_cleanup(f):
             undefine_headnodes(db)
 
     return wrapped
-
