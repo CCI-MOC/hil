@@ -175,7 +175,7 @@ class Node(Model):
             # turning things off without breaking the HaaS.
             return
         # If it still doesn't work, then it's a real error:
-        raise OBMError('Could not power cycle node %s' % node.label)
+        raise OBMError('Could not power cycle node %s' % self.label)
 
     @no_dry_run
     def start_console(self):
