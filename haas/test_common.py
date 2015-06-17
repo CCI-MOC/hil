@@ -14,12 +14,80 @@
 
 from functools import wraps
 from haas.model import *
-# XXX: This function has an underscore so that we don't import it elsewhere.
-# But... we need it here.  Oops.
-from haas.model import _on_virt_uri
 from haas.config import cfg
-from haas import api
+from haas import api, config
 import json
+import subprocess
+import os.path
+
+
+def testsuite_config():
+    """A pytest fixture which loads an initial config from ``testsuite.cfg``.
+
+    Tests which don't care about a specific configuration should leave the
+    config alone. This allows the developer to test with different
+    configurations, e.g. different DBMS backends.
+
+    if testsuite.cfg doesn't exist, sane defaults are provided.
+    """
+    # NOTE: The file ``testsuite.cfg.default`` Should be updated whenever
+    # The default settings here are modified.
+    if os.path.isfile('testsuite.cfg'):
+        config.load('testsuite.cfg')
+    else:
+        config_set({
+            'general': {
+                'driver': 'null',
+            },
+            'devel': {
+                'dry_run': True,
+            },
+            'headnode': {
+                'base_imgs': 'base-headnode, img1, img2, img3, img4',
+            },
+            'database': {
+                'uri': 'sqlite:///:memory:',
+            },
+        })
+
+
+def config_merge(config_dict):
+    """Modify the configuration according to ``config_dict``.
+
+    ``config_dict`` should be a dictionary mapping section names (strings)
+    to dictionaries mapping option names within a section (again, strings)
+    to their values. If the value of a section, or option is None, that
+    section or option is removed. Otherwise, the section is created if it
+    does not exist, and any options are set to the specified values.
+    """
+    for section in config_dict.keys():
+        if config_dict[section] is None:
+            cfg.remove_section(section)
+        else:
+            if not cfg.has_section(section):
+                cfg.add_section(section)
+            for option in config_dict[section].keys():
+                if config_dict[section][option] is None:
+                    cfg.remove_option(section, option)
+                else:
+                    cfg.set(section, option, config_dict[section][option])
+
+
+def config_set(config_dict):
+    """Set the configuration according to ``config_dict``.
+
+    This works like ``config_merge``, except that it starts from an empty
+    configuration.
+    """
+    config_clear()
+    config_merge(config_dict)
+
+
+def config_clear():
+    """Clear the contents of the current HaaS configuration"""
+    for section in cfg.sections():
+        cfg.remove_section(section)
+
 
 def network_create_simple(network, project):
     """Create a simple project-owned network.
@@ -36,33 +104,13 @@ def network_create_simple(network, project):
     api.network_create(network, project, project, "")
 
 def newDB():
-    """Configures and returns an in-memory DB connection"""
-    init_db(create=True,uri="sqlite:///:memory:")
+    """Configures and returns a connection to a freshly initialized DB."""
+    init_db(create=True)
     return Session()
 
 def releaseDB(db):
     """Do we need to do anything here to release resources?"""
     pass
-
-
-def config_clear():
-    """Clear the contents of the current HaaS configuration"""
-    for section in cfg.sections():
-        cfg.remove_section(section)
-
-
-def config_set(config_dict):
-    """Set the configuration according to ``config_dict``.
-
-    ``config_dict`` should be a dictionary mapping section names (strings)
-    to dictionaries mapping option names within a section (again, strings)
-    to their values.
-    """
-    config_clear()
-    for section in config_dict.keys():
-        cfg.add_section(section)
-        for option in config_dict[section].keys():
-            cfg.set(section, option, config_dict[section][option])
 
 
 def clear_configuration(f):
@@ -87,22 +135,12 @@ def database_only(f):
     pertain to the database state, but not the state of the outside world, or
     the network driver.
     """
-
     @wraps(f)
     @clear_configuration
     def wrapped(self):
-        config_set({
-            # Use the 'null' backend for these tests
-            'general': {
-                'driver': 'null',
-            },
-            'devel': {
-                'dry_run': True,
-            },
-            'headnode': {
-                'base_imgs': 'base-headnode, img1, img2, img3, img4',
-            },
-        })
+        # XXX: as a transitional step, we're calling testsuite_config from
+        # here, but we want these to be separate pytest fixtures.
+        testsuite_config()
         db = newDB()
         f(self, db)
         releaseDB(db)
@@ -172,8 +210,10 @@ def headnode_cleanup(f):
             # completing successfully.  For this reason, we are ignoring any
             # errors thrown by 'virsh undefine'. This should be changed once
             # we start using a version of libvirt that has fixed this bug.
-            call(_on_virt_uri(['virsh', 'undefine', hn._vmname(),
-                               '--remove-all-storage']))
+            try:
+                hn.delete()
+            except subprocess.CalledProcessError:
+                pass
 
     @wraps(f)
     def wrapped(self, db):
@@ -183,4 +223,3 @@ def headnode_cleanup(f):
             undefine_headnodes(db)
 
     return wrapped
-
