@@ -16,15 +16,23 @@
 
 from haas import model, api, deferred
 from haas.test_common import *
+from haas.config import load_extensions
 import pytest
 import json
+
+
+@pytest.fixture
+def configure():
+    testsuite_config()
+    load_extensions()
 
 
 @pytest.fixture
 def db(request):
     return fresh_database(request)
 
-pytesetmark = pytest.mark.usefixtures('testsuite_config', 'db')
+
+pytestmark = pytest.mark.usefixtures('configure', 'db')
 
 
 class TestUser:

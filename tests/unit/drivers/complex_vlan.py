@@ -19,7 +19,7 @@ from functools import wraps
 from haas.test_common import *
 import pytest
 
-from haas.config import cfg
+from haas.config import cfg, load_extensions
 
 from haas.drivers.complex_vlan import apply_networking, get_switch_vlans
 from haas.drivers.switches.test import reinitialize
@@ -50,6 +50,7 @@ def vlan_test(vlan_list):
                     'trunk_ports': '[]',
                 },
             })
+            load_extensions()
 
         @wraps(f)
         def wrapped(self):

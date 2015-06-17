@@ -33,6 +33,7 @@ def vlan_test(vlan_list):
     def dec(f):
         def config_initialize():
             testsuite_config()
+            config_merge({'extensions': None})
             config_merge({
                 'general': {
                     'driver': 'null_vlan',
@@ -40,7 +41,11 @@ def vlan_test(vlan_list):
                 'vlan': {
                     'vlans': vlan_list,
                 },
+                'extensions': {
+                    'haas.ext.network_allocators.vlan_pool': '',
+                }
             })
+            load_extensions()
 
         @wraps(f)
         def wrapped(self):

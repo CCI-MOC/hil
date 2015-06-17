@@ -18,6 +18,7 @@ from functools import wraps
 
 from haas import model, api
 from haas.test_common import *
+from haas.config import load_extensions
 import pytest
 
 from haas.drivers.simple_vlan import *
@@ -49,6 +50,7 @@ def vlan_test(vlan_list):
                     'trunk_port': 'unused',
                 },
             })
+            load_extensions()
 
         @wraps(f)
         def wrapped(self):
