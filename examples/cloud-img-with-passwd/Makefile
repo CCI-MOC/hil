@@ -1,4 +1,4 @@
-# Copyright 2014 Massachusetts Open Cloud Contributors
+# Copyright 2014-2015 Massachusetts Open Cloud Contributors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the
@@ -12,14 +12,14 @@
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
 
-all: build
+# $(distro).mk defines IMG_IN and MIRROR.
+include $(distro).mk
 
-MIRROR := http://cloud-images.ubuntu.com/trusty/current
-IMG_IN := trusty-server-cloudimg-amd64-disk1.img
+all: build
 $(IMG_IN):
 	wget $(MIRROR)/$(IMG_IN)
-check: $(IMG_IN) sha256sum.txt
-	sha256sum -c SHA256SUMS
+check: $(IMG_IN) SHA256SUMS.$(distro)
+	sha256sum -c SHA256SUMS.$(distro)
 $(IMG_IN).raw: $(IMG_IN)
 	qemu-img convert -O raw $< $@
 build: $(IMG_IN).raw

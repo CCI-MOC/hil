@@ -31,22 +31,21 @@ def vlan_test(vlan_list):
     """
 
     def dec(f):
-        @wraps(f)
-        @clear_configuration
-        def wrapped(self):
-            network_allocator.reset()
-            config_set({
+        def config_initialize():
+            testsuite_config()
+            config_merge({
                 'general': {
                     'driver': 'null_vlan',
                 },
                 'vlan': {
                     'vlans': vlan_list,
                 },
-                'extensions': {
-                    'haas.ext.network_allocators.vlan_pool': '',
-                },
             })
-            load_extensions()
+
+        @wraps(f)
+        def wrapped(self):
+            config_clear()
+            config_initialize()
             db = newDB()
             f(self, db)
             releaseDB(db)

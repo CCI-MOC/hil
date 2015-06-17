@@ -20,8 +20,6 @@ from haas import model, api
 from haas.test_common import *
 import pytest
 
-from haas.config import cfg
-
 from haas.drivers.simple_vlan import *
 
 from haas.drivers.switches.test import reinitialize
@@ -35,17 +33,24 @@ def vlan_test(vlan_list):
     def dec(f):
         def config_initialize():
             # Use the 'dell' backend for these tests
-            cfg.add_section('general')
-            cfg.set('general', 'driver', 'simple_vlan')
-            cfg.add_section('vlan')
-            cfg.set('vlan', 'vlans', vlan_list)
-            cfg.add_section('driver simple_vlan')
-            cfg.set('driver simple_vlan', 'switch',
-                    '{"name":"1", "switch":"test"}')
-            cfg.set('driver simple_vlan', 'trunk_port', 'unused')
+            testsuite_config()
+            config_merge({
+                'general': {
+                    'driver': 'simple_vlan',
+                },
+                'vlan': {
+                    'vlans': vlan_list,
+                },
+                'driver simple_vlan': {
+                    'switch': json.dumps({
+                        'name': '1',
+                        'switch': 'test',
+                    }),
+                    'trunk_port': 'unused',
+                },
+            })
 
         @wraps(f)
-        @clear_configuration
         def wrapped(self):
             config_initialize()
             db = newDB()

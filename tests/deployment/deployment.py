@@ -25,6 +25,8 @@ import pexpect
 import pytest
 import re
 
+pytestmark = pytest.mark.usefixtures('deployment_test', 'headnode_cleanup')
+
 class TestHeadNode:
     # XXX: These tests will fail when py.test is ran with '--cov-report
     # term-missing --cov haas'.  Specifically, headnode_create() will throw an
@@ -40,8 +42,6 @@ class TestHeadNode:
     # The tests can be run successfully by commenting out 'addopts =
     # --cov-report term-missing --cov haas' in setup.cfg.
 
-    @deployment_test
-    @headnode_cleanup
     def test_headnode(self, db):
         api.project_create('anvil-nextgen')
         network_create_simple('spider-web', 'anvil-nextgen')
@@ -54,8 +54,6 @@ class TestHeadNode:
         api.headnode_stop('hn-0')
         api.headnode_delete('hn-0')
 
-    @deployment_test
-    @headnode_cleanup
     def test_headnode_deletion_while_running(self, db):
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode-2')
@@ -65,8 +63,6 @@ class TestHeadNode:
 
 class TestNetwork:
 
-    @deployment_test
-    @headnode_cleanup
     def test_isolated_networks(self, db):
 
         driver_name = cfg.get('general', 'driver')

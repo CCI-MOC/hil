@@ -25,8 +25,18 @@ from abc import ABCMeta, abstractmethod
 
 from haas.model import *
 
-# There's probably a better way to do this
-from haas.test_common import newDB, releaseDB, database_only
+from haas.test_common import fresh_database, testsuite_config
+import pytest
+
+# XXX: there has to be a better way to do this sort of thing...
+testsuite_config = pytest.fixture(testsuite_config)
+
+@pytest.fixture
+def db(request):
+    return fresh_database(request)
+
+pytestmark = pytest.mark.usefixtures('testsuite_config', 'db')
+
 
 class ModelTest:
     """Superclass with tests common to all models.
@@ -49,7 +59,6 @@ class ModelTest:
     def test_repr(self):
         print(self.sample_obj())
 
-    @database_only
     def test_insert(self, db):
         db.add(self.sample_obj())
 

@@ -1,3 +1,4 @@
 mnt
 *.raw
 *.img
+*.qcow2

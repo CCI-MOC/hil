@@ -1,9 +1,8 @@
-from haas.test_common import clear_configuration, config_set
+from haas.test_common import config_set
 from haas import config
 import sys
 
 
-@clear_configuration
 def test_load_extension():
     """Check that putting modules in [extensions] results in importing them."""
     config_set({

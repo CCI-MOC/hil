@@ -33,20 +33,27 @@ def vlan_test(vlan_list):
     def dec(f):
         def config_initialize():
             # Use the complex vlan driver for these tests
-            cfg.add_section('general')
-            cfg.set('general', 'driver', 'complex_vlan')
-            cfg.add_section('vlan')
-            cfg.set('vlan', 'vlans', vlan_list)
-            cfg.add_section('driver complex_vlan')
-            cfg.set('driver complex_vlan', 'switch', '[' \
-                        '{"name":"0", "switch":"test"}, ' \
-                        '{"name":"1", "switch":"test"}, ' \
-                        '{"name":"2", "switch":"test"}]')
-            cfg.set('driver complex_vlan', 'trunk_ports', '[]')
+            testsuite_config()
+            config_merge({
+                'general': {
+                    'driver': 'complex_vlan',
+                },
+                'vlan': {
+                    'vlans': vlan_list,
+                },
+                'driver complex_vlan': {
+                    'switch': json.dumps([
+                        {'name': '0', 'switch':'test'},
+                        {'name': '1', 'switch':'test'},
+                        {'name': '2', 'switch':'test'},
+                    ]),
+                    'trunk_ports': '[]',
+                },
+            })
 
         @wraps(f)
-        @clear_configuration
         def wrapped(self):
+            config_clear()
             config_initialize()
             db = newDB()
             reinitialize()

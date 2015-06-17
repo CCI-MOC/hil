@@ -27,6 +27,13 @@ the haas root directory. Using pip's `-e .` option installs the haas in
 editable mode, which has the advantage that one need not reinstall every
 time a file is changed!
 
+Most of the tests use a common set of default configuration options, as
+seen in `testsuite.cfg.default`. If you wish to override these 
+parameters, you may copy it to `testsuite.cfg` and edit. In the future,
+this will allow developers to do things like test against different 
+DBMSes (for the moment some changes are needed to the test suite to 
+actually support this).
+
 # Running
 
 To run all tests, from the HaaS root directory run:
