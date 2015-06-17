@@ -98,6 +98,7 @@ def serve():
     # We need to import api here so that the functions within it get registered
     # (via `rest_call`), though we don't use it directly:
     from haas import model, api, rest
+    config.load_extensions()
     model.init_db()
     # Stop all orphan console logging processes on startup
     db = model.Session()
