@@ -206,6 +206,9 @@ def node_delete(node):
     """
     db = model.Session()
     node = _must_find(db, model.Node, node)
+    if node.nics != []:
+        raise BlockedError("Node %r has nics; remove them before deleting %r.",
+                           (node.label, node.label))
     node.stop_console()
     node.delete_console()
     db.delete(node)
