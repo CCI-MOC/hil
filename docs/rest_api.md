@@ -63,6 +63,74 @@ Full Api spec:
     [PUT]    /node/<node_label>/nic/<nic_label> {"mac_addr":<mac_addr>}
     [DELETE] /node/<node_label>/nic/<nic_label>
 
+## Switches
+
+### switch_register
+
+Register a network switch of type `<type>`
+ 
+`<type>` (a string) is the type of network switch. The possible values 
+depend on what drivers HaaS is configured to use. The remainder of the 
+fields are driver-specific; see the documentation for the driver in 
+question.
+
+`PUT /switch/<switch>`
+
+Request body:
+
+    {
+        "type": <type>,
+        (extra args; depends on <type>)
+    }
+
+Possible Errors:
+
+* 409, if a switch named `<switch>` already exists.
+
+### switch_delete
+
+`DELETE /switch/<switch>`
+
+Delete the switch named `<switch>.
+
+Prior to deleting a switch, all of the switch's ports must first be 
+deleted.
+
+Possible Errors:
+
+* 404, if the named switch does not exist
+* 409, if not all of the switch's ports have been deleted.
+
+### switch_register_port
+
+`PUT /switch/<switch>/port/<port>`
+
+Register a port `<port>` on `<switch>`.
+
+The permissable values of `<port>`, and their meanings, are switch 
+specific; see the documentation for the apropriate driver for more 
+information.
+
+Possible Errors:
+
+* 404, if the named switch does not exist
+* 409, if the port already exists
+
+### switch_delete_port
+
+`DELETE /switch/<switch>/port/<port>`
+
+Delete the named `<port>` on `<switch>`.
+
+Prior to deleting a port, any nic attached to it must be removed.
+
+Possible Errors:
+
+* 404, if the port or switch does not exist
+* 409, if there is a nic attached to the port.
+
+---
+
     port_register  <port_no>
     port_delete    <port_no>
     [PUT]    /port/<port_no>

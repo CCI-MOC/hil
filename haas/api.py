@@ -19,9 +19,12 @@ TODO: Spec out and document what sanitization is required.
 import importlib
 import json
 
+from schema import Schema, Optional
+
 from haas import model
 from haas.config import cfg
 from haas.rest import rest_call
+from haas.class_resolver import concrete_class_for
 from haas.network_allocator import get_network_allocator
 from haas.errors import *
 
@@ -541,41 +544,74 @@ def network_delete(network):
     db.commit()
 
 
-                            # Port code #
-                            #############
+@rest_call('PUT', '/switch/<switch>', schema=Schema({
+    'type': basestring,
+    Optional(object): object,
+}))
+def switch_register(switch, type, **kwargs):
+    db = model.Session()
+    _assert_absent(db, model.Switch, switch)
+
+    cls = concrete_class_for(model.Switch, type)
+    if cls is None:
+        raise BadArgumentError('%r is not a valid switch type.' % type)
+    cls.validate(kwargs)
+    obj = cls(**kwargs)
+    obj.label = switch
+
+    db.add(obj)
+    db.commit()
 
 
-@rest_call('PUT', '/port/<path:port>')
-def port_register(port):
+@rest_call('DELETE', '/switch/<switch>')
+def switch_delete(switch):
+    db = model.Session()
+    switch = _must_find(db, model.Switch, switch)
+
+    if switch.ports != []:
+        raise BlockedError("Switch %r has ports; delete them first." %
+                           switch.label)
+
+    db.delete(switch)
+    db.commit()
+
+
+@rest_call('PUT', '/switch/<switch>/port/<path:port>')
+def switch_register_port(switch, port):
     """Register a port on a switch.
 
     If the port already exists, a DuplicateError will be raised.
     """
     db = model.Session()
 
-    _assert_absent(db, model.Port, port)
-    port = model.Port(port)
+    switch = _must_find(db, model.Switch, switch)
+    _assert_absent_n(db, switch, model.Port, port)
+    port = model.Port(port, switch)
 
     db.add(port)
     db.commit()
 
 
-@rest_call('DELETE', '/port/<path:port>')
-def port_delete(port):
+@rest_call('DELETE', '/switch/<switch>/port/<path:port>')
+def switch_delete_port(switch, port):
     """Delete a port on a switch.
 
     If the port does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
 
-    port = _must_find(db, model.Port, port)
+    switch = _must_find(db, model.Switch, switch)
+    port = _must_find_n(db, switch, model.Port, port)
+    if port.nic is not None:
+        raise BlockedError("Port %r is attached to a nic; please detach "
+                           "it first." % port.label)
 
     db.delete(port)
     db.commit()
 
 
-@rest_call('POST', '/port/<path:port>/connect_nic')
-def port_connect_nic(port, node, nic):
+@rest_call('POST', '/switch/<switch>/port/<path:port>/connect_nic')
+def port_connect_nic(switch, port, node, nic):
     """Connect a port on a switch to a nic on a node.
 
     If any of the three arguments does not exist, a NotFoundError will be
@@ -586,8 +622,11 @@ def port_connect_nic(port, node, nic):
     """
     db = model.Session()
 
-    port = _must_find(db, model.Port, port)
-    nic = _must_find_n(db, _must_find(db, model.Node, node), model.Nic, nic)
+    switch = _must_find(db, model.Switch, switch)
+    port = _must_find_n(db, switch, model.Port, port)
+
+    node = _must_find(db, model.Node, node)
+    nic = _must_find_n(db, node, model.Nic, nic)
 
     if nic.port is not None:
         raise DuplicateError(nic.label)
@@ -599,8 +638,8 @@ def port_connect_nic(port, node, nic):
     db.commit()
 
 
-@rest_call('POST', '/port/<path:port>/detach_nic')
-def port_detach_nic(port):
+@rest_call('POST', '/switch/<switch>/port/<path:port>/detach_nic')
+def port_detach_nic(switch, port):
     """Detach a port from the nic it's attached to
 
     If the port does not exist, a NotFoundError will be raised.
@@ -609,7 +648,8 @@ def port_detach_nic(port):
     """
     db = model.Session()
 
-    port = _must_find(db, model.Port, port)
+    switch = _must_find(db, model.Switch, switch)
+    port = _must_find_n(db, switch, model.Port, port)
 
     if port.nic is None:
         raise NotFoundError(port.label + " not attached")

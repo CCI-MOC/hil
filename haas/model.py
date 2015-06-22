@@ -290,10 +290,37 @@ class Port(Model):
     The port's label is an identifier that is meaningful only to the
     corresponding switch's driver.
     """
+    owner_id = Column(Integer, ForeignKey('switch.id'), nullable=False)
+    owner = relationship('Switch', backref=backref('ports'))
 
-    def __init__(self, label):
+    def __init__(self, label, switch):
         """Register a port on a switch."""
-        self.label   = label
+        self.label = label
+        self.owner = switch
+
+
+class Switch(Model):
+    """A network switch.
+
+    This is meant to be subclassed by switch-specific drivers, implemented
+    by extensions.
+
+    Subclasses MUST override the validate method
+    """
+
+    type = Column(String, nullable=False)
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'switch',
+        'polymorphic_on': type,
+    }
+
+    def validate(self, kwargs):
+        """Verify that ``kwargs`` is a legal set of keyword args to ``__init__``
+
+        Raise a ``schema.SchemaError`` if the ``kwargs`` is invalid.
+        """
+        assert False, "Subclasses MUST override the validate method"
 
 
 class User(Model):
