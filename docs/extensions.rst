@@ -21,4 +21,7 @@ document this. Here is a summary (see the docstrings in the specific components
 for details):
 
 * most of haas.network_allocator
-* Model and AnonModel from haas.model
+* From haas.model:
+  * AnonModel
+  * Model
+  * Switch
