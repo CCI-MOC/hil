@@ -305,7 +305,7 @@ class Switch(Model):
     This is meant to be subclassed by switch-specific drivers, implemented
     by extensions.
 
-    Subclasses MUST override the validate method
+    Subclasses MUST override both ``validate`` and ``session``.
     """
 
     type = Column(String, nullable=False)
@@ -321,6 +321,33 @@ class Switch(Model):
         Raise a ``schema.SchemaError`` if the ``kwargs`` is invalid.
         """
         assert False, "Subclasses MUST override the validate method"
+
+
+    def session(self):
+        """Return a session object for the switch.
+
+        Conceputally, a session is an active connection to the switch; it lets
+        HaaS avoid connecting and disconnecting for each change. the session
+        object must have the methods:
+
+            def apply_network(self, net_map):
+                '''Apply the changes specified in ``net_map`` to the switch.
+
+                ``net_map`` must be a dictionary mapping port labels (strings)
+                to network identifiers.
+                '''
+
+            def disconnect(self):
+                '''Disconnect from the switch.
+
+                This will be called when HaaS is done with the session.
+                '''
+
+        Some drivers may do things that are not connection-oriented; If so,
+        they can just return a dummy object here. The recommended way to
+        handle this is to define the two methods above on the switch object,
+        and have ``session`` just return ``self``.
+        """
 
 
 class User(Model):

@@ -14,9 +14,8 @@
 
 """Unit tests for api.py"""
 
-from haas import model, api, deferred
+from haas import model, api, deferred, server, config
 from haas.test_common import *
-from haas.config import load_extensions
 import pytest
 import json
 
@@ -24,7 +23,12 @@ import json
 @pytest.fixture
 def configure():
     testsuite_config()
-    load_extensions()
+    config_merge({
+        'extensions': {
+            'haas.testing.ext.switches.mock': '',
+        },
+    })
+    config.load_extensions()
 
 
 @pytest.fixture
@@ -32,7 +36,15 @@ def db(request):
     return fresh_database(request)
 
 
-pytestmark = pytest.mark.usefixtures('configure', 'db')
+@pytest.fixture
+def server_init():
+    server.register_drivers()
+    server.validate_state()
+
+
+pytestmark = pytest.mark.usefixtures('configure',
+                                     'db',
+                                     'server_init')
 
 
 class TestUser:
@@ -167,18 +179,20 @@ class TestProjectAddDeleteUser:
 class TestNetworking:
 
     def test_networking_involved(self, db):
-        api.port_register('1')
-        api.port_register('2')
-        api.port_register('3')
+        api.switch_register(
+            'switch-0',
+            type='http://schema.massopencloud.org/haas/switches/mock',
+        )
+        for port in '1', '2', '3':
+            api.switch_register_port('switch-0', port)
         api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register('node-98', 'ipmihost', 'root', 'tapeworm')
         api.node_register('node-97', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
         api.node_register_nic('node-98', 'eth0', 'DE:AD:BE:EF:20:15')
         api.node_register_nic('node-97', 'eth0', 'DE:AD:BE:EF:20:16')
-        api.port_connect_nic('1', 'node-99', 'eth0')
-        api.port_connect_nic('2', 'node-98', 'eth0')
-        api.port_connect_nic('3', 'node-97', 'eth0')
+        for port, node in ('1', 'node-99'), ('2', 'node-98'), ('3', 'node-97'):
+            api.port_connect_nic('switch-0', port, node, 'eth0')
 
         api.project_create('anvil-nextgen')
         api.project_connect_node('anvil-nextgen', 'node-99')

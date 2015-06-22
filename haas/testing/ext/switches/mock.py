@@ -14,12 +14,7 @@
 
 """A switch driver that maintains local state only.
 
-Useful for testing switch drivers such as the simple and complex VLAN drivers.
-This driver will probably not work correctly outside of the testing
-environment.
-
-If there are two switches in the config that have the same name, their changes
-will clash with each other.
+Meant for use in the test suite.
 """
 
 from haas.model import Switch
@@ -30,6 +25,12 @@ LOCAL_STATE = {}
 
 
 class MockSwitch(Switch):
+    """A switch which stores configuration in memory.
+
+    This class conforms to the interface specified by ``haas.model.Switch``.
+    It's implementation is connectionless, so it is it's own session object as
+    suggested int the superclass's documentation.
+    """
     id = Column(Integer, ForeignKey('switch.id'), primary_key=True)
 
     api_name = 'http://schema.massopencloud.org/haas/switches/mock'
@@ -42,6 +43,9 @@ class MockSwitch(Switch):
     def validate(kwargs):
         Schema({}).validate(kwargs)
 
+    def session(self):
+        return self
+
     def apply_networking(self, net_map):
 
         global LOCAL_STATE
@@ -51,3 +55,6 @@ class MockSwitch(Switch):
 
         for port in net_map:
             LOCAL_STATE[self.label][port] = net_map[port]
+
+    def disconnect(self):
+        pass
