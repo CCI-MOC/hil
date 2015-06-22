@@ -91,27 +91,14 @@ def do_delete(url):
 
 @cmd
 def serve():
+    from haas import rest, server
     """Start the HaaS API server"""
     if cfg.has_option('devel', 'debug'):
         debug = cfg.getboolean('devel', 'debug')
     else:
         debug = False
-    # We need to import api here so that the functions within it get registered
-    # (via `rest_call`), though we don't use it directly:
-    from haas import model, api, rest
     config.load_extensions()
-    if get_network_allocator() is None:
-        sys.exit("ERROR: No network allocator registered; make sure your "
-                 "haas.cfg loads an extension which provides the network "
-                 "allocator.")
-    model.init_db()
-    # Stop all orphan console logging processes on startup
-    db = model.Session()
-    nodes = db.query(model.Node).all()
-    for node in nodes:
-        node.stop_console()
-        node.delete_console()
-    # Start server
+    server.api_server_init()
     rest.serve(debug=debug)
 
 
