@@ -20,6 +20,9 @@ import pytest
 import json
 
 
+MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/switches/mock'
+
+
 @pytest.fixture
 def configure():
     testsuite_config()
@@ -179,12 +182,9 @@ class TestProjectAddDeleteUser:
 class TestNetworking:
 
     def test_networking_involved(self, db):
-        api.switch_register(
-            'switch-0',
-            type='http://schema.massopencloud.org/haas/switches/mock',
-        )
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE)
         for port in '1', '2', '3':
-            api.switch_register_port('switch-0', port)
+            api.switch_register_port('sw0', port)
         api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_register('node-98', 'ipmihost', 'root', 'tapeworm')
         api.node_register('node-97', 'ipmihost', 'root', 'tapeworm')
@@ -192,7 +192,7 @@ class TestNetworking:
         api.node_register_nic('node-98', 'eth0', 'DE:AD:BE:EF:20:15')
         api.node_register_nic('node-97', 'eth0', 'DE:AD:BE:EF:20:16')
         for port, node in ('1', 'node-99'), ('2', 'node-98'), ('3', 'node-97'):
-            api.port_connect_nic('switch-0', port, node, 'eth0')
+            api.port_connect_nic('sw0', port, node, 'eth0')
 
         api.project_create('anvil-nextgen')
         api.project_connect_node('anvil-nextgen', 'node-99')
@@ -958,23 +958,69 @@ class TestNetworkCreateDelete:
             api.network_delete('hammernet')
 
 
-class TestPortRegisterDelete:
+class Test_switch_register:
 
-    def test_port_register_success(self, db):
-        api.port_register('3')
+    def test_basic(self, db):
+        """Calling switch_register should create an object in the db."""
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE)
+        assert db.query(model.Switch).one().label == 'sw0'
 
-    def test_port_register_duplicate(self, db):
-        api.port_register('3')
+    def test_duplicate(self, db):
+        """switch_register should complain if asked to make a duplicate switch."""
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE)
         with pytest.raises(api.DuplicateError):
-            api.port_register('3')
+            api.switch_register('sw0', type=MOCK_SWITCH_TYPE)
 
-    def test_port_delete_success(self, db):
-        api.port_register('3')
-        api.port_delete('3')
 
-    def test_port_delete_no_such_port(self, db):
+class Test_switch_delete:
+
+    def test_basic(self, db):
+        """Deleting a switch should actually remove it."""
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE)
+        api.switch_delete('sw0')
+        assert db.query(model.Switch).count() == 0
+
+    def test_nexist(self, db):
+        """switch_delete should complain if asked to delete a switch that doesn't exist."""
         with pytest.raises(api.NotFoundError):
-            api.port_delete('3')
+            api.switch_delete('sw0')
+
+
+class Test_switch_register_port:
+
+    def test_basic(self, db):
+        """Creating a port on an existing switch should succeed."""
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE)
+        api.switch_register_port('sw0', '5')
+        port = db.query(model.Port).one()
+        assert port.label == '5'
+        assert port.owner.label == 'sw0'
+
+    def test_switch_nexist(self, db):
+        """Creating  port on a non-existant switch should fail."""
+        with pytest.raises(api.NotFoundError):
+            api.switch_register_port('sw0', '5')
+
+
+class Test_switch_delete_port:
+
+    def test_basic(self, db):
+        """Removing a port should remove it from the db."""
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE)
+        api.switch_register_port('sw0', '5')
+        api.switch_delete_port('sw0', '5')
+        assert db.query(model.Port).count() == 0
+
+    def test_switch_nexist(self, db):
+        """Removing a port on a switch that does not exist should report the error."""
+        with pytest.raises(api.NotFoundError):
+            api.switch_delete_port('sw0', '5')
+
+    def test_port_nexist(self, db):
+        """Removing a port that does not exist should report the error"""
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE)
+        with pytest.raises(api.NotFoundError):
+            api.switch_delete_port('sw0', '5')
 
 
 class TestPortConnectDetachNic:
