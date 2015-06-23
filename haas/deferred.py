@@ -60,7 +60,10 @@ def apply_networking():
             if switch.label not in switch_sessions:
                 switch_sessions[switch.label] = switch.session()
             switch_sessions[switch.label].apply_networking({
-                nic.port.label: network_id,
+                nic.port.label: (
+                    network_id,
+                    action.channel
+                ),
             })
         else:
             logging.getLogger(__name__).warn(
@@ -73,7 +76,14 @@ def apply_networking():
 
     # Then perform the database changes and delete them
     for action in actions:
-        action.nic.network = action.new_network
+        if action.new_network is None:
+            db.query(model.NetworkAttachment)\
+                .filter_by(nic=action.nic, channel=action.channel)\
+                .delete()
+        else:
+            db.add(model.NetworkAttachment(nic=action.nic,
+                                           network=action.new_network,
+                                           channel=action.channel))
         db.delete(action)
 
     db.commit()

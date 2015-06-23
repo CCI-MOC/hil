@@ -1,4 +1,4 @@
-# Copyright 2013-2014 Massachusetts Open Cloud Contributors
+# Copyright 2013-2015 Massachusetts Open Cloud Contributors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the
@@ -330,8 +330,8 @@ class Switch(Model):
 
                 ``net_map`` must be a dictionary mapping port labels (strings)
                 to (network identifier, channel identifier) pairs. For each
-                pair, if the channel identifier is ``None``, the switch should
-                detach the given network from the port. Otherwise, the network
+                pair, if the network identifier is ``None``, the switch should
+                detach the given channel from the port. Otherwise, the network
                 should be attached on the specified channel.
                 '''
 
@@ -529,18 +529,26 @@ class NetworkingAction(AnonModel):
 
     # This model is not visible in the API, so inherit from AnonModel
 
-    nic_id = Column(Integer, ForeignKey('nic.id'), nullable=False)
-    nic    = relationship("Nic", backref=backref('current_action',
-                                                 uselist=False))
+    nic_id         = Column(Integer, ForeignKey('nic.id'), nullable=False)
+    new_network_id = Column(Integer, ForeignKey('network.id'), nullable=True)
+    channel        = Column(String, nullable=False)
 
-    new_network_id = Column(Integer,
-                            ForeignKey('network.id'),
-                            nullable=True)
+    nic = relationship("Nic", backref=backref('current_action', uselist=False))
     new_network = relationship("Network",
                                backref=backref('scheduled_nics',
                                                uselist=True))
 
-    def __init__(self, nic, new_network):
-        """Schedule an action, to attach a nic to a new network (or to nothing)"""
-        self.nic = nic
-        self.new_network = new_network
+
+class NetworkAttachment(AnonModel):
+    """An attachment of a network to a particular nic on a channel"""
+    # TODO: it would be nice to place explicit unique constraints on some
+    # things:
+    #
+    # * (nic_id, network_id)
+    # * (nic_id, channel)
+    nic_id     = Column(Integer, ForeignKey('nic.id'),     nullable=False)
+    network_id = Column(Integer, ForeignKey('network.id'), nullable=False)
+    channel    = Column(String, nullable=False)
+
+    nic     = relationship('Nic', backref=backref('attachments'))
+    network = relationship('Network', backref=backref('attachments'))

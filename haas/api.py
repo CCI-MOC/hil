@@ -244,12 +244,22 @@ def node_delete_nic(node, nic):
     db.commit()
 
 
-@rest_call('POST', '/node/<node>/nic/<nic>/connect_network')
-def node_connect_network(node, nic, network):
-    """Connect a physical NIC to a network.
+@rest_call('POST', '/node/<node>/nic/<nic>/connect_network', schema=Schema({
+    'network'          : basestring,
+    Optional('channel'): basestring,
+}))
+def node_connect_network(node, nic, network, channel=None):
+    """Connect a physical NIC to a network, on channel.
+
+    If channel is ``None``, use the allocator default.
 
     Raises ProjectMismatchError if the node is not in a project, or if the
     project does not have access rights to the given network.
+
+    Raises BlockedError if there is a pending network action, or if the network
+    is already attached to the nic, or if the channel is in use.
+
+    Raises BadArgumentError if the channel is invalid for the network.
     """
     db = model.Session()
 
@@ -262,20 +272,37 @@ def node_connect_network(node, nic, network):
 
     project = node.project
 
+    allocator = get_network_allocator()
+    if channel is None:
+        channel = allocator.get_default_channel(db)
+
     if nic.current_action:
         raise BlockedError("A networking operation is already active on the nic.")
 
     if (network.access is not None) and (network.access is not project):
         raise ProjectMismatchError("Project does not have access to given network.")
 
-    db.add(model.NetworkingAction(nic, network))
+    if _have_attachment(db, nic, model.NetworkAttachment.network == network):
+        raise BlockedError("The network is already attached to the nic.")
+    if _have_attachment(db, nic, model.NetworkAttachment.channel == channel):
+        raise BlockedError("The channel is already in use on the nic.")
+
+    if not allocator.is_legal_channel_for(db, channel, network.network_id):
+        raise BadArgumentError("Channel %r, is not legal for this network." %
+                               channel)
+
+    db.add(model.NetworkingAction(nic=nic,
+                                  new_network=network,
+                                  channel=channel))
     db.commit()
 
 @rest_call('POST', '/node/<node>/nic/<nic>/detach_network')
 def node_detach_network(node, nic):
-    """Detach a physical nic from any network it's on.
+    """Detach network ``network`` from physical nic ``nic``.
 
     Raises ProjectMismatchError if the node is not in a project.
+
+    Raises BlockedError if there is already a pending network action.
     """
     db = model.Session()
     node = _must_find(db, model.Node, node)
@@ -284,12 +311,15 @@ def node_detach_network(node, nic):
     if not node.project:
         raise ProjectMismatchError("Node not in project")
 
-    project = nic.owner.project
-
     if nic.current_action:
         raise BlockedError("A networking operation is already active on the nic.")
-
-    db.add(model.NetworkingAction(nic, None))
+    attachment = db.query(model.NetworkAttachment)\
+        .filter_by(nic=nic, network=network).first()
+    if attachment is None:
+        raise BadArgumentError("The network is not attached to the nic.")
+    db.add(model.NetworkingAction(nic=nic,
+                                  channel=attachment.channel,
+                                  new_network=None))
     db.commit()
 
 
@@ -558,9 +588,12 @@ def show_network(network):
           has access to the network. Otherwise, the network is public.
     """
     db = model.Session()
+    allocator = get_network_allocator()
+
     network = _must_find(db, model.Network, network)
     result = {
         'name': network.label,
+        'channels': allocator.legal_channels_for(db, network.network_id),
     }
     if network.creator is None:
         result['creator'] = 'admin'
@@ -850,6 +883,17 @@ def stop_console(nodename):
 
     # Helper functions #
     ####################
+
+
+def _have_attachment(db, nic, query):
+    """Return whether there are any attachments matching ``query`` for ``nic``.
+
+    ``query`` should an argument suitable to pass to db.query(...).filter
+    """
+    return db.query(model.NetworkAttachment).filter(
+        model.NetworkAttachment.nic == nic,
+        query,
+    ).count() != 0
 
 
 def _assert_absent(session, cls, name):

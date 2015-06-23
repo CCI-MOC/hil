@@ -35,13 +35,13 @@ class NullNetworkAllocator(NetworkAllocator):
     def populate(self, db):
         pass
 
-    def legal_channels_for(db, net_id):
+    def legal_channels_for(self, db, net_id):
         return ["null"]
 
-    def is_legal_channel_for(db, channel_id, net_id):
+    def is_legal_channel_for(self, db, channel_id, net_id):
         return channel_id == "null"
 
-    def get_default_channel(db):
+    def get_default_channel(self, db):
         return "null"
 
 

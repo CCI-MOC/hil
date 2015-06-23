@@ -118,4 +118,6 @@ class TestNetworkingAction(ModelTest):
                   'ipmi', '00:11:22:33:44:55')
         project = Project('anvil-nextgen')
         network = Network(project, project, True, '102', 'hammernet')
-        return NetworkingAction(nic, network)
+        return NetworkingAction(nic=nic,
+                                new_network=network,
+                                channel='null')
