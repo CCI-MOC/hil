@@ -71,7 +71,7 @@ def apply_networking():
     for session in switch_sessions.values():
         session.disconnect()
 
-    # Then perform the database change and delete them
+    # Then perform the database changes and delete them
     for action in actions:
         action.nic.network = action.new_network
         db.delete(action)
