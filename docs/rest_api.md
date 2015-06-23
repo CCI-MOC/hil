@@ -86,7 +86,7 @@ Connect the network named `<network>` to `<nic>` on `<channel>`.
 
 `<channel>` should be a legal channel identifier specified by the output 
 of `show_network`, above. If `<channel>` is omitted, the driver will choose
-a default, typically some form of "untagged."
+a default, which should be some form of "untagged."
 
 Possible errors:
 
