@@ -21,7 +21,10 @@ import os.path
 
 
 def testsuite_config():
-    """A pytest fixture which loads an initial config from ``testsuite.cfg``.
+    """Loads an initial config from ``testsuite.cfg``.
+
+    This is meant to be used as/from a pytest fixture, but isn't declared
+    here as such; individual modules should declare fixtures which use it.
 
     Tests which don't care about a specific configuration should leave the
     config alone. This allows the developer to test with different
@@ -123,7 +126,10 @@ def releaseDB(db):
 
 
 def fresh_database(request):
-    """A pytest fixture which runs the test against a newly populated DB.
+    """Runs the test against a newly populated DB.
+
+    This is meant to be used as a pytest fixture, but isn't declared
+    here as such; individual modules should declare it as a fixture.
 
     This must run *after* the config file (or equivalent) has been loaded.
     """
@@ -167,10 +173,14 @@ def deployment_test():
 
 
 def headnode_cleanup(request):
-    """A pytest fixture which cleans up headnode VMs left by tests.  This is to
-    work around an irritating bug in some versions of libvirt, which causes
-    'virsh undefine' to fail if called too quickly.  This decorator depends on
-    the database containing an accurate list of headnodes.
+    """Clean up headnode VMs left by tests.
+
+    This is meant to be used as a pytest fixture, but isn't declared
+    here as such; individual modules should declare it as a fixture.
+
+    This is to work around an irritating bug in some versions of libvirt, which
+    causes 'virsh undefine' to fail if called too quickly.  This decorator
+    depends on the database containing an accurate list of headnodes.
     """
 
     def undefine_headnodes(db):
