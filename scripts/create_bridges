@@ -17,7 +17,7 @@
 from haas import config
 from haas.config import cfg
 from subprocess import call
-from haas.drivers.driver_tools.vlan import get_vlan_list
+from haas.ext.network_allocators.vlan_pool import get_vlan_list
 
 config.load()
 

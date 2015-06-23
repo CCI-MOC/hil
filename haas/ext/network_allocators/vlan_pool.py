@@ -8,8 +8,12 @@ from haas.config import cfg
 from sqlalchemy import Column, Integer, Boolean
 
 
-def _get_vlan_list():
-    vlan_str = cfg.get('vlan', 'vlans')
+def get_vlan_list():
+    """Return a list of vlans in the module's config section.
+
+    This is for use by the ``create_bridges`` script.
+    """
+    vlan_str = cfg.get(__name__, 'vlans')
     returnee = []
     for r in vlan_str.split(","):
         r = r.strip().split("-")
@@ -40,7 +44,7 @@ class VlanAllocator(NetworkAllocator):
         vlan.available = True
 
     def populate(self, db):
-        vlan_list = _get_vlan_list()
+        vlan_list = get_vlan_list()
         for vlan in vlan_list:
             db.add(Vlan(vlan))
         db.commit()
