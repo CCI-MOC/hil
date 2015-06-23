@@ -38,11 +38,6 @@ def testsuite_config():
         config.load('testsuite.cfg')
     else:
         config_set({
-            'general': {
-                # TODO: this is going away soon, but there are still a few
-                # parts of the code that use it.
-                'driver': 'null',
-            },
             'extensions': {
                 # Use the null network allocator for these tests
                 'haas.ext.network_allocators.null': '',

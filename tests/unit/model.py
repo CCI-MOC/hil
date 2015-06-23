@@ -24,18 +24,21 @@
 from abc import ABCMeta, abstractmethod
 
 from haas.model import *
+from haas import config
 
 from haas.test_common import fresh_database, testsuite_config
 import pytest
 
-# XXX: there has to be a better way to do this sort of thing...
-testsuite_config = pytest.fixture(testsuite_config)
+@pytest.fixture
+def configure():
+    testsuite_config()
+    config.load_extensions()
 
 @pytest.fixture
 def db(request):
     return fresh_database(request)
 
-pytestmark = pytest.mark.usefixtures('testsuite_config', 'db')
+pytestmark = pytest.mark.usefixtures('configure', 'db')
 
 
 class ModelTest:
