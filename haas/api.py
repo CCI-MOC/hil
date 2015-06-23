@@ -297,7 +297,7 @@ def node_connect_network(node, nic, network, channel=None):
     db.commit()
 
 @rest_call('POST', '/node/<node>/nic/<nic>/detach_network')
-def node_detach_network(node, nic):
+def node_detach_network(node, nic, network):
     """Detach network ``network`` from physical nic ``nic``.
 
     Raises ProjectMismatchError if the node is not in a project.
