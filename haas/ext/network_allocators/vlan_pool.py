@@ -3,7 +3,7 @@
 import logging
 
 from haas.network_allocator import NetworkAllocator, set_network_allocator
-from haas.model import AnonModel, Session
+from haas.model import AnonModel
 from haas.config import cfg
 from sqlalchemy import Column, Integer, Boolean
 
