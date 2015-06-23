@@ -325,7 +325,7 @@ class Switch(Model):
         HaaS avoid connecting and disconnecting for each change. the session
         object must have the methods:
 
-            def apply_network(self, net_map):
+            def apply_networking(self, net_map):
                 '''Apply the changes specified in ``net_map`` to the switch.
 
                 ``net_map`` must be a dictionary mapping port labels (strings)
