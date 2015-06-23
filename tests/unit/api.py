@@ -1026,79 +1026,87 @@ class Test_switch_delete_port:
 class TestPortConnectDetachNic:
 
     def test_port_connect_nic_success(self, db):
-        api.port_register('3')
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE)
+        api.switch_register_port('sw0', '3')
         api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
-        api.port_connect_nic('3', 'compute-01', 'eth0')
+        api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
 
     def test_port_connect_nic_no_such_switch(self, db):
         api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         with pytest.raises(api.NotFoundError):
-            api.port_connect_nic('3', 'compute-01', 'eth0')
+            api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
 
     def test_port_connect_nic_no_such_port(self, db):
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE)
         api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         with pytest.raises(api.NotFoundError):
-            api.port_connect_nic('3', 'compute-01', 'eth0')
+            api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
 
     def test_port_connect_nic_no_such_node(self, db):
-        api.port_register('3')
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE)
+        api.switch_register_port('sw0', '3')
         with pytest.raises(api.NotFoundError):
-            api.port_connect_nic('3', 'compute-01', 'eth0')
+            api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
 
     def test_port_connect_nic_no_such_nic(self, db):
-        api.port_register('3')
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE)
+        api.switch_register_port('sw0', '3')
         api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         with pytest.raises(api.NotFoundError):
-            api.port_connect_nic('3', 'compute-01', 'eth0')
+            api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
 
     def test_port_connect_nic_already_attached_to_same(self, db):
-        api.port_register('3')
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE)
+        api.switch_register_port('sw0', '3')
         api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
-        api.port_connect_nic('3', 'compute-01', 'eth0')
+        api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
         with pytest.raises(api.DuplicateError):
-            api.port_connect_nic('3', 'compute-01', 'eth0')
+            api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
 
     def test_port_connect_nic_nic_already_attached_differently(self, db):
-        api.port_register('3')
-        api.port_register('4')
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE)
+        api.switch_register_port('sw0', '3')
+        api.switch_register_port('sw0', '4')
         api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
-        api.port_connect_nic('3', 'compute-01', 'eth0')
+        api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
         with pytest.raises(api.DuplicateError):
-            api.port_connect_nic('4', 'compute-01', 'eth0')
+            api.port_connect_nic('sw0', '4', 'compute-01', 'eth0')
 
     def test_port_connect_nic_port_already_attached_differently(self, db):
-        api.port_register('3')
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE)
+        api.switch_register_port('sw0', '3')
         api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register('compute-02', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         api.node_register_nic('compute-02', 'eth1', 'DE:AD:BE:EF:20:15')
-        api.port_connect_nic('3', 'compute-01', 'eth0')
+        api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
         with pytest.raises(api.DuplicateError):
-            api.port_connect_nic('3', 'compute-02', 'eth1')
-
+            api.port_connect_nic('sw0', '3', 'compute-02', 'eth1')
 
     def test_port_detach_nic_success(self, db):
-        api.port_register('3')
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE)
+        api.switch_register_port('sw0', '3')
         api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
-        api.port_connect_nic('3', 'compute-01', 'eth0')
-        api.port_detach_nic('3')
+        api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
+        api.port_detach_nic('sw0', '3')
 
     def test_port_detach_nic_no_such_port(self, db):
         with pytest.raises(api.NotFoundError):
-            api.port_detach_nic('3')
+            api.port_detach_nic('sw0', '3')
 
     def test_port_detach_nic_not_attached(self, db):
-        api.port_register('3')
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE)
+        api.switch_register_port('sw0', '3')
         api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         with pytest.raises(api.NotFoundError):
-            api.port_detach_nic('3')
+            api.port_detach_nic('sw0', '3')
 
 
 class TestQuery:
@@ -1122,7 +1130,6 @@ class TestQuery:
         assert len(expected['nics']) == 0
         actual['nics'] = []
         assert expected == actual
-
 
     def test_free_nodes(self, db):
         api.node_register('master-control-program', 'ipmihost', 'root', 'tapeworm')
