@@ -385,10 +385,11 @@ class TestNodeConnectDetachNetwork:
 
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
         deferred.apply_networking()
+
         network = api._must_find(db, model.Network, 'hammernet')
         nic = api._must_find(db, model.Nic, '99-eth0')
-        assert nic.network is network
-        assert nic in network.nics
+        db.query(model.NetworkAttachment).filter_by(network=network,
+                nic=nic).one()
 
     def test_node_connect_network_wrong_node_in_project(self, db):
         api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
@@ -503,8 +504,8 @@ class TestNodeConnectDetachNetwork:
         deferred.apply_networking()
         network = api._must_find(db, model.Network, 'hammernet')
         nic = api._must_find(db, model.Nic, '99-eth0')
-        assert nic.network is not network
-        assert nic not in network.nics
+        assert db.query(model.NetworkAttachment).filter_by(network=network,
+                       nic=nic).count() == 0
 
     def test_node_detach_network_not_attached(self, db):
         api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
