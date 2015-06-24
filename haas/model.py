@@ -313,7 +313,6 @@ class Switch(Model):
         """
         assert False, "Subclasses MUST override the validate method"
 
-
     def session(self):
         """Return a session object for the switch.
 
@@ -321,14 +320,11 @@ class Switch(Model):
         HaaS avoid connecting and disconnecting for each change. the session
         object must have the methods:
 
-            def apply_networking(self, net_map):
-                '''Apply the changes specified in ``net_map`` to the switch.
+            def apply_networking(self, action):
+                '''Apply the NetworkingAction ``action`` to the switch.
 
-                ``net_map`` must be a dictionary mapping port labels (strings)
-                to (network identifier, channel identifier) pairs. For each
-                pair, if the network identifier is ``None``, the switch should
-                detach the given channel from the port. Otherwise, the network
-                should be attached on the specified channel.
+                Action is guaranteed to reference a port object that is
+                attached to the correct switch.
                 '''
 
             def disconnect(self):

@@ -46,20 +46,26 @@ class MockSwitch(Switch):
     def session(self):
         return self
 
-    def apply_networking(self, net_map):
+    def apply_networking(self, action):
 
         global LOCAL_STATE
 
         if self.label not in LOCAL_STATE:
             LOCAL_STATE[self.label] = {}
 
-        for port in net_map:
-            channel = net_map[port]['channel']
-            network = net_map[port]['network']
-            if network is None:
-                del LOCAL_STATE[self.label][port][channel]
-            else:
-                LOCAL_STATE[self.label][port][channel] = network
+        state = LOCAL_STATE[self.label]
+        port = action.nic.port.label
+
+        if port not in state:
+            state[port] = {}
+
+        if action.channel not in state[port]:
+            state[port][action.channel] = None
+
+        if action.new_network is None:
+            del state[port][action.channel]
+        else:
+            state[port][action.channel] = action.new_network.network_id
 
     def disconnect(self):
         pass

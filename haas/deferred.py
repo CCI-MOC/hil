@@ -59,12 +59,7 @@ def apply_networking():
             switch = nic.port.owner
             if switch.label not in switch_sessions:
                 switch_sessions[switch.label] = switch.session()
-            switch_sessions[switch.label].apply_networking({
-                nic.port.label: (
-                    network_id,
-                    action.channel
-                ),
-            })
+            switch_sessions[switch.label].apply_networking(action)
         else:
             logging.getLogger(__name__).warn(
                 'Not modifying NIC %s; NIC is not on a port.' %
