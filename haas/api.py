@@ -569,6 +569,8 @@ def network_delete(network):
         raise BlockedError("Network still connected to nodes")
     if network.hnics:
         raise BlockedError("Network still connected to headnodes")
+    if len(network.scheduled_nics) != 0:
+        raise BlockedError("There are pending actions on this network")
     if network.allocated:
         get_network_allocator().free_network_id(db, network.network_id)
 
