@@ -35,13 +35,13 @@ class _AppleJuice(Juice):
 class GrapeJuice(Juice):
     api_name = 'grape'
 
+def test_class_resolver():
+    build_class_map_for(Food)
+    build_class_map_for(Drink)
 
-build_class_map_for(Food)
-build_class_map_for(Drink)
-
-assert concrete_class_for(Food, 'apple') is Apple
-assert concrete_class_for(Food, 'orange') is Orange
-assert concrete_class_for(Food, 'grape') is None
-assert concrete_class_for(Drink, 'apple') is None
-assert concrete_class_for(Drink, 'orange') is OrangeJuice
-assert concrete_class_for(Drink, 'grape') is GrapeJuice
+    assert concrete_class_for(Food, 'apple') is Apple
+    assert concrete_class_for(Food, 'orange') is Orange
+    assert concrete_class_for(Food, 'grape') is None
+    assert concrete_class_for(Drink, 'apple') is None
+    assert concrete_class_for(Drink, 'orange') is OrangeJuice
+    assert concrete_class_for(Drink, 'grape') is GrapeJuice
