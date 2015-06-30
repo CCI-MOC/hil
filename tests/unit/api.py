@@ -28,7 +28,7 @@ def configure():
     testsuite_config()
     config_merge({
         'extensions': {
-            'haas.testing.ext.switches.mock': '',
+            'haas.ext.switches.mock': '',
         },
     })
     config.load_extensions()
