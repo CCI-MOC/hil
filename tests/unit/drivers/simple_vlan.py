@@ -35,7 +35,7 @@ def vlan_test(vlan_list):
     def dec(f):
         def config_initialize():
             # Use the 'dell' backend for these tests
-            testsuite_config()
+            config_testsuite()
             config_merge({
                 'general': {
                     'driver': 'simple_vlan',

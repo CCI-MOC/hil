@@ -34,7 +34,7 @@ def vlan_test(vlan_list):
     def dec(f):
         def config_initialize():
             # Use the complex vlan driver for these tests
-            testsuite_config()
+            config_testsuite()
             config_merge({
                 'general': {
                     'driver': 'complex_vlan',

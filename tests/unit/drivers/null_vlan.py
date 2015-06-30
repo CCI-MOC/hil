@@ -33,7 +33,7 @@ def vlan_test(vlan_list):
 
     def dec(f):
         def config_initialize():
-            testsuite_config()
+            config_testsuite()
             config_merge({'extensions': None})
             config_merge({
                 'general': {

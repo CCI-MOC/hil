@@ -26,12 +26,12 @@ from abc import ABCMeta, abstractmethod
 from haas.model import *
 from haas import config
 
-from haas.test_common import fresh_database, testsuite_config
+from haas.test_common import fresh_database, config_testsuite
 import pytest
 
 @pytest.fixture
 def configure():
-    testsuite_config()
+    config_testsuite()
     config.load_extensions()
 
 @pytest.fixture

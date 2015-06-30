@@ -25,7 +25,7 @@ MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/switches/mock'
 
 @pytest.fixture
 def configure():
-    testsuite_config()
+    config_testsuite()
     config_merge({
         'extensions': {
             'haas.ext.switches.mock': '',

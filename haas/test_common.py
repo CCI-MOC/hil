@@ -20,7 +20,7 @@ import subprocess
 import os.path
 
 
-def testsuite_config():
+def config_testsuite():
     """Loads an initial config from ``testsuite.cfg``.
 
     This is meant to be used as/from a pytest fixture, but isn't declared
