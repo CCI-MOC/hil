@@ -133,13 +133,14 @@ def fresh_database(request):
     return db
 
 
-def deployment_test():
-    """A which runs the given function on a fresh memory-backed
-    database and a config that is setup to operate with a dell switch.  Used
-    for testing functions that pertain to the state of the outside world.
-    These tests are very specific to our setup and are used for internal
-    testing purposes. These tests are unlikely to work with other HaaS
-    configurations.
+def site_layout():
+    """Load the file site-layout.json, and populate the database accordingly.
+
+    This is meant to be used as a pytest fixture, but isn't declared
+    here as such; individual modules should declare it as a fixture.
+
+    Full documentation for site-layout.json is forthcoming, but for now
+    site-layout.json.example should give a good idea of how it works.
     """
     layout_json_data = open('site-layout.json')
     layout = json.load(layout_json_data)

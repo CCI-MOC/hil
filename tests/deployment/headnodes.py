@@ -40,12 +40,12 @@ def server_init():
     server.validate_state()
 
 
-deployment_test = pytest.fixture(deployment_test)
+site_layout = pytest.fixture(site_layout)
 headnode_cleanup = pytest.fixture(headnode_cleanup)
 pytestmark = pytest.mark.usefixtures('configure',
                                      'server_init',
                                      'db',
-                                     'deployment_test',
+                                     'site_layout',
                                      'headnode_cleanup')
 
 
