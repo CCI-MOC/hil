@@ -151,20 +151,16 @@ def deployment_test():
         layout = json.load(layout_json_data)
         layout_json_data.close()
 
-        netmap = {}
+        for switch in layout['switches']:
+            api.switch_register(**switch)
+
         for node in layout['nodes']:
             api.node_register(node['name'], node['ipmi']['host'],
                 node['ipmi']['user'], node['ipmi']['pass'])
             for nic in node['nics']:
                 api.node_register_nic(node['name'], nic['name'], nic['mac'])
-                api.port_register(nic['port'])
-                api.port_connect_nic(nic['port'], node['name'], nic['name'])
-                netmap[nic['port']] = None
-
-        # Now ensure that all of these ports are turned off
-        driver_name = cfg.get('general', 'driver')
-        driver = importlib.import_module('haas.drivers.' + driver_name)
-        driver.apply_networking(netmap)
+                api.switch_register_port(nic['switch'], nic['port'])
+                api.port_connect_nic(nic['switch'], nic['port'], node['name'], nic['name'])
 
 
 def headnode_cleanup(request):
