@@ -169,7 +169,8 @@ def headnode_cleanup(request):
     depends on the database containing an accurate list of headnodes.
     """
 
-    def undefine_headnodes(db):
+    def undefine_headnodes():
+        db = Session()
         for hn in db.query(Headnode):
             # XXX: Our current version of libvirt has a bug that causes this
             # command to hang for a minute and throw an error before

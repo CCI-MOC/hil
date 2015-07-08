@@ -30,6 +30,10 @@ _CHANNEL_RE = re.compile(r'vlan/(\d+)')
 class PowerConnect55xx(Switch):
     api_name = 'http://schema.massopencloud.org/haas/switches/powerconnect55xx'
 
+    __mapper_args__ = {
+        'polymorphic_identity': api_name,
+    }
+
     id = Column(Integer, ForeignKey('switch.id'), primary_key=True)
     hostname = Column(String, nullable=False)
     username = Column(String, nullable=False)
