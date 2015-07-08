@@ -141,11 +141,6 @@ def deployment_test():
     testing purposes. These tests are unlikely to work with other HaaS
     configurations.
     """
-    # Use the deployment config for these tests.  Setup such as the switch
-    # IP address and password must be in this file, as well as the allowed
-    # VLAN range.
-    cfg.read('deployment.cfg')
-
     layout_json_data = open('site-layout.json')
     layout = json.load(layout_json_data)
     layout_json_data.close()
