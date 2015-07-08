@@ -35,7 +35,8 @@ class PowerConnect55xx(Switch):
     username = Column(String, nullable=False)
     password = Column(String, nullable=False)
 
-    def validate(self, kwargs):
+    @staticmethod
+    def validate(kwargs):
         schema.Schema({
             'username': basestring,
             'hostname': basestring,
