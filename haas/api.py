@@ -615,6 +615,7 @@ def switch_register(switch, type, **kwargs):
     cls.validate(kwargs)
     obj = cls(**kwargs)
     obj.label = switch
+    obj.type = type
 
     db.add(obj)
     db.commit()
