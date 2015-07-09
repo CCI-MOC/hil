@@ -50,10 +50,11 @@ class VlanAllocator(NetworkAllocator):
         db.commit()
 
     def legal_channels_for(self, db, net_id):
-        return ["vlan/native"]
+        return ["vlan/native",
+                "vlan/" + net_id]
 
     def is_legal_channel_for(self, db, channel_id, net_id):
-        return channel_id == "vlan/native"
+        return channel_id in self.legal_channels_for(db, net_id)
 
     def get_default_channel(self, db):
         return "vlan/native"
