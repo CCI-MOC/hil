@@ -17,11 +17,12 @@
 Meant for use in the test suite.
 """
 
+from collections import defaultdict
 from haas.model import Switch
 from schema import Schema
 from sqlalchemy import Column, Integer, ForeignKey
 
-LOCAL_STATE = {}
+LOCAL_STATE = defaultdict(lambda: defaultdict(dict))
 
 
 class MockSwitch(Switch):
@@ -47,20 +48,8 @@ class MockSwitch(Switch):
         return self
 
     def apply_networking(self, action):
-
-        global LOCAL_STATE
-
-        if self.label not in LOCAL_STATE:
-            LOCAL_STATE[self.label] = {}
-
         state = LOCAL_STATE[self.label]
         port = action.nic.port.label
-
-        if port not in state:
-            state[port] = {}
-
-        if action.channel not in state[port]:
-            state[port][action.channel] = None
 
         if action.new_network is None:
             del state[port][action.channel]
