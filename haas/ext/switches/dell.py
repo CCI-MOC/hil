@@ -53,11 +53,12 @@ class PowerConnect55xx(Switch):
 
 class _Session(object):
 
-    def __init__(self, config_prompt, if_prompt, main_prompt):
+    def __init__(self, config_prompt, if_prompt, main_prompt, switch, console):
         self.config_prompt = config_prompt
         self.if_prompt     = if_prompt
         self.main_prompt   = main_prompt
         self.switch        = switch
+        self.console       = console
 
     @staticmethod
     def connect(switch):
@@ -88,7 +89,8 @@ class _Session(object):
         return _Session(config_prompt=config_prompt,
                         if_prompt=if_prompt,
                         main_prompt=main_prompt,
-                        switch=switch)
+                        switch=switch,
+                        console=console)
 
     def apply_networking(self, action):
         interface = action.nic.port.label
@@ -98,7 +100,7 @@ class _Session(object):
         self.console.expect(self.if_prompt)
 
         if channel == 'vlan/native':
-            if new_network is None:
+            if action.new_network is None:
                 old_attachment = NetworkAttachment.query\
                     .filter_by(channel='vlan/native', nic=action.nic).first()
                 if old_attachment is not None:
@@ -106,8 +108,10 @@ class _Session(object):
                                           old_attachment.network.network_id)
                 self.console.sendline('sw trunk vlan native none')
             else:
-                self.console.sendline('sw trunk vlan allowed add ' + new_network.network_id)
-                self.console.sendline('sw trunk vlan native ' + new_network.network_id)
+                self.console.sendline('sw trunk vlan allowed add ' +
+                                      action.new_network.network_id)
+                self.console.sendline('sw trunk vlan native ' +
+                                      action.new_network.network_id)
         else:
             match = re.match(_CHANNEL_RE, channel)
             # TODO: I'd be more okay with this assertion if it weren't possible
@@ -137,40 +141,86 @@ class _Session(object):
         self.console.expect(pexpect.EOF)
 
 
-# This doesn't get @no_dry_run, because returning None here is a bad idea
-def get_switch_vlans(config, vlan_list):
-    # load the configuration:
-    switch_ip = config['ip']
-    switch_user = config['user']
-    switch_pass = config['pass']
+    def get_port_networks(self, ports):
+        num_re = re.compile(r'(\d+)')
+        port_configs = self._port_configs(ports)
+        result = {}
+        for k, v in port_configs.iteritems():
+            native = v['Trunking Native Mode VLAN'].strip()
+            match = re.match(num_re, native)
+            if match:
+                # We need to call groups to get the part of the string that
+                # actually matched, because it could include some junk on the end,
+                # e.g. "100 (Inactive)".
+                num_str = match.groups()[0]
+                native = int(num_str)
+            else:
+                native = None
+            networks = []
+            range_str = v['Trunking VLANs Enabled']
+            for range_str in v['Trunking VLANs Enabled'].split(','):
+                for num_str in range_str.split('-'):
+                    num_str = num_str.strip()
+                    match = re.match(num_re, num_str)
+                    if match:
+                        # There may be other tokens in the output, e.g.
+                        # the string "(Inactive)" somteimtes appears.
+                        # We should only use the value if it's an actual number.
+                        num_str = match.groups()[0]
+                        networks.append(('vlan/%s' % num_str, int(num_str)))
+            if native is not None:
+                networks.append(('vlan/native', native))
+            result[k] = networks
+        return result
 
-    # connect to the switch, and log in:
-    console = pexpect.spawn('telnet ' + switch_ip)
-    console.expect('User Name:')
-    console.sendline(switch_user)
-    console.expect('Password:')
-    console.sendline(switch_pass)
 
-    #Regex to handle different prompt at switch
-    #[\r\n]+ will handle any newline
-    #.+ will handle any character after newline
-    # this sequence terminates with #
-    console.expect(r'[\r\n]+.+#')
-    cmd_prompt = console.after
-    cmd_prompt = cmd_prompt.strip(' \r\n\t')
+    def _port_configs(self, ports):
+        result = {}
+        for port in ports:
+            result[port] = self._int_config(port.label)
+        return result
 
-    # get possible vlans from config
-    vlan_cfgs = {}
-    # This regex matches the notation for ports on the Dell switch.  For
-    # example, 'gi1/0/24'
-    regex = re.compile(r'gi\d+\/\d+\/\d+-?\d?\d?')
-    for vlan in vlan_list:
-        console.sendline('show vlan tag %d' % vlan)
-        console.expect(cmd_prompt)
-        vlan_cfgs[vlan] = regex.findall(console.before)
+    def _int_config(self, interface):
+        """Collect information about the specified interface
 
-    # close session
-    console.sendline('exit')
-    console.expect(pexpect.EOF)
+        Returns a dictionary from the output of ``show int sw <interface>``.
+        """
 
-    return vlan_cfgs
+        # First we have to back out of the config prompt, which is where the
+        # session spends most of it's time:
+        self.console.sendline('exit')
+        self.console.expect(self.main_prompt)
+
+        alternatives = [
+            re.escape(r'More: <space>,  Quit: q or CTRL+Z, One line: <return> '),
+            r'Classification rules:\r\n', # End
+            r'[^ \t\r\n][^:]*:[^\n]*\n',       # Key:Value\r\n,
+            r' [^\n]*\n',                        # continuation line (from k:v)
+        ]
+        self.console.sendline('show int sw %s' % interface)
+        # Find the first Key:Value pair (this is needed to skip past some
+        # possible matches for other patterns prior to this:
+        self.console.expect(alternatives[2])
+
+        k, v = self.console.after.split(':', 1)
+        result = {k: v}
+
+        while True:
+            index = self.console.expect(alternatives)
+            if index == 0:
+                self.console.send(' ')
+            elif index == 1:
+                break
+            elif index == 2:
+                k, v = self.console.after.split(':', 1)
+                result[k] = v
+            elif index == 3:
+                result[k] += self.console.after
+
+        self.console.expect(self.main_prompt)
+
+        # Okay, go back into the config prompt for future use:
+        self.console.sendline('config')
+        self.console.expect(self.config_prompt)
+
+        return result
