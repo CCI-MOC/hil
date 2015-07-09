@@ -336,6 +336,25 @@ class Switch(Model):
                 This will be called when HaaS is done with the session.
                 '''
 
+            def get_port_networks(self, ports):
+                '''Return a mapping from port objects to (channel, network ID) pairs.
+
+                ``ports`` is a list of port objects to collect information on.
+
+                The return value will be a dictionary of the form:
+
+                    {
+                        Port<"port-3">: [("vlan/native", "23"), ("vlan/52", "52")],
+                        Port<"port-7">: [("vlan/23", "23")],
+                        Port<"port-8">: [("vlan/native", "52")],
+                        ...
+                    }
+
+                With one key for each element in the ``ports`` argument.
+
+                This method is only for use by the test suite.
+                '''
+
         Some drivers may do things that are not connection-oriented; If so,
         they can just return a dummy object here. The recommended way to
         handle this is to define the two methods above on the switch object,

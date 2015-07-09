@@ -133,6 +133,65 @@ def fresh_database(request):
     return db
 
 
+class NetworkTest:
+    """Superclass for network-related deployment tests"""
+
+    def get_port_networks(self, ports):
+        ret = {}
+        ports_by_switch = {}
+        for port in ports:
+            if port.owner not in ports_by_switch:
+                ports_by_switch[port.owner] = []
+            ports_by_switch[port.owner].append(port)
+        for switch, ports in ports_by_switch.iteritems():
+            session = switch.session()
+            switch_port_networks = session.get_port_networks(ports)
+            session.disconnect()
+            for k, v in switch_port_networks.iteritems():
+                ret[k] = v
+        return ret
+
+    def get_network(self, port, port_networks):
+        """Returns all interfaces on the same network as a given port"""
+        if port not in port_networks:
+            return set()
+        result = set()
+        for k, v in port_networks.iteritems():
+            networks = set([net for channel, net in v])
+            for _, net in port_networks[port]:
+                if net in networks:
+                    result.add(k)
+        return result
+
+    def get_all_ports(self, nodes):
+        ports = []
+        for node in nodes:
+            for nic in node.nics:
+                ports.append(nic.port)
+        return ports
+
+    def collect_nodes(self, db):
+        """Add 4 available nodes with nics to the project.
+
+        If there are not enough nodes, this will rais an api.AllocationError.
+        """
+        free_nodes = db.query(Node).filter_by(project_id=None).all()
+        nodes = []
+        for node in free_nodes:
+            if len(node.nics) > 0:
+                api.project_connect_node('anvil-nextgen', node.label)
+                nodes.append(node)
+                if len(nodes) >= 4:
+                    break
+
+        # If there are not enough nodes with nics, raise an exception
+        if len(nodes) < 4:
+            raise api.AllocationError(('At least 4 nodes with at least ' +
+                '1 NIC are required for this test. Only %d node(s) were ' +
+                'provided.') % len(nodes))
+        return nodes
+
+
 def site_layout():
     """Load the file site-layout.json, and populate the database accordingly.
 

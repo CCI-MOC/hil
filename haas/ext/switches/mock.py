@@ -58,3 +58,13 @@ class MockSwitch(Switch):
 
     def disconnect(self):
         pass
+
+    def get_port_networks(self, ports):
+        state = LOCAL_STATE[self.label]
+        ret = {}
+        for port in ports:
+            ret[port] = []
+            for chan, net in state[port.label].iteritems():
+                if net is not None:
+                    ret[port].append((chan, net))
+        return ret
