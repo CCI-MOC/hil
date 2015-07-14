@@ -24,10 +24,9 @@ import schema
 from sqlalchemy import Column, ForeignKey, Integer, String
 
 from haas.model import Switch
+from haas.ext.switches import _console
 
 logger = logging.getLogger(__name__)
-
-_CHANNEL_RE = re.compile(r'vlan/(\d+)')
 
 
 class PowerConnect55xx(Switch):
@@ -54,7 +53,7 @@ class PowerConnect55xx(Switch):
         return _Session.connect(self)
 
 
-class _Session(object):
+class _Session(_console.Session):
 
     def __init__(self, config_prompt, if_prompt, main_prompt, switch, console):
         self.config_prompt = config_prompt
@@ -92,66 +91,41 @@ class _Session(object):
         if_prompt = re.escape(cmd_prompt[:-1] + '(config-if)#')
         main_prompt = re.escape(cmd_prompt)
 
-        session = _Session(config_prompt=config_prompt,
-                           if_prompt=if_prompt,
-                           main_prompt=main_prompt,
-                           switch=switch,
-                           console=console)
+        return _Session(config_prompt=config_prompt,
+                        if_prompt=if_prompt,
+                        main_prompt=main_prompt,
+                        switch=switch,
+                        console=console)
 
-        session._sendline('config')
-        session.console.expect(config_prompt)
-        return session
-
-
-    def apply_networking(self, action):
-        interface = action.nic.port.label
-        channel   = action.channel
-
+    def enter_if_prompt(self, interface):
+        self._sendline('config')
         self._sendline('int ' + interface)
-        self.console.expect(self.if_prompt)
 
-        if channel == 'vlan/native':
-            if action.new_network is None:
-                old_attachments = filter(lambda a: a.channel == 'vlan/native',
-                                         action.nic.attachments)
-                if len(old_attachments) != 0:
-                    self._sendline('sw trunk allowed vlan remove ' +
-                                          old_attachments[0].network.network_id)
-                self._sendline('sw trunk native vlan none')
-            else:
-                self._sendline('sw trunk allowed vlan add ' +
-                                      action.new_network.network_id)
-                self._sendline('sw trunk native vlan ' +
-                                      action.new_network.network_id)
-        else:
-            match = re.match(_CHANNEL_RE, channel)
-            # TODO: I'd be more okay with this assertion if it weren't possible
-            # to mis-configure HaaS in a way that triggers this; currently the
-            # administrator needs to line up the network allocator with the
-            # switches; this is unsatisfactory. --isd
-            assert match is not None, "HaaS passed an invalid channel to the switch!"
-            vlan_id = match.groups()[0]
-            if action.new_network is None:
-                self._sendline('sw trunk allowed vlan remove ' + vlan_id)
-            else:
-                assert action.new_network.network_id == vlan_id
-                self._sendline('sw trunk allowed vlan add ' + vlan_id)
-
-        self.console.expect(self.if_prompt)
-        # for good measure:
-        self._sendline('sw mode trunk')
-
-        self.console.expect(self.if_prompt)
+    def exit_if_prompt(self):
         self._sendline('exit')
-        self.console.expect(self.config_prompt)
+        self._sendline('exit')
+
+    def enable_vlan(self, vlan_id):
+        self._sendline('sw mode trunk')
+        self._sendline('sw trunk allowed vlan add ' + vlan_id)
+
+    def disable_vlan(self, vlan_id):
+        self._sendline('sw trunk allowed vlan remove ' + vlan_id)
+
+    def set_native(self, old, new):
+        if old is not None:
+            self.disable_vlan(old)
+        self._sendline('sw trunk native vlan ' + new)
+        self.enable_vlan(new)
+
+    def disable_native(self, vlan_id):
+        self.disable_vlan(vlan_id)
+        self._sendline('sw trunk native vlan none')
 
     def disconnect(self):
         self._sendline('exit')
-        self.console.expect(self.main_prompt)
-        self._sendline('exit')
         self.console.expect(pexpect.EOF)
         logger.debug('Logged out of switch %r', self.switch)
-
 
     def get_port_networks(self, ports):
         num_re = re.compile(r'(\d+)')
@@ -198,11 +172,6 @@ class _Session(object):
         Returns a dictionary from the output of ``show int sw <interface>``.
         """
 
-        # First we have to back out of the config prompt, which is where the
-        # session spends most of it's time:
-        self._sendline('exit')
-        self.console.expect(self.main_prompt)
-
         alternatives = [
             re.escape(r'More: <space>,  Quit: q or CTRL+Z, One line: <return> '),
             r'Classification rules:\r\n', # End
@@ -230,9 +199,4 @@ class _Session(object):
                 result[k] += self.console.after
 
         self.console.expect(self.main_prompt)
-
-        # Okay, go back into the config prompt for future use:
-        self._sendline('config')
-        self.console.expect(self.config_prompt)
-
         return result
