@@ -115,13 +115,13 @@ class _Session(object):
                 old_attachment = NetworkAttachment.query\
                     .filter_by(channel='vlan/native', nic=action.nic).first()
                 if old_attachment is not None:
-                    self._sendline('sw trunk vlan allowed remove ' +
+                    self._sendline('sw trunk allowed vlan remove ' +
                                           old_attachment.network.network_id)
-                self._sendline('sw trunk vlan native none')
+                self._sendline('sw trunk native vlan none')
             else:
-                self._sendline('sw trunk vlan allowed add ' +
+                self._sendline('sw trunk allowed vlan add ' +
                                       action.new_network.network_id)
-                self._sendline('sw trunk vlan native ' +
+                self._sendline('sw trunk native vlan ' +
                                       action.new_network.network_id)
         else:
             match = re.match(_CHANNEL_RE, channel)
@@ -132,10 +132,10 @@ class _Session(object):
             assert match is not None, "HaaS passed an invalid channel to the switch!"
             vlan_id = match.groups()[0]
             if network is None:
-                self._sendline('sw trunk vlan allowed remove ' + vlan_id)
+                self._sendline('sw trunk allowed vlan remove ' + vlan_id)
             else:
                 assert network == vlan_id
-                self._sendline('sw trunk vlan allowed add ' + vlan_id)
+                self._sendline('sw trunk allowed vlan add ' + vlan_id)
 
         self.console.expect(self.if_prompt)
         # for good measure:
