@@ -131,10 +131,10 @@ class _Session(object):
             # switches; this is unsatisfactory. --isd
             assert match is not None, "HaaS passed an invalid channel to the switch!"
             vlan_id = match.groups()[0]
-            if network is None:
+            if action.new_network is None:
                 self._sendline('sw trunk allowed vlan remove ' + vlan_id)
             else:
-                assert network == vlan_id
+                assert action.new_network.network_id == vlan_id
                 self._sendline('sw trunk allowed vlan add ' + vlan_id)
 
         self.console.expect(self.if_prompt)
