@@ -90,7 +90,6 @@ class _Session(object):
         if_prompt = re.escape(cmd_prompt[:-1] + '(config-if)#')
         main_prompt = re.escape(cmd_prompt)
 
-        # select the right interface:
         console.sendline('config')
         console.expect(config_prompt)
 
