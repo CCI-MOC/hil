@@ -77,6 +77,8 @@ class _Session(object):
         console.expect('Password:')
         console.sendline(switch.password)
 
+        logger.debug('Logged in to switch %r', switch)
+
         #Regex to handle different prompt at switch
         #[\r\n]+ will handle any newline
         #.+ will handle any character after newline
@@ -90,14 +92,16 @@ class _Session(object):
         if_prompt = re.escape(cmd_prompt[:-1] + '(config-if)#')
         main_prompt = re.escape(cmd_prompt)
 
-        console.sendline('config')
-        console.expect(config_prompt)
+        session = _Session(config_prompt=config_prompt,
+                           if_prompt=if_prompt,
+                           main_prompt=main_prompt,
+                           switch=switch,
+                           console=console)
 
-        return _Session(config_prompt=config_prompt,
-                        if_prompt=if_prompt,
-                        main_prompt=main_prompt,
-                        switch=switch,
-                        console=console)
+        session._sendline('config')
+        session.console.expect(config_prompt)
+        return session
+
 
     def apply_networking(self, action):
         interface = action.nic.port.label
@@ -146,6 +150,7 @@ class _Session(object):
         self.console.expect(self.main_prompt)
         self._sendline('exit')
         self.console.expect(pexpect.EOF)
+        logger.debug('Logged out of switch %r', self.switch)
 
 
     def get_port_networks(self, ports):
