@@ -23,7 +23,7 @@ import logging
 import schema
 from sqlalchemy import Column, ForeignKey, Integer, String
 
-from haas.model import Switch, NetworkAttachment
+from haas.model import Switch
 
 logger = logging.getLogger(__name__)
 
@@ -112,11 +112,11 @@ class _Session(object):
 
         if channel == 'vlan/native':
             if action.new_network is None:
-                old_attachment = NetworkAttachment.query\
-                    .filter_by(channel='vlan/native', nic=action.nic).first()
-                if old_attachment is not None:
+                old_attachments = filter(lambda a: a.channel == 'vlan/native',
+                                         action.nic.attachments)
+                if len(old_attachments) != 0:
                     self._sendline('sw trunk allowed vlan remove ' +
-                                          old_attachment.network.network_id)
+                                          old_attachments[0].network.network_id)
                 self._sendline('sw trunk native vlan none')
             else:
                 self._sendline('sw trunk allowed vlan add ' +
