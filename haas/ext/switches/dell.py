@@ -78,24 +78,11 @@ class _Session(_console.Session):
 
         logger.debug('Logged in to switch %r', switch)
 
-        #Regex to handle different prompt at switch
-        #[\r\n]+ will handle any newline
-        #.+ will handle any character after newline
-        # this sequence terminates with #
-        console.expect(r'[\r\n]+.+#')
-        cmd_prompt = console.after
-        cmd_prompt = cmd_prompt.strip(' \r\n\t')
 
-        #:-1 omits the last hash character
-        config_prompt = re.escape(cmd_prompt[:-1] + '(config)#')
-        if_prompt = re.escape(cmd_prompt[:-1] + '(config-if)#')
-        main_prompt = re.escape(cmd_prompt)
-
-        return _Session(config_prompt=config_prompt,
-                        if_prompt=if_prompt,
-                        main_prompt=main_prompt,
-                        switch=switch,
-                        console=console)
+        prompts = _console.get_prompts(console)
+        return _Session(switch=switch,
+                        console=console,
+                        **prompts)
 
     def enter_if_prompt(self, interface):
         self._sendline('config')

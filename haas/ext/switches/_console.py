@@ -98,3 +98,20 @@ class Session(object):
 
         self.exit_if_prompt()
         self.console.expect(self.config_prompt)
+
+
+def get_prompts(console):
+        #Regex to handle different prompt at switch
+        #[\r\n]+ will handle any newline
+        #.+ will handle any character after newline
+        # this sequence terminates with #
+        console.expect(r'[\r\n]+.+#')
+        cmd_prompt = console.after.split('\n')[-1]
+        cmd_prompt = cmd_prompt.strip(' \r\n\t')
+
+        #:-1 omits the last hash character
+        return {
+            'config_prompt': re.escape(cmd_prompt[:-1] + '(config)#'),
+            'if_prompt': re.escape(cmd_prompt[:-1] + '(config-if)#'),
+            'main_prompt': re.escape(cmd_prompt),
+        }
