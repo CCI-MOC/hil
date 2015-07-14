@@ -19,10 +19,13 @@ the long term we want to be using SNMP.
 
 import pexpect
 import re
+import logging
 import schema
 from sqlalchemy import Column, ForeignKey, Integer, String
 
 from haas.model import Switch, NetworkAttachment
+
+logger = logging.getLogger(__name__)
 
 _CHANNEL_RE = re.compile(r'vlan/(\d+)')
 
@@ -60,6 +63,11 @@ class _Session(object):
         self.switch        = switch
         self.console       = console
 
+    def _sendline(self, line):
+        logger.debug('Sending to switch %r: %r',
+                      self.switch, line)
+        self.console.sendline(line)
+
     @staticmethod
     def connect(switch):
         # connect to the switch, and log in:
@@ -96,7 +104,7 @@ class _Session(object):
         interface = action.nic.port.label
         channel   = action.channel
 
-        self.console.sendline('int ' + interface)
+        self._sendline('int ' + interface)
         self.console.expect(self.if_prompt)
 
         if channel == 'vlan/native':
@@ -104,13 +112,13 @@ class _Session(object):
                 old_attachment = NetworkAttachment.query\
                     .filter_by(channel='vlan/native', nic=action.nic).first()
                 if old_attachment is not None:
-                    self.console.sendline('sw trunk vlan allowed remove ' +
+                    self._sendline('sw trunk vlan allowed remove ' +
                                           old_attachment.network.network_id)
-                self.console.sendline('sw trunk vlan native none')
+                self._sendline('sw trunk vlan native none')
             else:
-                self.console.sendline('sw trunk vlan allowed add ' +
+                self._sendline('sw trunk vlan allowed add ' +
                                       action.new_network.network_id)
-                self.console.sendline('sw trunk vlan native ' +
+                self._sendline('sw trunk vlan native ' +
                                       action.new_network.network_id)
         else:
             match = re.match(_CHANNEL_RE, channel)
@@ -121,23 +129,23 @@ class _Session(object):
             assert match is not None, "HaaS passed an invalid channel to the switch!"
             vlan_id = match.groups()[0]
             if network is None:
-                self.console.sendline('sw trunk vlan allowed remove ' + vlan_id)
+                self._sendline('sw trunk vlan allowed remove ' + vlan_id)
             else:
                 assert network == vlan_id
-                self.console.sendline('sw trunk vlan allowed add ' + vlan_id)
+                self._sendline('sw trunk vlan allowed add ' + vlan_id)
 
         self.console.expect(self.if_prompt)
         # for good measure:
-        self.console.sendline('sw mode trunk')
+        self._sendline('sw mode trunk')
 
         self.console.expect(self.if_prompt)
-        self.console.sendline('exit')
+        self._sendline('exit')
         self.console.expect(self.config_prompt)
 
     def disconnect(self):
-        self.console.sendline('exit')
+        self._sendline('exit')
         self.console.expect(self.main_prompt)
-        self.console.sendline('exit')
+        self._sendline('exit')
         self.console.expect(pexpect.EOF)
 
 
@@ -188,7 +196,7 @@ class _Session(object):
 
         # First we have to back out of the config prompt, which is where the
         # session spends most of it's time:
-        self.console.sendline('exit')
+        self._sendline('exit')
         self.console.expect(self.main_prompt)
 
         alternatives = [
@@ -197,7 +205,7 @@ class _Session(object):
             r'[^ \t\r\n][^:]*:[^\n]*\n',       # Key:Value\r\n,
             r' [^\n]*\n',                        # continuation line (from k:v)
         ]
-        self.console.sendline('show int sw %s' % interface)
+        self._sendline('show int sw %s' % interface)
         # Find the first Key:Value pair (this is needed to skip past some
         # possible matches for other patterns prior to this:
         self.console.expect(alternatives[2])
@@ -220,7 +228,7 @@ class _Session(object):
         self.console.expect(self.main_prompt)
 
         # Okay, go back into the config prompt for future use:
-        self.console.sendline('config')
+        self._sendline('config')
         self.console.expect(self.config_prompt)
 
         return result
