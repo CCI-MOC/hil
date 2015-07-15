@@ -15,7 +15,6 @@
 """This module implements the HaaS command line tool."""
 from haas import config
 from haas.config import cfg
-from haas.network_allocator import get_network_allocator
 
 import inspect
 import json
@@ -91,14 +90,22 @@ def do_delete(url):
 
 @cmd
 def serve():
-    from haas import rest, server
     """Start the HaaS API server"""
     if cfg.has_option('devel', 'debug'):
         debug = cfg.getboolean('devel', 'debug')
     else:
         debug = False
-    config.load_extensions()
-    server.api_server_init()
+    # We need to import api here so that the functions within it get registered
+    # (via `rest_call`), though we don't use it directly:
+    from haas import model, api, rest
+    model.init_db()
+    # Stop all orphan console logging processes on startup
+    db = model.Session()
+    nodes = db.query(model.Node).all()
+    for node in nodes:
+        node.stop_console()
+        node.delete_console()
+    # Start server
     rest.serve(debug=debug)
 
 
@@ -107,7 +114,6 @@ def serve_networks():
     """Start the HaaS networking server"""
     from haas import model, deferred
     from time import sleep
-    config.load_extensions()
     model.init_db()
     while True:
         # Empty the journal until it's empty; then delay so we don't tight
@@ -120,7 +126,6 @@ def serve_networks():
 def init_db():
     """Initialize the database"""
     from haas import model
-    config.load_extensions()
     model.init_db(create=True)
 
 @cmd
@@ -269,16 +274,17 @@ def headnode_delete_hnic(headnode, nic):
     do_delete(url)
 
 @cmd
-def node_connect_network(node, nic, network):
-    """Connect <node> to <network> on given <nic>"""
+def node_connect_network(node, nic, network, channel):
+    """Connect <node> to <network> on given <nic> and <channel>"""
     url = object_url('node', node, 'nic', nic, 'connect_network')
-    do_post(url, data={'network':network})
+    do_post(url, data={'network': network,
+                       'channel': channel})
 
 @cmd
-def node_detach_network(node, nic):
-    """Detach <node> from the network on given <nic>"""
+def node_detach_network(node, nic, network):
+    """Detach <node> from the given <network> on the given <nic>"""
     url = object_url('node', node, 'nic', nic, 'detach_network')
-    do_post(url)
+    do_post(url, data={'network': network})
 
 @cmd
 def headnode_connect_network(headnode, nic, network):
@@ -332,6 +338,12 @@ def list_project_nodes(project):
 def list_project_networks(project):
     """List all networks attached to a <project>"""
     url = object_url('project', project, 'networks')
+    do_get(url)
+
+@cmd
+def show_network(network):
+    """Display information about <network>"""
+    url = object_url('network', network)
     do_get(url)
 
 @cmd
