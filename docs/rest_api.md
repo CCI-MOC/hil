@@ -194,7 +194,7 @@ Register a network switch of type `<type>`
 `<type>` (a string) is the type of network switch. The possible values 
 depend on what drivers HaaS is configured to use. The remainder of the 
 fields are driver-specific; see the documentation for the driver in 
-question.
+question (in `docs/network-drivers.md`.
 
 `PUT /switch/<switch>`
 

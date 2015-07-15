@@ -198,8 +198,8 @@ def site_layout():
     This is meant to be used as a pytest fixture, but isn't declared
     here as such; individual modules should declare it as a fixture.
 
-    Full documentation for site-layout.json is forthcoming, but for now
-    site-layout.json.example should give a good idea of how it works.
+    Full documentation for the site-layout.json file format is located in
+    ``docs/testing.md``.
     """
     layout_json_data = open('site-layout.json')
     layout = json.load(layout_json_data)

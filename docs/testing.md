@@ -5,10 +5,8 @@ are placed in the "tests" subdirectory, which is subdivided into:
 
     * `unit` - for basic unit tests. These are safe to run without a
       full HaaS enviornment (i.e. you don't need libvirt etc).
-    * `deployment` - for tests that need to run against an actual setup.
-      Right now these aren't really generalized well enough to run
-      outside of the development environment we have set up at the MOC.
-      Patches welcome!
+    * `deployment` - for tests that need to run against an actual setup,
+      with libvirtd and at least one real switch.
 
 Developers should run at least the unit tests before making a commit.
 Ideally, the deployment tests should also be run, though we're less
@@ -19,20 +17,19 @@ the problem scenario so that we can ensure the bug doesn't return!
 
 # Configuration
 
-By installing the requirements for HaaS (done via: `pip install -r
-requirements.txt` in the root directory), you will automatically receive
-a recent version of pytest and be ready to test the code. You also need
-to have haas installed, which can be done using: `pip install -e .` from
-the haas root directory. Using pip's `-e .` option installs the haas in
-editable mode, which has the advantage that one need not reinstall every
-time a file is changed!
+By installing HaaS and its dependencies in the virtual environment (done 
+via: `pip install -e .` in the root directory), you will automatically 
+receive a recent version of pytest and be ready to test the code. Using 
+pip's `-e` option installs the haas in editable mode, which has the 
+advantage that one need not reinstall every time a file is changed!
 
 Most of the tests use a common set of default configuration options, as
 seen in `testsuite.cfg.default`. If you wish to override these 
 parameters, you may copy it to `testsuite.cfg` and edit. In the future,
 this will allow developers to do things like test against different 
 DBMSes (for the moment some changes are needed to the test suite to 
-actually support this).
+actually support this). For now, it's mostly interesting when running 
+the deployment tests (see below).
 
 # Running
 
@@ -61,12 +58,53 @@ More information is available on the projects [PyPI page][2].
 # Test structure
 
 Tests are kept in the `tests` directory, which is further organized into
-2 subdirectories: `unit` and `deployment` \(*Not run by default*\)
+2 subdirectories: `unit` and `deployment`.
 
 For each file in the haas code, there should be a file with the same name in
-the unit directory. Within those files, classes \(class names **must** begin
-with "Test"\) can be used to organize tests into functional areas. Function
-names must also begin with "test". See tests/unit/api.py for examples.
+the unit directory. Within those files, classes (class names **must** 
+begin with "Test") can be used to organize tests into functional areas.  
+Function names must also begin with "test". See tests/unit/api.py for 
+examples.
+
+# Deployment tests
+
+The deployment tests (`tests/deployment`) are a set of unit tests which 
+are most useful when executed in an environment with real hardware and a 
+libvirtd instance available. To run the deployment tests, you must do 
+the following:
+
+* Write a `testsuite.cfg` reflecting your environment. Copy 
+  `testsuite.cfg.default` and edit. In particular, you will need to load 
+  the extensions for your switch drivers and the corresponding network
+  allocator (see `drivers.md`), and specify extension-specific options.
+* Write a `site-layout.json` describing the layout of your environment.
+  The file `site-layout.json.example` provides an example. Here is a 
+  full description of the file format:
+
+`site-layout.json` must contain a single json object, with two fields: 
+`"switches"` and `"nodes"`.
+
+`"switches"` must be a list of json objects, each of which describes a 
+switch in your environment, and must have the same fields as required in 
+the body of  the `switch_register` API call (see `rest_api.md`), plus a 
+`"switch"` field, which supplies the name of the switch (normally 
+specified in the URL).
+
+`"nodes"` must be a list of json objects, each of which defines a node, 
+and has three fields:
+
+* `"name"`, a string which specifies the name of the node.
+* `"nics"`, a list of objects each describing a nic on the node, with the
+  fields (all of them strings):
+  * `"name"`, the name of the nic
+  * `"mac"`, the mac address of the nic
+  * `"switch"`, the name of the switch that the nic is connected to
+  * `"port"`, the name/label of the port on the switch that the nic is
+    connected to
+* `"ipmi"`, an object with the string fields `"host"`, `"user"`, 
+  `"pass"`, defining the information needed to talk to the IPMI 
+  controller of the node.
+
 
 [1]: http://pytest.org/
 [2]: https://pypi.python.org/pypi/pytest-cov
