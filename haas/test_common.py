@@ -16,7 +16,6 @@ from functools import wraps
 from haas.model import *
 # XXX: This function has an underscore so that we don't import it elsewhere.
 # But... we need it here.  Oops.
-#from haas.model import _on_virt_uri
 from haas.config import cfg
 from haas import api
 import json
