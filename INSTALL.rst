@@ -22,13 +22,15 @@ Then, the rest of the packages can be installed via::
 In addition, HaaS depends on a number of python libraries. Many of these are
 available as RPMs as well, but we recommend installing them with pip, since
 this will install the versions that HaaS has been tested with.  This is done
-automatically by the instructions below. HaaS supports both SQLite and 
-PostgreSQL. You should install either of the two for HaaS. 
+automatically by the instructions below. HaaS supports both SQLite and PostgreSQL. 
+SQLite is not recommended, especially for a production environment, due to 
+concurrency issues (you may use it for development environment though if you 
+really want to). 
 
 Setting Up HaaS Database
 ---------------------
 
-Below are the steps to install PostgreSQL::
+SQLite is a dependency of python so if you want to use that you do not neet to install/set it up. Below are the steps to install PostgreSQL::
 
     yum -y update
     yum -y gcc install postgresql postgresql-contrib postgresql-server postgresql-devel postgresql-libs python-psycopg2
@@ -50,10 +52,6 @@ A default user named 'postgres' is created. Create a database as follows::
     create database <db-name>;         //Command to create the database (alway succeeded by a semicolon)
     \q                                 //Command to quit the database
 
-
-Below are the steps to install and setup SQLite::
-
-    yum -y install sqlite
 
 The HaaS software can then be installed by running:
 
