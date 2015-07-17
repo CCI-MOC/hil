@@ -16,6 +16,15 @@ If the extension requires any kind of initialization, it may define a function
 This function must accept arbitrary arguments (for forwards compatibility),
 but at present must not rely on the presence or value of any argument.
 
+If the extension needs it's own configuration options, it may read them from a
+section with the same name as the module, e.g.:
+
+    [extensions]
+    some_3rd_party.haas.drivers.obm.robotic_power_button_pusher
+
+    [some_3rd_party.haas.drivers.obm.robotic_power_button_pusher]
+    push_duration = 3 seconds
+
 All parts of the HaaS source tree which extensions are allowed to access clearly
 document this. Here is a summary (see the docstrings in the specific components
 for details):
