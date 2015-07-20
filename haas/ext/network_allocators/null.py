@@ -11,10 +11,9 @@
 # IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
-"""A null network allocator.  Network IDs are random and arbitrary.
+"""A null network allocator.
 
-A null switch driver.  Network IDs are random and arbitrary.  Applying the
-network state does nothing. "null" is the only channel id.
+Network IDs are random and arbitrary. The only supported channel is "null".
 """
 
 import uuid
