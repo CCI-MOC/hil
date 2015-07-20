@@ -22,10 +22,10 @@ Then, the rest of the packages can be installed via::
 In addition, HaaS depends on a number of python libraries. Many of these are
 available as RPMs as well, but we recommend installing them with pip, since
 this will install the versions that HaaS has been tested with.  This is done
-automatically by the instructions below. HaaS supports both SQLite and PostgreSQL. 
-SQLite is not recommended, especially for a production environment, due to 
-concurrency issues (you may use it for development environment though if you 
-really want to). 
+automatically by the instructions below. HaaS supports both SQLite and PostgreSQL.
+SQLite is not recommended, especially for a production environment, due to
+concurrency issues (you may use it for development environment though if you
+really want to).
 
 Setting Up HaaS Database
 ---------------------
@@ -45,7 +45,7 @@ By default postgresql uses IDENT based authentication. All you have to do is all
 E.g. "local all all peer" -> "local all all trust";"host all 127.0.0.1/32 ident" -> host all 127.0.0.1/32 trust"; Restart postgresql service once the changes have been made::
 
    service postgresql restart
-	    
+
 A default user named 'postgres' is created. Create a database as follows::
 
     psql -h localhost -U postgres      //Command to enter the psql (postgresql interactive terminal) console
@@ -167,7 +167,7 @@ Then create the group 'libvirt' and add the HaaS user to that group::
 Finally, restart ``libvirt`` with::
 
   sudo service libvirtd restart
-  
+
 You should also set libvirt to start on boot::
 
   sudo chkconfig libvirtd on
@@ -279,7 +279,7 @@ former is a WSGI application, which we recommend running with Apache's
 
   LoadModule wsgi_module modules/mod_wsgi.so
   WSGISocketPrefix run/wsgi
-  
+
   <VirtualHost 127.0.0.1:80>
     ServerName 127.0.0.1
     AllowEncodedSlashes On
