@@ -30,7 +30,8 @@ really want to).
 Setting Up HaaS Database
 ---------------------
 
-SQLite is a dependency of python so if you want to use that you do not neet to install/set it up. Below are the steps to install PostgreSQL::
+SQLite is a dependency of python so if you want to use that you do not neet to
+install/set it up. Below are the steps to install PostgreSQL::
 
     yum -y update
     yum -y gcc install postgresql postgresql-contrib postgresql-server postgresql-devel postgresql-libs python-psycopg2
@@ -38,11 +39,16 @@ SQLite is a dependency of python so if you want to use that you do not neet to i
     chkconfig postgresql on
     serivce postgresql start
 
-By default postgresql uses IDENT based authentication. All you have to do is allow username and passowrd based authentication for your network or webserver. Replace 'ident' or 'peer' with 'trust' in the above file (Setup permission to allow postgresql to be accessed by other applicaitons)::
+By default postgresql uses IDENT based authentication. All you have to do is
+allow username and passowrd based authentication for your network or webserver.
+Replace 'ident' or 'peer' with 'trust' in the above file (Setup permission to
+allow postgresql to be accessed by other applicaitons)::
 
     vi /var/lib/pgsql/data/pg_hba.conf
 
-E.g. "local all all peer" -> "local all all trust";"host all 127.0.0.1/32 ident" -> host all 127.0.0.1/32 trust"; Restart postgresql service once the changes have been made::
+E.g. "local all all peer" -> "local all all trust";"host all 127.0.0.1/32 ident"
+-> host all 127.0.0.1/32 trust"; Restart postgresql service once the changes
+have been made::
 
    service postgresql restart
 
