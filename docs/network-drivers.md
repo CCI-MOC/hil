@@ -1,23 +1,23 @@
-This document describes the network driver model, primarily from a 
-system administrator's standpoint, though there are some details useful 
+This document describes the network driver model, primarily from a
+system administrator's standpoint, though there are some details useful
 for developers writing tools which interact with the API as well.
 
 # Overview
 
-There are two classes of network-related drivers: network allocators and 
-switches. Switches are straightforward to understand; they provide 
-support for a particular hardware switch. Network work allocators are a 
+There are two classes of network-related drivers: network allocators and
+switches. Switches are straightforward to understand; they provide
+support for a particular hardware switch. Network allocators are a
 bit more abstract.
 
-HaaS networks may be backed by various underlying isolation technologies 
-(currently the only network allocator shipped with HaaS uses 802.1q 
-VLANs, but there may be more, e.g. VXLANs in the future). A network 
-allocator manages the details of mapping networks created by HaaS to 
-these underlying technologies. For example, the ``vlan_pool`` allocator 
+HaaS networks may be backed by various underlying isolation technologies
+(currently the only network allocator shipped with HaaS uses 802.1q
+VLANs, but there may be more, e.g. VXLANs in the future). A network
+allocator manages the details of mapping networks created by HaaS to
+these underlying technologies. For example, the ``vlan_pool`` allocator
 maps each network to a unique VLAN id.
 
-Drivers are implemented as extensions, and must be added to the 
-``[extensions]`` section of ``haas.cfg``. You must supply *exactly* one 
+Drivers are implemented as extensions, and must be added to the
+``[extensions]`` section of ``haas.cfg``. You must supply *exactly* one
 network allocator driver, and one or more switches. For example::
 
     ...
@@ -26,7 +26,7 @@ network allocator driver, and one or more switches. For example::
     haas.ext.switches.dell =
     haas.ext.switches.nexus =
 
-Some drivers may also need driver specific options, which go in a 
+Some drivers may also need driver specific options, which go in a
 section with the same name as the extension, e.g.::
 
     [haas.ext.network_allocators.vlan_pool]
@@ -34,12 +34,12 @@ section with the same name as the extension, e.g.::
 
 # Network allocator drivers
 
-The only network allocator shipped with HaaS that is of interest to 
+The only network allocator shipped with HaaS that is of interest to
 users (there are others useful for development purposes) is the VLAN
-allocator. The name of the extension is 
-``haas.ext.network_allocators.vlan_pool``, and it requires a single 
-extension-specific config option, `vlans`, which is a comma separated 
-list of VLAN ids and/or ranges of VLAN ids. Networks created within HaaS 
+allocator. The name of the extension is
+``haas.ext.network_allocators.vlan_pool``, and it requires a single
+extension-specific config option, `vlans`, which is a comma separated
+list of VLAN ids and/or ranges of VLAN ids. Networks created within HaaS
 will use VLANs specified in the configuration file. An example::
 
     ...
@@ -54,40 +54,40 @@ will use VLANs specified in the configuration file. An example::
 
 # Switch drivers
 
-At present, all switch drivers shipped with HaaS require that the VLAN 
-pool allocator is in use. There are two switch drivers shipped with 
+At present, all switch drivers shipped with HaaS require that the VLAN
+pool allocator is in use. There are two switch drivers shipped with
 HaaS:
 
-* ``haas.ext.switches.dell``, which provides a driver for the Dell 
+* ``haas.ext.switches.dell``, which provides a driver for the Dell
   Powerconnect 5500 series switches.
-* ``haas.ext.switches.nexus``, which provides a driver for some Cisco 
-  Nexus switches. Only the 3500 and 5500 have been tested, though it is 
+* ``haas.ext.switches.nexus``, which provides a driver for some Cisco
+  Nexus switches. Only the 3500 and 5500 have been tested, though it is
   possible that other models will work as well.
 
-Neither driver requires any extension-specific config options. Per the 
-information in `rest_api.md`, the details of certain API calls are 
+Neither driver requires any extension-specific config options. Per the
+information in `rest_api.md`, the details of certain API calls are
 driver-dependant, below are the details for each of these switches.
 
 ## Powerconnect driver
 
 ### switch_register
 
-To register a Dell Powerconnect switch, the ``"type"`` field of the 
+To register a Dell Powerconnect switch, the ``"type"`` field of the
 request body must have a value of::
 
     http://schema.massopencloud.org/haas/switches/powerconnect55xx
 
-In addition, it requires three extra fields: ``"username"``, 
-``"hostname"``, and ``"password"``, which provide the necessary 
-information to connect to the switch via telnet (``"hostname"`` may also 
-be an IP address).  SSH support is planned, but even so we do not 
-recommend allowing connectivity to a switch's management interface from 
+In addition, it requires three extra fields: ``"username"``,
+``"hostname"``, and ``"password"``, which provide the necessary
+information to connect to the switch via telnet (``"hostname"`` may also
+be an IP address).  SSH support is planned, but even so we do not
+recommend allowing connectivity to a switch's management interface from
 an untrusted network.
 
 ### switch_register_port
 
-Port names must be of the same form accepted by the switch's console 
-interface, e.g. ``gi1/0/5``. Be *very* careful when specifying these, as 
+Port names must be of the same form accepted by the switch's console
+interface, e.g. ``gi1/0/5``. Be *very* careful when specifying these, as
 they are not validated by HaaS (this will be fixed in future versions).
 
 ## Nexus driver
@@ -98,29 +98,29 @@ The type field for the Nexus driver has the value::
 
     http://schema.massopencloud.org/haas/switches/nexus
 
-The nexus driver requires the same additional fields as the powerconnect 
-driver, plus an additional field "dummy_vlan", which should be a JSON 
-number corresponding to an unused VLAN id on the switch. This VLAN 
-should be deactivated (and thus no traffic should flow across it ever).  
+The nexus driver requires the same additional fields as the powerconnect
+driver, plus an additional field "dummy_vlan", which should be a JSON
+number corresponding to an unused VLAN id on the switch. This VLAN
+should be deactivated (and thus no traffic should flow across it ever).
 This exists to get around an implementation problem related to disabling
 the native VLAN.
 
 ### switch_register_port
 
-Like the powerconnect driver, the Nexus driver accepts port names of the 
-same format accepted by the underlying switch, in this case (e.g.) 
+Like the powerconnect driver, the Nexus driver accepts port names of the
+same format accepted by the underlying switch, in this case (e.g.)
 ``ethernet 1/42``. The same concerns about validation apply.
 
 ## Using multiple switches
 
-Networks may span multiple switches. No special configuration of HaaS 
-itself is required; just register each switch as normal and things shoul 
-"just work".  In terms of physical setup, the administrator must ensure 
-that there are physical links connecting the switches, and that for each 
-vlan in the allocator's ``vlans`` option is trunked (tagged) on the 
-interfaces connecting the switches to each other. It is VERY IMPORTANT 
-that you be sure to configure your switches to guard against VLAN 
-hopping attacks:
+Networks may span multiple switches. No special configuration of HaaS
+itself is required; just register each switch as normal and things
+should "just work".  In terms of physical setup, the administrator must
+ensure that there are physical links connecting the switches, and that
+for each vlan in the allocator's ``vlans`` option is trunked (tagged) on
+the interfaces connecting the switches to each other. It is VERY
+IMPORTANT that you be sure to configure your switches to guard against
+VLAN hopping attacks:
 
     https://en.wikipedia.org/wiki/VLAN_hopping
 

@@ -1,5 +1,5 @@
 
-* `{"foo": <bar>, "baz": <quux>}` denotes a JSON object (in the body of 
+* `{"foo": <bar>, "baz": <quux>}` denotes a JSON object (in the body of
   the request).
 
 # Full Api spec:
@@ -87,14 +87,14 @@ Request body:
 
 Connect the network named `<network>` to `<nic>` on `<channel>`.
 
-`<channel>` should be a legal channel identifier specified by the output 
+`<channel>` should be a legal channel identifier specified by the output
 of `show_network`, above. If `<channel>` is omitted, the driver will choose
 a default, which should be some form of "untagged."
 
-Networks are connected and detached asynchronously. If successful, this 
-API call returns a status code of 202 Accepted, and queues the network 
-operation to be preformed. Each nic may have no more than one pending 
-network operation; an attempt to queue a second action will result in an 
+Networks are connected and detached asynchronously. If successful, this
+API call returns a status code of 202 Accepted, and queues the network
+operation to be preformed. Each nic may have no more than one pending
+network operation; an attempt to queue a second action will result in an
 error.
 
 Possible errors:
@@ -118,10 +118,10 @@ Request body:
 
 Detach `<network>` from `<nic>`.
 
-Networks are connected and detached asynchronously. If successful, this 
-API call returns a status code of 202 Accepted, and queues the network 
-operation to be preformed. Each nic may have no more than one pending 
-network operation; an attempt to queue a second action will result in an 
+Networks are connected and detached asynchronously. If successful, this
+API call returns a status code of 202 Accepted, and queues the network
+operation to be preformed. Each nic may have no more than one pending
+network operation; an attempt to queue a second action will result in an
 error.
 
 Possible Errors:
@@ -133,7 +133,7 @@ Possible Errors:
 
 # TODO
 
-These api calls still need to be documented in detail, but the below 
+These api calls still need to be documented in detail, but the below
 provides a summary:
 
     project_create <project_label>
@@ -190,10 +190,10 @@ provides a summary:
 ### switch_register
 
 Register a network switch of type `<type>`
- 
-`<type>` (a string) is the type of network switch. The possible values 
-depend on what drivers HaaS is configured to use. The remainder of the 
-fields are driver-specific; see the documentation for the driver in 
+
+`<type>` (a string) is the type of network switch. The possible values
+depend on what drivers HaaS is configured to use. The remainder of the
+fields are driver-specific; see the documentation for the driver in
 question (in `docs/network-drivers.md`.
 
 `PUT /switch/<switch>`
@@ -213,9 +213,9 @@ Possible Errors:
 
 `DELETE /switch/<switch>`
 
-Delete the switch named `<switch>.
+Delete the switch named `<switch>`.
 
-Prior to deleting a switch, all of the switch's ports must first be 
+Prior to deleting a switch, all of the switch's ports must first be
 deleted.
 
 Possible Errors:
@@ -229,8 +229,8 @@ Possible Errors:
 
 Register a port `<port>` on `<switch>`.
 
-The permissable values of `<port>`, and their meanings, are switch 
-specific; see the documentation for the apropriate driver for more 
+The permissable values of `<port>`, and their meanings, are switch
+specific; see the documentation for the apropriate driver for more
 information.
 
 Possible Errors:
