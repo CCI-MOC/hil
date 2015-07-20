@@ -306,6 +306,8 @@ def node_detach_network(node, nic, network):
     Raises ProjectMismatchError if the node is not in a project.
 
     Raises BlockedError if there is already a pending network action.
+
+    Raises BadArgumentError if the network is not attached to the nic.
     """
     db = model.Session()
     node = _must_find(db, model.Node, node)
