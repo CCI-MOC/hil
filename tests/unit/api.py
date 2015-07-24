@@ -20,7 +20,7 @@ import pytest
 import json
 
 
-MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/switches/mock'
+MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/v0/switches/mock'
 
 
 @pytest.fixture

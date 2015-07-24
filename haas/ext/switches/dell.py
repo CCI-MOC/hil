@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 class PowerConnect55xx(Switch):
-    api_name = 'http://schema.massopencloud.org/haas/switches/powerconnect55xx'
+    api_name = 'http://schema.massopencloud.org/haas/v0/switches/powerconnect55xx'
 
     __mapper_args__ = {
         'polymorphic_identity': api_name,

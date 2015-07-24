@@ -84,7 +84,7 @@ driver-dependant, below are the details for each of these switches.
 To register a Dell Powerconnect switch, the ``"type"`` field of the
 request body must have a value of::
 
-    http://schema.massopencloud.org/haas/switches/powerconnect55xx
+    http://schema.massopencloud.org/haas/v0/switches/powerconnect55xx
 
 In addition, it requires three extra fields: ``"username"``,
 ``"hostname"``, and ``"password"``, which provide the necessary
@@ -105,7 +105,7 @@ they are not validated by HaaS (this will be fixed in future versions).
 
 The type field for the Nexus driver has the value::
 
-    http://schema.massopencloud.org/haas/switches/nexus
+    http://schema.massopencloud.org/haas/v0/switches/nexus
 
 The nexus driver requires the same additional fields as the powerconnect
 driver, plus an additional field "dummy_vlan", which should be a JSON
@@ -123,7 +123,7 @@ the switch's console, run:
 The body of the api call request can then look like:
 
     {
-        "type": "http://schema.massopencloud.org/haas/switches/nexus",
+        "type": "http://schema.massopencloud.org/haas/v0/switches/nexus",
         "username": "MyUser",
         "password": "secret",
         "hostname": "mynexus.example.com",

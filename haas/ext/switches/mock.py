@@ -34,7 +34,7 @@ class MockSwitch(Switch):
     """
     id = Column(Integer, ForeignKey('switch.id'), primary_key=True)
 
-    api_name = 'http://schema.massopencloud.org/haas/switches/mock'
+    api_name = 'http://schema.massopencloud.org/haas/v0/switches/mock'
 
     __mapper_args__ = {
         'polymorphic_identity': api_name,
