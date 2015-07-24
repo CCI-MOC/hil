@@ -114,6 +114,22 @@ should be deactivated (and thus no traffic should flow across it ever).
 This exists to get around an implementation problem related to disabling
 the native VLAN.
 
+For example, if you've chosen VLAN id 2222 to use as the dummy vlan, on
+the switch's console, run:
+
+    # config terminal
+    # no vlan 2222
+
+The body of the api call request can then look like:
+
+    {
+        "type": "http://schema.massopencloud.org/haas/switches/nexus",
+        "username": "MyUser",
+        "password": "secret",
+        "hostname": "mynexus.example.com",
+        "dummy_vlan": 2222
+    }
+
 ### switch_register_port
 
 Like the powerconnect driver, the Nexus driver accepts port names of the
