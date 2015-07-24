@@ -52,6 +52,15 @@ will use VLANs specified in the configuration file. An example::
     vlans = 300, 500-700, 800-950
     ...
 
+# Security
+
+It is VERY IMPORTANT that you be sure to configure your switches to
+guard against VLAN hopping attacks:
+
+    https://en.wikipedia.org/wiki/VLAN_hopping
+
+Doing so is not difficult, and it is critical for security.
+
 # Switch drivers
 
 At present, all switch drivers shipped with HaaS require that the VLAN
@@ -113,15 +122,7 @@ same format accepted by the underlying switch, in this case (e.g.)
 
 ## Using multiple switches
 
-Networks may span multiple switches. No special configuration of HaaS
-itself is required; just register each switch as normal and things
-should "just work".  In terms of physical setup, the administrator must
-ensure that there are physical links connecting the switches, and that
-for each vlan in the allocator's ``vlans`` option is trunked (tagged) on
-the interfaces connecting the switches to each other. It is VERY
-IMPORTANT that you be sure to configure your switches to guard against
-VLAN hopping attacks:
-
-    https://en.wikipedia.org/wiki/VLAN_hopping
-
-Doing so is not difficult, and it is critical for security.
+Networks managed by HaaS may span multiple switches. No special configuration
+of HaaS itself is required; just register each switch as normal and ensure that
+all VLANs in the allocator's ``vlans`` option are trunked to every managed
+switch.
