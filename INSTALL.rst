@@ -1,4 +1,4 @@
-This document describes the installation and setup of HaaS on CentOS 6.5.
+This document describes the installation and setup of HaaS on CentOS 7.0.
 HaaS should work on other distros, but is not well tested or supported.
 For development environments, see ``HACKING.rst``.
 
@@ -17,43 +17,33 @@ repositories, as well as the EPEL repository. EPEL can be enabled via::
 
 Then, the rest of the packages can be installed via::
 
-    yum install libvirt bridge-utils ipmitool telnet httpd mod_wsgi python-pip qemu-kvm python-virtinst virt-install
+    yum install libvirt bridge-utils ipmitool telnet httpd mod_wsgi python-pip qemu-kvm python-virtinst virt-install python-psycopg2
 
 In addition, HaaS depends on a number of python libraries. Many of these are
 available as RPMs as well, but we recommend installing them with pip, since
 this will install the versions that HaaS has been tested with.  This is done
-automatically by the instructions below. HaaS supports both SQLite and PostgreSQL. 
-SQLite is not recommended, especially for a production environment, due to 
-concurrency issues (you may use it for development environment though if you 
-really want to). 
+automatically by the instructions below.
 
 Setting Up HaaS Database
----------------------
+------------------------
 
-SQLite is a dependency of python so if you want to use that you do not neet to install/set it up. Below are the steps to install PostgreSQL::
+The only DBMS currently supported for production use is PostgreSQL. (SQLite is
+supported for development purposes *only*). There are many guides on the web
+which describe setting up PostgreSQL; in these instructions we assume that
+you've done so successfully.
 
-    yum -y update
-    yum -y gcc install postgresql postgresql-contrib postgresql-server postgresql-devel postgresql-libs python-psycopg2
-    service postgresql initdb
-    chkconfig postgresql on
-    serivce postgresql start
+You need to create a postgresql user and database for HaaS. once you've done so,
+the ``uri`` option in ``haas.cfg``'s ``database`` must be set to::
 
-By default postgresql uses IDENT based authentication. All you have to do is allow username and passowrd based authentication for your network or webserver. Replace 'ident' or 'peer' with 'trust' in the above file (Setup permission to allow postgresql to be accessed by other applicaitons)::
+        postgresql://<user>:<password>@<address>/<dbname>
 
-    vi /var/lib/pgsql/data/pg_hba.conf
-
-E.g. "local all all peer" -> "local all all trust";"host all 127.0.0.1/32 ident" -> host all 127.0.0.1/32 trust"; Restart postgresql service once the changes have been made::
-
-   service postgresql restart
-	    
-A default user named 'postgres' is created. Create a database as follows::
-
-    psql -h localhost -U postgres      //Command to enter the psql (postgresql interactive terminal) console
-    create database <db-name>;         //Command to create the database (alway succeeded by a semicolon)
-    \q                                 //Command to quit the database
+Where ``<user>`` is the name of the postgres user you created, ``<password>`` is
+its password, ``<dbname>`` is the name of the database you created, and
+``<address>`` is the address which haas should use to connect to postgres (In a
+typical default postgres setup, the right value is ``localhost``.
 
 
-The HaaS software can then be installed by running:
+The HaaS software itself can then be installed by running:
 
 ::
 
@@ -64,10 +54,9 @@ The HaaS software can then be installed by running:
 Disable SELinux
 ---------------
 
-The setup described below runs into problems with SELinux related to the sqlite
-database. For now the recommended solution is to simply disable SELinux. In
-future releases, we will support and recommend the use of SELinux with another
-DBMS, such as MySQL.::
+The setup described in this document runs into problems with SELinux. In the
+future, we hope to ship a set of SELinux security policies with HaaS, but for
+now the solution is to disable SELinux::
 
     sudo setenforce 0
 
@@ -167,7 +156,7 @@ Then create the group 'libvirt' and add the HaaS user to that group::
 Finally, restart ``libvirt`` with::
 
   sudo service libvirtd restart
-  
+
 You should also set libvirt to start on boot::
 
   sudo chkconfig libvirtd on
@@ -279,7 +268,7 @@ former is a WSGI application, which we recommend running with Apache's
 
   LoadModule wsgi_module modules/mod_wsgi.so
   WSGISocketPrefix run/wsgi
-  
+
   <VirtualHost 127.0.0.1:80>
     ServerName 127.0.0.1
     AllowEncodedSlashes On
