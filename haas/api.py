@@ -602,15 +602,8 @@ def network_delete(network):
 def show_network(network):
     """Show details of a network.
 
-    Returns a JSON object representing a network.
-    The object will have at least the following fields:
-        * "name", the name/label of the network (string).
-        * "creator", the name of the project which created the network, or
-          "admin", if it was created by an administrator.
-        * "channels", a list of channels to which the network may be attached.
-    It may also have the fields:
-        * "access" -- if this is present, it is the name of the project which
-          has access to the network. Otherwise, the network is public.
+    Returns a JSON object representing a network. See `docs/rest_api.md`
+    for a full description of the output.
     """
     db = model.Session()
     allocator = get_network_allocator()

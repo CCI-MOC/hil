@@ -34,24 +34,53 @@ Possible errors:
 
 ## Networks
 
+### network_create
+
+`PUT /network/<network>`
+
+Request Body:
+
+    {
+        "creator": <creator>,
+        "access": <access>,
+        "net_id": <net_id>
+    }
+
+Create a network. For the semantics of each of the fields, see
+`docs/network.md`.
+
+Possible errors:
+
+* 409, if a network by that name already exists.
+* See also bug #461
+
 ### show_network
 
 `GET /network/<network>`
 
 View detailed information about `<network>`.
 
-The result contains the following information:
+The result must contain the following fields:
 
-* The name of the network
-* A description of legal channel identifiers for this network. This is a list
-  of channel identifiers, with possible wildcards. The format of these is
-  driver specific, see below.
+* "name", the name of the network
+* "channels", description of legal channel identifiers for this network.
+  This is a list of channel identifiers, with possible wildcards. The
+  format of these is driver specific, see below.
+* "creator", the name of the project which created the network, or
+  "admin", if it was created by an administrator.
+
+The result may also contain the following fields:
+
+* "access" -- if this is present, it is the name of the project which
+  has access to the network. Otherwise, the network is public.
 
 Response body (on success):
 
     {
-        "name": <network>
-        "channels": <chanel-id-list>
+        "name": <network>,
+        "channels": <chanel-id-list>,
+        "creator": <project or "admin">,
+        "access": <project with access to the network> (Optional)
     }
 
 Possible errors:
@@ -131,15 +160,37 @@ Possible Errors:
   * There is already a pending network operation on `<nic>`.
   * `<network>` is not attached to `<nic>`.
 
+## Projects
+
+### project_create
+
+`PUT /project/<project>`
+
+Create a project named `<project>`
+
+Possible Errors:
+
+* 409, if the project already exists
+
+### project_delete
+
+`DELETE /project/<project>`
+
+Delete the project named `<project>`
+
+Possible Errors:
+
+* 409, if:
+  * The project does not exist
+  * The project still has resources allocated to it:
+    * nodes
+    * networks
+    * headnodes
+
 # TODO
 
 These api calls still need to be documented in detail, but the below
 provides a summary:
-
-    project_create <project_label>
-    project_delete <project_label>
-    [PUT]    /project/<project_label>
-    [DELETE] /project/<project_label>
 
     network_create <network_label> <proj_creator> <proj_access> <net_id>
     network_delete <network_label>
