@@ -8,4 +8,5 @@ dist
 .venv
 .coverage
 *.db
-*.cfg
+/haas.cfg
+/testsuite.cfg
