@@ -240,9 +240,9 @@ def node_register_nic(node, nic, macaddr):
 
 @rest_call('DELETE', '/node/<node>/nic/<nic>')
 def node_delete_nic(node, nic):
-    """Delete nic with given name.
+    """Delete nic with given name from it's node.
 
-    If the nic does not exist, a NotFoundError will be raised.
+    If the node or nic does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
     nic = _must_find_n(db, _must_find(db, model.Node, node), model.Nic, nic)
@@ -581,6 +581,9 @@ def network_delete(network):
     """Delete network.
 
     If the network does not exist, a NotFoundError will be raised.
+
+    If the network is connected to nodes or headnodes, or there are pending
+    network actions involving it, a BlockedError will be raised.
     """
     db = model.Session()
     network = _must_find(db, model.Network, network)

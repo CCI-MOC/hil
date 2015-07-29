@@ -109,6 +109,21 @@ Possible errors:
 * 409, if a network by that name already exists.
 * See also bug #461
 
+### network_delete
+
+`DELETE /network/<network>`
+
+Delete a network. The user's project must be the creator of the network,
+and the network must not be connected to any nodes or headnodes.
+Finally, there may not be any pending actions involving the network.
+
+Possible Errors:
+
+* 404, if the network does not exist
+* 409 if:
+    * The network is connected to a node or headnode.
+    * There are pending actions involving the network.
+
 ### show_network
 
 `GET /network/<network>`
@@ -215,6 +230,100 @@ Possible Errors:
   * There is already a pending network operation on `<nic>`.
   * `<network>` is not attached to `<nic>`.
 
+## Nodes
+
+### node_register
+
+`PUT /node/<node>`
+
+Register a node named `<node>` with the database.
+
+Possible errors:
+
+* 409, if a node with the name `<node>` already exists
+
+### node_delete
+
+`DELETE /node/<node>`
+
+Delete the node named `<node>` from the database.
+
+Possible errors:
+
+* 404 if the node does not exist
+
+### node_register_nic
+
+`PUT /node/<node>/nic/<nic>`
+
+Request Body:
+
+    {
+        "mac_addr": <mac_addr>
+    }
+
+Register a nic named `<nic>` belonging to `<node>`. `<mac_addr>` should
+be the nic's mac address. This isn't used by HaaS itself, but is useful
+for users trying to configure their nodes.
+
+Possible errors:
+
+* 404 if `<node>` does not exist
+* 409 if `<node>` already has a nic named `<nic>`
+
+### node_delete_nic
+
+`DELETE /node/<node>/nic/<nic>`
+
+Delete the nic named `<nic>` and belonging to `<node>`.
+
+Possible errors:
+
+* 404 if `<nic>` or `<node>` does not exist.
+
+### node_power_cycle
+
+`POST /node/<node>/power_cycle`
+
+Power cycle the node named `<node>`, and set it's next boot device to
+PXE.
+
+Possible errors:
+
+* 404, if `<node>` does not exist.
+
+### list_free_nodes
+
+`GET /free_nodes`
+
+Return a list of free/available nodes.
+
+Response body:
+
+    [
+        "node-1",
+        "node-2",
+        ...
+    ]
+
+### list_project_nodes
+
+`GET /project/<project>/nodes`
+
+List all nodes belonging to the given project
+
+Response body:
+
+    [
+        "node-1",
+        "node-2",
+        ...
+    ]
+
+Possible errors:
+
+* 404 if `<project>` does not exist
+
 ## Projects
 
 ### project_create
@@ -242,17 +351,24 @@ Possible Errors:
     * networks
     * headnodes
 
+### list_projects
+
+`GET /projects`
+
+Return a list of all projects in HaaS
+
+Response body:
+
+    [
+        "manhattan",
+        "runway",
+        ...
+    ]
+
 # TODO
 
 These api calls still need to be documented in detail, but the below
 provides a summary:
-
-    network_create <network_label> <proj_creator> <proj_access> <net_id>
-    network_delete <network_label>
-    [PUT]    /network/<network_label> {"creator":<proj_creator>,
-                                       "access":<proj_access>,
-                                       "net_id":<net_id>}
-    [DELETE] /network/<network_label>
 
     headnode_create <hn_label> <project_label> <base_img>
     headnode_delete <hn_label>
@@ -268,9 +384,6 @@ provides a summary:
     [POST] /project/<project_label>/connect_node {"node":<node_label>}
     [POST] /project/<project_label>/detach_node {"node":<node_label>}
 
-    node_power_cycle <node_label>
-    [POST] /node/<node_label>/power_cycle
-
     headnode_create_hnic <headnode_label> <hnic_label>
     headnode_delete_hnic <headnode_label> <hnic_label>
     [PUT]    /headnode/<hn_label>/hnic/<hnic_label>
@@ -280,16 +393,6 @@ provides a summary:
     headnode_detach_network  <hn_label> <hnic_label>
     [POST] /headnode/<hn_label>/hnic/<hnic_label>/connect_network {"network":<network_label>}
     [POST] /headnode/<hn_label>/hnic/<hnic_label>/detach_network
-
-    node_register <node_label>
-    node_delete   <node_label>
-    [PUT]    /node/<node_label>
-    [DELETE] /node/<node_label>
-
-    node_register_nic <node_label> <nic_label> <mac_addr>
-    node_delete_nic   <node_label> <nic_label>
-    [PUT]    /node/<node_label>/nic/<nic_label> {"mac_addr":<mac_addr>}
-    [DELETE] /node/<node_label>/nic/<nic_label>
 
 ## Switches
 
@@ -359,11 +462,6 @@ Possible Errors:
 
 ---
 
-    port_register  <port_no>
-    port_delete    <port_no>
-    [PUT]    /port/<port_no>
-    [DELETE] /port/<port_no>
-
     port_connect_nic <port_no> <node_label> <nic_label>
     port_detach_nic  <port_no>
     [POST] /port/<port_no>/connect_nic
@@ -372,15 +470,6 @@ Possible Errors:
     import_vlan <network_label> <vlan_label>
     block_user <user_label>
     unblock_user <user_label>
-
-    list_free_nodes -> ["<node1_name>", "<node2_name>", ...]
-    [GET] /free_nodes
-
-    list_projects -> ["project-runway", "manhattan-project"]
-    [GET] /projects
-
-    list_project_nodes <project> -> ["<node1_name>", "<node2_name>", ...]
-    [GET] /project/<project>/nodes
 
     list_project_headnodes <project> -> [
             "<headnode1_name>",
