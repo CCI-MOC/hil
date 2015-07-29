@@ -1,8 +1,63 @@
+This file documents the HaaS REST API in detail.
+
+# How to read
+
+Each possible API call had a entry below containing:
+
+* an HTTP method and URL path, including possible `<parameters>` in the
+  path to be treated as arguments.
+* Optionally, a summary of the request body (which will always be a JSON
+  object).
+* A human readable description of the semantics of the call
+* A summary of the response body for a successful request. Many calls do
+  not return any data, in which case this is omitted.
+* A list of possible errors.
+
+In addition to the error codes listed for each API call, HaaS may return
+a `400 Bad Request` if something is wrong with the request (e.g.
+malformed request body), or `401 Unauthorized` if the user does not have
+permission to execute the supplied request.
+
+Below is an example.
+
+## my_api_call
+
+`POST /url/path/to/<thing>`
+
+Request Body:
+
+    {
+        "some_field": "a value",
+        "this-is-an-example": true,
+        "some-optional-field": { (Optional)
+            "more-fields": 12352356,
+            ...
+        }
+    }
+
+Attempt to do something mysterious to `<thing>` which must be a coffee
+pot, and must not be in use by other users. If successful, the response
+will include some cryptic information.
+
+Response Body (on success):
+
+    {
+        "some-info": "Hello, World!",
+        "numbers": [1,2,3]
+    }
+
+Possible errors:
+
+* 418, if `<thing>` is a teapot.
+* 409, if:
+  * `<thing>` does not exist
+  * `<thing>` is busy
+
 
 * `{"foo": <bar>, "baz": <quux>}` denotes a JSON object (in the body of
   the request).
 
-# Full Api spec:
+# Full API Specification
 
 ## Users
 
