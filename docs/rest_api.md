@@ -351,6 +351,43 @@ Possible Errors:
     * networks
     * headnodes
 
+### project_connect_node
+
+`POST /project/<project>/connect_node`
+
+Request body:
+
+    {
+        "node": <node>
+    }
+
+Reserve the node named `<node>` for use by `<project>`. The node must be
+free.
+
+Possible errors:
+
+* 404, if the node or project does not exist.
+* 409, if the node is not free.
+
+### project_detach_node
+
+`POST /project/<project>/detach_node`
+
+    {
+        "node": <node>
+    }
+
+Return `<node>` to the free pool. `<node>` must belong to the project
+`<project>`. It must not be attached to any networks, or have any
+pending network actions.
+
+Possible errors:
+
+* 404, if `<node>` or `<project>` does not exist, or `<node>` does not
+  belong to `<project>`.
+* 409, if the node is attached to any networks, or has pending network
+  actions.
+
 ### list_projects
 
 `GET /projects`
@@ -365,34 +402,131 @@ Response body:
         ...
     ]
 
-# TODO
+## Headnodes
 
-These api calls still need to be documented in detail, but the below
-provides a summary:
+### headnode_create
 
-    headnode_create <hn_label> <project_label> <base_img>
-    headnode_delete <hn_label>
-    headnode_start <hn_label>
-    headnode_stop <hn_label>
-    [PUT]    /headnode/<hn_label> {"project":<project_label>, "base_img":<base_img>}
-    [DELETE] /headnode/<hn_label>
-    [POST] /headnode/<hn_label>/start
-    [POST] /headnode/<hn_label>/stop
+`PUT /headnode/<headnode>`
 
-    project_connect_node <project_label> <node_label>
-    project_detach_node  <project_label> <node_label>
-    [POST] /project/<project_label>/connect_node {"node":<node_label>}
-    [POST] /project/<project_label>/detach_node {"node":<node_label>}
+Request body:
 
-    headnode_create_hnic <headnode_label> <hnic_label>
-    headnode_delete_hnic <headnode_label> <hnic_label>
-    [PUT]    /headnode/<hn_label>/hnic/<hnic_label>
-    [DELETE] /headnode/<hn_label>/hnic/<hnic_label>
+    {
+        "project": <project>,
+        "base_img": <base_img>
+    }
 
-    headnode_connect_network <hn_label> <hnic_label> <network_label>
-    headnode_detach_network  <hn_label> <hnic_label>
-    [POST] /headnode/<hn_label>/hnic/<hnic_label>/connect_network {"network":<network_label>}
-    [POST] /headnode/<hn_label>/hnic/<hnic_label>/detach_network
+Create a headnode owned by project `<project>`, cloned from base image
+`<base_img>`. `<base_img>` must be one of the installed base images.
+
+Possible errors:
+
+* 409, if a headnode named `<headnode>` already exists
+* 404, if the project does not exist.
+
+### headnode_delete
+
+`DELETE /headnode/<headnode>`
+
+Delete the headnode named `<headnode>`.
+
+Possible errors:
+
+* 404, if `<headnode>` does not exist.
+
+### headnode_start
+
+`POST /headnode/<headnode>/start`
+
+Start (power on) the headnode. Note that once a headnode has been
+started, it cannot be modified (adding/removing hnics, changing
+networks), only deleted --- even if it is stopped.
+
+Possible errors:
+
+* 404, if `<headnode>` does not exist.
+
+### headnode_stop
+
+`POST /headnode/<headnode>/stop`
+
+Stop (power off) the headnode. This does a force power off; the VM is
+not given the opportunity to shut down cleanly.
+
+Possible errors:
+
+* 404, if `<headnode>` does not exist.
+
+### headnode_create_hnic
+
+`PUT /headnode/<headnode>/hnic/<hnic>`
+
+Create an hnic named `<hnic>` belonging to `<headnode>`. The headnode
+must not have previously been started.
+
+Possible errors:
+
+* 404, if the headnode does not exist.
+* 409, if:
+  * The headnode already has an hnic by the given name.
+  * The headnode has already been started.
+
+### headnode_delete_hnic
+
+`DELETE /headnode/<headnode>/hnic/<hnic>`
+
+Delete the hnic named `<hnic>` and belonging to `<headnode>`. The
+headnode must not have previously been started.
+
+Possible errors:
+
+* 404, if the headnode or hnic does not exist.
+* 409, if the headnode has already been started.
+
+### headnode_connect_network
+
+`POST /headnode/<headnode>/hnic/<hnic>/connect_network`
+
+Request body:
+
+    {
+        "network": <network>
+    }
+
+Connect the network named `<network>` to `<hnic>`.
+
+`<network>` must be the name of a network which:
+
+1. the headnode's project has the right to attach to, and
+2. was not assigned a specific network id by an administrator (i.e. the
+   network id was allocated dynamically by HaaS). This constraint is due
+   to an implementation limitation, but will likely be lifted in the
+   future; see issue #333.
+
+Additionally, the headnode must not have previously been started.
+
+Note that, unlike nodes, headnodes may only be attached via the
+native/default channel (which is implicit, and may not be specified).
+
+Rationale: separating headnodes from haas core is planned, and it has
+been deemed not worth the development effort to adjust this prior to the
+separation. Additionally, headnodes may have an arbitrary number of
+nics, and so being able to attach two networks to the same nic is not as
+important.
+
+Possible errors:
+
+* 404, if the headnode or hnic does not exist.
+* 409, if the headnode has already been started.
+
+### headnode_detach_network
+
+`POST /headnode/<headnode>/hnic/<hnic>/detach_network`
+
+Detach the network attached to `<hnic>`.  The headnode must not have
+previously been started.
+
+* 404, if the headnode or hnic does not exist.
+* 409, if the headnode has already been started.
 
 ## Switches
 
