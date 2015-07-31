@@ -601,10 +601,6 @@ Possible Errors:
     [POST] /port/<port_no>/connect_nic
     [POST] /port/<port_no>/detach_nic
 
-    import_vlan <network_label> <vlan_label>
-    block_user <user_label>
-    unblock_user <user_label>
-
     list_project_headnodes <project> -> [
             "<headnode1_name>",
             "<headnode2_name>",
