@@ -22,11 +22,14 @@ import os
 import requests
 import sys
 import urllib
+import schema
 
 from functools import wraps
 
 command_dict = {}
 usage_dict = {}
+MIN_PORT_NUMBER = 1
+MAX_PORT_NUMBER = 2**16 - 1
 
 def cmd(f):
     """A decorator for CLI commands.
@@ -89,7 +92,14 @@ def do_delete(url):
     return check_status_code(requests.delete(url))
 
 @cmd
-def serve():
+def serve(port):
+    try:
+        port = schema.And(schema.Use(int), lambda n: MIN_PORT_NUMBER <= n <= MAX_PORT_NUMBER).validate(port)
+    except schema.SchemaError:
+	sys.exit('Error: Invaid port. Must be in the range 1-65535.')
+    except Exception as e:
+	sys.exit('Unxpected Error!!! \n %s' % e)
+
     """Start the HaaS API server"""
     if cfg.has_option('devel', 'debug'):
         debug = cfg.getboolean('devel', 'debug')
@@ -106,7 +116,7 @@ def serve():
         node.stop_console()
         node.delete_console()
     # Start server
-    rest.serve(debug=debug)
+    rest.serve(port, debug=debug)
 
 
 @cmd

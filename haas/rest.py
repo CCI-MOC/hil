@@ -246,7 +246,7 @@ def wsgi_handler(environ, start_response):
     response = request_handler(Request(environ))
     return response(environ, start_response)
 
-def serve(debug=True):
+def serve(port, debug=True):
     """Start an http server running the API.
 
     This is intended for development purposes *only* -- as such the default is
@@ -256,6 +256,6 @@ def serve(debug=True):
     behavior.
     """
     from werkzeug.serving import run_simple
-    run_simple('127.0.0.1', 5000, wsgi_handler,
+    run_simple('127.0.0.1', port, wsgi_handler,
                use_debugger=debug,
                use_reloader=debug)
