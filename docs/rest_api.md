@@ -324,6 +324,33 @@ Possible errors:
 
 * 404 if `<project>` does not exist
 
+### show_node
+
+`GET /node/<node>`
+
+Show detailed information about a node. The response includes the
+following fields:
+
+* "name", the name/label of the node.
+* "free", indicates whether the node is free or has been allocated
+    to a project.
+* "nics", a list of nics, each represted by a JSON object having
+    at least the following fields:
+        * "label", the nic's label.
+        * "macaddr", the nic's mac address.
+
+Response body:
+
+    {
+        "name": "box02",
+        "free": true,
+        "nics": ["ipmi", "pxe", "external",...]
+    }
+
+Possible errors:
+
+* 404, if the node does not exist
+
 ## Projects
 
 ### project_create
@@ -528,6 +555,52 @@ previously been started.
 * 404, if the headnode or hnic does not exist.
 * 409, if the headnode has already been started.
 
+### list_project_headnodes
+
+`GET /project/<project>/headnodes`
+
+Get a list of names of headnodes belonging to `<project>`.
+
+Response body:
+
+    [
+        "<headnode1_name>",
+        "<headnode2_name>",
+        ...
+    ]
+
+Possible errors:
+
+* 404, if the project does not exist
+
+
+### show_headnode
+
+`GET /headnode/<headnode>`
+
+Get information about a headnode. Includes the following fields:
+
+* "name", the name/label of the headnode (string).
+* "project", the project to which the headnode belongs.
+* "hnics", a JSON array of hnic names that are attached to this
+    headnode.
+* "vncport", the vnc port that the headnode VM is listening on; this
+    value can be `null` if the VM is powered off or has not been
+    created yet.
+
+Response body:
+
+    {
+        "name": <headnode>,
+        "project": <projectname>,
+        "nics": [<nic1>, <nic2>, ...],
+        "vncport": <port number>
+    }
+
+Possible errors:
+
+* 404, if the headnode does not exist
+
 ## Switches
 
 ### switch_register
@@ -594,32 +667,33 @@ Possible Errors:
 * 404, if the port or switch does not exist
 * 409, if there is a nic attached to the port.
 
----
+### port_connect_nic
 
-    port_connect_nic <port_no> <node_label> <nic_label>
-    port_detach_nic  <port_no>
-    [POST] /port/<port_no>/connect_nic
-    [POST] /port/<port_no>/detach_nic
+`POST /switch/<switch>/port/<port>/connect_nic`
 
-    list_project_headnodes <project> -> [
-            "<headnode1_name>",
-            "<headnode2_name>",
-            ...
-        ]
-    [GET] /project/<project>/headnodes
+Request body:
 
-    show_node <node> ->
-        {
-            "name": "box02",
-            "free": true,
-            "nics": ["ipmi", "pxe", "external",...]
-        }
-    [GET] /node/<node>
+    {
+        "node": <node>,
+        "nic": <nic>
+    }
 
-    show_headnode <headnode> ->
-        {
-            "name": "hn04",
-            "project": "projectname",
-            "nics": ["ipmi", "pxe", "public", ...]
-        }
-    [GET] /headnode/<headnode>
+Connect a port a node's nic.
+
+Possible errors:
+
+* 404, if the node, nic, switch, or port does not exist.
+* 409, if the nic or port is already attached to something.
+
+### port_detach_nic
+
+`POST /switch/<switch>/port/<port>/detach_nic`
+
+Detach the nic attached to `<port>`.
+
+Possible errors:
+
+* 404 if:
+  * the switch or port does not exist
+  * the port is not attached to a nic
+* 409, if the port is attached to a node which is not free.
