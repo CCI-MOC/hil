@@ -705,6 +705,9 @@ def port_detach_nic(switch, port):
     If the port does not exist, a NotFoundError will be raised.
 
     If the port is not connected to anything, a NotFoundError will be raised.
+
+    If the port is attached to a node which is not free, a BlockedError
+    will be raised.
     """
     db = model.Session()
 
@@ -713,6 +716,8 @@ def port_detach_nic(switch, port):
 
     if port.nic is None:
         raise NotFoundError(port.label + " not attached")
+    if port.nic.owner.project is not None:
+        raise BlockedError("The port is attached to a node which is not free")
 
     port.nic = None
     db.commit()

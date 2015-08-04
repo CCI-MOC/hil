@@ -1112,6 +1112,20 @@ class TestPortConnectDetachNic:
         with pytest.raises(api.NotFoundError):
             api.port_detach_nic('sw0', '3')
 
+    def port_detach_nic_node_not_free(self, db):
+        """should refuse to detach a nic if it has pending actions."""
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE)
+        api.switch_register_port('sw0', '3')
+        api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
+        api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
+
+        api.project_create('anvil-nextgen')
+        api.project_connect_node('anvil-nextgen', 'compute-01')
+
+        with pytest.raises(api.BlockedError):
+            api.port_detach_nic('sw0', '3')
+
 
 class TestQuery:
     """test the query api"""
