@@ -298,6 +298,7 @@ def node_connect_network(node, nic, network, channel=None):
                                   new_network=network,
                                   channel=channel))
     db.commit()
+    return '', 202
 
 @rest_call('POST', '/node/<node>/nic/<nic>/detach_network')
 def node_detach_network(node, nic, network):
@@ -327,6 +328,7 @@ def node_detach_network(node, nic, network):
                                   channel=attachment.channel,
                                   new_network=None))
     db.commit()
+    return '', 202
 
 
                             # Head Node Code #

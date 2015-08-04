@@ -383,7 +383,10 @@ class TestNodeConnectDetachNetwork:
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
 
-        api.node_connect_network('node-99', '99-eth0', 'hammernet')
+        # Check the actual HTTP response and status, not just the success;
+        # we should do this at least once in the test suite, since this call
+        # returns 202 instead of 200 like most things.
+        assert api.node_connect_network('node-99', '99-eth0', 'hammernet') == ('', 202)
         deferred.apply_networking()
 
         network = api._must_find(db, model.Network, 'hammernet')
@@ -500,7 +503,8 @@ class TestNodeConnectDetachNetwork:
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
         deferred.apply_networking() # added
 
-        api.node_detach_network('node-99', '99-eth0', 'hammernet')
+        # Verify that the status is right, not just that it "succeeds."
+        assert api.node_detach_network('node-99', '99-eth0', 'hammernet') == ('', 202)
         deferred.apply_networking()
         network = api._must_find(db, model.Network, 'hammernet')
         nic = api._must_find(db, model.Nic, '99-eth0')

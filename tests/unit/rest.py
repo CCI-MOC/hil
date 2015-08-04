@@ -123,11 +123,17 @@ class HttpEquivalenceTest(object):
         try:
             self.api_setup()
             ret = self.api_call()
-            assert resp.status_code == 200
-            if ret == '':
+            if ret is None:
+                ret_body, ret_status = '', 200
+            elif type(ret) is tuple:
+                ret_body, ret_status = ret
+            else:
+                ret_body, ret_status = ret, 200
+            assert resp.status_code == ret_status
+            if ret_body == '':
                 assert body == ''
             else:
-                assert json.loads(body) == json.loads(ret)
+                assert json.loads(body) == json.loads(ret_body)
         except rest.APIError, e:
             assert resp.status_code == e.status_code
             assert json.loads(body) == {'type': e.__class__.__name__,
@@ -156,6 +162,52 @@ class TestUrlArgs(HttpEquivalenceTest, HttpTest):
 
     def request(self):
         return wsgi_mkenv('GET', '/func/alice/bob')
+
+
+class ReturnTest(object):
+    """Superclass for the three tests TestReturn* below.
+
+    Each of these is an HttpEquivalenceTest which exercises the different
+    kinds of permitted return values.
+    """
+    def api_call(self):
+        return self.foo()
+
+    def request(self):
+        return wsgi_mkenv('GET', '/foo')
+
+
+class TestReturn0(ReturnTest, HttpEquivalenceTest, HttpTest):
+
+    def setUp(self):
+        HttpTest.setUp(self)
+
+        @rest.rest_call('GET', '/foo')
+        def foo():
+            pass
+        self.foo = foo
+
+
+class TestReturn1(ReturnTest, HttpEquivalenceTest, HttpTest):
+
+    def setUp(self):
+        HttpTest.setUp(self)
+
+        @rest.rest_call('GET', '/foo')
+        def foo():
+            return '"foo"'
+        self.foo = foo
+
+
+class TestReturn2(ReturnTest, HttpEquivalenceTest, HttpTest):
+
+    def setUp(self):
+        HttpTest.setUp(self)
+
+        @rest.rest_call('GET', '/foo')
+        def foo():
+            return '"foo"', 202
+        self.foo = foo
 
 
 class TestBodyArgs(HttpEquivalenceTest, HttpTest):
