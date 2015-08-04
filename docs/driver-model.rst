@@ -22,3 +22,9 @@ the database, the right subclass will be automatically used. However, when
 question (node_register, switch_register...) will expect a type field to be
 provided. The module ``haas.class_resolver`` provides facilities for finding
 the appropriate subclass based on the contents of this type field.
+
+The switch drivers shipped with HaaS itself are defined in the modules beneath
+``haas.ext.switches``. These include drivers for the Dell Powerconnect
+5500-series (in ``haas.ext.switches.dell``) and the Cisco Nexus 5500 (
+``haas.ext.switches.nexus``), as well as a mock driver useful for testing
+(``haas.ext.switches.mock``).
