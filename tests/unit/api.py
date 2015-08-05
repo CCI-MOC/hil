@@ -1363,7 +1363,37 @@ class Test_show_network:
         result = json.loads(api.show_network('spiderwebs'))
         assert result == {
             'name': 'spiderwebs',
+            'creator': 'anvil-nextgen',
+            'access': 'anvil-nextgen',
             "channels": ["null"]
+        }
+
+    def test_show_network_public(self, db):
+        api.network_create('public-network',
+                           creator='admin',
+                           access='',
+                           net_id='432')
+
+        result = json.loads(api.show_network('public-network'))
+        assert result == {
+            'name': 'public-network',
+            'creator': 'admin',
+            'channels': ['null'],
+        }
+
+    def test_show_network_provider(self, db):
+        api.project_create('anvil-nextgen')
+        api.network_create('spiderwebs',
+                           creator='admin',
+                           access='anvil-nextgen',
+                           net_id='451')
+
+        result = json.loads(api.show_network('spiderwebs'))
+        assert result == {
+            'name': 'spiderwebs',
+            'creator': 'admin',
+            'access': 'anvil-nextgen',
+            'channels': ['null'],
         }
 
 

@@ -591,6 +591,7 @@ def show_network(network):
         * "name", the name/label of the network (string).
         * "creator", the name of the project which created the network, or
           "admin", if it was created by an administrator.
+        * "channels", a list of channels to which the network may be attached.
     It may also have the fields:
         * "access" -- if this is present, it is the name of the project which
           has access to the network. Otherwise, the network is public.
@@ -599,10 +600,19 @@ def show_network(network):
     allocator = get_network_allocator()
 
     network = _must_find(db, model.Network, network)
-    return json.dumps({
+    result = {
         'name': network.label,
         'channels': allocator.legal_channels_for(db, network.network_id),
-    })
+    }
+    if network.creator is None:
+        result['creator'] = 'admin'
+    else:
+        result['creator'] = network.creator.label
+
+    if network.access is not None:
+        result['access'] = network.access.label
+
+    return json.dumps(result)
 
 
 @rest_call('PUT', '/switch/<switch>', schema=Schema({
