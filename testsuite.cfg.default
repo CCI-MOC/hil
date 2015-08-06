@@ -2,8 +2,8 @@
 # testsuite.cfg is not present. If you require any modification
 # to these settings, copy this file to testsuite.cfg and edit
 # accordingly
-[general]
-driver = null
+[extensions]
+haas.ext.network_allocators.null =
 [devel]
 dry_run = True
 [headnode]
