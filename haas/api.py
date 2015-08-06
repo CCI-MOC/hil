@@ -264,6 +264,17 @@ def node_connect_network(node, nic, network, channel=None):
 
     Raises BadArgumentError if the channel is invalid for the network.
     """
+
+    def _have_attachment(db, nic, query):
+        """Return whether there are any attachments matching ``query`` for ``nic``.
+
+        ``query`` should an argument suitable to pass to db.query(...).filter
+        """
+        return db.query(model.NetworkAttachment).filter(
+            model.NetworkAttachment.nic == nic,
+            query,
+        ).count() != 0
+
     db = model.Session()
 
     node = _must_find(db, model.Node, node)
@@ -902,17 +913,6 @@ def stop_console(nodename):
 
     # Helper functions #
     ####################
-
-
-def _have_attachment(db, nic, query):
-    """Return whether there are any attachments matching ``query`` for ``nic``.
-
-    ``query`` should an argument suitable to pass to db.query(...).filter
-    """
-    return db.query(model.NetworkAttachment).filter(
-        model.NetworkAttachment.nic == nic,
-        query,
-    ).count() != 0
 
 
 def _assert_absent(session, cls, name):
