@@ -24,9 +24,22 @@
 from abc import ABCMeta, abstractmethod
 
 from haas.model import *
+from haas import config
 
-# There's probably a better way to do this
-from haas.test_common import newDB, releaseDB, database_only
+from haas.test_common import fresh_database, config_testsuite
+import pytest
+
+@pytest.fixture
+def configure():
+    config_testsuite()
+    config.load_extensions()
+
+@pytest.fixture
+def db(request):
+    return fresh_database(request)
+
+pytestmark = pytest.mark.usefixtures('configure', 'db')
+
 
 class ModelTest:
     """Superclass with tests common to all models.
@@ -49,7 +62,6 @@ class ModelTest:
     def test_repr(self):
         print(self.sample_obj())
 
-    @database_only
     def test_insert(self, db):
         db.add(self.sample_obj())
 
@@ -106,4 +118,6 @@ class TestNetworkingAction(ModelTest):
                   'ipmi', '00:11:22:33:44:55')
         project = Project('anvil-nextgen')
         network = Network(project, project, True, '102', 'hammernet')
-        return NetworkingAction(nic, network)
+        return NetworkingAction(nic=nic,
+                                new_network=network,
+                                channel='null')

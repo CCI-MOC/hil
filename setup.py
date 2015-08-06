@@ -28,4 +28,5 @@ setup(name='haas',
                         'requests==2.4.1',
                         'pytest==2.6.2',
                         'pytest-cov==1.8.0',
+                        'pytest-xdist',
                         ])

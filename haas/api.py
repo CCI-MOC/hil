@@ -1,4 +1,4 @@
-# Copyright 2013-2014 Massachusetts Open Cloud Contributors
+# 2013-2014 Massachusetts Open Cloud Contributors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the
@@ -19,9 +19,13 @@ TODO: Spec out and document what sanitization is required.
 import importlib
 import json
 
+from schema import Schema, Optional
+
 from haas import model
 from haas.config import cfg
 from haas.rest import rest_call
+from haas.class_resolver import concrete_class_for
+from haas.network_allocator import get_network_allocator
 from haas.errors import *
 
 
@@ -131,11 +135,14 @@ def project_detach_node(project, node):
     node = _must_find(db, model.Node, node)
     if node not in project.nodes:
         raise NotFoundError("Node not in project")
+    num_attachments = db.query(model.NetworkAttachment)\
+        .filter(model.Nic.owner == node,
+                model.NetworkAttachment.nic_id == model.Nic.id).count()
+    if num_attachments != 0:
+        raise BlockedError("Node attached to a network")
     for nic in node.nics:
-        if nic.network is not None:
-            raise BlockedError("Node attached to a network")
         if nic.current_action is not None:
-            raise BlockedError("Node has a networking operation active on it.")
+            raise BlockedError("Node has pending network actions")
     node.stop_console()
     node.delete_console()
     project.nodes.remove(node)
@@ -243,13 +250,34 @@ def node_delete_nic(node, nic):
     db.commit()
 
 
-@rest_call('POST', '/node/<node>/nic/<nic>/connect_network')
-def node_connect_network(node, nic, network):
-    """Connect a physical NIC to a network.
+@rest_call('POST', '/node/<node>/nic/<nic>/connect_network', schema=Schema({
+    'network'          : basestring,
+    Optional('channel'): basestring,
+}))
+def node_connect_network(node, nic, network, channel=None):
+    """Connect a physical NIC to a network, on channel.
+
+    If channel is ``None``, use the allocator default.
 
     Raises ProjectMismatchError if the node is not in a project, or if the
     project does not have access rights to the given network.
+
+    Raises BlockedError if there is a pending network action, or if the network
+    is already attached to the nic, or if the channel is in use.
+
+    Raises BadArgumentError if the channel is invalid for the network.
     """
+
+    def _have_attachment(db, nic, query):
+        """Return whether there are any attachments matching ``query`` for ``nic``.
+
+        ``query`` should an argument suitable to pass to db.query(...).filter
+        """
+        return db.query(model.NetworkAttachment).filter(
+            model.NetworkAttachment.nic == nic,
+            query,
+        ).count() != 0
+
     db = model.Session()
 
     node = _must_find(db, model.Node, node)
@@ -261,35 +289,62 @@ def node_connect_network(node, nic, network):
 
     project = node.project
 
+    allocator = get_network_allocator()
+
     if nic.current_action:
         raise BlockedError("A networking operation is already active on the nic.")
 
     if (network.access is not None) and (network.access is not project):
         raise ProjectMismatchError("Project does not have access to given network.")
 
-    db.add(model.NetworkingAction(nic, network))
+    if _have_attachment(db, nic, model.NetworkAttachment.network == network):
+        raise BlockedError("The network is already attached to the nic.")
+
+    if channel is None:
+        channel = allocator.get_default_channel(db)
+
+    if _have_attachment(db, nic, model.NetworkAttachment.channel == channel):
+        raise BlockedError("The channel is already in use on the nic.")
+
+    if not allocator.is_legal_channel_for(db, channel, network.network_id):
+        raise BadArgumentError("Channel %r, is not legal for this network." %
+                               channel)
+
+    db.add(model.NetworkingAction(nic=nic,
+                                  new_network=network,
+                                  channel=channel))
     db.commit()
+    return '', 202
 
 @rest_call('POST', '/node/<node>/nic/<nic>/detach_network')
-def node_detach_network(node, nic):
-    """Detach a physical nic from any network it's on.
+def node_detach_network(node, nic, network):
+    """Detach network ``network`` from physical nic ``nic``.
 
     Raises ProjectMismatchError if the node is not in a project.
+
+    Raises BlockedError if there is already a pending network action.
+
+    Raises BadArgumentError if the network is not attached to the nic.
     """
     db = model.Session()
     node = _must_find(db, model.Node, node)
+    network = _must_find(db, model.Network, network)
     nic = _must_find_n(db, node, model.Nic, nic)
 
     if not node.project:
         raise ProjectMismatchError("Node not in project")
 
-    project = nic.owner.project
-
     if nic.current_action:
         raise BlockedError("A networking operation is already active on the nic.")
-
-    db.add(model.NetworkingAction(nic, None))
+    attachment = db.query(model.NetworkAttachment)\
+        .filter_by(nic=nic, network=network).first()
+    if attachment is None:
+        raise BadArgumentError("The network is not attached to the nic.")
+    db.add(model.NetworkingAction(nic=nic,
+                                  channel=attachment.channel,
+                                  new_network=None))
     db.commit()
+    return '', 202
 
 
                             # Head Node Code #
@@ -509,9 +564,7 @@ def network_create(network, creator, access, net_id):
 
     # Allocate net_id, if requested
     if net_id == "":
-        driver_name = cfg.get('general', 'driver')
-        driver = importlib.import_module('haas.drivers.' + driver_name)
-        net_id = driver.get_new_network_id(db)
+        net_id = get_network_allocator().get_new_network_id(db)
         if net_id is None:
             raise AllocationError('No more networks')
         allocated = True
@@ -532,56 +585,121 @@ def network_delete(network):
     db = model.Session()
     network = _must_find(db, model.Network, network)
 
-    if network.nics:
+    if len(network.attachments) != 0:
         raise BlockedError("Network still connected to nodes")
     if network.hnics:
         raise BlockedError("Network still connected to headnodes")
-    if network.scheduled_nics:
-        raise BlockedError("Network scheduled to become connected to nodes.")
+    if len(network.scheduled_nics) != 0:
+        raise BlockedError("There are pending actions on this network")
     if network.allocated:
-        driver_name = cfg.get('general', 'driver')
-        driver = importlib.import_module('haas.drivers.' + driver_name)
-        driver.free_network_id(db, network.network_id)
+        get_network_allocator().free_network_id(db, network.network_id)
 
     db.delete(network)
     db.commit()
 
 
-                            # Port code #
-                            #############
+@rest_call('GET', '/network/<network>')
+def show_network(network):
+    """Show details of a network.
+
+    Returns a JSON object representing a network.
+    The object will have at least the following fields:
+        * "name", the name/label of the network (string).
+        * "creator", the name of the project which created the network, or
+          "admin", if it was created by an administrator.
+        * "channels", a list of channels to which the network may be attached.
+    It may also have the fields:
+        * "access" -- if this is present, it is the name of the project which
+          has access to the network. Otherwise, the network is public.
+    """
+    db = model.Session()
+    allocator = get_network_allocator()
+
+    network = _must_find(db, model.Network, network)
+    result = {
+        'name': network.label,
+        'channels': allocator.legal_channels_for(db, network.network_id),
+    }
+    if network.creator is None:
+        result['creator'] = 'admin'
+    else:
+        result['creator'] = network.creator.label
+
+    if network.access is not None:
+        result['access'] = network.access.label
+
+    return json.dumps(result)
 
 
-@rest_call('PUT', '/port/<path:port>')
-def port_register(port):
+@rest_call('PUT', '/switch/<switch>', schema=Schema({
+    'type': basestring,
+    Optional(object): object,
+}))
+def switch_register(switch, type, **kwargs):
+    db = model.Session()
+    _assert_absent(db, model.Switch, switch)
+
+    cls = concrete_class_for(model.Switch, type)
+    if cls is None:
+        raise BadArgumentError('%r is not a valid switch type.' % type)
+    cls.validate(kwargs)
+    obj = cls(**kwargs)
+    obj.label = switch
+    obj.type = type
+
+    db.add(obj)
+    db.commit()
+
+
+@rest_call('DELETE', '/switch/<switch>')
+def switch_delete(switch):
+    db = model.Session()
+    switch = _must_find(db, model.Switch, switch)
+
+    if switch.ports != []:
+        raise BlockedError("Switch %r has ports; delete them first." %
+                           switch.label)
+
+    db.delete(switch)
+    db.commit()
+
+
+@rest_call('PUT', '/switch/<switch>/port/<path:port>')
+def switch_register_port(switch, port):
     """Register a port on a switch.
 
     If the port already exists, a DuplicateError will be raised.
     """
     db = model.Session()
 
-    _assert_absent(db, model.Port, port)
-    port = model.Port(port)
+    switch = _must_find(db, model.Switch, switch)
+    _assert_absent_n(db, switch, model.Port, port)
+    port = model.Port(port, switch)
 
     db.add(port)
     db.commit()
 
 
-@rest_call('DELETE', '/port/<path:port>')
-def port_delete(port):
+@rest_call('DELETE', '/switch/<switch>/port/<path:port>')
+def switch_delete_port(switch, port):
     """Delete a port on a switch.
 
     If the port does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
 
-    port = _must_find(db, model.Port, port)
+    switch = _must_find(db, model.Switch, switch)
+    port = _must_find_n(db, switch, model.Port, port)
+    if port.nic is not None:
+        raise BlockedError("Port %r is attached to a nic; please detach "
+                           "it first." % port.label)
 
     db.delete(port)
     db.commit()
 
 
-@rest_call('POST', '/port/<path:port>/connect_nic')
-def port_connect_nic(port, node, nic):
+@rest_call('POST', '/switch/<switch>/port/<path:port>/connect_nic')
+def port_connect_nic(switch, port, node, nic):
     """Connect a port on a switch to a nic on a node.
 
     If any of the three arguments does not exist, a NotFoundError will be
@@ -592,8 +710,11 @@ def port_connect_nic(port, node, nic):
     """
     db = model.Session()
 
-    port = _must_find(db, model.Port, port)
-    nic = _must_find_n(db, _must_find(db, model.Node, node), model.Nic, nic)
+    switch = _must_find(db, model.Switch, switch)
+    port = _must_find_n(db, switch, model.Port, port)
+
+    node = _must_find(db, model.Node, node)
+    nic = _must_find_n(db, node, model.Nic, nic)
 
     if nic.port is not None:
         raise DuplicateError(nic.label)
@@ -605,20 +726,26 @@ def port_connect_nic(port, node, nic):
     db.commit()
 
 
-@rest_call('POST', '/port/<path:port>/detach_nic')
-def port_detach_nic(port):
+@rest_call('POST', '/switch/<switch>/port/<path:port>/detach_nic')
+def port_detach_nic(switch, port):
     """Detach a port from the nic it's attached to
 
     If the port does not exist, a NotFoundError will be raised.
 
     If the port is not connected to anything, a NotFoundError will be raised.
+
+    If the port is attached to a node which is not free, a BlockedError
+    will be raised.
     """
     db = model.Session()
 
-    port = _must_find(db, model.Port, port)
+    switch = _must_find(db, model.Switch, switch)
+    port = _must_find_n(db, switch, model.Port, port)
 
     if port.nic is None:
         raise NotFoundError(port.label + " not attached")
+    if port.nic.owner.project is not None:
+        raise BlockedError("The port is attached to a node which is not free")
 
     port.nic = None
     db.commit()

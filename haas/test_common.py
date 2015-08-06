@@ -12,12 +12,89 @@
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
 
-from functools import wraps
 from haas.model import *
 from haas.config import cfg
-from haas import api
+from haas import api, config
 import json
 import subprocess
+import os.path
+
+
+def config_testsuite():
+    """Loads an initial config from ``testsuite.cfg``.
+
+    This is meant to be used as/from a pytest fixture, but isn't declared
+    here as such; individual modules should declare fixtures which use it.
+
+    Tests which don't care about a specific configuration should leave the
+    config alone. This allows the developer to test with different
+    configurations, e.g. different DBMS backends.
+
+    if testsuite.cfg doesn't exist, sane defaults are provided.
+    """
+    # NOTE: The file ``testsuite.cfg.default`` Should be updated whenever
+    # The default settings here are modified.
+    if os.path.isfile('testsuite.cfg'):
+        config.load('testsuite.cfg')
+    else:
+        config_set({
+            'extensions': {
+                # Use the null network allocator for these tests
+                'haas.ext.network_allocators.null': '',
+            },
+            'devel': {
+                'dry_run': True,
+            },
+            'headnode': {
+                'base_imgs': 'base-headnode, img1, img2, img3, img4',
+            },
+            'database': {
+                'uri': 'sqlite:///:memory:',
+            }
+        })
+
+
+def config_merge(config_dict):
+    """Modify the configuration according to ``config_dict``.
+
+    ``config_dict`` should be a dictionary mapping section names (strings)
+    to dictionaries mapping option names within a section (again, strings)
+    to their values. If the value of a section, or option is None, that
+    section or option is removed. Otherwise, the section is created if it
+    does not exist, and any options are set to the specified values.
+    """
+    for section in config_dict.keys():
+        if config_dict[section] is None:
+            print('remove section: %r' % section)
+            cfg.remove_section(section)
+        else:
+            if not cfg.has_section(section):
+                print('add section: %r' % section)
+                cfg.add_section(section)
+            for option in config_dict[section].keys():
+                if config_dict[section][option] is None:
+                    print('remove option: %r' % option)
+                    cfg.remove_option(section, option)
+                else:
+                    print('set option: %r' % option)
+                    cfg.set(section, option, config_dict[section][option])
+
+
+def config_set(config_dict):
+    """Set the configuration according to ``config_dict``.
+
+    This works like ``config_merge``, except that it starts from an empty
+    configuration.
+    """
+    config_clear()
+    config_merge(config_dict)
+
+
+def config_clear():
+    """Clear the contents of the current HaaS configuration"""
+    for section in cfg.sections():
+        cfg.remove_section(section)
+
 
 def network_create_simple(network, project):
     """Create a simple project-owned network.
@@ -34,8 +111,8 @@ def network_create_simple(network, project):
     api.network_create(network, project, project, "")
 
 def newDB():
-    """Configures and returns an in-memory DB connection"""
-    init_db(create=True,uri="sqlite:///:memory:")
+    """Configures and returns a connection to a freshly initialized DB."""
+    init_db(create=True)
     return Session()
 
 def releaseDB(db):
@@ -43,109 +120,116 @@ def releaseDB(db):
     pass
 
 
-def clear_configuration(f):
-    """A decorator which clears all HaaS configuration both before and after
-    calling the function.  Used for tests which require a specific
-    configuration setup.
+def fresh_database(request):
+    """Runs the test against a newly populated DB.
+
+    This is meant to be used as a pytest fixture, but isn't declared
+    here as such; individual modules should declare it as a fixture.
+
+    This must run *after* the config file (or equivalent) has been loaded.
+    """
+    db = newDB()
+    request.addfinalizer(lambda: releaseDB(db))
+    return db
+
+
+class NetworkTest:
+    """Superclass for network-related deployment tests"""
+
+    def get_port_networks(self, ports):
+        ret = {}
+        ports_by_switch = {}
+        for port in ports:
+            if port.owner not in ports_by_switch:
+                ports_by_switch[port.owner] = []
+            ports_by_switch[port.owner].append(port)
+        for switch, ports in ports_by_switch.iteritems():
+            session = switch.session()
+            switch_port_networks = session.get_port_networks(ports)
+            session.disconnect()
+            for k, v in switch_port_networks.iteritems():
+                ret[k] = v
+        return ret
+
+    def get_network(self, port, port_networks):
+        """Returns all interfaces on the same network as a given port"""
+        if port not in port_networks:
+            return set()
+        result = set()
+        for k, v in port_networks.iteritems():
+            networks = set([net for channel, net in v])
+            for _, net in port_networks[port]:
+                if net in networks:
+                    result.add(k)
+        return result
+
+    def get_all_ports(self, nodes):
+        ports = []
+        for node in nodes:
+            for nic in node.nics:
+                ports.append(nic.port)
+        return ports
+
+    def collect_nodes(self, db):
+        """Add 4 available nodes with nics to the project.
+
+        If there are not enough nodes, this will rais an api.AllocationError.
+        """
+        free_nodes = db.query(Node).filter_by(project_id=None).all()
+        nodes = []
+        for node in free_nodes:
+            if len(node.nics) > 0:
+                api.project_connect_node('anvil-nextgen', node.label)
+                nodes.append(node)
+                if len(nodes) >= 4:
+                    break
+
+        # If there are not enough nodes with nics, raise an exception
+        if len(nodes) < 4:
+            raise api.AllocationError(('At least 4 nodes with at least ' +
+                '1 NIC are required for this test. Only %d node(s) were ' +
+                'provided.') % len(nodes))
+        return nodes
+
+
+def site_layout():
+    """Load the file site-layout.json, and populate the database accordingly.
+
+    This is meant to be used as a pytest fixture, but isn't declared
+    here as such; individual modules should declare it as a fixture.
+
+    Full documentation for the site-layout.json file format is located in
+    ``docs/testing.md``.
+    """
+    layout_json_data = open('site-layout.json')
+    layout = json.load(layout_json_data)
+    layout_json_data.close()
+
+    for switch in layout['switches']:
+        api.switch_register(**switch)
+
+    for node in layout['nodes']:
+        api.node_register(node['name'], node['ipmi']['host'],
+            node['ipmi']['user'], node['ipmi']['pass'])
+        for nic in node['nics']:
+            api.node_register_nic(node['name'], nic['name'], nic['mac'])
+            api.switch_register_port(nic['switch'], nic['port'])
+            api.port_connect_nic(nic['switch'], nic['port'], node['name'], nic['name'])
+
+
+def headnode_cleanup(request):
+    """Clean up headnode VMs left by tests.
+
+    This is meant to be used as a pytest fixture, but isn't declared
+    here as such; individual modules should declare it as a fixture.
+
+    This is to work around an irritating bug in some versions of libvirt, which
+    causes 'virsh undefine' to fail if called too quickly.  This decorator
+    depends on the database containing an accurate list of headnodes.
     """
 
-    def config_clear():
-        for section in cfg.sections():
-            cfg.remove_section(section)
-
-    @wraps(f)
-    def wrapped(self):
-        config_clear()
-        f(self)
-        config_clear()
-
-    return wrapped
-
-
-def database_only(f):
-    """A decorator which runs the given function on a fresh memory-backed
-    database, and a config that is empty except for making the 'null' backend
-    active,  and enabling the dry_run option.  Used for testing functions that
-    pertain to the database state, but not the state of the outside world, or
-    the network driver.
-    """
-
-    def config_initialize():
-        # Use the 'null' backend for these tests
-        cfg.add_section('general')
-        cfg.set('general', 'driver', 'null')
-        cfg.add_section('devel')
-        cfg.set('devel', 'dry_run', True)
-        cfg.add_section('headnode')
-        cfg.set('headnode', 'base_imgs', 'base-headnode, img1, img2, img3, img4')
-
-    @wraps(f)
-    @clear_configuration
-    def wrapped(self):
-        config_initialize()
-        db = newDB()
-        f(self, db)
-        releaseDB(db)
-
-    return wrapped
-
-
-def deployment_test(f):
-    """A decorator which runs the given function on a fresh memory-backed
-    database and a config that is setup to operate with a dell switch.  Used
-    for testing functions that pertain to the state of the outside world.
-    These tests are very specific to our setup and are used for internal
-    testing purposes. These tests are unlikely to work with other HaaS
-    configurations.
-    """
-
-    def config_initialize():
-        # Use the deployment config for these tests.  Setup such as the switch
-        # IP address and password must be in this file, as well as the allowed
-        # VLAN range.
-        # XXX: Currently, the deployment tests only support the Dell driver.
-        cfg.read('deployment.cfg')
-
-    def allocate_nodes():
-        layout_json_data = open('site-layout.json')
-        layout = json.load(layout_json_data)
-        layout_json_data.close()
-
-        netmap = {}
-        for node in layout['nodes']:
-            api.node_register(node['name'], node['ipmi']['host'],
-                node['ipmi']['user'], node['ipmi']['pass'])
-            for nic in node['nics']:
-                api.node_register_nic(node['name'], nic['name'], nic['mac'])
-                api.port_register(nic['port'])
-                api.port_connect_nic(nic['port'], node['name'], nic['name'])
-                netmap[nic['port']] = None
-
-        # Now ensure that all of these ports are turned off
-        driver_name = cfg.get('general', 'driver')
-        driver = importlib.import_module('haas.drivers.' + driver_name)
-        driver.apply_networking(netmap)
-
-
-    @wraps(f)
-    @clear_configuration
-    def wrapped(self):
-        config_initialize()
-        db = newDB()
-        allocate_nodes()
-        f(self, db)
-        releaseDB(db)
-
-    return wrapped
-
-def headnode_cleanup(f):
-    """A decorator which cleans up headnode VMs left by tests.  This is to
-    work around an irritating bug in some versions of libvirt, which causes
-    'virsh undefine' to fail if called too quickly.  This decorator depends on
-    the database containing an accurate list of headnodes.
-    """
-
-    def undefine_headnodes(db):
+    def undefine_headnodes():
+        db = Session()
         for hn in db.query(Headnode):
             # XXX: Our current version of libvirt has a bug that causes this
             # command to hang for a minute and throw an error before
@@ -157,11 +241,4 @@ def headnode_cleanup(f):
             except subprocess.CalledProcessError:
                 pass
 
-    @wraps(f)
-    def wrapped(self, db):
-        try:
-            f(self, db)
-        finally:
-            undefine_headnodes(db)
-
-    return wrapped
+    request.addfinalizer(undefine_headnodes)

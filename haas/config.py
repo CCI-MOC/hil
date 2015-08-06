@@ -21,6 +21,8 @@ Once `load` has been called, it will be ready to use.
 
 import ConfigParser
 import logging
+import importlib
+import sys
 
 cfg = ConfigParser.RawConfigParser()
 
@@ -57,3 +59,18 @@ def configure_logging():
     else:
         # Default to 'warning'
         logging.basicConfig(level=logging.WARNING)
+
+
+def load_extensions():
+    """Load extensions.
+
+    Each extension is specified as ``module =`` in the ``[extensions]`` section
+    of ``haas.cfg``. This must be called after ``load``.
+    """
+    if not cfg.has_section('extensions'):
+        return
+    for name in cfg.options('extensions'):
+        importlib.import_module(name)
+    for name in cfg.options('extensions'):
+        if hasattr(sys.modules[name], 'setup'):
+            sys.modules[name].setup()

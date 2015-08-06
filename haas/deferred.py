@@ -14,8 +14,8 @@
 
 """Performs deferred networking actions."""
 
-from haas import model, config
-import logging, importlib
+from haas import model
+import logging
 
 def apply_networking():
     """Do each networking action in the journal, then cross them off.
@@ -37,9 +37,10 @@ def apply_networking():
     db = model.Session()
 
     # Get the journal enries
-    network_map = {}
     actions = db.query(model.NetworkingAction).\
         order_by(model.NetworkingAction.id).all()
+
+    switch_sessions = {}
 
     if actions == []:
         # No actions to perform.  Return False immediately.
@@ -51,22 +52,33 @@ def apply_networking():
         network = action.new_network
         if nic.port:
             if network:
-                network_map[nic.port.label] = network.network_id
+                network_id = network.network_id
             else:
-                network_map[nic.port.label] = None
+                network_id = None
+
+            switch = nic.port.owner
+            if switch.label not in switch_sessions:
+                switch_sessions[switch.label] = switch.session()
+            switch_sessions[switch.label].apply_networking(action)
         else:
             logging.getLogger(__name__).warn(
                 'Not modifying NIC %s; NIC is not on a port.' %
                 nic.label)
 
-    # Apply them
-    driver_name = config.cfg.get('general', 'driver')
-    driver = importlib.import_module('haas.drivers.' + driver_name)
-    driver.apply_networking(network_map)
+    # Close all of our sessions:
+    for session in switch_sessions.values():
+        session.disconnect()
 
-    # Then perform the database change and delete them
+    # Then perform the database changes and delete them
     for action in actions:
-        action.nic.network = action.new_network
+        if action.new_network is None:
+            db.query(model.NetworkAttachment)\
+                .filter_by(nic=action.nic, channel=action.channel)\
+                .delete()
+        else:
+            db.add(model.NetworkAttachment(nic=action.nic,
+                                           network=action.new_network,
+                                           channel=action.channel))
         db.delete(action)
 
     db.commit()

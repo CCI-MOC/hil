@@ -1,4 +1,4 @@
-# Copyright 2013-2014 Massachusetts Open Cloud Contributors
+# Copyright 2013-2015 Massachusetts Open Cloud Contributors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the
@@ -19,10 +19,10 @@ from sqlalchemy.orm import relationship, sessionmaker,backref
 from passlib.hash import sha512_crypt
 from subprocess import call, check_call, Popen, PIPE
 import subprocess
+from haas.network_allocator import get_network_allocator
 from haas.config import cfg
 from haas.dev_support import no_dry_run
 from haas.errors import OBMError
-import importlib
 import uuid
 import xml.etree.ElementTree
 import logging
@@ -40,7 +40,8 @@ user_projects = Table('user_projects', Base.metadata,
 def init_db(create=False, uri=None):
     """Start up the DB connection.
 
-    If `create` is True, this will generate the schema for the database.
+    If `create` is True, this will generate the schema for the database, and
+    perform initial population of tables.
 
     `uri` is the uri to use for the databse. If it is None, the uri from the
     config file will be used.
@@ -49,17 +50,12 @@ def init_db(create=False, uri=None):
     if uri == None:
         uri = cfg.get('database', 'uri')
 
-    # We have to import this prior to doing create_all, so that any tables
-    # defined by the driver will make it into the schema.
-    driver_name = cfg.get('general', 'driver')
-    driver = importlib.import_module('haas.drivers.' + driver_name)
-
     engine = create_engine(uri)
     if create:
         Base.metadata.create_all(engine)
     Session.configure(bind=engine)
-
-    driver.init_db(create=create)
+    if create:
+        get_network_allocator().populate(Session())
 
 
 class AnonModel(Base):
@@ -69,6 +65,8 @@ class AnonModel(Base):
 
     Its main purpose is to reduce boilerplate by doing things such as
     auto-generating table names.
+
+    Extensions may inherit from this class to create new talbles.
     """
     __abstract__ = True
     id = Column(Integer, primary_key=True, nullable=False)
@@ -87,6 +85,8 @@ class Model(AnonModel):
 
     All objects in the HaaS API are referenced by their 'label', so all such
     objects descend from this class.
+
+    Extensions may inherit from this class to create new talbles.
     """
     __abstract__ = True
     label = Column(String, nullable=False)
@@ -108,10 +108,6 @@ class Nic(Model):
     # The switch port to which the nic is attached:
     port_id   = Column(Integer,ForeignKey('port.id'))
     port      = relationship("Port",backref=backref('nic',uselist=False))
-
-    # The Network to which the nic is attached:
-    network_id = Column(Integer, ForeignKey('network.id'))
-    network   = relationship("Network", backref=backref('nics'))
 
     def __init__(self, node, label, mac_addr):
         self.owner     = node
@@ -285,10 +281,85 @@ class Port(Model):
     The port's label is an identifier that is meaningful only to the
     corresponding switch's driver.
     """
+    owner_id = Column(Integer, ForeignKey('switch.id'), nullable=False)
+    owner = relationship('Switch', backref=backref('ports'))
 
-    def __init__(self, label):
+    def __init__(self, label, switch):
         """Register a port on a switch."""
-        self.label   = label
+        self.label = label
+        self.owner = switch
+
+
+class Switch(Model):
+    """A network switch.
+
+    This is meant to be subclassed by switch-specific drivers, implemented
+    by extensions.
+
+    Subclasses MUST override both ``validate`` and ``session``.
+    """
+
+    type = Column(String, nullable=False)
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'switch',
+        'polymorphic_on': type,
+    }
+
+    @staticmethod
+    def validate(kwargs):
+        """Verify that ``kwargs`` is a legal set of keyword args to ``__init__``
+
+        Raise a ``schema.SchemaError`` if the ``kwargs`` is invalid.
+
+        Note well: this is a *static* method; it will be invoked on the class.
+        """
+        assert False, "Subclasses MUST override the validate method"
+
+    def session(self):
+        """Return a session object for the switch.
+
+        Conceputally, a session is an active connection to the switch; it lets
+        HaaS avoid connecting and disconnecting for each change. the session
+        object must have the methods:
+
+            def apply_networking(self, action):
+                '''Apply the NetworkingAction ``action`` to the switch.
+
+                Action is guaranteed to reference a port object that is
+                attached to the correct switch.
+                '''
+
+            def disconnect(self):
+                '''Disconnect from the switch.
+
+                This will be called when HaaS is done with the session.
+                '''
+
+            def get_port_networks(self, ports):
+                '''Return a mapping from port objects to (channel, network ID) pairs.
+
+                ``ports`` is a list of port objects to collect information on.
+
+                The return value will be a dictionary of the form:
+
+                    {
+                        Port<"port-3">: [("vlan/native", "23"), ("vlan/52", "52")],
+                        Port<"port-7">: [("vlan/23", "23")],
+                        Port<"port-8">: [("vlan/native", "52")],
+                        ...
+                    }
+
+                With one key for each element in the ``ports`` argument.
+
+                This method is only for use by the test suite.
+                '''
+
+        Some drivers may do things that are not connection-oriented; If so,
+        they can just return a dummy object here. The recommended way to
+        handle this is to define the two methods above on the switch object,
+        and have ``session`` just return ``self``.
+        """
 
 
 class User(Model):
@@ -472,18 +543,26 @@ class NetworkingAction(AnonModel):
 
     # This model is not visible in the API, so inherit from AnonModel
 
-    nic_id = Column(Integer, ForeignKey('nic.id'), nullable=False)
-    nic    = relationship("Nic", backref=backref('current_action',
-                                                 uselist=False))
+    nic_id         = Column(Integer, ForeignKey('nic.id'), nullable=False)
+    new_network_id = Column(Integer, ForeignKey('network.id'), nullable=True)
+    channel        = Column(String, nullable=False)
 
-    new_network_id = Column(Integer,
-                            ForeignKey('network.id'),
-                            nullable=True)
+    nic = relationship("Nic", backref=backref('current_action', uselist=False))
     new_network = relationship("Network",
                                backref=backref('scheduled_nics',
                                                uselist=True))
 
-    def __init__(self, nic, new_network):
-        """Schedule an action, to attach a nic to a new network (or to nothing)"""
-        self.nic = nic
-        self.new_network = new_network
+
+class NetworkAttachment(AnonModel):
+    """An attachment of a network to a particular nic on a channel"""
+    # TODO: it would be nice to place explicit unique constraints on some
+    # things:
+    #
+    # * (nic_id, network_id)
+    # * (nic_id, channel)
+    nic_id     = Column(Integer, ForeignKey('nic.id'),     nullable=False)
+    network_id = Column(Integer, ForeignKey('network.id'), nullable=False)
+    channel    = Column(String, nullable=False)
+
+    nic     = relationship('Nic', backref=backref('attachments'))
+    network = relationship('Network', backref=backref('attachments'))

@@ -89,25 +89,18 @@ with:
 At present, when a network consisting of nodes 0, 1 and 2, and headnode H,
 using vlan tag N is deployed,
 
-* The ports to which 0, 1 and 2 are attached are configured for access mode,
-  associated with VLAN N.
+* The ports to which 0, 1 and 2 are attached are configured for trunked 
+  mode, and given access to VLAN N. Depending on the user's preferences, 
+  the VLAN may either be tagged or native, on a per-port basis.
 * An interface `ethM.N` is created on the HaaS master, where `ethM` is a network
   interface connected to the switch. `ethM` must be connected to a port that is
   configured as trunking, with VLAN M being tagged for that port.
 * `ethM.N` is attached to H (not directly, see(1)).
 * H is started.
 
-From here, we have an isolated network connecting 0, 1, 2 and H. From here,
-depending on what is exposed through the nodes' interfaces (e.g. ipmi), H can
-manage the nodes.
-
-This setup will need to be adjusted, since we want to allow users to
-deploy Openstack onto the nodes, and using VLANs with Neutron is a
-common configuration. The fact that tagged traffic would be blocked by
-access mode therefore presents a problem. Instead, we probably want to
-be using trunked mode, with some number of VLANs tagged. There's a
-discussion to be had about how exactly this should look, as well as how
-to expose it to the headnode.
+From here, we have an isolated network connecting 0, 1, 2 and H. H can then
+manage the nodes by e.g. providing a PXE server and invoking the HaaS API to
+reboot the nodes.
 
 (1): The one slight wrinkle with the network setup described above is that libvirt
 doesn't actually allow connecting `ethM.N` directly to the VM; instead we
