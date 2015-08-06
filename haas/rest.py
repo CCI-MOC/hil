@@ -124,8 +124,14 @@ def rest_call(method, path, schema=None):
     as the body, i.e. `type` will be the type of the exception, and `msg`
     will be a human-readable error message.
 
-    Otherwise, the return value should be a string constituting the body
-    of the request.
+    If no exception is raised, the return value must be one of:
+
+        * None (implicit if there's no ``return`` statement), in which case
+          the response code will be 200 and the body will be empty
+        * A string, which will be used as the body of the response. again,
+          the status code will be 200.
+        * A tuple, whose first element is a string (the response body), and
+          whose second is an integer (the status code).
     """
     def register(f):
         if schema is None:
@@ -223,11 +229,17 @@ def request_handler(request):
             request_data[k] = v
         logger.debug('Recieved api call %s(%s)', f.__name__, _format_arglist(**request_data))
         response_body = f(**request_data)
-        if not response_body:
-            response_body = ""
+        result = f(**request_data)
+        if result is None:
+            response_body, status = "", 200
+        elif type(result) is tuple:
+            response_body, status = result
+        else:
+            # result is a string:
+            response_body, status = result, 200
         logger.debug("completed call to api function %s, "
                      "response body: %r", f.__name__, response_body)
-        return Response(response_body, status=200)
+        return Response(response_body, status=status)
     except APIError as e:
         logger.debug('Invalid call to api function %s, raised exception: %r',
                      f.__name__, e)
@@ -246,7 +258,7 @@ def wsgi_handler(environ, start_response):
     response = request_handler(Request(environ))
     return response(environ, start_response)
 
-def serve(debug=True):
+def serve(port, debug=True):
     """Start an http server running the API.
 
     This is intended for development purposes *only* -- as such the default is
@@ -256,6 +268,6 @@ def serve(debug=True):
     behavior.
     """
     from werkzeug.serving import run_simple
-    run_simple('127.0.0.1', 5000, wsgi_handler,
+    run_simple('127.0.0.1', port, wsgi_handler,
                use_debugger=debug,
                use_reloader=debug)

@@ -185,12 +185,12 @@ activate on boot, with::
   virsh --connect qemu:///system pool-start haas_headnodes
   virsh --connect qemu:///system pool-autostart haas_headnodes
 
-The scripts in ``examples/ubuntu-headnode`` can be used to build an ubuntu
-14.04 disk image with a default root password. Read the README in that
-directory for more information.
+The scripts in ``examples/cloud-img-with-passwd`` can be used to build
+an ubuntu 14.04 or centos 7 disk image with a default root password. Read
+the README in that directory for more information.
 
 Once the disk image is built, copy ito the storage pool directory (here we
-assume it is caled ``base.img``)::
+assume it is called ``base.img``)::
 
   mv base.img /var/lib/libvirt/images/
 
@@ -289,11 +289,7 @@ safe to replace it.)
 strings that should be escaped (see `issue 361 <https://github.com/CCI-MOC/haas/issues/360>`_). By default, Apache `Doesn't
 allow <https://stackoverflow.com/questions/4390436/need-to-allow-encoded-slashes-on-apache>`_
 this due to security concerns. ``AllowEncodedSlashes On`` enables the passing
-of these arguments. If your Apache version is 2.2.18 or later (released in May, 2011, though not included with CentOS 6.5), you should
-replace ``AllowEncodedSlashes On`` with ``AllowEncodedSlashes NoDecode``, which
-is safer for the long term (see `the
-docs <https://httpd.apache.org/docs/2.2/mod/core.html#AllowEncodedSlashes>`_ for
-more information).
+of these arguments.
 
 If you haven't already, create the directory that will contain the HaaS WSGI module::
 

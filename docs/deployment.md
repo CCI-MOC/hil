@@ -78,19 +78,23 @@ even the root user is untrusted.
 # Networks
 
 ## Switch configuration
-In order to deploy HaaS, a switch supported by one of HaaS's drivers is required.
+In order to deploy HaaS, at least one switch supported by one of HaaS's 
+drivers is required.
 
 This currently includes:
 
 * Dell Powerconnect
-* Cisco Nexus 5500
+* Cisco Nexus 3500 & 5500 (other nexus switches may work as well, but 
+  are untested)
 
-A *"null"* driver is also included for testing and experimentation.
+``null`` and ``mock`` drivers are also included for testing and
+experimentation.
 
 ## VLANs
-The network administrator will need to pre-allocate a set of VLANs to dedicate
-to HaaS's management. These are kept within the *vlan* section of the config
-file.
+
+The network administrator will need to pre-allocate a set of VLANs to 
+dedicate to HaaS's management. These are kept within the *vlan* section 
+of the config file.
 
 ## Headnodes
 
@@ -103,11 +107,16 @@ networks are shared is indicated using the *trunk_nic* member of the
 **[headnode]** section.
 
 ## Multiple Switches
-HaaS supports multiple switches via 2 mechanisms:
+HaaS supports networks spanning multiple switches via 2 mechanisms:
 
 1. Vendor-specific "stacking" features that make all of the switches appear to
-be one big one.
-2. Via the complex-vlan driver, which assumes that the assigned VLANs are
-spanned across all switches. This is scheduled to be included **after 0.1**.
-Progress may be tracked via [issue
-327](https://github.com/CCI-MOC/haas/issues/327)
+   be one big one.
+2. By running a network cable between the two switches, and setting all 
+   VLANs belonging to HaaS to be trunked (tagged) on the interfaces 
+   connecting those switches.
+
+IMPORTANT: If you're operating a multi-switch deployment using technique (2)
+above, you should be  sure to configure the switches to prevent VLAN hopping
+attacks::
+
+    https://en.wikipedia.org/wiki/VLAN_hopping

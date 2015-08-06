@@ -22,11 +22,14 @@ import os
 import requests
 import sys
 import urllib
+import schema
 
 from functools import wraps
 
 command_dict = {}
 usage_dict = {}
+MIN_PORT_NUMBER = 1
+MAX_PORT_NUMBER = 2**16 - 1
 
 def cmd(f):
     """A decorator for CLI commands.
@@ -89,7 +92,14 @@ def do_delete(url):
     return check_status_code(requests.delete(url))
 
 @cmd
-def serve():
+def serve(port):
+    try:
+        port = schema.And(schema.Use(int), lambda n: MIN_PORT_NUMBER <= n <= MAX_PORT_NUMBER).validate(port)
+    except schema.SchemaError:
+	sys.exit('Error: Invaid port. Must be in the range 1-65535.')
+    except Exception as e:
+	sys.exit('Unxpected Error!!! \n %s' % e)
+
     """Start the HaaS API server"""
     if cfg.has_option('devel', 'debug'):
         debug = cfg.getboolean('devel', 'debug')
@@ -106,7 +116,7 @@ def serve():
         node.stop_console()
         node.delete_console()
     # Start server
-    rest.serve(debug=debug)
+    rest.serve(port, debug=debug)
 
 
 @cmd
@@ -274,16 +284,17 @@ def headnode_delete_hnic(headnode, nic):
     do_delete(url)
 
 @cmd
-def node_connect_network(node, nic, network):
-    """Connect <node> to <network> on given <nic>"""
+def node_connect_network(node, nic, network, channel):
+    """Connect <node> to <network> on given <nic> and <channel>"""
     url = object_url('node', node, 'nic', nic, 'connect_network')
-    do_post(url, data={'network':network})
+    do_post(url, data={'network': network,
+                       'channel': channel})
 
 @cmd
-def node_detach_network(node, nic):
-    """Detach <node> from the network on given <nic>"""
+def node_detach_network(node, nic, network):
+    """Detach <node> from the given <network> on the given <nic>"""
     url = object_url('node', node, 'nic', nic, 'detach_network')
-    do_post(url)
+    do_post(url, data={'network': network})
 
 @cmd
 def headnode_connect_network(headnode, nic, network):
@@ -337,6 +348,12 @@ def list_project_nodes(project):
 def list_project_networks(project):
     """List all networks attached to a <project>"""
     url = object_url('project', project, 'networks')
+    do_get(url)
+
+@cmd
+def show_network(network):
+    """Display information about <network>"""
+    url = object_url('network', network)
     do_get(url)
 
 @cmd
