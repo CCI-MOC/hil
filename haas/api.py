@@ -1,4 +1,4 @@
-# Copyright 2013-2014 Massachusetts Open Cloud Contributors
+# 2013-2014 Massachusetts Open Cloud Contributors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the
@@ -276,8 +276,6 @@ def node_connect_network(node, nic, network, channel=None):
     project = node.project
 
     allocator = get_network_allocator()
-    if channel is None:
-        channel = allocator.get_default_channel(db)
 
     if nic.current_action:
         raise BlockedError("A networking operation is already active on the nic.")
@@ -287,6 +285,10 @@ def node_connect_network(node, nic, network, channel=None):
 
     if _have_attachment(db, nic, model.NetworkAttachment.network == network):
         raise BlockedError("The network is already attached to the nic.")
+
+    if channel is None:
+        channel = allocator.get_default_channel(db)
+
     if _have_attachment(db, nic, model.NetworkAttachment.channel == channel):
         raise BlockedError("The channel is already in use on the nic.")
 
