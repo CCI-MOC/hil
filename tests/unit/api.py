@@ -318,7 +318,6 @@ class TestNodeRegisterDelete:
         with pytest.raises(api.NotFoundError):
             api.node_delete('node-99')
 
-    @database_only
     def test_node_delete_nic_exist(self, db):
         """node_delete should respond with an error if the node has nics."""
         api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
