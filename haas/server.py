@@ -50,6 +50,6 @@ def api_server_init():
     this module in the correct order, as well as ``model.init_db``
     """
     register_drivers()
-    model.init_db()
     validate_state()
+    model.init_db()
     stop_orphan_consoles()
