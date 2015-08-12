@@ -329,3 +329,19 @@ class TestValidationError(HttpTest):
         assert _is_error(self._do_request(json.dumps({
             'the_value': 'Not an integer!',
         })), rest.ValidationError)
+
+
+class TestCallOnce(HttpTest):
+
+    def setUp(self):
+        HttpTest.setUp(self)
+        self.num_calls = 0
+
+    def test_call_once(self):
+
+        @rest.rest_call('POST', '/increment')
+        def once():
+            self.num_calls += 1
+
+        rest.request_handler(Request(wsgi_mkenv('POST', '/increment')))
+        assert self.num_calls == 1
