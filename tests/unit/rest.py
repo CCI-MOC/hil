@@ -332,15 +332,25 @@ class TestValidationError(HttpTest):
 
 
 class TestCallOnce(HttpTest):
+    """Verify that the request handler invokes the API *exactly* once.
+
+    This is a regression test; A previous refactoring introduced a bug where
+    the api function was called twice.
+    """
 
     def setUp(self):
         HttpTest.setUp(self)
         self.num_calls = 0
 
     def test_call_once(self):
+        # We define an API call that increments a counter each time the
+        # function is called, then invoke it via HTTP. Finally, we verify that
+        # the counter is equal to 1, indicating that the function was called
+        # the correct number of times.
 
         @rest.rest_call('POST', '/increment')
-        def once():
+        def increment():
+            """Increment a counter each time this function is called."""
             self.num_calls += 1
 
         rest.request_handler(Request(wsgi_mkenv('POST', '/increment')))
