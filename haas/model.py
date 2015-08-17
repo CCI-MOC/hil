@@ -148,16 +148,17 @@ class Node(Model):
     def _ipmitool(self, args):
         """Invoke ipmitool with the right host/pass etc. for this node.
 
-        Also adds ``-I lanplus``, which is needed for machines which don't
-        accept the older ``lan`` wire protocol. ``lanplus`` is IPMI version 2
-        only.
-
         `args` - A list of any additional arguments to pass to ipmitool.
 
         Returns the exit status of ipmitool.
+
+        NOTE: Includes the ``-I lanplus`` flag, available only in IPMI v2+.
+        This is needed for machines which don't accept the older
+        ``lan`` wire protocol.
         """
+
         status = call(['ipmitool',
-            '-I', 'lanplus',
+            '-I', 'lanplus', # See docstring above
             '-U', self.ipmi_user,
             '-P', self.ipmi_pass,
             '-H', self.ipmi_host] + args)
