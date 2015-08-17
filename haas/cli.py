@@ -108,7 +108,7 @@ def serve(port):
     # We need to import api here so that the functions within it get registered
     # (via `rest_call`), though we don't use it directly:
     from haas import model, api, rest
-    server.api_server_init()
+    server.init(stop_consoles=True)
     rest.serve(port, debug=debug)
 
 
@@ -117,6 +117,7 @@ def serve_networks():
     """Start the HaaS networking server"""
     from haas import model, deferred
     from time import sleep
+    server.init()
     server.register_drivers()
     server.validate_state()
     model.init_db()
@@ -131,9 +132,7 @@ def serve_networks():
 def init_db():
     """Initialize the database"""
     from haas import model
-    server.register_drivers()
-    server.validate_state()
-    model.init_db(create=True)
+    server.init(init_db=True)
 
 @cmd
 def user_create(username, password):

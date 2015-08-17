@@ -43,7 +43,7 @@ def stop_orphan_consoles():
         node.delete_console()
 
 
-def api_server_init():
+def init(init_db=False, stop_consoles=False):
     """Set up the api server's internal state.
 
     This is a convienience wrapper that calls the other setup routines in
@@ -51,5 +51,6 @@ def api_server_init():
     """
     register_drivers()
     validate_state()
-    model.init_db()
-    stop_orphan_consoles()
+    model.init_db(create=init_db)
+    if stop_consoles:
+        stop_orphan_consoles()
