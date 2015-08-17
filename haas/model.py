@@ -153,11 +153,10 @@ class Node(Model):
         Returns the exit status of ipmitool.
 
         NOTE: Includes the ``-I lanplus`` flag, available only in IPMI v2+.
-        This is needed for some machines which don't accept the older ``lan``
-        wire protocol. If you have a machine that doesn't support lanplus (for
-        instance, an IPMI v1.5 system), you may wish to create a version of
-        this without that flag.
+        This is needed for machines which don't accept the older
+        ``lan`` wire protocol.
         """
+
         status = call(['ipmitool',
             '-I', 'lanplus', # See docstring above
             '-U', self.ipmi_user,
