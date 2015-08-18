@@ -147,8 +147,14 @@ class Node(Model):
         `args` - A list of any additional arguments to pass to ipmitool.
 
         Returns the exit status of ipmitool.
+
+        NOTE: Includes the ``-I lanplus`` flag, available only in IPMI v2+.
+        This is needed for machines which don't accept the older
+        ``lan`` wire protocol.
         """
+
         status = call(['ipmitool',
+            '-I', 'lanplus', # See docstring above
             '-U', self.ipmi_user,
             '-P', self.ipmi_pass,
             '-H', self.ipmi_host] + args)
