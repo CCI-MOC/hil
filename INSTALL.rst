@@ -32,7 +32,7 @@ supported for development purposes *only*). There are many guides on the web
 which describe setting up PostgreSQL; in these instructions we assume that
 you've done so successfully.
 
-You need to create a postgresql user and database for HaaS. once you've done so,
+You need to create a postgresql user and database for HaaS. Once you've done so,
 the ``uri`` option in ``haas.cfg``'s ``database`` must be set to::
 
         postgresql://<user>:<password>@<address>/<dbname>
@@ -40,12 +40,10 @@ the ``uri`` option in ``haas.cfg``'s ``database`` must be set to::
 Where ``<user>`` is the name of the postgres user you created, ``<password>`` is
 its password, ``<dbname>`` is the name of the database you created, and
 ``<address>`` is the address which haas should use to connect to postgres (In a
-typical default postgres setup, the right value is ``localhost``.
+typical default postgres setup, the right value is ``localhost``).
 
 
-The HaaS software itself can then be installed by running:
-
-::
+The HaaS software itself can then be installed by running::
 
     git clone https://github.com/CCI-MOC/haas
     cd haas
