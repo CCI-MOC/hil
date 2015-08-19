@@ -116,10 +116,14 @@ def project_connect_node(project, node):
     """Add a node to a project.
 
     If the node or project does not exist, a NotFoundError will be raised.
+
+    If node is already owned by a project, a BlockedError will be raised.
     """
     db = model.Session()
     project = _must_find(db, model.Project, project)
     node = _must_find(db, model.Node, node)
+    if node.project is not None:
+        raise BlockedError("Node is already owned by a project.")
     project.nodes.append(node)
     db.commit()
 
