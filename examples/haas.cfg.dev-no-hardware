@@ -15,6 +15,7 @@ endpoint = http://127.0.0.1:5000
 
 [database]
 uri = sqlite:///haas.db
+#uri = postgresql://<username>:<password>@<address>/<dbname>
 
 [devel]
 dry_run=True
@@ -22,13 +23,11 @@ dry_run=True
 [extensions]
 haas.ext.switches.mock =
 
-haas.ext.network_allocators.null =
-
+# haas.ext.network_allocators.null =
+#
 # Depending on what you're trying to do, you may want to use the vlan_pool
 # network allocator instead of the null allocator. To do this, comment out the
 # null allocator extension above, and uncomment the following:
-#
-# haas.ext.network_allocators.vlan_pool =
 #
 # [haas.ext.network_allocators.vlan_pool]
 # vlans = 100-200, 300-500

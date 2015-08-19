@@ -1,5 +1,8 @@
 The first time you start working in the repository, set up a clean test
-environment::
+environment (Before you start make sure that you have setup a database 
+to be used by for HaaS. HaaS supports SQLIte and PostgreSQL databases. 
+You should setup either of the two before you start further. Details to 
+setup a database can be found in INSTALL.rst)::
 
   virtualenv .venv
 
@@ -28,6 +31,10 @@ you may need to run::
 
   pip install importlib
 
+You may get an error 'psycopg2 package not found' when you do 'haas init_db' 
+in the next step if you are using PostgreSQL database. You may need to run::
+
+  pip install psycopg2
 
 `Testing.md <docs/testing.md>`_ contains more information about testing HaaS.
 

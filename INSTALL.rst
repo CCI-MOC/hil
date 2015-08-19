@@ -1,4 +1,4 @@
-This document describes the installation and setup of HaaS on CentOS 6.5.
+This document describes the installation and setup of HaaS on CentOS 7.0.
 HaaS should work on other distros, but is not well tested or supported.
 For development environments, see ``HACKING.rst``.
 
@@ -11,26 +11,39 @@ Prerequisite Software
 ---------------------
 
 HaaS requires a number of packages available through the CentOS RPM
-repositories, as well as the EPEL repository. EPEL can be enabled via:
-
-::
+repositories, as well as the EPEL repository. EPEL can be enabled via::
 
     yum install epel-release
 
-Then, the rest of the packages can be installed via:
+Then, the rest of the packages can be installed via::
 
-::
-
-    yum install libvirt bridge-utils ipmitool telnet sqlite httpd mod_wsgi python-pip qemu-kvm python-virtinst
+    yum install libvirt bridge-utils ipmitool telnet httpd mod_wsgi python-pip qemu-kvm python-virtinst virt-install python-psycopg2
 
 In addition, HaaS depends on a number of python libraries. Many of these are
 available as RPMs as well, but we recommend installing them with pip, since
 this will install the versions that HaaS has been tested with.  This is done
 automatically by the instructions below.
 
-The HaaS software can then be installed by running:
+Setting Up HaaS Database
+------------------------
 
-::
+The only DBMS currently supported for production use is PostgreSQL. (SQLite is
+supported for development purposes *only*). There are many guides on the web
+which describe setting up PostgreSQL; in these instructions we assume that
+you've done so successfully.
+
+You need to create a postgresql user and database for HaaS. Once you've done so,
+the ``uri`` option in ``haas.cfg``'s ``database`` must be set to::
+
+        postgresql://<user>:<password>@<address>/<dbname>
+
+Where ``<user>`` is the name of the postgres user you created, ``<password>`` is
+its password, ``<dbname>`` is the name of the database you created, and
+``<address>`` is the address which haas should use to connect to postgres (In a
+typical default postgres setup, the right value is ``localhost``).
+
+
+The HaaS software itself can then be installed by running::
 
     git clone https://github.com/CCI-MOC/haas
     cd haas
@@ -39,12 +52,9 @@ The HaaS software can then be installed by running:
 Disable SELinux
 ---------------
 
-The setup described below runs into problems with SELinux related to the sqlite
-database. For now the recommended solution is to simply disable SELinux. In
-future releases, we will support and recommend the use of SELinux with another
-DBMS, such as MySQL.
-
-::
+The setup described in this document runs into problems with SELinux. In the
+future, we hope to ship a set of SELinux security policies with HaaS, but for
+now the solution is to disable SELinux::
 
     sudo setenforce 0
 
@@ -144,7 +154,7 @@ Then create the group 'libvirt' and add the HaaS user to that group::
 Finally, restart ``libvirt`` with::
 
   sudo service libvirtd restart
-  
+
 You should also set libvirt to start on boot::
 
   sudo chkconfig libvirtd on
@@ -256,7 +266,7 @@ former is a WSGI application, which we recommend running with Apache's
 
   LoadModule wsgi_module modules/mod_wsgi.so
   WSGISocketPrefix run/wsgi
-  
+
   <VirtualHost 127.0.0.1:80>
     ServerName 127.0.0.1
     AllowEncodedSlashes On

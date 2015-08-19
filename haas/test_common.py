@@ -117,8 +117,10 @@ def newDB():
 
 def releaseDB(db):
     """Do we need to do anything here to release resources?"""
-    pass
-
+    db.close_all()
+    # According to the documentation, we shouldn't need the Session().bind, but this
+    # breaks without it.
+    Base.metadata.drop_all(Session().bind)
 
 def fresh_database(request):
     """Runs the test against a newly populated DB.
