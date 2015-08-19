@@ -235,6 +235,17 @@ class TestProjectConnectDetachNode:
         with pytest.raises(api.NotFoundError):
             api.project_connect_node('anvil-nextgen', 'node-99')
 
+    def test_project_connect_node_node_busy(self, db):
+        """Connecting a node which is not free to a project should fail."""
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
+
+        api.project_create('anvil-oldtimer')
+        api.project_create('anvil-nextgen')
+
+        api.project_connect_node('anvil-oldtimer', 'node-99')
+        with pytest.raises(api.BlockedError):
+            api.project_connect_node('anvil-nextgen', 'node-99')
+
     def test_project_detach_node(self, db):
         api.project_create('anvil-nextgen')
         api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
