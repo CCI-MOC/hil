@@ -2,7 +2,7 @@ This file documents the HaaS REST API in detail.
 
 # How to read
 
-Each possible API call had a entry below containing:
+Each possible API call has an entry below containing:
 
 * an HTTP method and URL path, including possible `<parameters>` in the
   path to be treated as arguments.
