@@ -228,7 +228,6 @@ def request_handler(request):
                 raise InternalServerError()
             request_data[k] = v
         logger.debug('Recieved api call %s(%s)', f.__name__, _format_arglist(**request_data))
-        response_body = f(**request_data)
         result = f(**request_data)
         if result is None:
             response_body, status = "", 200

@@ -13,7 +13,7 @@
 # governing permissions and limitations under the License.
 
 """This module implements the HaaS command line tool."""
-from haas import config
+from haas import config, server
 from haas.config import cfg
 
 import inspect
@@ -108,14 +108,7 @@ def serve(port):
     # We need to import api here so that the functions within it get registered
     # (via `rest_call`), though we don't use it directly:
     from haas import model, api, rest
-    model.init_db()
-    # Stop all orphan console logging processes on startup
-    db = model.Session()
-    nodes = db.query(model.Node).all()
-    for node in nodes:
-        node.stop_console()
-        node.delete_console()
-    # Start server
+    server.init(stop_consoles=True)
     rest.serve(port, debug=debug)
 
 
@@ -124,6 +117,9 @@ def serve_networks():
     """Start the HaaS networking server"""
     from haas import model, deferred
     from time import sleep
+    server.init()
+    server.register_drivers()
+    server.validate_state()
     model.init_db()
     while True:
         # Empty the journal until it's empty; then delay so we don't tight
@@ -136,7 +132,7 @@ def serve_networks():
 def init_db():
     """Initialize the database"""
     from haas import model
-    model.init_db(create=True)
+    server.init(init_db=True)
 
 @cmd
 def user_create(username, password):
@@ -420,6 +416,7 @@ def main():
     """
     config.load()
     config.configure_logging()
+    config.load_extensions()
 
     if len(sys.argv) < 2 or sys.argv[1] not in command_dict:
         # Display usage for all commands
