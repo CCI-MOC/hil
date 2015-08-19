@@ -13,10 +13,15 @@ Each possible API call has an entry below containing:
   not return any data, in which case this is omitted.
 * A list of possible errors.
 
-In addition to the error codes listed for each API call, HaaS may return
-a `400 Bad Request` if something is wrong with the request (e.g.
-malformed request body), or `401 Unauthorized` if the user does not have
-permission to execute the supplied request.
+In addition to the error codes listed for each API call, HaaS may 
+return:
+
+* 400 if something is wrong with the request (e.g. malformed request 
+  body)
+* 401 if the user does not have permission to execute the supplied 
+  request.
+* 404 if the api call references an object that does not exist 
+  (obviously, this is acceptable for calls that create the resource)
 
 Below is an example.
 
@@ -83,10 +88,6 @@ Possible errors:
 
 Delete the user whose username is `<username>`
 
-Possible errors:
-
-* 404, if the user does not exist
-
 ## Networks
 
 ### network_create
@@ -119,7 +120,6 @@ Finally, there may not be any pending actions involving the network.
 
 Possible Errors:
 
-* 404, if the network does not exist
 * 409 if:
     * The network is connected to a node or headnode.
     * There are pending actions involving the network.
@@ -152,10 +152,6 @@ Response body (on success):
         "creator": <project or "admin">,
         "access": <project with access to the network> (Optional)
     }
-
-Possible errors:
-
-* 404, if the network does not exist.
 
 #### Channel Formats
 
@@ -248,10 +244,6 @@ Possible errors:
 
 Delete the node named `<node>` from the database.
 
-Possible errors:
-
-* 404 if the node does not exist
-
 ### node_register_nic
 
 `PUT /node/<node>/nic/<nic>`
@@ -268,7 +260,6 @@ for users trying to configure their nodes.
 
 Possible errors:
 
-* 404 if `<node>` does not exist
 * 409 if `<node>` already has a nic named `<nic>`
 
 ### node_delete_nic
@@ -277,20 +268,12 @@ Possible errors:
 
 Delete the nic named `<nic>` and belonging to `<node>`.
 
-Possible errors:
-
-* 404 if `<nic>` or `<node>` does not exist.
-
 ### node_power_cycle
 
 `POST /node/<node>/power_cycle`
 
 Power cycle the node named `<node>`, and set it's next boot device to
 PXE.
-
-Possible errors:
-
-* 404, if `<node>` does not exist.
 
 ### list_free_nodes
 
@@ -320,10 +303,6 @@ Response body:
         ...
     ]
 
-Possible errors:
-
-* 404 if `<project>` does not exist
-
 ### show_node
 
 `GET /node/<node>`
@@ -346,10 +325,6 @@ Response body:
         "free": true,
         "nics": ["ipmi", "pxe", "external",...]
     }
-
-Possible errors:
-
-* 404, if the node does not exist
 
 ## Projects
 
@@ -408,10 +383,6 @@ Return `<node>` to the free pool. `<node>` must belong to the project
 `<project>`. It must not be attached to any networks, or have any
 pending network actions.
 
-Possible errors:
-
-* 404, if `<node>` or `<project>` does not exist, or `<node>` does not
-  belong to `<project>`.
 * 409, if the node is attached to any networks, or has pending network
   actions.
 
@@ -448,17 +419,12 @@ Create a headnode owned by project `<project>`, cloned from base image
 Possible errors:
 
 * 409, if a headnode named `<headnode>` already exists
-* 404, if the project does not exist.
 
 ### headnode_delete
 
 `DELETE /headnode/<headnode>`
 
 Delete the headnode named `<headnode>`.
-
-Possible errors:
-
-* 404, if `<headnode>` does not exist.
 
 ### headnode_start
 
@@ -468,20 +434,12 @@ Start (power on) the headnode. Note that once a headnode has been
 started, it cannot be modified (adding/removing hnics, changing
 networks), only deleted --- even if it is stopped.
 
-Possible errors:
-
-* 404, if `<headnode>` does not exist.
-
 ### headnode_stop
 
 `POST /headnode/<headnode>/stop`
 
 Stop (power off) the headnode. This does a force power off; the VM is
 not given the opportunity to shut down cleanly.
-
-Possible errors:
-
-* 404, if `<headnode>` does not exist.
 
 ### headnode_create_hnic
 
@@ -490,9 +448,6 @@ Possible errors:
 Create an hnic named `<hnic>` belonging to `<headnode>`. The headnode
 must not have previously been started.
 
-Possible errors:
-
-* 404, if the headnode does not exist.
 * 409, if:
   * The headnode already has an hnic by the given name.
   * The headnode has already been started.
@@ -504,9 +459,6 @@ Possible errors:
 Delete the hnic named `<hnic>` and belonging to `<headnode>`. The
 headnode must not have previously been started.
 
-Possible errors:
-
-* 404, if the headnode or hnic does not exist.
 * 409, if the headnode has already been started.
 
 ### headnode_connect_network
@@ -542,7 +494,6 @@ important.
 
 Possible errors:
 
-* 404, if the headnode or hnic does not exist.
 * 409, if the headnode has already been started.
 
 ### headnode_detach_network
@@ -552,7 +503,6 @@ Possible errors:
 Detach the network attached to `<hnic>`.  The headnode must not have
 previously been started.
 
-* 404, if the headnode or hnic does not exist.
 * 409, if the headnode has already been started.
 
 ### list_project_headnodes
@@ -568,11 +518,6 @@ Response body:
         "<headnode2_name>",
         ...
     ]
-
-Possible errors:
-
-* 404, if the project does not exist
-
 
 ### show_headnode
 
@@ -596,10 +541,6 @@ Response body:
         "nics": [<nic1>, <nic2>, ...],
         "vncport": <port number>
     }
-
-Possible errors:
-
-* 404, if the headnode does not exist
 
 ## Switches
 
@@ -636,7 +577,6 @@ deleted.
 
 Possible Errors:
 
-* 404, if the named switch does not exist
 * 409, if not all of the switch's ports have been deleted.
 
 ### switch_register_port
@@ -651,7 +591,6 @@ information.
 
 Possible Errors:
 
-* 404, if the named switch does not exist
 * 409, if the port already exists
 
 ### switch_delete_port
@@ -664,7 +603,6 @@ Prior to deleting a port, any nic attached to it must be removed.
 
 Possible Errors:
 
-* 404, if the port or switch does not exist
 * 409, if there is a nic attached to the port.
 
 ### port_connect_nic
@@ -682,7 +620,6 @@ Connect a port a node's nic.
 
 Possible errors:
 
-* 404, if the node, nic, switch, or port does not exist.
 * 409, if the nic or port is already attached to something.
 
 ### port_detach_nic
@@ -693,7 +630,5 @@ Detach the nic attached to `<port>`.
 
 Possible errors:
 
-* 404 if:
-  * the switch or port does not exist
-  * the port is not attached to a nic
+* 404, if the port is not attached to a nic
 * 409, if the port is attached to a node which is not free.
