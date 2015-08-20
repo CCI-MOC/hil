@@ -28,7 +28,7 @@ Additionally, we provide one built-in authorization model, that adds another kin
 ## API design philosophy
 
 We provide the most basic API that we can, and attempt to impose no structure
-that is not required for authorization purposes.  
+that is not required for authorization purposes.
 
 - A 'project' is merely an authorization domain.  It is reasonable to have
   logically independent groupings of resources within one project, but the
@@ -57,26 +57,26 @@ one exception is NICs, where the label is unique only on a per-node basis.
 
 
 ## User operations:
- 
-    # Basic node allocation and network isolation 
+
+    # Basic node allocation and network isolation
 
     network_create              <network_label> <proj_creator> <proj_access> <id>
     network_delete              <network_label>
 
     project_connect_node        <project_label> <node_label>
     project_detach_node         <project_label> <node_label>
- 
+
     node_connect_network        <node_label> <nic_label> <network_label>
     node_detach_network         <node_label> <nic_label>
 
-    # Headnode operations 
+    # Headnode operations
 
     headnode_create             <hn_label> <project_label>
     headnode_delete             <hn_label>
 
     headnode_start              <hn_label>
     headnode_stop               <hn_label>
- 
+
     headnode_create_hnic        <hn_label> <hnic_label>
     headnode_delete_hnic        <hn_label> <hnic_label>
 
@@ -87,7 +87,7 @@ one exception is NICs, where the label is unique only on a per-node basis.
 
     node_power_cycle           <node_label>
 
-    start_console              <node_label>    
+    start_console              <node_label>
     show_console               <node_label>
     stop_console               <node_label>
 
@@ -105,7 +105,7 @@ one exception is NICs, where the label is unique only on a per-node basis.
 ## Authorization-related operations:
 
     # Always useful
- 
+
     project_create              <project_label>
     project_delete              <project_label>
 

@@ -1,8 +1,68 @@
+This file documents the HaaS REST API in detail.
+
+# How to read
+
+Each possible API call has an entry below containing:
+
+* an HTTP method and URL path, including possible `<parameters>` in the
+  path to be treated as arguments.
+* Optionally, a summary of the request body (which will always be a JSON
+  object).
+* A human readable description of the semantics of the call
+* A summary of the response body for a successful request. Many calls do
+  not return any data, in which case this is omitted.
+* A list of possible errors.
+
+In addition to the error codes listed for each API call, HaaS may 
+return:
+
+* 400 if something is wrong with the request (e.g. malformed request 
+  body)
+* 401 if the user does not have permission to execute the supplied 
+  request.
+* 404 if the api call references an object that does not exist 
+  (obviously, this is acceptable for calls that create the resource)
+
+Below is an example.
+
+## my_api_call
+
+`POST /url/path/to/<thing>`
+
+Request Body:
+
+    {
+        "some_field": "a value",
+        "this-is-an-example": true,
+        "some-optional-field": { (Optional)
+            "more-fields": 12352356,
+            ...
+        }
+    }
+
+Attempt to do something mysterious to `<thing>` which must be a coffee
+pot, and must not be in use by other users. If successful, the response
+will include some cryptic information.
+
+Response Body (on success):
+
+    {
+        "some-info": "Hello, World!",
+        "numbers": [1,2,3]
+    }
+
+Possible errors:
+
+* 418, if `<thing>` is a teapot.
+* 409, if:
+  * `<thing>` does not exist
+  * `<thing>` is busy
+
 
 * `{"foo": <bar>, "baz": <quux>}` denotes a JSON object (in the body of
   the request).
 
-# Full Api spec:
+# Full API Specification
 
 ## Users
 
@@ -28,11 +88,41 @@ Possible errors:
 
 Delete the user whose username is `<username>`
 
+## Networks
+
+### network_create
+
+`PUT /network/<network>`
+
+Request Body:
+
+    {
+        "creator": <creator>,
+        "access": <access>,
+        "net_id": <net_id>
+    }
+
+Create a network. For the semantics of each of the fields, see
+`docs/network.md`.
+
 Possible errors:
 
-* 404, if the user does not exist
+* 409, if a network by that name already exists.
+* See also bug #461
 
-## Networks
+### network_delete
+
+`DELETE /network/<network>`
+
+Delete a network. The user's project must be the creator of the network,
+and the network must not be connected to any nodes or headnodes.
+Finally, there may not be any pending actions involving the network.
+
+Possible Errors:
+
+* 409 if:
+    * The network is connected to a node or headnode.
+    * There are pending actions involving the network.
 
 ### show_network
 
@@ -40,23 +130,28 @@ Possible errors:
 
 View detailed information about `<network>`.
 
-The result contains the following information:
+The result must contain the following fields:
 
-* The name of the network
-* A description of legal channel identifiers for this network. This is a list
-  of channel identifiers, with possible wildcards. The format of these is
-  driver specific, see below.
+* "name", the name of the network
+* "channels", description of legal channel identifiers for this network.
+  This is a list of channel identifiers, with possible wildcards. The
+  format of these is driver specific, see below.
+* "creator", the name of the project which created the network, or
+  "admin", if it was created by an administrator.
+
+The result may also contain the following fields:
+
+* "access" -- if this is present, it is the name of the project which
+  has access to the network. Otherwise, the network is public.
 
 Response body (on success):
 
     {
-        "name": <network>
-        "channels": <chanel-id-list>
+        "name": <network>,
+        "channels": <chanel-id-list>,
+        "creator": <project or "admin">,
+        "access": <project with access to the network> (Optional)
     }
-
-Possible errors:
-
-* 404, if the network does not exist.
 
 #### Channel Formats
 
@@ -131,59 +226,321 @@ Possible Errors:
   * There is already a pending network operation on `<nic>`.
   * `<network>` is not attached to `<nic>`.
 
-# TODO
+## Nodes
 
-These api calls still need to be documented in detail, but the below
-provides a summary:
+### node_register
 
-    project_create <project_label>
-    project_delete <project_label>
-    [PUT]    /project/<project_label>
-    [DELETE] /project/<project_label>
+`PUT /node/<node>`
 
-    network_create <network_label> <proj_creator> <proj_access> <net_id>
-    network_delete <network_label>
-    [PUT]    /network/<network_label> {"creator":<proj_creator>,
-                                       "access":<proj_access>,
-                                       "net_id":<net_id>}
-    [DELETE] /network/<network_label>
+Register a node named `<node>` with the database.
 
-    headnode_create <hn_label> <project_label> <base_img>
-    headnode_delete <hn_label>
-    headnode_start <hn_label>
-    headnode_stop <hn_label>
-    [PUT]    /headnode/<hn_label> {"project":<project_label>, "base_img":<base_img>}
-    [DELETE] /headnode/<hn_label>
-    [POST] /headnode/<hn_label>/start
-    [POST] /headnode/<hn_label>/stop
+Possible errors:
 
-    project_connect_node <project_label> <node_label>
-    project_detach_node  <project_label> <node_label>
-    [POST] /project/<project_label>/connect_node {"node":<node_label>}
-    [POST] /project/<project_label>/detach_node {"node":<node_label>}
+* 409, if a node with the name `<node>` already exists
 
-    node_power_cycle <node_label>
-    [POST] /node/<node_label>/power_cycle
+### node_delete
 
-    headnode_create_hnic <headnode_label> <hnic_label>
-    headnode_delete_hnic <headnode_label> <hnic_label>
-    [PUT]    /headnode/<hn_label>/hnic/<hnic_label>
-    [DELETE] /headnode/<hn_label>/hnic/<hnic_label>
+`DELETE /node/<node>`
 
-    headnode_connect_network <hn_label> <hnic_label> <network_label>
-    headnode_detach_network  <hn_label> <hnic_label>
-    [POST] /headnode/<hn_label>/hnic/<hnic_label>/connect_network {"network":<network_label>}
-    [POST] /headnode/<hn_label>/hnic/<hnic_label>/detach_network
+Delete the node named `<node>` from the database.
 
-    node_register <node_label>
-    node_delete   <node_label>
-    [PUT]    /node/<node_label>
-    [DELETE] /node/<node_label>
+### node_register_nic
 
-    node_register_nic <node_label> <nic_label> <mac_addr>
-    node_delete_nic   <node_label> <nic_label>
-    [PUT]    /node/<node_label>/nic/<nic_label> {"mac_addr":<mac_addr>}
-    [DELETE] /node/<node_label>/nic/<nic_label>
+`PUT /node/<node>/nic/<nic>`
+
+Request Body:
+
+    {
+        "mac_addr": <mac_addr>
+    }
+
+Register a nic named `<nic>` belonging to `<node>`. `<mac_addr>` should
+be the nic's mac address. This isn't used by HaaS itself, but is useful
+for users trying to configure their nodes.
+
+Possible errors:
+
+* 409 if `<node>` already has a nic named `<nic>`
+
+### node_delete_nic
+
+`DELETE /node/<node>/nic/<nic>`
+
+Delete the nic named `<nic>` and belonging to `<node>`.
+
+### node_power_cycle
+
+`POST /node/<node>/power_cycle`
+
+Power cycle the node named `<node>`, and set it's next boot device to
+PXE.
+
+### list_free_nodes
+
+`GET /free_nodes`
+
+Return a list of free/available nodes.
+
+Response body:
+
+    [
+        "node-1",
+        "node-2",
+        ...
+    ]
+
+### list_project_nodes
+
+`GET /project/<project>/nodes`
+
+List all nodes belonging to the given project
+
+Response body:
+
+    [
+        "node-1",
+        "node-2",
+        ...
+    ]
+
+### show_node
+
+`GET /node/<node>`
+
+Show detailed information about a node. The response includes the
+following fields:
+
+* "name", the name/label of the node.
+* "free", indicates whether the node is free or has been allocated
+    to a project.
+* "nics", a list of nics, each represted by a JSON object having
+    at least the following fields:
+        * "label", the nic's label.
+        * "macaddr", the nic's mac address.
+
+Response body:
+
+    {
+        "name": "box02",
+        "free": true,
+        "nics": ["ipmi", "pxe", "external",...]
+    }
+
+## Projects
+
+### project_create
+
+`PUT /project/<project>`
+
+Create a project named `<project>`
+
+Possible Errors:
+
+* 409, if the project already exists
+
+### project_delete
+
+`DELETE /project/<project>`
+
+Delete the project named `<project>`
+
+Possible Errors:
+
+* 409, if:
+  * The project does not exist
+  * The project still has resources allocated to it:
+    * nodes
+    * networks
+    * headnodes
+
+### project_connect_node
+
+`POST /project/<project>/connect_node`
+
+Request body:
+
+    {
+        "node": <node>
+    }
+
+Reserve the node named `<node>` for use by `<project>`. The node must be
+free.
+
+Possible errors:
+
+* 404, if the node or project does not exist.
+* 409, if the node is not free.
+
+### project_detach_node
+
+`POST /project/<project>/detach_node`
+
+    {
+        "node": <node>
+    }
+
+Return `<node>` to the free pool. `<node>` must belong to the project
+`<project>`. It must not be attached to any networks, or have any
+pending network actions.
+
+* 409, if the node is attached to any networks, or has pending network
+  actions.
+
+### list_projects
+
+`GET /projects`
+
+Return a list of all projects in HaaS
+
+Response body:
+
+    [
+        "manhattan",
+        "runway",
+        ...
+    ]
+
+## Headnodes
+
+### headnode_create
+
+`PUT /headnode/<headnode>`
+
+Request body:
+
+    {
+        "project": <project>,
+        "base_img": <base_img>
+    }
+
+Create a headnode owned by project `<project>`, cloned from base image
+`<base_img>`. `<base_img>` must be one of the installed base images.
+
+Possible errors:
+
+* 409, if a headnode named `<headnode>` already exists
+
+### headnode_delete
+
+`DELETE /headnode/<headnode>`
+
+Delete the headnode named `<headnode>`.
+
+### headnode_start
+
+`POST /headnode/<headnode>/start`
+
+Start (power on) the headnode. Note that once a headnode has been
+started, it cannot be modified (adding/removing hnics, changing
+networks), only deleted --- even if it is stopped.
+
+### headnode_stop
+
+`POST /headnode/<headnode>/stop`
+
+Stop (power off) the headnode. This does a force power off; the VM is
+not given the opportunity to shut down cleanly.
+
+### headnode_create_hnic
+
+`PUT /headnode/<headnode>/hnic/<hnic>`
+
+Create an hnic named `<hnic>` belonging to `<headnode>`. The headnode
+must not have previously been started.
+
+* 409, if:
+  * The headnode already has an hnic by the given name.
+  * The headnode has already been started.
+
+### headnode_delete_hnic
+
+`DELETE /headnode/<headnode>/hnic/<hnic>`
+
+Delete the hnic named `<hnic>` and belonging to `<headnode>`. The
+headnode must not have previously been started.
+
+* 409, if the headnode has already been started.
+
+### headnode_connect_network
+
+`POST /headnode/<headnode>/hnic/<hnic>/connect_network`
+
+Request body:
+
+    {
+        "network": <network>
+    }
+
+Connect the network named `<network>` to `<hnic>`.
+
+`<network>` must be the name of a network which:
+
+1. the headnode's project has the right to attach to, and
+2. was not assigned a specific network id by an administrator (i.e. the
+   network id was allocated dynamically by HaaS). This constraint is due
+   to an implementation limitation, but will likely be lifted in the
+   future; see issue #333.
+
+Additionally, the headnode must not have previously been started.
+
+Note that, unlike nodes, headnodes may only be attached via the
+native/default channel (which is implicit, and may not be specified).
+
+Rationale: separating headnodes from haas core is planned, and it has
+been deemed not worth the development effort to adjust this prior to the
+separation. Additionally, headnodes may have an arbitrary number of
+nics, and so being able to attach two networks to the same nic is not as
+important.
+
+Possible errors:
+
+* 409, if the headnode has already been started.
+
+### headnode_detach_network
+
+`POST /headnode/<headnode>/hnic/<hnic>/detach_network`
+
+Detach the network attached to `<hnic>`.  The headnode must not have
+previously been started.
+
+* 409, if the headnode has already been started.
+
+### list_project_headnodes
+
+`GET /project/<project>/headnodes`
+
+Get a list of names of headnodes belonging to `<project>`.
+
+Response body:
+
+    [
+        "<headnode1_name>",
+        "<headnode2_name>",
+        ...
+    ]
+
+### show_headnode
+
+`GET /headnode/<headnode>`
+
+Get information about a headnode. Includes the following fields:
+
+* "name", the name/label of the headnode (string).
+* "project", the project to which the headnode belongs.
+* "hnics", a JSON array of hnic names that are attached to this
+    headnode.
+* "vncport", the vnc port that the headnode VM is listening on; this
+    value can be `null` if the VM is powered off or has not been
+    created yet.
+
+Response body:
+
+    {
+        "name": <headnode>,
+        "project": <projectname>,
+        "nics": [<nic1>, <nic2>, ...],
+        "vncport": <port number>
+    }
 
 ## Switches
 
@@ -220,7 +577,6 @@ deleted.
 
 Possible Errors:
 
-* 404, if the named switch does not exist
 * 409, if not all of the switch's ports have been deleted.
 
 ### switch_register_port
@@ -235,7 +591,6 @@ information.
 
 Possible Errors:
 
-* 404, if the named switch does not exist
 * 409, if the port already exists
 
 ### switch_delete_port
@@ -248,53 +603,32 @@ Prior to deleting a port, any nic attached to it must be removed.
 
 Possible Errors:
 
-* 404, if the port or switch does not exist
 * 409, if there is a nic attached to the port.
 
----
+### port_connect_nic
 
-    port_register  <port_no>
-    port_delete    <port_no>
-    [PUT]    /port/<port_no>
-    [DELETE] /port/<port_no>
+`POST /switch/<switch>/port/<port>/connect_nic`
 
-    port_connect_nic <port_no> <node_label> <nic_label>
-    port_detach_nic  <port_no>
-    [POST] /port/<port_no>/connect_nic
-    [POST] /port/<port_no>/detach_nic
+Request body:
 
-    import_vlan <network_label> <vlan_label>
-    block_user <user_label>
-    unblock_user <user_label>
+    {
+        "node": <node>,
+        "nic": <nic>
+    }
 
-    list_free_nodes -> ["<node1_name>", "<node2_name>", ...]
-    [GET] /free_nodes
+Connect a port a node's nic.
 
-    list_projects -> ["project-runway", "manhattan-project"]
-    [GET] /projects
+Possible errors:
 
-    list_project_nodes <project> -> ["<node1_name>", "<node2_name>", ...]
-    [GET] /project/<project>/nodes
+* 409, if the nic or port is already attached to something.
 
-    list_project_headnodes <project> -> [
-            "<headnode1_name>",
-            "<headnode2_name>",
-            ...
-        ]
-    [GET] /project/<project>/headnodes
+### port_detach_nic
 
-    show_node <node> ->
-        {
-            "name": "box02",
-            "free": true,
-            "nics": ["ipmi", "pxe", "external",...]
-        }
-    [GET] /node/<node>
+`POST /switch/<switch>/port/<port>/detach_nic`
 
-    show_headnode <headnode> ->
-        {
-            "name": "hn04",
-            "project": "projectname",
-            "nics": ["ipmi", "pxe", "public", ...]
-        }
-    [GET] /headnode/<headnode>
+Detach the nic attached to `<port>`.
+
+Possible errors:
+
+* 404, if the port is not attached to a nic
+* 409, if the port is attached to a node which is not free.

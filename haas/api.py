@@ -133,6 +133,9 @@ def project_detach_node(project, node):
     """Remove a node from a project.
 
     If the node or project does not exist, a NotFoundError will be raised.
+
+    If the node has network attachments or pending network actions, a
+    BlockedError will be raised.
     """
     db = model.Session()
     project = _must_find(db, model.Project, project)
@@ -244,9 +247,9 @@ def node_register_nic(node, nic, macaddr):
 
 @rest_call('DELETE', '/node/<node>/nic/<nic>')
 def node_delete_nic(node, nic):
-    """Delete nic with given name.
+    """Delete nic with given name from it's node.
 
-    If the nic does not exist, a NotFoundError will be raised.
+    If the node or nic does not exist, a NotFoundError will be raised.
     """
     db = model.Session()
     nic = _must_find_n(db, _must_find(db, model.Node, node), model.Nic, nic)
@@ -359,13 +362,13 @@ def node_detach_network(node, nic, network):
 def headnode_create(headnode, project, base_img):
     """Create headnode.
 
-    If a node with the same name already exists, a DuplicateError will be
+    If a headnode with the same name already exists, a DuplicateError will be
     raised.
-
-    If the project already has a headnode, a DuplicateError will be raised.
 
     If the project does not exist, a NotFoundError will be raised.
 
+    If the base image does not exist (not specified in haas.cfg) a
+    BadArgumentError will be raised.
     """
 
     valid_imgs = cfg.get('headnode', 'base_imgs')
@@ -438,6 +441,9 @@ def headnode_create_hnic(headnode, hnic):
 
     If there is already an hnic with that name, a DuplicateError will
     be raised.
+
+    If the headnode's VM has already created (headnode is not "dirty"), raises
+    an IllegalStateError
     """
     db = model.Session()
     headnode = _must_find(db, model.Headnode, headnode)
@@ -455,7 +461,10 @@ def headnode_create_hnic(headnode, hnic):
 def headnode_delete_hnic(headnode, hnic):
     """Delete hnic on a given headnode.
 
-    If the hnic does not exist, a NotFoundError will be raised.
+    If the headnode or hnic does not exist, a NotFoundError will be raised.
+
+    If the headnode's VM has already created (headnode is not "dirty"), raises
+    an IllegalStateError
     """
     db = model.Session()
     headnode = _must_find(db, model.Headnode, headnode)
@@ -585,6 +594,9 @@ def network_delete(network):
     """Delete network.
 
     If the network does not exist, a NotFoundError will be raised.
+
+    If the network is connected to nodes or headnodes, or there are pending
+    network actions involving it, a BlockedError will be raised.
     """
     db = model.Session()
     network = _must_find(db, model.Network, network)
@@ -606,15 +618,8 @@ def network_delete(network):
 def show_network(network):
     """Show details of a network.
 
-    Returns a JSON object representing a network.
-    The object will have at least the following fields:
-        * "name", the name/label of the network (string).
-        * "creator", the name of the project which created the network, or
-          "admin", if it was created by an administrator.
-        * "channels", a list of channels to which the network may be attached.
-    It may also have the fields:
-        * "access" -- if this is present, it is the name of the project which
-          has access to the network. Otherwise, the network is public.
+    Returns a JSON object representing a network. See `docs/rest_api.md`
+    for a full description of the output.
     """
     db = model.Session()
     allocator = get_network_allocator()
