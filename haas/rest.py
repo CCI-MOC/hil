@@ -29,6 +29,8 @@ from werkzeug.local import Local, LocalManager
 
 from schema import Schema, SchemaError
 
+from haas import auth
+
 local = Local()
 local_manager = LocalManager([local])
 
@@ -186,6 +188,9 @@ def request_handler(request):
     The parameter `request` must be an instance of werkzeug's `Request` class.
     The return value will be a werkzeug `Response` object.
     """
+    local.request = request
+    auth.get_auth_backend().authenticate()
+
     adapter = _url_map.bind_to_environ(request.environ)
     try:
         (f, schema), values = adapter.match()

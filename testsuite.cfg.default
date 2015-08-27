@@ -4,6 +4,7 @@
 # accordingly
 [extensions]
 haas.ext.network_allocators.null =
+haas.ext.auth.null =
 [devel]
 dry_run = True
 [headnode]

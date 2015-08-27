@@ -39,8 +39,9 @@ def config_testsuite():
     else:
         config_set({
             'extensions': {
-                # Use the null network allocator for these tests
+                # Use the null network allocator and auth plugin by default:
                 'haas.ext.network_allocators.null': '',
+                'haas.ext.auth.null': '',
             },
             'devel': {
                 'dry_run': True,

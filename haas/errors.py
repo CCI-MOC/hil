@@ -45,6 +45,10 @@ class ProjectMismatchError(APIError):
     status_code = 409 # Conflict
 
 
+class AuthorizationError(APIError):
+    status_code = 401
+
+
 class BlockedError(APIError):
     """An exception indicating that the requested action cannot happen until
     some other change.  For example, deletion is blocked until the components

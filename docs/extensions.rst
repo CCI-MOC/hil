@@ -30,6 +30,7 @@ explicitly invite it (e.g. everything by default is *Private*). These currently
 include (see the docstrings in the specific components for details):
 
 * Most of haas.network_allocator
+* haas.auth
 * From haas.model:
     * AnonModel
     * Model

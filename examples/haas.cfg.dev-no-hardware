@@ -22,6 +22,7 @@ dry_run=True
 
 [extensions]
 haas.ext.switches.mock =
+haas.ext.auth.null =
 
 # haas.ext.network_allocators.null =
 #

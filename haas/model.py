@@ -16,7 +16,6 @@
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import relationship, sessionmaker,backref
-from passlib.hash import sha512_crypt
 from subprocess import call, check_call, Popen, PIPE
 import subprocess
 from haas.network_allocator import get_network_allocator
@@ -30,11 +29,6 @@ import os
 
 Base=declarative_base()
 Session = sessionmaker()
-
-# A joining table for users and projects, which have a many to many relationship:
-user_projects = Table('user_projects', Base.metadata,
-                    Column('user_id', ForeignKey('user.id')),
-                    Column('project_id', ForeignKey('project.id')))
 
 
 def init_db(create=False, uri=None):
@@ -365,35 +359,6 @@ class Switch(Model):
         handle this is to define the two methods above on the switch object,
         and have ``session`` just return ``self``.
         """
-
-
-class User(Model):
-    """A user of the HaaS.
-
-    Right now we're not doing authentication, so this isn't really used. In
-    theory, a user must autheticate, and their membership within projects
-    determines what they are authorized to do.
-    """
-
-    # The user's salted & hashed password. We currently use sha512 as the
-    # hashing algorithm:
-    hashed_password = Column(String)
-
-    # The projects of which the user is a member.
-    projects = relationship('Project', secondary = user_projects, backref = 'users')
-
-    def __init__(self, label, password):
-        """Create a user `label` with the specified (plaintext) password."""
-        self.label = label
-        self.set_password(password)
-
-    def verify_password(self, password):
-        """Return whether `password` is the user's (plaintext) password."""
-        return sha512_crypt.verify(password, self.hashed_password)
-
-    def set_password(self, password):
-        """Set the user's password to `password` (which must be plaintext)."""
-        self.hashed_password = sha512_crypt.encrypt(password)
 
 
 def _on_virt_uri(args_list):

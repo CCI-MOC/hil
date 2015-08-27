@@ -29,33 +29,10 @@ from haas.network_allocator import get_network_allocator
 from haas.errors import *
 
 
-@rest_call('PUT', '/user/<user>')
-def user_create(user, password):
-    """Create user with given password.
-
-    If the user already exists, a DuplicateError will be raised.
-    """
-    db = model.Session()
-    _assert_absent(db, model.User, user)
-    user = model.User(user, password)
-    db.add(user)
-    db.commit()
-
-
-@rest_call('DELETE', '/user/<user>')
-def user_delete(user):
-    """Delete user.
-
-    If the user does not exist, a NotFoundError will be raised.
-    """
-    db = model.Session()
-    user = _must_find(db, model.User, user)
-    db.delete(user)
-    db.commit()
-
-
                             # Project Code #
                             ################
+
+
 @rest_call('GET', '/projects')
 def list_projects():
     """List all projects.
@@ -153,38 +130,6 @@ def project_detach_node(project, node):
     node.stop_console()
     node.delete_console()
     project.nodes.remove(node)
-    db.commit()
-
-
-@rest_call('POST', '/project/<project>/add_user')
-def project_add_user(project, user):
-    """Add a user to a project.
-
-    If the project or user does not exist, a NotFoundError will be raised.
-    """
-    db = model.Session()
-    user = _must_find(db, model.User, user)
-    project = _must_find(db, model.Project, project)
-    if project in user.projects:
-        raise DuplicateError('User %s is already in project %s'%
-                             (user.label, project.label))
-    user.projects.append(project)
-    db.commit()
-
-
-@rest_call('POST', '/project/<project>/remove_user')
-def project_remove_user(project, user):
-    """Remove a user from a project.
-
-    If the project or user does not exist, a NotFoundError will be raised.
-    """
-    db = model.Session()
-    user = _must_find(db, model.User, user)
-    project = _must_find(db, model.Project, project)
-    if project not in user.projects:
-        raise NotFoundError("User %s is not in project %s"%
-                            (user.label, project.label))
-    user.projects.remove(project)
     db.commit()
 
 
