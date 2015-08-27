@@ -279,7 +279,7 @@ Authorization requirements:
 Request Body:
 
     {
-        "mac_addr": <mac_addr>
+        "macaddr": <mac_addr>
     }
 
 Register a nic named `<nic>` belonging to `<node>`. `<mac_addr>` should
