@@ -180,6 +180,11 @@ class Node(Model):
         raise OBMError('Could not power cycle node %s' % self.label)
 
     @no_dry_run
+    def power_off(self):
+        if self._ipmitool(['chassis', 'power', 'off']) != 0:
+            raise OBMError('Could not power off node %s', self.label)
+
+    @no_dry_run
     def start_console(self):
         """Starts logging the IPMI console."""
         # stdin and stderr are redirected to a PIPE that is never read in order

@@ -13,14 +13,14 @@ Each possible API call has an entry below containing:
   not return any data, in which case this is omitted.
 * A list of possible errors.
 
-In addition to the error codes listed for each API call, HaaS may 
+In addition to the error codes listed for each API call, HaaS may
 return:
 
-* 400 if something is wrong with the request (e.g. malformed request 
+* 400 if something is wrong with the request (e.g. malformed request
   body)
-* 401 if the user does not have permission to execute the supplied 
+* 401 if the user does not have permission to execute the supplied
   request.
-* 404 if the api call references an object that does not exist 
+* 404 if the api call references an object that does not exist
   (obviously, this is acceptable for calls that create the resource)
 
 Below is an example.
@@ -273,7 +273,13 @@ Delete the nic named `<nic>` and belonging to `<node>`.
 `POST /node/<node>/power_cycle`
 
 Power cycle the node named `<node>`, and set it's next boot device to
-PXE.
+PXE. If the node is powered off, this turns it on.
+
+### node_power_off
+
+`POST /node/<node>/power_off`
+
+Power off the node named `<node>`.
 
 ### list_free_nodes
 
