@@ -279,7 +279,8 @@ PXE. If the node is powered off, this turns it on.
 
 `POST /node/<node>/power_off`
 
-Power off the node named `<node>`.
+Power off the node named `<node>`. If the node is already powered off,
+this will have no effect.
 
 ### list_free_nodes
 
