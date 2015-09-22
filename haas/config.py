@@ -25,7 +25,7 @@ import importlib
 import sys
 
 cfg = ConfigParser.RawConfigParser()
-
+cfg.optionxform = str
 
 def load(filename='haas.cfg'):
     """Load the configuration from the file 'haas.cfg' in the current directory.
