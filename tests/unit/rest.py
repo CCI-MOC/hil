@@ -14,10 +14,8 @@
 from haas import rest
 
 from abc import ABCMeta, abstractmethod
-from StringIO import StringIO
 import unittest
 import json
-import sys
 
 from werkzeug.routing import Map
 from werkzeug.wrappers import Request
@@ -28,30 +26,7 @@ from schema import Schema, Optional
 # complains and doesn't give us a report.
 import pytest
 
-
-def wsgi_mkenv(method, path, data=None):
-    """Helper routine to build a wsgi environment.
-
-    We need this to generate mock requests.
-    """
-    env = {
-        'REQUEST_METHOD': method,
-        'SCRIPT_NAME': '',
-        'PATH_INFO': path,
-        'SERVER_NAME': 'haas.test-env',
-        'SERVER_PORT': '5000',
-        'wsgi.version': (1, 0),
-        'wsgi.url_scheme': 'http',
-        'wsgi.errors': sys.stderr,
-        'wsgi.multithreaded': False,
-        'wsgi.multiprocess': False,
-        'wsgi.run_once': False,
-    }
-    if data is None:
-        env['wsgi.input'] = StringIO()
-    else:
-        env['wsgi.input'] = StringIO(data)
-    return env
+from haas.test_common import wsgi_mkenv
 
 
 class HttpTest(unittest.TestCase):
