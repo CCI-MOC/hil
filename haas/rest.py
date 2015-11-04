@@ -160,6 +160,20 @@ def _format_arglist(*args, **kwargs):
     return ', '.join(args)
 
 
+class RequestContext(object):
+    """Context manager that sets up `local` for use in the request handler.
+
+    This is used internally by the request handler, but is exposed to make
+    testing easier.
+    """
+
+    def __enter__(self):
+        local.db = Session()
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        local.db.close()
+
+
 def request_handler(request):
     """Handle an http request.
 
@@ -168,7 +182,6 @@ def request_handler(request):
     """
     adapter = _url_map.bind_to_environ(request.environ)
     try:
-        local.db = Session()
         (f, schema), values = adapter.match()
         if schema is None:
             # no data needed from the body:
@@ -209,7 +222,8 @@ def request_handler(request):
                 raise InternalServerError()
             request_data[k] = v
         logger.debug('Recieved api call %s(%s)', f.__name__, _format_arglist(**request_data))
-        result = f(**request_data)
+        with RequestContext():
+            result = f(**request_data)
         if result is None:
             response_body, status = "", 200
         elif type(result) is tuple:
@@ -230,8 +244,6 @@ def request_handler(request):
         return InternalServerError()
     except HTTPException, e:
         return e
-    finally:
-        local.db.close()
 
 
 @local_manager.middleware

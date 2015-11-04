@@ -16,6 +16,7 @@
 
 from haas import model, api, deferred, server, config
 from haas.test_common import *
+from haas.rest import RequestContext
 import pytest
 import json
 
@@ -45,9 +46,16 @@ def server_init():
     server.validate_state()
 
 
+@pytest.yield_fixture
+def with_request_context():
+    with RequestContext():
+        yield
+
+
 pytestmark = pytest.mark.usefixtures('configure',
                                      'db',
-                                     'server_init')
+                                     'server_init',
+                                     'with_request_context')
 
 
 class TestUser:
