@@ -15,7 +15,12 @@
 
 The function `wsgi_handler` is the wsgi entry point to the app.
 
-The decorator `rest_call` is the main thing of interest in this module.
+The main things of interest in this module are:
+
+    * The decorator `rest_call`
+    * The variable `local`. `local.db` is a SQLAlchemy session object which
+      is local to the current request. It is cleaned up automatically when the
+      request finishes (rolling back any changes which have not been comitted).
 """
 import logging
 import inspect
@@ -29,6 +34,8 @@ from werkzeug.local import Local, LocalManager
 from haas.errors import APIError, ServerError
 
 from schema import Schema, SchemaError
+
+from haas.model import Session
 
 local = Local()
 local_manager = LocalManager([local])
@@ -161,6 +168,7 @@ def request_handler(request):
     """
     adapter = _url_map.bind_to_environ(request.environ)
     try:
+        local.db = Session()
         (f, schema), values = adapter.match()
         if schema is None:
             # no data needed from the body:
@@ -222,6 +230,8 @@ def request_handler(request):
         return InternalServerError()
     except HTTPException, e:
         return e
+    finally:
+        local.db.close()
 
 
 @local_manager.middleware
