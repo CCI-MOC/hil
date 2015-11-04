@@ -14,12 +14,14 @@
 
 from haas.model import *
 from haas.config import cfg
-from haas import api, config
+from haas import api, config, rest
 from StringIO import StringIO
 import json
 import subprocess
 import sys
 import os.path
+
+from werkzeug.wrappers import Request
 
 
 def config_testsuite():
@@ -271,3 +273,14 @@ def wsgi_mkenv(method, path, data=None):
     else:
         env['wsgi.input'] = StringIO(data)
     return env
+
+
+def do_request(method, path, data=None):
+    """Submit a fake HTTP api call.
+
+    This invokes the request handler with an HTTP request corresponding to
+    the given arguments.
+    """
+    response = rest.request_handler(Request(wsgi_mkenv(method, path, data)))
+    rest.local_manager.cleanup()
+    return response
