@@ -23,7 +23,7 @@ from schema import Schema, Optional
 
 from haas import model
 from haas.config import cfg
-from haas.rest import rest_call
+from haas.rest import rest_call, local
 from haas.class_resolver import concrete_class_for
 from haas.network_allocator import get_network_allocator
 from haas.errors import *
@@ -35,7 +35,7 @@ def user_create(user, password):
 
     If the user already exists, a DuplicateError will be raised.
     """
-    db = model.Session()
+    db = local.db
     _assert_absent(db, model.User, user)
     user = model.User(user, password)
     db.add(user)
@@ -48,7 +48,7 @@ def user_delete(user):
 
     If the user does not exist, a NotFoundError will be raised.
     """
-    db = model.Session()
+    db = local.db
     user = _must_find(db, model.User, user)
     db.delete(user)
     db.commit()
@@ -64,7 +64,7 @@ def list_projects():
 
     Example:  '["project1", "project2", "project3"]'
     """
-    db = model.Session()
+    db = local.db
     projects = db.query(model.Project).all()
     projects = [p.label for p in projects]
     return json.dumps(projects)
@@ -75,7 +75,7 @@ def project_create(project):
 
     If the project already exists, a DuplicateError will be raised.
     """
-    db = model.Session()
+    db = local.db
     _assert_absent(db, model.Project, project)
     project = model.Project(project)
     db.add(project)
@@ -88,7 +88,7 @@ def project_delete(project):
 
     If the project does not exist, a NotFoundError will be raised.
     """
-    db = model.Session()
+    db = local.db
     project = _must_find(db, model.Project, project)
     if project.nodes:
         raise BlockedError("Project has nodes still")
@@ -119,7 +119,7 @@ def project_connect_node(project, node):
 
     If node is already owned by a project, a BlockedError will be raised.
     """
-    db = model.Session()
+    db = local.db
     project = _must_find(db, model.Project, project)
     node = _must_find(db, model.Node, node)
     if node.project is not None:
@@ -137,7 +137,7 @@ def project_detach_node(project, node):
     If the node has network attachments or pending network actions, a
     BlockedError will be raised.
     """
-    db = model.Session()
+    db = local.db
     project = _must_find(db, model.Project, project)
     node = _must_find(db, model.Node, node)
     if node not in project.nodes:
@@ -162,7 +162,7 @@ def project_add_user(project, user):
 
     If the project or user does not exist, a NotFoundError will be raised.
     """
-    db = model.Session()
+    db = local.db
     user = _must_find(db, model.User, user)
     project = _must_find(db, model.Project, project)
     if project in user.projects:
@@ -178,7 +178,7 @@ def project_remove_user(project, user):
 
     If the project or user does not exist, a NotFoundError will be raised.
     """
-    db = model.Session()
+    db = local.db
     user = _must_find(db, model.User, user)
     project = _must_find(db, model.Project, project)
     if project not in user.projects:
@@ -198,7 +198,7 @@ def node_register(node, ipmi_host, ipmi_user, ipmi_pass):
 
     If the node already exists, a DuplicateError will be raised.
     """
-    db = model.Session()
+    db = local.db
     _assert_absent(db, model.Node, node)
     node = model.Node(node, ipmi_host, ipmi_user, ipmi_pass)
     db.add(node)
@@ -207,7 +207,7 @@ def node_register(node, ipmi_host, ipmi_user, ipmi_pass):
 
 @rest_call('POST', '/node/<node>/power_cycle')
 def node_power_cycle(node):
-    db = model.Session()
+    db = local.db
     node = _must_find(db, model.Node, node)
     node.power_cycle()
 
@@ -218,7 +218,7 @@ def node_delete(node):
 
     If the node does not exist, a NotFoundError will be raised.
     """
-    db = model.Session()
+    db = local.db
     node = _must_find(db, model.Node, node)
     if node.nics != []:
         raise BlockedError("Node %r has nics; remove them before deleting %r.",
@@ -237,7 +237,7 @@ def node_register_nic(node, nic, macaddr):
 
     If there is already an nic with that name, a DuplicateError will be raised.
     """
-    db = model.Session()
+    db = local.db
     node = _must_find(db, model.Node, node)
     _assert_absent_n(db, node, model.Nic, nic)
     nic = model.Nic(node, nic, macaddr)
@@ -251,7 +251,7 @@ def node_delete_nic(node, nic):
 
     If the node or nic does not exist, a NotFoundError will be raised.
     """
-    db = model.Session()
+    db = local.db
     nic = _must_find_n(db, _must_find(db, model.Node, node), model.Nic, nic)
     db.delete(nic)
     db.commit()
@@ -285,7 +285,7 @@ def node_connect_network(node, nic, network, channel=None):
             query,
         ).count() != 0
 
-    db = model.Session()
+    db = local.db
 
     node = _must_find(db, model.Node, node)
     nic = _must_find_n(db, node, model.Nic, nic)
@@ -333,7 +333,7 @@ def node_detach_network(node, nic, network):
 
     Raises BadArgumentError if the network is not attached to the nic.
     """
-    db = model.Session()
+    db = local.db
     node = _must_find(db, model.Node, node)
     network = _must_find(db, model.Network, network)
     nic = _must_find_n(db, node, model.Nic, nic)
@@ -376,7 +376,7 @@ def headnode_create(headnode, project, base_img):
 
     if base_img not in valid_imgs:
         raise BadArgumentError('Provided image is not a valid image.')
-    db = model.Session()
+    db = local.db
 
     _assert_absent(db, model.Headnode, headnode)
     project = _must_find(db, model.Project, project)
@@ -393,7 +393,7 @@ def headnode_delete(headnode):
 
     If the node does not exist, a NotFoundError will be raised.
     """
-    db = model.Session()
+    db = local.db
     headnode = _must_find(db, model.Headnode, headnode)
     if not headnode.dirty:
         headnode.delete()
@@ -412,7 +412,7 @@ def headnode_start(headnode):
     "frozen," and all other headnode-related api calls will fail (by raising
     an IllegalStateError), with the exception of headnode_stop.
     """
-    db = model.Session()
+    db = local.db
     headnode = _must_find(db, model.Headnode, headnode)
     if headnode.dirty:
         headnode.create()
@@ -428,7 +428,7 @@ def headnode_stop(headnode):
     the opportunity to shut down cleanly. This does *not* unfreeze the VM;
     headnode_start will be the only valid API call after the VM is powered off.
     """
-    db = model.Session()
+    db = local.db
     headnode = _must_find(db, model.Headnode, headnode)
     headnode.stop()
 
@@ -445,7 +445,7 @@ def headnode_create_hnic(headnode, hnic):
     If the headnode's VM has already created (headnode is not "dirty"), raises
     an IllegalStateError
     """
-    db = model.Session()
+    db = local.db
     headnode = _must_find(db, model.Headnode, headnode)
     _assert_absent_n(db, headnode, model.Hnic, hnic)
 
@@ -466,7 +466,7 @@ def headnode_delete_hnic(headnode, hnic):
     If the headnode's VM has already created (headnode is not "dirty"), raises
     an IllegalStateError
     """
-    db = model.Session()
+    db = local.db
     headnode = _must_find(db, model.Headnode, headnode)
     hnic = _must_find_n(db, headnode, model.Hnic, hnic)
 
@@ -492,7 +492,7 @@ def headnode_connect_network(headnode, hnic, network):
     is currently unsupported due to an implementation limitation, but will be
     supported in a future release. See issue #333.
     """
-    db = model.Session()
+    db = local.db
 
     headnode = _must_find(db, model.Headnode, headnode)
     hnic = _must_find_n(db, headnode, model.Hnic, hnic)
@@ -520,7 +520,7 @@ def headnode_detach_network(headnode, hnic):
 
     Raises IllegalStateError if the headnode has already been started.
     """
-    db = model.Session()
+    db = local.db
 
     headnode = _must_find(db, model.Headnode, headnode)
     hnic = _must_find_n(db, headnode, model.Hnic, hnic)
@@ -555,7 +555,7 @@ def network_create(network, creator, access, net_id):
     Details of the various combinations of network attributes are in
     docs/networks.md
     """
-    db = model.Session()
+    db = local.db
     _assert_absent(db, model.Network, network)
 
     # Check legality of arguments, and find correct 'access' and 'creator'
@@ -598,7 +598,7 @@ def network_delete(network):
     If the network is connected to nodes or headnodes, or there are pending
     network actions involving it, a BlockedError will be raised.
     """
-    db = model.Session()
+    db = local.db
     network = _must_find(db, model.Network, network)
 
     if len(network.attachments) != 0:
@@ -621,7 +621,7 @@ def show_network(network):
     Returns a JSON object representing a network. See `docs/rest_api.md`
     for a full description of the output.
     """
-    db = model.Session()
+    db = local.db
     allocator = get_network_allocator()
 
     network = _must_find(db, model.Network, network)
@@ -645,7 +645,7 @@ def show_network(network):
     Optional(object): object,
 }))
 def switch_register(switch, type, **kwargs):
-    db = model.Session()
+    db = local.db
     _assert_absent(db, model.Switch, switch)
 
     cls = concrete_class_for(model.Switch, type)
@@ -662,7 +662,7 @@ def switch_register(switch, type, **kwargs):
 
 @rest_call('DELETE', '/switch/<switch>')
 def switch_delete(switch):
-    db = model.Session()
+    db = local.db
     switch = _must_find(db, model.Switch, switch)
 
     if switch.ports != []:
@@ -679,7 +679,7 @@ def switch_register_port(switch, port):
 
     If the port already exists, a DuplicateError will be raised.
     """
-    db = model.Session()
+    db = local.db
 
     switch = _must_find(db, model.Switch, switch)
     _assert_absent_n(db, switch, model.Port, port)
@@ -695,7 +695,7 @@ def switch_delete_port(switch, port):
 
     If the port does not exist, a NotFoundError will be raised.
     """
-    db = model.Session()
+    db = local.db
 
     switch = _must_find(db, model.Switch, switch)
     port = _must_find_n(db, switch, model.Port, port)
@@ -717,7 +717,7 @@ def port_connect_nic(switch, port, node, nic):
     If the port or the nic is already connected to something, a DuplicateError will be
     raised.
     """
-    db = model.Session()
+    db = local.db
 
     switch = _must_find(db, model.Switch, switch)
     port = _must_find_n(db, switch, model.Port, port)
@@ -746,7 +746,7 @@ def port_detach_nic(switch, port):
     If the port is attached to a node which is not free, a BlockedError
     will be raised.
     """
-    db = model.Session()
+    db = local.db
 
     switch = _must_find(db, model.Switch, switch)
     port = _must_find_n(db, switch, model.Port, port)
@@ -768,7 +768,7 @@ def list_free_nodes():
 
     Example:  '["node1", "node2", "node3"]'
     """
-    db = model.Session()
+    db = local.db
     nodes = db.query(model.Node).filter_by(project_id=None).all()
     nodes = [n.label for n in nodes]
     return json.dumps(nodes)
@@ -782,7 +782,7 @@ def list_project_nodes(project):
 
     Example:  '["node1", "node2", "node3"]'
     """
-    db = model.Session()
+    db = local.db
     project = _must_find(db, model.Project, project)
     nodes = project.nodes
     nodes = [n.label for n in nodes]
@@ -797,7 +797,7 @@ def list_project_networks(project):
 
     Example:  '["net1", "net2", "net3"]'
     """
-    db = model.Session()
+    db = local.db
     project = _must_find(db, model.Project, project)
     networks = project.networks_access
     networks = [n.label for n in networks]
@@ -824,7 +824,7 @@ def show_node(nodename):
                          {"label": "nic2", "macaddr": "12:34:56:78:90"}]
                }'
     """
-    db = model.Session()
+    db = local.db
     node = _must_find(db, model.Node, nodename)
     return json.dumps({
         'name': node.label,
@@ -843,7 +843,7 @@ def list_project_headnodes(project):
 
     Example:  '["headnode1", "headnode2", "headnode3"]'
     """
-    db = model.Session()
+    db = local.db
     project = _must_find(db, model.Project, project)
     headnodes = project.headnodes
     headnodes = [hn.label for hn in headnodes]
@@ -870,7 +870,7 @@ def show_headnode(nodename):
                 "vncport": 5900
                }'
     """
-    db = model.Session()
+    db = local.db
     headnode = _must_find(db, model.Headnode, nodename)
     return json.dumps({
         'name': headnode.label,
@@ -899,7 +899,7 @@ def list_headnode_images():
 @rest_call('GET', '/node/<nodename>/console')
 def show_console(nodename):
     """Show the contents of the console log."""
-    db = model.Session()
+    db = local.db
     node = _must_find(db, model.Node, nodename)
     log = node.get_console()
     if log is None:
@@ -910,14 +910,14 @@ def show_console(nodename):
 @rest_call('PUT', '/node/<nodename>/console')
 def start_console(nodename):
     """Start logging output from the console."""
-    db = model.Session()
+    db = local.db
     node = _must_find(db, model.Node, nodename)
     node.start_console()
 
 @rest_call('DELETE', '/node/<nodename>/console')
 def stop_console(nodename):
     """Stop logging output from the console and delete the log."""
-    db = model.Session()
+    db = local.db
     node = _must_find(db, model.Node, nodename)
     node.stop_console()
     node.delete_console()
