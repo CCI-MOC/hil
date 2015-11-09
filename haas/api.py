@@ -877,7 +877,9 @@ def show_headnode(nodename):
         'project': headnode.project.label,
         'hnics': [n.label for n in headnode.hnics],
         'vncport': headnode.get_vncport(),
-    })
+        'uuid' : headnode.uuid,
+        'base_imgs': headnode.base_img,
+    }, sort_keys = True)
 
 
 @rest_call('GET', '/headnode_images/')
