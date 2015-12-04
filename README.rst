@@ -59,16 +59,13 @@ Required software/hardware for running a production HaaS include:
 
 * Database: a Postgres database server. Sqlite works but is not recommended for production.
 
-Optional components
--------------------
-
-For optional IPMI proxy functionality:
+For IPMI proxy functionality:
 
 * Network access from the HaaS service node to the IPMI interfaces of node under management
 * Nodes that support IPMI v2+
 * A recent version of ipmitool installed on the HaaS service node
 
-For optional headnode functionality:
+For headnode functionality:
 
 * A recent Linux version for the HaaS service node that has libvirt with KVM installed
 * Some number of VM templates
