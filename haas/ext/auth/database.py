@@ -1,3 +1,7 @@
+"""Auth plugin using usernames & passwords in the DB, with HTTP basic auth.
+
+Includes API calls for managing users.
+"""
 from haas import api, model, auth, rest
 from haas.errors import *
 from sqlalchemy import Column, ForeignKey, String, Table
@@ -7,9 +11,8 @@ from passlib.hash import sha512_crypt
 class User(model.Model):
     """A user of the HaaS.
 
-    Right now we're not doing authentication, so this isn't really used. In
-    theory, a user must autheticate, and their membership within projects
-    determines what they are authorized to do.
+    A user can be a member of any number of projects, which grants them access
+    to that process's resources. A user may also be flagged as an administrator.
     """
 
     # The user's salted & hashed password. We currently use sha512 as the
