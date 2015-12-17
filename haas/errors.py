@@ -13,11 +13,40 @@
 # governing permissions and limitations under the License.
 """Exceptions thrown by HaaS api calls.
 
-This module defines several exceptions decending from the exception
-types in haas.rest, used for specific failures.
+This module defines several exceptions corresponding to specific errors.
+They fall into two basic categories, captured by the classes APIError
+and ServerError.
 """
 
-from haas.rest import APIError, ServerError
+import json
+
+class APIError(Exception):
+    """An exception indicating an error that should be reported to the user.
+
+    i.e. If such an error occurs in a rest API call, it should be reported as
+    part of the HTTP response.
+    """
+    status_code = 400  # Bad Request
+
+    def response_body(self):
+        """The body of the http response corresponding to this error."""
+        # TODO: We're getting deprecation errors about the use of self.message.
+        # We should figure out what the right way to do this is.
+        return json.dumps({'type': self.__class__.__name__,
+                           'msg': self.message,
+                           })
+
+
+class ServerError(Exception):
+    """An error occurred when trying to process the request.
+
+    This is likely not the client's fault; as such the HTTP status is 500.
+    The semantics are much the same as the corresponding HTTP error.
+
+    In general, we do *not* want to report the details to the client,
+    though we should log them for our own purposes.
+    """
+    status_code = 500
 
 
 class NotFoundError(APIError):

@@ -14,10 +14,14 @@
 
 from haas.model import *
 from haas.config import cfg
-from haas import api, config
+from haas import api, config, rest
+from StringIO import StringIO
 import json
 import subprocess
+import sys
 import os.path
+
+from werkzeug.wrappers import Request
 
 
 def config_testsuite():
@@ -244,3 +248,39 @@ def headnode_cleanup(request):
                 pass
 
     request.addfinalizer(undefine_headnodes)
+
+
+def wsgi_mkenv(method, path, data=None):
+    """Helper routine to build a wsgi environment.
+
+    We need this to generate mock requests.
+    """
+    env = {
+        'REQUEST_METHOD': method,
+        'SCRIPT_NAME': '',
+        'PATH_INFO': path,
+        'SERVER_NAME': 'haas.test-env',
+        'SERVER_PORT': '5000',
+        'wsgi.version': (1, 0),
+        'wsgi.url_scheme': 'http',
+        'wsgi.errors': sys.stderr,
+        'wsgi.multithreaded': False,
+        'wsgi.multiprocess': False,
+        'wsgi.run_once': False,
+    }
+    if data is None:
+        env['wsgi.input'] = StringIO()
+    else:
+        env['wsgi.input'] = StringIO(data)
+    return env
+
+
+def do_request(method, path, data=None):
+    """Submit a fake HTTP api call.
+
+    This invokes the request handler with an HTTP request corresponding to
+    the given arguments.
+    """
+    response = rest.request_handler(Request(wsgi_mkenv(method, path, data)))
+    rest.local_manager.cleanup()
+    return response
