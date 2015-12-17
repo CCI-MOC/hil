@@ -892,6 +892,8 @@ def _assert_absent(cls, name):
 
     cls - the class of the object to query.
     name - the name of the object in question.
+
+    Must be called within a request context.
     """
     obj = local.db.query(cls).filter_by(label=name).first()
     if obj:
@@ -906,9 +908,10 @@ def _must_find(cls, name):
 
     Arguments:
 
-    session - a sqlaclhemy session to use.
     cls - the class of the object to query.
     name - the name of the object in question.
+
+    Must be called within a request context.
     """
     obj = local.db.query(cls).filter_by(label=name).first()
     if not obj:
@@ -931,6 +934,8 @@ def _assert_absent_n(obj_outer, cls_inner, name_inner):
     obj_outer - the "owner" object
     cls_inner - the "owned" class
     name_inner - the name of the "owned" object
+
+    Must be called within a request context.
     """
     obj_inner = _namespaced_query(obj_outer, cls_inner, name_inner)
     if obj_inner is not None:
@@ -948,6 +953,8 @@ def _must_find_n(obj_outer, cls_inner, name_inner):
     obj_outer - the "owner" object
     cls_inner - the "owned" class
     name_inner - the name of the "owned" object
+
+    Must be called within a request context.
     """
     obj_inner = _namespaced_query(obj_outer, cls_inner, name_inner)
     if obj_inner is None:
