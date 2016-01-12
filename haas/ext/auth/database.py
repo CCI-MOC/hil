@@ -6,6 +6,7 @@ from haas import api, model, auth
 from haas.rest import rest_call, local
 from haas.errors import *
 from sqlalchemy import Column, ForeignKey, String, Table
+from sqlalchemy.orm import relationship
 from passlib.hash import sha512_crypt
 
 
@@ -21,7 +22,7 @@ class User(model.Model):
     hashed_password = Column(String)
 
     # The projects of which the user is a member.
-    projects = relationship('Project', secondary=user_projects, backref='users')
+    projects = relationship('Project', secondary='user_projects', backref='users')
 
     def __init__(self, label, password):
         """Create a user `label` with the specified (plaintext) password."""
@@ -52,9 +53,9 @@ def user_create(user, password):
 
     # XXX: We need to do a bit of refactoring, so this is available outside of
     # haas.api:
-    api._assert_absent(model.User, user)
+    api._assert_absent(User, user)
 
-    user = model.User(user, password)
+    user = User(user, password)
     local.db.add(user)
     local.db.commit()
 
@@ -68,7 +69,7 @@ def user_delete(user):
 
     # XXX: We need to do a bit of refactoring, so this is available outside of
     # haas.api:
-    user = api._must_find(model.User, user)
+    user = api._must_find(User, user)
 
     local.db.delete(user)
     local.db.commit()
@@ -80,7 +81,7 @@ def project_add_user(project, user):
 
     If the project or user does not exist, a NotFoundError will be raised.
     """
-    user = api._must_find(model.User, user)
+    user = api._must_find(User, user)
     project = api._must_find(model.Project, project)
     if project in user.projects:
         raise DuplicateError('User %s is already in project %s'%
@@ -95,7 +96,7 @@ def project_remove_user(project, user):
 
     If the project or user does not exist, a NotFoundError will be raised.
     """
-    user = api._must_find(model.User, user)
+    user = api._must_find(User, user)
     project = api._must_find(model.Project, project)
     if project not in user.projects:
         raise NotFoundError("User %s is not in project %s"%
@@ -112,8 +113,7 @@ class DatabaseAuthBackend(auth.AuthBackend):
             rest.local.auth = None
             return
 
-        db = model.Session()
-        user = api._must_find(db, User, authorization.username)
+        user = api._must_find(User, authorization.username)
         if user.verify_password(authorization.password):
             rest.local.auth = user
         else:
