@@ -3,10 +3,8 @@
 Testing for HaaS is done using [pytest][1]. All tests
 are placed in the "tests" subdirectory, which is subdivided into:
 
-    * `unit` - for basic unit tests. These are safe to run without a
-      full HaaS enviornment (i.e. you don't need libvirt etc).
-    * `deployment` - for tests that need to run against an actual setup,
-      with libvirtd and at least one real switch.
+* `unit` - for basic unit tests. These are safe to run without a full HaaS enviornment (i.e. you don't need libvirt etc).
+* `deployment` - for tests that need to run against an actual setup, with libvirtd and at least one real switch.
 
 Developers should run at least the unit tests before making a commit.
 Ideally, the deployment tests should also be run, though we're less

@@ -15,8 +15,12 @@
 
 The function `wsgi_handler` is the wsgi entry point to the app.
 
-The decorator `rest_call` and the classes `APIError` and `ServerError`
-are the main things of interest in this module.
+The main things of interest in this module are:
+
+    * The decorator `rest_call`
+    * The variable `local`. `local.db` is a SQLAlchemy session object which
+      is local to the current request. It is cleaned up automatically when the
+      request finishes (rolling back any changes which have not been comitted).
 """
 import logging
 import inspect
@@ -27,9 +31,12 @@ from werkzeug.routing import Map, Rule, parse_rule
 from werkzeug.exceptions import HTTPException, InternalServerError
 from werkzeug.local import Local, LocalManager
 
+from haas.errors import APIError, ServerError
+
 from schema import Schema, SchemaError
 
 from haas import auth
+from haas.model import Session
 
 local = Local()
 local_manager = LocalManager([local])
@@ -37,34 +44,6 @@ local_manager = LocalManager([local])
 logger = logging.getLogger(__name__)
 
 _url_map = Map()
-
-
-class APIError(Exception):
-    """An exception indicating an error that should be reported to the user.
-
-    i.e. If such an error occurs in a rest API call, it should be reported as
-    part of the HTTP response.
-    """
-    status_code = 400  # Bad Request
-
-    def response(self):
-        # TODO: We're getting deprecation errors about the use of self.message.
-        # We should figure out what the right way to do this is.
-        return Response(json.dumps({'type': self.__class__.__name__,
-                                    'msg': self.message,
-                                    }), status=self.status_code)
-
-
-class ServerError(Exception):
-    """An error occurred when trying to process the request.
-
-    This is likely not the client's fault; as such the HTTP status is 500.
-    The semantics are much the same as the corresponding HTTP error.
-
-    In general, we do *not* want to report the details to the client,
-    though we should log them for our own purposes.
-    """
-    status_code = 500
 
 
 class ValidationError(APIError):
@@ -182,6 +161,20 @@ def _format_arglist(*args, **kwargs):
     return ', '.join(args)
 
 
+class RequestContext(object):
+    """Context manager that sets up `local` for use in the request handler.
+
+    This is used internally by the request handler, but is exposed to make
+    testing easier.
+    """
+
+    def __enter__(self):
+        local.db = Session()
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        local.db.close()
+
+
 def request_handler(request):
     """Handle an http request.
 
@@ -233,7 +226,8 @@ def request_handler(request):
                 raise InternalServerError()
             request_data[k] = v
         logger.debug('Recieved api call %s(%s)', f.__name__, _format_arglist(**request_data))
-        result = f(**request_data)
+        with RequestContext():
+            result = f(**request_data)
         if result is None:
             response_body, status = "", 200
         elif type(result) is tuple:
@@ -247,7 +241,7 @@ def request_handler(request):
     except APIError as e:
         logger.debug('Invalid call to api function %s, raised exception: %r',
                      f.__name__, e)
-        return e.response()
+        return Response(e.response_body(), status=e.status_code)
     except ServerError as e:
         logger.error('Server-side failure in function %s, raised exception: %r',
                      f.__name__, e)

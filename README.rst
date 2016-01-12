@@ -36,6 +36,41 @@ administrator must populate initially.
 #. Log in to the headnode, set up a PXE server, reboot the nodes, and deploy an
    operating system on them via the network.
 
+Requirements
+============
+
+Required software/hardware for running a production HaaS include:
+
+* Network switches:
+
+  * At least one switch from the Cisco Nexus 5xxx or Dell PowerConnect 55xx families
+  * For environments including more than one switch, all VLANs must be trunked to all managed switches
+
+* A single node that has the following:
+
+  * A webserver capable of supporting the WSGI standard (Apache/mod_wsgi is the only one tested)
+  * python 2.7, with the ability to install packages via pip
+  * Access to:
+
+    * The Internet or intranet (a way for users to connect to the HaaS service)
+    * The administrative telnet IP on the managed switches
+
+  * Currently only CentOS and RHEL 7.x have been tested, though any node that otherwise meets these requirements should function.
+
+* Database: a Postgres database server. Sqlite works but is not recommended for production.
+
+For IPMI proxy functionality:
+
+* Network access from the HaaS service node to the IPMI interfaces of node under management
+* Nodes that support IPMI v2+
+* A recent version of ipmitool installed on the HaaS service node
+
+For headnode functionality:
+
+* A recent Linux version for the HaaS service node that has libvirt with KVM installed
+* Some number of VM templates
+* A trunk port connected between the switch and HaaS service node that carries all VLANs accessible from HaaS
+
 Documentation
 =============
 

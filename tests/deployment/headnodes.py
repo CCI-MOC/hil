@@ -19,7 +19,7 @@ difficult to run in other contexts.
 """
 
 from haas.test_common import *
-from haas import config, server
+from haas import config, server, rest
 import pytest
 
 
@@ -40,10 +40,17 @@ def server_init():
     server.validate_state()
 
 
+@pytest.yield_fixture
+def with_request_context():
+    with rest.RequestContext():
+        yield
+
+
 headnode_cleanup = pytest.fixture(headnode_cleanup)
 pytestmark = pytest.mark.usefixtures('configure',
                                      'server_init',
                                      'db',
+                                     'with_request_context',
                                      'headnode_cleanup')
 
 

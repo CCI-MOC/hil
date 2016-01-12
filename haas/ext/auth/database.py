@@ -2,7 +2,8 @@
 
 Includes API calls for managing users.
 """
-from haas import api, model, auth, rest
+from haas import api, model, auth
+from haas.rest import rest_call, local
 from haas.errors import *
 from sqlalchemy import Column, ForeignKey, String, Table
 from passlib.hash import sha512_crypt
@@ -42,69 +43,65 @@ user_projects = Table('user_projects', model.Base.metadata,
                       Column('project_id', ForeignKey('project.id')))
 
 
-@rest.rest_call('PUT', '/user/<user>')
+@rest_call('PUT', '/user/<user>')
 def user_create(user, password):
     """Create user with given password.
 
     If the user already exists, a DuplicateError will be raised.
     """
-    db = model.Session()
 
     # XXX: We need to do a bit of refactoring, so this is available outside of
-    # haas.api
-    api._assert_absent(db, User, user)
+    # haas.api:
+    api._assert_absent(model.User, user)
 
-    user = User(user, password)
-    db.add(user)
-    db.commit()
+    user = model.User(user, password)
+    local.db.add(user)
+    local.db.commit()
 
 
-@rest.rest_call('DELETE', '/user/<user>')
+@rest_call('DELETE', '/user/<user>')
 def user_delete(user):
     """Delete user.
 
     If the user does not exist, a NotFoundError will be raised.
     """
-    db = model.Session()
 
     # XXX: We need to do a bit of refactoring, so this is available outside of
-    # haas.api
-    user = api._must_find(db, User, user)
+    # haas.api:
+    user = api._must_find(model.User, user)
 
-    db.delete(user)
-    db.commit()
+    local.db.delete(user)
+    local.db.commit()
 
 
-@rest.rest_call('POST', '/project/<project>/add_user')
+@rest_call('POST', '/project/<project>/add_user')
 def project_add_user(project, user):
     """Add a user to a project.
 
     If the project or user does not exist, a NotFoundError will be raised.
     """
-    db = model.Session()
-    user = api._must_find(db, User, user)
-    project = api._must_find(db, model.Project, project)
+    user = api._must_find(model.User, user)
+    project = api._must_find(model.Project, project)
     if project in user.projects:
-        raise DuplicateError('User %s is already in project %s' %
+        raise DuplicateError('User %s is already in project %s'%
                              (user.label, project.label))
     user.projects.append(project)
-    db.commit()
+    local.db.commit()
 
 
-@rest.rest_call('POST', '/project/<project>/remove_user')
+@rest_call('POST', '/project/<project>/remove_user')
 def project_remove_user(project, user):
     """Remove a user from a project.
 
     If the project or user does not exist, a NotFoundError will be raised.
     """
-    db = model.Session()
-    user = api._must_find(db, User, user)
-    project = api._must_find(db, model.Project, project)
+    user = api._must_find(model.User, user)
+    project = api._must_find(model.Project, project)
     if project not in user.projects:
-        raise NotFoundError("User %s is not in project %s" %
+        raise NotFoundError("User %s is not in project %s"%
                             (user.label, project.label))
     user.projects.remove(project)
-    db.commit()
+    local.db.commit()
 
 
 class DatabaseAuthBackend(auth.AuthBackend):

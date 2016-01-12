@@ -16,6 +16,7 @@
 
 from haas import model, api, deferred, server, config
 from haas.test_common import *
+from haas.rest import RequestContext
 import pytest
 import json
 
@@ -45,16 +46,23 @@ def server_init():
     server.validate_state()
 
 
+@pytest.yield_fixture
+def with_request_context():
+    with RequestContext():
+        yield
+
+
 pytestmark = pytest.mark.usefixtures('configure',
                                      'db',
-                                     'server_init')
+                                     'server_init',
+                                     'with_request_context')
 
 
 class TestUser:
     """Tests for the haas.api.user_* functions."""
 
     def test_new_user(self, db):
-        api._assert_absent(db, model.User, 'bob')
+        api._assert_absent(model.User, 'bob')
         api.user_create('bob', 'foo')
 
     def test_duplicate_user(self, db):
@@ -82,7 +90,7 @@ class TestProjectCreateDelete:
 
     def test_project_create_success(self, db):
         api.project_create('anvil-nextgen')
-        api._must_find(db, model.Project, 'anvil-nextgen')
+        api._must_find(model.Project, 'anvil-nextgen')
 
     def test_project_create_duplicate(self, db):
         api.project_create('anvil-nextgen')
@@ -93,7 +101,7 @@ class TestProjectCreateDelete:
         api.project_create('anvil-nextgen')
         api.project_delete('anvil-nextgen')
         with pytest.raises(api.NotFoundError):
-            api._must_find(db, model.Project, 'anvil-nextgen')
+            api._must_find(model.Project, 'anvil-nextgen')
 
     def test_project_delete_nexist(self, db):
         with pytest.raises(api.NotFoundError):
@@ -138,8 +146,8 @@ class TestProjectAddDeleteUser:
         api.user_create('alice', 'secret')
         api.project_create('acme-corp')
         api.project_add_user('acme-corp', 'alice')
-        user = api._must_find(db, model.User, 'alice')
-        project = api._must_find(db, model.Project, 'acme-corp')
+        user = api._must_find(model.User, 'alice')
+        project = api._must_find(model.Project, 'acme-corp')
         assert project in user.projects
         assert user in project.users
 
@@ -148,8 +156,8 @@ class TestProjectAddDeleteUser:
         api.project_create('acme-corp')
         api.project_add_user('acme-corp', 'alice')
         api.project_remove_user('acme-corp', 'alice')
-        user = api._must_find(db, model.User, 'alice')
-        project = api._must_find(db, model.Project, 'acme-corp')
+        user = api._must_find(model.User, 'alice')
+        project = api._must_find(model.Project, 'acme-corp')
         assert project not in user.projects
         assert user not in project.users
 
@@ -157,7 +165,7 @@ class TestProjectAddDeleteUser:
         api.project_create('acme-corp')
         api.project_delete('acme-corp')
         with pytest.raises(api.NotFoundError):
-            api._must_find(db, model.Project, 'acme-corp')
+            api._must_find(model.Project, 'acme-corp')
 
     def test_duplicate_project_create(self, db):
         api.project_create('acme-corp')
@@ -218,8 +226,8 @@ class TestProjectConnectDetachNode:
         api.project_create('anvil-nextgen')
         api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.project_connect_node('anvil-nextgen', 'node-99')
-        project = api._must_find(db, model.Project, 'anvil-nextgen')
-        node = api._must_find(db, model.Node, 'node-99')
+        project = api._must_find(model.Project, 'anvil-nextgen')
+        node = api._must_find(model.Node, 'node-99')
         assert node in project.nodes
         assert node.project is project
 
@@ -251,8 +259,8 @@ class TestProjectConnectDetachNode:
         api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.project_detach_node('anvil-nextgen', 'node-99')
-        project = api._must_find(db, model.Project, 'anvil-nextgen')
-        node = api._must_find(db, model.Node, 'node-99')
+        project = api._must_find(model.Project, 'anvil-nextgen')
+        node = api._must_find(model.Node, 'node-99')
         assert node not in project.nodes
         assert node.project is not project
 
@@ -312,7 +320,7 @@ class TestNodeRegisterDelete:
 
     def test_node_register(self, db):
         api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
-        api._must_find(db, model.Node, 'node-99')
+        api._must_find(model.Node, 'node-99')
 
     def test_duplicate_node_register(self, db):
         api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
@@ -323,7 +331,7 @@ class TestNodeRegisterDelete:
         api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
         api.node_delete('node-99')
         with pytest.raises(api.NotFoundError):
-            api._must_find(db, model.Node, 'node-99')
+            api._must_find(model.Node, 'node-99')
 
     def test_node_delete_nexist(self, db):
         with pytest.raises(api.NotFoundError):
@@ -342,7 +350,7 @@ class TestNodeRegisterDeleteNic:
     def test_node_register_nic(self, db):
         api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
-        nic = api._must_find(db, model.Nic, '01-eth0')
+        nic = api._must_find(model.Nic, '01-eth0')
         assert nic.owner.label == 'compute-01'
 
     def test_node_register_nic_no_node(self, db):
@@ -352,7 +360,7 @@ class TestNodeRegisterDeleteNic:
     def test_node_register_nic_duplicate_nic(self, db):
         api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
-        nic = api._must_find(db, model.Nic, '01-eth0')
+        nic = api._must_find(model.Nic, '01-eth0')
         with pytest.raises(api.DuplicateError):
             api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:15')
 
@@ -360,8 +368,8 @@ class TestNodeRegisterDeleteNic:
         api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
         api.node_delete_nic('compute-01', '01-eth0')
-        api._assert_absent(db, model.Nic, '01-eth0')
-        api._must_find(db, model.Node, 'compute-01')
+        api._assert_absent(model.Nic, '01-eth0')
+        api._must_find(model.Node, 'compute-01')
 
     def test_node_delete_nic_nic_nexist(self, db):
         api.node_register('compute-01', 'ipmihost', 'root', 'tapeworm')
@@ -407,8 +415,8 @@ class TestNodeConnectDetachNetwork:
         assert api.node_connect_network('node-99', '99-eth0', 'hammernet') == ('', 202)
         deferred.apply_networking()
 
-        network = api._must_find(db, model.Network, 'hammernet')
-        nic = api._must_find(db, model.Nic, '99-eth0')
+        network = api._must_find(model.Network, 'hammernet')
+        nic = api._must_find(model.Nic, '99-eth0')
         db.query(model.NetworkAttachment).filter_by(network=network,
                 nic=nic).one()
 
@@ -524,8 +532,8 @@ class TestNodeConnectDetachNetwork:
         # Verify that the status is right, not just that it "succeeds."
         assert api.node_detach_network('node-99', '99-eth0', 'hammernet') == ('', 202)
         deferred.apply_networking()
-        network = api._must_find(db, model.Network, 'hammernet')
-        nic = api._must_find(db, model.Nic, '99-eth0')
+        network = api._must_find(model.Network, 'hammernet')
+        nic = api._must_find(model.Nic, '99-eth0')
         assert db.query(model.NetworkAttachment).filter_by(network=network,
                        nic=nic).count() == 0
 
@@ -604,7 +612,7 @@ class TestHeadnodeCreateDelete:
     def test_headnode_create_success(self, db):
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
-        hn = api._must_find(db, model.Headnode, 'hn-0')
+        hn = api._must_find(model.Headnode, 'hn-0')
         assert hn.project.label == 'anvil-nextgen'
 
     def test_headnode_create_badproject(self, db):
@@ -631,7 +639,7 @@ class TestHeadnodeCreateDelete:
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_delete('hn-0')
-        api._assert_absent(db, model.Headnode, 'hn-0')
+        api._assert_absent(model.Headnode, 'hn-0')
 
     def test_headnode_delete_nonexistent(self, db):
         """Tests that deleting a nonexistent headnode fails"""
@@ -645,7 +653,7 @@ class TestHeadnodeCreateDeleteHnic:
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
-        nic = api._must_find(db, model.Hnic, 'hn-0-eth0')
+        nic = api._must_find(model.Hnic, 'hn-0-eth0')
         assert nic.owner.label == 'hn-0'
 
     def test_headnode_create_hnic_no_headnode(self, db):
@@ -664,8 +672,8 @@ class TestHeadnodeCreateDeleteHnic:
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         api.headnode_delete_hnic('hn-0', 'hn-0-eth0')
-        api._assert_absent(db, model.Hnic, 'hn-0-eth0')
-        hn = api._must_find(db, model.Headnode, 'hn-0')
+        api._assert_absent(model.Hnic, 'hn-0-eth0')
+        hn = api._must_find(model.Headnode, 'hn-0')
 
     def test_headnode_delete_hnic_hnic_nexist(self, db):
         api.project_create('anvil-nextgen')
@@ -711,8 +719,8 @@ class TestHeadnodeConnectDetachNetwork:
         network_create_simple('hammernet', 'anvil-nextgen')
 
         api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
-        network = api._must_find(db, model.Network, 'hammernet')
-        hnic = api._must_find(db, model.Hnic, 'hn-0-eth0')
+        network = api._must_find(model.Network, 'hammernet')
+        hnic = api._must_find(model.Hnic, 'hn-0-eth0')
         assert hnic.network is network
         assert hnic in network.hnics
 
@@ -806,8 +814,8 @@ class TestHeadnodeConnectDetachNetwork:
         api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
 
         api.headnode_detach_network('hn-0', 'hn-0-eth0')
-        network = api._must_find(db, model.Network, 'hammernet')
-        hnic = api._must_find(db, model.Hnic, 'hn-0-eth0')
+        network = api._must_find(model.Network, 'hammernet')
+        hnic = api._must_find(model.Hnic, 'hn-0-eth0')
         assert hnic.network is None
         assert hnic not in network.hnics
 
@@ -925,7 +933,7 @@ class TestNetworkCreateDelete:
     def test_network_create_success(self, db):
         api.project_create('anvil-nextgen')
         network_create_simple('hammernet', 'anvil-nextgen')
-        net = api._must_find(db, model.Network, 'hammernet')
+        net = api._must_find(model.Network, 'hammernet')
         assert net.creator.label == 'anvil-nextgen'
 
     def test_network_create_badproject(self, db):
@@ -945,7 +953,7 @@ class TestNetworkCreateDelete:
         api.project_create('anvil-nextgen')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.network_delete('hammernet')
-        api._assert_absent(db, model.Network, 'hammernet')
+        api._assert_absent(model.Network, 'hammernet')
 
     def test_network_delete_project_complex_success(self, db):
         api.project_create('anvil-nextgen')
@@ -1430,8 +1438,8 @@ class TestFancyNetworkCreate:
         """Succesfully create a project-owned network."""
         api.project_create('anvil-nextgen')
         api.network_create('hammernet', 'anvil-nextgen', 'anvil-nextgen', '')
-        project = api._must_find(db, model.Project, 'anvil-nextgen')
-        network = api._must_find(db, model.Network, 'hammernet')
+        project = api._must_find(model.Project, 'anvil-nextgen')
+        network = api._must_find(model.Network, 'hammernet')
         assert network.creator is project
         assert network.access is project
         assert network.allocated is True
@@ -1454,16 +1462,16 @@ class TestFancyNetworkCreate:
     def test_admin_network(self, db):
         """Succesfully create all 4 varieties of administrator-owned networks."""
         api.project_create('anvil-nextgen')
-        project = api._must_find(db, model.Project, 'anvil-nextgen')
+        project = api._must_find(model.Project, 'anvil-nextgen')
         for project_api, project_db in [('', None), ('anvil-nextgen', project)]:
             for net_id, allocated in [('', True), ('35', False)]:
                 network = 'hammernet' + project_api + net_id
                 api.network_create(network, 'admin', project_api, net_id)
-                network = api._must_find(db, model.Network, network)
+                network = api._must_find(model.Network, network)
                 assert network.creator is None
                 assert network.access is project_db
                 assert network.allocated is allocated
-            network = api._must_find(db, model.Network, 'hammernet' + project_api + '35')
+            network = api._must_find(model.Network, 'hammernet' + project_api + '35')
             assert network.network_id == '35'
 
 
