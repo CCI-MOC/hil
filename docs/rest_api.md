@@ -203,10 +203,8 @@ error.
 Authorization requirements:
 
 * Access to the project to which `<node>` is assigned.
-* If `<network>` is not public, access to the project named by the network's
-  `"access"` field is required.
-
-Note that both of the above must be the *same* project.
+* Either `<network>` must be public, or its `"access"` field must name
+  the project which owns `<node>`.
 
 Possible errors:
 
@@ -299,6 +297,10 @@ Possible errors:
 `DELETE /node/<node>/nic/<nic>`
 
 Delete the nic named `<nic>` and belonging to `<node>`.
+
+Authorization requirements:
+
+* Administrative access.
 
 ### node_power_cycle
 
@@ -593,10 +595,8 @@ important.
 Authorization requirements:
 
 * Access to the project which owns `<headnode>`.
-* If the network is not public, access to the project named by it's
-  `"access"` field.
-
-Note that these must be the same project.
+* Either `<network>` must be public, or its `"access"` field must name
+  the project which owns `<headnode>`.
 
 Possible errors:
 
