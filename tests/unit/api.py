@@ -1283,7 +1283,7 @@ class TestQuery:
         api.project_create('anvil-nextgen')
         assert json.loads(api.list_project_nodes('anvil-nextgen')) == []
 
-
+    @pytest.mark.xfail
     def test_show_headnode(self, db):
         api.project_create('anvil-nextgen')
         network_create_simple('spiderwebs', 'anvil-nextgen')
