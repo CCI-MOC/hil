@@ -1,5 +1,6 @@
 from haas import api, model, config, server
-from haas.test_common import config_testsuite, config_merge, fresh_database
+from haas.test_common import config_testsuite, config_merge, fresh_database, \
+    ModelTest
 from haas.rest import RequestContext
 from haas.ext.auth.database import User, user_create, user_delete, \
     project_add_user, project_remove_user
@@ -102,3 +103,10 @@ class TestProjectAddDeleteUser:
         api.project_create('acme-corp')
         with pytest.raises(api.NotFoundError):
             project_remove_user('acme-corp', 'alice')
+
+
+class TestUsers(ModelTest):
+    """Test user-related functionality"""
+
+    def sample_obj(self):
+        return User('bob', 'secret')

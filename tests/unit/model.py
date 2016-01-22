@@ -39,13 +39,6 @@ def db(request):
 pytestmark = pytest.mark.usefixtures('configure', 'db')
 
 
-class TestUsers(ModelTest):
-    """Test user-related functionality"""
-
-    def sample_obj(self):
-        return User('bob', 'secret')
-
-
 class TestNic(ModelTest):
 
     def sample_obj(self):
