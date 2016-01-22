@@ -837,7 +837,7 @@ def show_headnode(nodename):
         'hnics': [n.label for n in headnode.hnics],
         'vncport': headnode.get_vncport(),
         'uuid' : headnode.uuid,
-        'base_imgs': headnode.base_img,
+        'base_img': headnode.base_img,
     }, sort_keys = True)
 
 
