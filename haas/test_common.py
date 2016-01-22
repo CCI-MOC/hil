@@ -16,6 +16,7 @@ from haas.model import *
 from haas.config import cfg
 from haas import api, config, rest
 from StringIO import StringIO
+from abc import ABCMeta, abstractmethod
 import json
 import subprocess
 import sys
@@ -138,6 +139,31 @@ def fresh_database(request):
     db = newDB()
     request.addfinalizer(lambda: releaseDB(db))
     return db
+
+
+class ModelTest:
+    """Superclass with tests common to all models.
+
+    Inheriting from ``ModelTest`` will generate tests in the subclass (each
+    of the methods beginning with ``test_`` below), but the ``ModelTest`` class
+    itself does not generate tests. (pytest will ignore it because the name of
+    the class does not start with ``Test`).
+    """
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def sample_obj(self):
+        """returns a sample object, which can be used for various tests.
+
+        There aren't really any specific requirements for the object, just that
+        it be "valid."
+        """
+
+    def test_repr(self):
+        print(self.sample_obj())
+
+    def test_insert(self, db):
+        db.add(self.sample_obj())
 
 
 class NetworkTest:
