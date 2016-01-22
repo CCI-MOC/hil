@@ -1360,8 +1360,8 @@ class TestQuery:
         result = json.loads(api.show_headnode('BGH'))
 
         # Verify UUID is well formed, then delete it, since we can't match it
-        # exactly
-        temp = uuid.UUID(result['uuid']) # Verify UUID is well-formed
+        # exactly in the check below
+        temp = uuid.UUID(result['uuid'])
         del result['uuid']
 
         # For the lists to be equal, the ordering must be the same:
