@@ -1346,6 +1346,7 @@ class TestQuery:
         api.project_create('anvil-nextgen')
         assert json.loads(api.list_project_nodes('anvil-nextgen')) == []
 
+    import uuid
 
     def test_show_headnode(self, db):
         api.project_create('anvil-nextgen')
@@ -1357,11 +1358,18 @@ class TestQuery:
 
 
         result = json.loads(api.show_headnode('BGH'))
+
+        # Verify UUID is well formed, then delete it, since we can't match it
+        # exactly
+        temp = uuid.UUID(result['uuid']) # Verify UUID is well-formed
+        del result['uuid']
+
         # For the lists to be equal, the ordering must be the same:
         result['hnics'].sort()
         assert result == {
-            'name': 'BGH',
-            'project': 'anvil-nextgen',
+            'name':     'BGH',
+            'project':  'anvil-nextgen',
+            'base_img': 'base-headnode',
             'hnics': [
                 'eth0',
                 'wlan0',
