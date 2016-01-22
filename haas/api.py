@@ -22,6 +22,7 @@ import json
 from schema import Schema, Optional
 
 from haas import model
+from haas.auth import get_auth_backend
 from haas.config import cfg
 from haas.rest import rest_call, local
 from haas.class_resolver import concrete_class_for
@@ -481,19 +482,22 @@ def network_create(network, creator, access, net_id):
     docs/networks.md
     """
     db = local.db
+    auth_backend = get_auth_backend()
     _assert_absent(model.Network, network)
 
-    # Check legality of arguments, and find correct 'access' and 'creator'
+    # Check authorization and legality of arguments, and find correct 'access' and 'creator'
     if creator != "admin":
+        creator = _must_find(model.Project, creator)
+        auth_backend.require_project_access(creator)
         # Project-owned network
-        if access != creator:
+        if access != creator.label:
             raise BadArgumentError("Project-created networks must be accessed only by that project.")
         if net_id != "":
             raise BadArgumentError("Project-created networks must use network ID allocation")
-        creator = _must_find(model.Project, creator)
         access = _must_find(model.Project, access)
     else:
         # Administrator-owned network
+        auth_backend.require_admin()
         creator = None
         if access == "":
             access = None
