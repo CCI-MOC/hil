@@ -170,6 +170,7 @@ class RequestContext(object):
 
     def __enter__(self):
         local.db = Session()
+        auth.get_auth_backend().authenticate()
 
     def __exit__(self, exc_type, exc_value, traceback):
         local.db.close()
@@ -182,7 +183,6 @@ def request_handler(request):
     The return value will be a werkzeug `Response` object.
     """
     local.request = request
-    auth.get_auth_backend().authenticate()
 
     adapter = _url_map.bind_to_environ(request.environ)
     try:
