@@ -1,8 +1,6 @@
 language: python
 python:
-	  - "2.7"
-	    # command to install dependencies
+  - "2.7"
 install: "python setup.py install"
-	# command to run tests
 script: "py.test tests/unit"
 
