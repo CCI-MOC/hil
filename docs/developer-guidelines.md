@@ -44,7 +44,7 @@ deployers (HaaS instance admins) and developers (you!). If your change affects
 any of HaaS's extensive documentation, please be sure to update the
 accompanying documentation.
 
-While most end-user and deployer documentation can be found in the README
+While most end-user and developer documentation can be found in the documentation listing
 (linked above), developer documentation may be found in the [docs
 directory](./).
 
@@ -57,7 +57,7 @@ submitted should first be tested to ensure that all existing tests pass. If
 changes could affect state external to HaaS's DB (network switches and
 headnodes), then deployment tests should also be run.
 
-When introducing new functionality, new tests (both unit and more comprhensive)
+When introducing new functionality, new tests (both unit and more comprehensive)
 should be added that provide adequate coverage.
 
 If fixing a bug, a regression test should accompany the bug fix to ensure that
