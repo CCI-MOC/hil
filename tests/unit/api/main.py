@@ -1283,7 +1283,8 @@ class TestQuery:
         api.project_create('anvil-nextgen')
         assert json.loads(api.list_project_nodes('anvil-nextgen')) == []
 
-    @pytest.mark.xfail
+    import uuid
+
     def test_show_headnode(self, db):
         api.project_create('anvil-nextgen')
         network_create_simple('spiderwebs', 'anvil-nextgen')
@@ -1294,11 +1295,18 @@ class TestQuery:
 
 
         result = json.loads(api.show_headnode('BGH'))
+
+        # Verify UUID is well formed, then delete it, since we can't match it
+        # exactly in the check below
+        temp = uuid.UUID(result['uuid'])
+        del result['uuid']
+
         # For the lists to be equal, the ordering must be the same:
         result['hnics'].sort()
         assert result == {
-            'name': 'BGH',
-            'project': 'anvil-nextgen',
+            'name':     'BGH',
+            'project':  'anvil-nextgen',
+            'base_img': 'base-headnode',
             'hnics': [
                 'eth0',
                 'wlan0',
