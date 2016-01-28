@@ -349,6 +349,7 @@ def headnode_delete(headnode):
     If the node does not exist, a NotFoundError will be raised.
     """
     headnode = _must_find(model.Headnode, headnode)
+    get_auth_backend().require_project_access(headnode.project)
     if not headnode.dirty:
         headnode.delete()
     for hnic in headnode.hnics:
@@ -367,6 +368,7 @@ def headnode_start(headnode):
     an IllegalStateError), with the exception of headnode_stop.
     """
     headnode = _must_find(model.Headnode, headnode)
+    get_auth_backend().require_project_access(headnode.project)
     if headnode.dirty:
         headnode.create()
     headnode.start()
@@ -382,6 +384,7 @@ def headnode_stop(headnode):
     headnode_start will be the only valid API call after the VM is powered off.
     """
     headnode = _must_find(model.Headnode, headnode)
+    get_auth_backend().require_project_access(headnode.project)
     headnode.stop()
 
 
@@ -398,6 +401,7 @@ def headnode_create_hnic(headnode, hnic):
     an IllegalStateError
     """
     headnode = _must_find(model.Headnode, headnode)
+    get_auth_backend().require_project_access(headnode.project)
     _assert_absent_n(headnode, model.Hnic, hnic)
 
     if not headnode.dirty:
@@ -418,6 +422,7 @@ def headnode_delete_hnic(headnode, hnic):
     an IllegalStateError
     """
     headnode = _must_find(model.Headnode, headnode)
+    get_auth_backend().require_project_access(headnode.project)
     hnic = _must_find_n(headnode, model.Hnic, hnic)
 
     if not headnode.dirty:
@@ -443,6 +448,7 @@ def headnode_connect_network(headnode, hnic, network):
     supported in a future release. See issue #333.
     """
     headnode = _must_find(model.Headnode, headnode)
+    get_auth_backend().require_project_access(headnode.project)
     hnic = _must_find_n(headnode, model.Hnic, hnic)
     network = _must_find(model.Network, network)
 

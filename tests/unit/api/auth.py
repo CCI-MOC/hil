@@ -136,8 +136,24 @@ def db(request):
         node.project = node_dict['project']
         session.add(model.Nic(node, label='boot-nic', mac_addr='Unknown'))
 
-    # at least one node with no nics (useful for testing delete):
+    # ... Some headnodes:
+    headnodes = [
+        {'label': 'runway_headnode_on', 'project': runway, 'on': True},
+        {'label': 'runway_headnode_off', 'project': runway, 'on': False},
+        {'label': 'runway_manhattan_on', 'project': manhattan, 'on': True},
+        {'label': 'runway_manhattan_off', 'project': manhattan, 'on': False},
+    ]
+    for hn_dict in headnodes:
+        headnode = model.Headnode(hn_dict['project'],
+                                  hn_dict['label'],
+                                  'base-headnode')
+        headnode.dirty = not hn_dict['on']
+        hnic = model.Hnic(headnode, 'pxe')
+        session.add(hnic)
+
+    # ... and at least one node with no nics (useful for testing delete):
     session.add(model.Node('no_nic_node', '', '', ''))
+
     session.commit()
     return session
 
@@ -427,6 +443,14 @@ project_calls = [
     (api.project_detach_node, ['runway', 'runway_node_0']),
 
     (api.headnode_create, ['new-headnode', 'runway', 'base-headnode']),
+    (api.headnode_delete, ['runway_headnode_off']),
+    (api.headnode_start, ['runway_headnode_off']),
+    (api.headnode_stop, ['runway_headnode_on']),
+    (api.headnode_create_hnic, ['runway_headnode_off', 'extra-hnic']),
+    (api.headnode_delete_hnic, ['runway_headnode_off', 'pxe']),
+
+    (api.headnode_connect_network, ['runway_headnode_off', 'pxe', 'stock_int_pub']),
+    (api.headnode_connect_network, ['runway_headnode_off', 'pxe', 'runway_pxe']),
 ]
 
 
