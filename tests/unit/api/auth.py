@@ -314,39 +314,6 @@ pytestmark = pytest.mark.usefixtures('configure',
     (api.node_connect_network, ProjectMismatchError,
      False, 'runway',
      ['free_node_0', 'boot-nic', 'stock_int_pub']),
-
-    # node_register
-
-    ## Legal cases
-
-    ### Admin tries to register a node:
-    (api.node_register, None,
-     True, None,
-     ['newnode', '', '', '']),
-
-    ## Illegal cases
-
-    ### Non-admin tries to register a node:
-    (api.node_register, AuthorizationError,
-     False, 'runway',
-     ['newnode', '', '', '']),
-
-    # node_delete
-
-    ## Legal cases
-
-    ### Admin tries to delete a node:
-    (api.node_delete, None,
-     True, None,
-     ['no_nic_node']),
-
-    ## Illegal cases
-
-    ### Non-admin tries to delete a node:
-    (api.node_delete, AuthorizationError,
-     False, 'runway',
-     ['no_nic_node']),
-
 ])
 def test_auth_call(fn, error, admin, project, args):
     """Test the authorization properties of an api call.
@@ -372,6 +339,34 @@ def test_auth_call(fn, error, admin, project, args):
     else:
         with pytest.raises(error):
             fn(*args)
+
+
+# There are a whole bunch of api calls that just unconditionally require admin
+# access. This is  a list of (function, args) pairs, each of which should
+# succed as admin and fail as a regular project. The actual test functions for
+# these are below.
+admin_calls = [
+    (api.node_register, ['new_node', '', '', '']),
+    (api.node_delete, ['no_nic_node']),
+]
+
+
+@pytest.mark.parametrize('fn,args', admin_calls)
+def test_admin_succeed(fn, args):
+    auth_backend = get_auth_backend()
+    auth_backend.set_admin(True)
+    auth_backend.set_project(None)
+    fn(*args)
+
+
+@pytest.mark.parametrize('fn,args', admin_calls)
+def test_admin_fail(fn, args):
+    auth_backend = get_auth_backend()
+    auth_backend.set_admin(False)
+    runway = local.db.query(model.Project).filter_by(label='runway').one()
+    auth_backend.set_project(runway)
+    with pytest.raises(AuthorizationError):
+        fn(*args)
 
 
 class Test_node_detach_network(unittest.TestCase):
