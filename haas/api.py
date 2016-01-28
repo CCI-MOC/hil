@@ -98,6 +98,7 @@ def project_connect_node(project, node):
     If node is already owned by a project, a BlockedError will be raised.
     """
     project = _must_find(model.Project, project)
+    get_auth_backend().require_project_access(project)
     node = _must_find(model.Node, node)
     if node.project is not None:
         raise BlockedError("Node is already owned by a project.")

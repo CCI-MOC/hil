@@ -15,7 +15,7 @@ from haas.network_allocator import get_network_allocator
 from haas.rest import RequestContext, local
 from haas.auth import get_auth_backend
 from haas.errors import AuthorizationError, BadArgumentError, \
-    ProjectMismatchError
+    ProjectMismatchError, BlockedError
 from haas.test_common import config_testsuite, config_merge, fresh_database
 
 
@@ -370,6 +370,27 @@ pytestmark = pytest.mark.usefixtures('configure',
     (api.show_node, AuthorizationError,
      False, 'runway',
      ['manhattan_node_0']),
+
+    # project_connect_node
+
+    ## Legal cases:
+
+    ### Project connects a free node to itself:
+    (api.project_connect_node, None,
+     False, 'runway',
+     ['runway', 'free_node_0']),
+
+    ## Illegal cases:
+
+    ### Project tries to connect a free node to someone else:
+    (api.project_connect_node, AuthorizationError,
+     False, 'runway',
+     ['manhattan', 'free_node_0']),
+
+    ### Project tries to connect someone else's node to itself:
+    (api.project_connect_node, BlockedError,
+     False, 'runway',
+     ['runway', 'manhattan_node_0']),
 ])
 def test_auth_call(fn, error, admin, project, args):
     """Test the authorization properties of an api call.
