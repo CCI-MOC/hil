@@ -314,6 +314,19 @@ pytestmark = pytest.mark.usefixtures('configure',
     (api.node_connect_network, ProjectMismatchError,
      False, 'runway',
      ['free_node_0', 'boot-nic', 'stock_int_pub']),
+
+    # node_power_cycle. The case of power_cycling a free node is handled in
+    # admin_calls, below. Here we just deal with nodes assigned to a project.
+
+    ## Legal: project power cycles its own node:
+    (api.node_power_cycle, None,
+     False, 'runway',
+     ['runway_node_0']),
+
+    ## Illegal: project tries to power cycle another project's node:
+    (api.node_power_cycle, AuthorizationError,
+     False, 'runway',
+     ['manhattan_node_0']),
 ])
 def test_auth_call(fn, error, admin, project, args):
     """Test the authorization properties of an api call.
@@ -352,6 +365,10 @@ admin_calls = [
     (api.node_delete_nic, ['free_node_0', 'boot-nic']),
     (api.project_create, ['anvil-nextgen']),
     (api.list_projects, []),
+
+    # node_power_cycle, on free nodes only. Nodes assigned to a project are
+    # tested elsewhere.
+    (api.node_power_cycle, ['free_node_0']),
 ]
 
 

@@ -308,7 +308,8 @@ PXE.
 
 Authorization requirements:
 
-* Access to the project to which `<node>` is assigned.
+* Access to the project to which `<node>` is assigned (if any).
+* If the node is free, administrative access.
 
 ### list_free_nodes
 
