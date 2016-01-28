@@ -19,6 +19,32 @@ from haas.errors import AuthorizationError, BadArgumentError, \
 from haas.test_common import config_testsuite, config_merge, fresh_database
 
 
+def auth_call_test(fn, error, admin, project, args):
+    """Test the authorization properties of an api call.
+
+    Parmeters:
+
+        * `fn` - the api function to call
+        * `error` - The error that should be raised. None if no error should
+                    be raised.
+        * `admin` - Whether the request should have admin access.
+        * `project` - The name of the project the request should be
+                      authenticated as. Can be None if `admin` is True.
+        * `args` - the arguments (as a list) to `fn`.
+    """
+    auth_backend = get_auth_backend()
+    auth_backend.set_admin(admin)
+    if not admin:
+        project = local.db.query(model.Project).filter_by(label=project).one()
+        auth_backend.set_project(project)
+
+    if error is None:
+        fn(*args)
+    else:
+        with pytest.raises(error):
+            fn(*args)
+
+
 @pytest.fixture
 def configure():
     config_testsuite()
@@ -405,29 +431,7 @@ pytestmark = pytest.mark.usefixtures('configure',
      ['manhattan', 'manhattan_node_0']),
 ])
 def test_auth_call(fn, error, admin, project, args):
-    """Test the authorization properties of an api call.
-
-    Parmeters:
-
-        * `fn` - the api function to call
-        * `error` - The error that should be raised. None if no error should
-                    be raised.
-        * `admin` - Whether the request should have admin access.
-        * `project` - The name of the project the request should be
-                      authenticated as. Can be None if `admin` is True.
-        * `args` - the arguments (as a list) to `fn`.
-    """
-    auth_backend = get_auth_backend()
-    auth_backend.set_admin(admin)
-    if not admin:
-        project = local.db.query(model.Project).filter_by(label=project).one()
-        auth_backend.set_project(project)
-
-    if error is None:
-        fn(*args)
-    else:
-        with pytest.raises(error):
-            fn(*args)
+    return auth_call_test(fn, error, admin, project, args)
 
 
 # There are a whole bunch of api calls that just unconditionally require admin
@@ -452,20 +456,16 @@ admin_calls = [
 
 @pytest.mark.parametrize('fn,args', admin_calls)
 def test_admin_succeed(fn, args):
-    auth_backend = get_auth_backend()
-    auth_backend.set_admin(True)
-    auth_backend.set_project(None)
-    fn(*args)
+    auth_call_test(fn, None,
+                   True, None,
+                   args)
 
 
 @pytest.mark.parametrize('fn,args', admin_calls)
 def test_admin_fail(fn, args):
-    auth_backend = get_auth_backend()
-    auth_backend.set_admin(False)
-    runway = local.db.query(model.Project).filter_by(label='runway').one()
-    auth_backend.set_project(runway)
-    with pytest.raises(AuthorizationError):
-        fn(*args)
+    auth_call_test(fn, AuthorizationError,
+                   False, 'runway',
+                   args)
 
 
 class Test_node_detach_network(unittest.TestCase):
