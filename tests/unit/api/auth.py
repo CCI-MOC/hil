@@ -1,3 +1,12 @@
+"""Tests related to the authorization of api calls.
+
+NOTE: while all of these are conceptually authorization related, some illegal
+operations will raise exceptions other than AuthorizationError. This usually
+happens when the operation is illegal *in principle*, and would not be fixed by
+authenticating as someone else. We were already raising exceptions in
+these cases before actually adding authentication and authorization to
+the mix. They are still tested here, since they are important for security.
+"""
 
 import pytest
 import unittest
@@ -133,6 +142,7 @@ pytestmark = pytest.mark.usefixtures('configure',
     # (fn, error,
     #  admin, project,
     #  args),
+    #
 
     # network_create
 
@@ -171,9 +181,7 @@ pytestmark = pytest.mark.usefixtures('configure',
      False, 'runway',
      ['pxe', 'manhattan', 'manhattan', '']),
 
-    ### Project tries to specify a net_id. This raises a different exception
-    ### than the rest for historical reasons, which is fine, but we should
-    ### still make sure it raises *something*.
+    ### Project tries to specify a net_id.
     (api.network_create, BadArgumentError,
      False, 'runway',
      ['pxe', 'runway', 'runway', 'some-id']),
@@ -296,9 +304,7 @@ pytestmark = pytest.mark.usefixtures('configure',
      ## Illegal cases
 
      ### Projects should not be able to connect their nodes to each other's
-     ### networks. Note that this raises a different exception than the other
-     ### auth related failures. The reasons are historical, but the main thing
-     ### is that it should raise *something*.
+     ### networks.
      [(api.node_connect_network, ProjectMismatchError,
        False, 'runway',
        [node, 'boot-nic', net]) for (node, net) in [
