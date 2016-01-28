@@ -425,6 +425,8 @@ project_calls = [
 
     (api.project_connect_node, ['runway', 'free_node_0']),
     (api.project_detach_node, ['runway', 'runway_node_0']),
+
+    (api.headnode_create, ['new-headnode', 'runway', 'base-headnode']),
 ]
 
 

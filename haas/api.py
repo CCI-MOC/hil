@@ -334,6 +334,7 @@ def headnode_create(headnode, project, base_img):
 
     _assert_absent(model.Headnode, headnode)
     project = _must_find(model.Project, project)
+    get_auth_backend().require_project_access(project)
 
     headnode = model.Headnode(project, headnode, base_img)
 
