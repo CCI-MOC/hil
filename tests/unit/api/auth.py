@@ -192,7 +192,7 @@ pytestmark = pytest.mark.usefixtures('configure',
     ## Illegal cases:
 
 ] +
-    # Project should not be able to delete admin-created networks.
+    ### Project should not be able to delete admin-created networks.
     [(api.network_delete, AuthorizationError,
       False, 'runway',
       [net]) for net in [
@@ -201,7 +201,7 @@ pytestmark = pytest.mark.usefixtures('configure',
           'runway_provider',  # ... including networks created for said project.
           ]
     ] +
-    # Project should not be able to delete networks created by other projects.
+    ### Project should not be able to delete networks created by other projects.
     [(api.network_delete, AuthorizationError,
       False, 'runway',
       [net]) for net in [
