@@ -139,6 +139,7 @@ def node_register(node, ipmi_host, ipmi_user, ipmi_pass):
 
     If the node already exists, a DuplicateError will be raised.
     """
+    get_auth_backend().require_admin()
     _assert_absent(model.Node, node)
     node = model.Node(node, ipmi_host, ipmi_user, ipmi_pass)
     local.db.add(node)

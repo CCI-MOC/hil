@@ -311,6 +311,22 @@ pytestmark = pytest.mark.usefixtures('configure',
     (api.node_connect_network, ProjectMismatchError,
      False, 'runway',
      ['free_node_0', 'boot-nic', 'stock_int_pub']),
+
+    # node_register
+
+    ## Legal cases
+
+    ### Admin tries to register a node:
+    (api.node_register, None,
+     True, None,
+     ['newnode', '', '', '']),
+
+    ## Illegal cases
+
+    ### Non-admin tries to register a node:
+    (api.node_register, AuthorizationError,
+     False, 'runway',
+     ['newnode', '', '', '']),
 ])
 def test_auth_call(fn, error, admin, project, args):
     """Test the authorization properties of an api call.
