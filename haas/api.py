@@ -528,7 +528,14 @@ def network_delete(network):
     network actions involving it, a BlockedError will be raised.
     """
     db = local.db
+    auth_backend = get_auth_backend()
+
     network = _must_find(model.Network, network)
+
+    if network.creator is None:
+        auth_backend.require_admin()
+    else:
+        auth_backend.require_project_access(network.creator)
 
     if len(network.attachments) != 0:
         raise BlockedError("Network still connected to nodes")

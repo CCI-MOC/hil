@@ -1,6 +1,7 @@
 
 import pytest
 from haas import api, config, model, server
+from haas.network_allocator import get_network_allocator
 from haas.rest import RequestContext, local
 from haas.auth import get_auth_backend
 from haas.errors import AuthorizationError, BadArgumentError
@@ -25,8 +26,61 @@ def configure():
 @pytest.fixture
 def db(request):
     session = fresh_database(request)
-    session.add(model.Project("runway"))
-    session.add(model.Project("manhattan"))
+    # Create a couple projects:
+    runway = model.Project("runway")
+    manhattan = model.Project("manhattan")
+    for proj in [runway, manhattan]:
+        session.add(proj)
+
+    # ...A variety of networks:
+
+    networks = [
+        {
+            'creator': None,
+            'access': None,
+            'allocated': True,
+            'label': 'stock_int_pub',
+        },
+        {
+            'creator': None,
+            'access': None,
+            'allocated': False,
+            'network_id': 'ext_pub_chan',
+            'label': 'stock_ext_pub',
+        },
+        {
+            'creator': runway,
+            'access': runway,
+            'allocated': True,
+            'label': 'runway_pxe'
+        },
+        {
+            'creator': None,
+            'access': runway,
+            'allocated': False,
+            'network_id': 'runway_provider_chan',
+            'label': 'runway_provider',
+        },
+        {
+            'creator': manhattan,
+            'access': manhattan,
+            'allocated': True,
+            'label': 'manhattan_pxe'
+        },
+        {
+            'creator': None,
+            'access': manhattan,
+            'allocated': False,
+            'network_id': 'manhattan_provider_chan',
+            'label': 'manhattan_provider',
+        },
+    ]
+
+    for net in networks:
+        if net['allocated']:
+            net['network_id'] = \
+                get_network_allocator().get_new_network_id(session)
+        session.add(model.Network(**net))
     session.commit()
     return session
 
@@ -111,6 +165,50 @@ pytestmark = pytest.mark.usefixtures('configure',
     (api.network_create, AuthorizationError,
      False, 'runway',
      ['pxe', 'admin', 'runway', '']),
+
+    # network_delete
+
+    ## Legal cases
+
+    ### admin should be able to delete any network:
+] +
+    [
+        (api.network_delete, None,
+         True, None,
+         [net]) for net in [
+            'stock_int_pub',
+            'stock_ext_pub',
+            'runway_pxe',
+            'runway_provider',
+            'manhattan_pxe',
+            'manhattan_provider',
+            ]
+    ] + [
+    ### project should be able to delete it's own (created) network:
+    (api.network_delete, None,
+     False, 'runway',
+     ['runway_pxe']),
+
+    ## Illegal cases:
+
+] +
+    # Project should not be able to delete admin-created networks.
+    [(api.network_delete, AuthorizationError,
+      False, 'runway',
+      [net]) for net in [
+          'stock_int_pub',
+          'stock_ext_pub',
+          'runway_provider',  # ... including networks created for said project.
+          ]
+    ] +
+    # Project should not be able to delete networks created by other projects.
+    [(api.network_delete, AuthorizationError,
+      False, 'runway',
+      [net]) for net in [
+          'manhattan_pxe',
+          'manhattan_provider',
+          ]
+    ] + [
 ])
 def test_auth_call(fn, error, admin, project, args):
     """Test the authorization properties of an api call.
