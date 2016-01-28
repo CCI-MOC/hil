@@ -475,6 +475,7 @@ def headnode_detach_network(headnode, hnic):
     Raises IllegalStateError if the headnode has already been started.
     """
     headnode = _must_find(model.Headnode, headnode)
+    get_auth_backend().require_project_access(headnode.project)
     hnic = _must_find_n(headnode, model.Hnic, hnic)
 
     if not headnode.dirty:

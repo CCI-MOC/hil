@@ -89,6 +89,15 @@ def db(request):
             'label': 'stock_ext_pub',
         },
         {
+            # For some tests, we want things to initial be attached to a
+            # network. This one serves that purpose; using the others would
+            # interfere with some of the network_delete tests.
+            'creator': None,
+            'access': None,
+            'allocated': True,
+            'label': 'pub_default',
+        },
+        {
             'creator': runway,
             'access': runway,
             'allocated': True,
@@ -150,6 +159,11 @@ def db(request):
         headnode.dirty = not hn_dict['on']
         hnic = model.Hnic(headnode, 'pxe')
         session.add(hnic)
+
+        # Connect them to a network, so we can test detaching.
+        hnic = model.Hnic(headnode, 'public')
+        hnic.network = session.query(model.Network)\
+            .filter_by(label='pub_default').one()
 
     # ... and at least one node with no nics (useful for testing delete):
     session.add(model.Node('no_nic_node', '', '', ''))
@@ -451,6 +465,7 @@ project_calls = [
 
     (api.headnode_connect_network, ['runway_headnode_off', 'pxe', 'stock_int_pub']),
     (api.headnode_connect_network, ['runway_headnode_off', 'pxe', 'runway_pxe']),
+    (api.headnode_detach_network, ['runway_headnode_off', 'public']),
 ]
 
 
