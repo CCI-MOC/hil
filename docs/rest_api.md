@@ -28,9 +28,6 @@ return:
   request.
 * 404 if the api call references an object that does not exist
   (obviously, this is acceptable for calls that create the resource).
-  This may also be returned in cases where a user does not have
-  permission to access a resource, in order to avoid leaking the fact
-  that the resource does in fact exist.
 
 Below is an example.
 
