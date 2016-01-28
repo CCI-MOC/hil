@@ -222,6 +222,7 @@ def node_connect_network(node, nic, network, channel=None):
         ).count() != 0
 
     db = local.db
+    auth_backend = get_auth_backend()
 
     node = _must_find(model.Node, node)
     nic = _must_find_n(node, model.Nic, nic)
@@ -229,6 +230,7 @@ def node_connect_network(node, nic, network, channel=None):
 
     if not node.project:
         raise ProjectMismatchError("Node not in project")
+    auth_backend.require_project_access(node.project)
 
     project = node.project
 

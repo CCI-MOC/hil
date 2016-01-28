@@ -4,7 +4,8 @@ from haas import api, config, model, server
 from haas.network_allocator import get_network_allocator
 from haas.rest import RequestContext, local
 from haas.auth import get_auth_backend
-from haas.errors import AuthorizationError, BadArgumentError
+from haas.errors import AuthorizationError, BadArgumentError, \
+    ProjectMismatchError
 from haas.test_common import config_testsuite, config_merge, fresh_database
 
 
@@ -81,6 +82,20 @@ def db(request):
             net['network_id'] = \
                 get_network_allocator().get_new_network_id(session)
         session.add(model.Network(**net))
+
+    # ... Some nodes (with projets):
+    nodes = [
+        {'label': 'runway_node_0', 'project': runway},
+        {'label': 'runway_node_1', 'project': runway},
+        {'label': 'manhattan_node_0', 'project': manhattan},
+        {'label': 'manhattan_node_1', 'project': manhattan},
+        {'label': 'free_node_0', 'project': None},
+        {'label': 'free_node_1', 'project': None},
+    ]
+    for node_dict in nodes:
+        node = model.Node(node_dict['label'], '', '', '')
+        node.project = node_dict['project']
+        session.add(model.Nic(node, label='boot-nic', mac_addr='Unknown'))
     session.commit()
     return session
 
@@ -245,7 +260,56 @@ pytestmark = pytest.mark.usefixtures('configure',
           ('runway', 'manhattan_provider'),
           ('manhattan', 'runway_pxe'),
           ('manhattan', 'runway_provider'),
-      ]] + [
+      ]] +
+
+    # node_connect_network
+
+    ## Legal cases
+
+    ### Projects should be able to connect their own nodes to their own networks.
+    [(api.node_connect_network, None,
+      False, project,
+      [node, 'boot-nic', net]) for (project, node, net) in [
+          ('runway', 'runway_node_0', 'runway_pxe'),
+          ('runway', 'runway_node_1', 'runway_provider'),
+          ('manhattan', 'manhattan_node_0', 'manhattan_pxe'),
+          ('manhattan', 'manhattan_node_1', 'manhattan_provider'),
+      ]] +
+
+    ### Projects should be able to connect their nodes to public networks.
+    [(api.node_connect_network, None,
+      False, project,
+      [node, 'boot-nic', net]) for (project, node) in [
+          ('runway', 'runway_node_0'),
+          ('runway', 'runway_node_1'),
+          ('manhattan', 'manhattan_node_0'),
+          ('manhattan', 'manhattan_node_1'),
+      ] for net in ('stock_int_pub', 'stock_ext_pub')] +
+
+     ## Illegal cases
+
+     ### Projects should not be able to connect their nodes to each other's
+     ### networks. Note that this raises a different exception than the other
+     ### auth related failures. The reasons are historical, but the main thing
+     ### is that it should raise *something*.
+     [(api.node_connect_network, ProjectMismatchError,
+       False, 'runway',
+       [node, 'boot-nic', net]) for (node, net) in [
+           ('runway_node_0', 'manhattan_pxe'),
+           ('runway_node_1', 'manhattan_provider'),
+       ]] +
+
+[
+    ### Projects should not be able to attach each other's nodes to public networks.
+    (api.node_connect_network, AuthorizationError,
+       False, 'runway',
+       ['manhattan_node_0', 'boot-nic', 'stock_int_pub']),
+
+    ### Projects should not be able to attach free nodes to networks.
+    ### The same node about the exception as above applies.
+    (api.node_connect_network, ProjectMismatchError,
+     False, 'runway',
+     ['free_node_0', 'boot-nic', 'stock_int_pub']),
 ])
 def test_auth_call(fn, error, admin, project, args):
     """Test the authorization properties of an api call.
