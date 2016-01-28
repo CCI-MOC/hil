@@ -25,10 +25,7 @@ class MockAuthBackend(auth.AuthBackend):
         return rest.local.auth['admin']
 
     def have_project_access(self, project):
-        # TODO: I suspect this won't work, and we'll have to compare labels
-        # after checking that rest.local.auth['project'] is not None, but I
-        # want to try it first.
-        return project == rest.local.auth['project']
+        return self.have_admin() or project == rest.local.auth['project']
 
     def set_project(self, project):
         """Change the project that the request is acting on behalf of."""

@@ -87,3 +87,12 @@ def test_set_project_access(auth_backend):
     auth_backend.require_project_access(manhattan)
     with pytest.raises(AuthorizationError):
         auth_backend.require_project_access(runway)
+
+
+def test_admin_implies_project_access(auth_backend):
+    """Admin access implies access to any project."""
+    runway = local.db.query(Project).filter_by(label="runway").one()
+    manhattan = local.db.query(Project).filter_by(label="manhattan").one()
+    auth_backend.set_admin(True)
+    auth_backend.require_project_access(runway)
+    auth_backend.require_project_access(manhattan)
