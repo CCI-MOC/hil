@@ -34,6 +34,9 @@ def db(request):
     for proj in [runway, manhattan]:
         session.add(proj)
 
+    # ...including at least one with nothing in it:
+    session.add(model.Project('empty-project'))
+
     # ...A variety of networks:
 
     networks = [
@@ -403,6 +406,8 @@ admin_calls = [
     # node_power_cycle, on free nodes only. Nodes assigned to a project are
     # tested elsewhere.
     (api.node_power_cycle, ['free_node_0']),
+
+    (api.project_delete, ['empty-project']),
 ]
 
 

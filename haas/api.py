@@ -66,6 +66,7 @@ def project_delete(project):
 
     If the project does not exist, a NotFoundError will be raised.
     """
+    get_auth_backend().require_admin()
     project = _must_find(model.Project, project)
     if project.nodes:
         raise BlockedError("Project has nodes still")
