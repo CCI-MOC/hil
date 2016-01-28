@@ -612,6 +612,7 @@ def show_network(network):
     Optional(object): object,
 }))
 def switch_register(switch, type, **kwargs):
+    get_auth_backend().require_admin()
     _assert_absent(model.Switch, switch)
 
     cls = concrete_class_for(model.Switch, type)
@@ -628,6 +629,7 @@ def switch_register(switch, type, **kwargs):
 
 @rest_call('DELETE', '/switch/<switch>')
 def switch_delete(switch):
+    get_auth_backend().require_admin()
     switch = _must_find(model.Switch, switch)
 
     if switch.ports != []:

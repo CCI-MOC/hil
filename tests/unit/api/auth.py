@@ -18,6 +18,8 @@ from haas.errors import AuthorizationError, BadArgumentError, \
     ProjectMismatchError, BlockedError
 from haas.test_common import config_testsuite, config_merge, fresh_database
 
+from haas.ext.switches.mock import MockSwitch
+
 
 def auth_call_test(fn, error, admin, project, args):
     """Test the authorization properties of an api call.
@@ -55,6 +57,8 @@ def configure():
             # This extension is enabled by default in the tests, so we need to
             # disable it explicitly:
             'haas.ext.auth.null': None,
+
+            'haas.ext.switches.mock': '',
         },
     })
     config.load_extensions()
@@ -164,6 +168,10 @@ def db(request):
         hnic = model.Hnic(headnode, 'public')
         hnic.network = session.query(model.Network)\
             .filter_by(label='pub_default').one()
+
+    # ... a switch:
+    session.add(MockSwitch(label="stock_switch_0",
+                           type=MockSwitch.api_name))
 
     # ... and at least one node with no nics (useful for testing delete):
     session.add(model.Node('no_nic_node', '', '', ''))
@@ -442,6 +450,9 @@ admin_calls = [
     (api.node_power_cycle, ['free_node_0']),
 
     (api.project_delete, ['empty-project']),
+
+    (api.switch_register, ['new-switch', MockSwitch.api_name]),
+    (api.switch_delete, ['stock_switch_0']),
 ]
 
 
