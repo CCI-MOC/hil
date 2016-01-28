@@ -13,6 +13,9 @@ def configure():
     config_merge({
         'extensions': {
             'haas.ext.auth.mock': '',
+
+            # This extension is enabled by default in the tests, so we need to
+            # disable it explicitly:
             'haas.ext.auth.null': None,
         },
     })
@@ -92,7 +95,9 @@ pytestmark = pytest.mark.usefixtures('configure',
      False, 'runway',
      ['pxe', 'manhattan', 'manhattan', '']),
 
-    ### Project tries to specify a net_id:
+    ### Project tries to specify a net_id. This raises a different exception
+    ### than the rest for historical reasons, which is fine, but we should
+    ### still make sure it raises *something*.
     (api.network_create, BadArgumentError,
      False, 'runway',
      ['pxe', 'runway', 'runway', 'some-id']),
