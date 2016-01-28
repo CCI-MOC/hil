@@ -466,6 +466,9 @@ project_calls = [
     (api.headnode_connect_network, ['runway_headnode_off', 'pxe', 'stock_int_pub']),
     (api.headnode_connect_network, ['runway_headnode_off', 'pxe', 'runway_pxe']),
     (api.headnode_detach_network, ['runway_headnode_off', 'public']),
+
+    (api.list_project_headnodes, ['runway']),
+    (api.show_headnode, ['runway_headnode_on']),
 ]
 
 

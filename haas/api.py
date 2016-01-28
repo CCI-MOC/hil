@@ -800,6 +800,7 @@ def list_project_headnodes(project):
     Example:  '["headnode1", "headnode2", "headnode3"]'
     """
     project = _must_find(model.Project, project)
+    get_auth_backend().require_project_access(project)
     headnodes = project.headnodes
     headnodes = [hn.label for hn in headnodes]
     return json.dumps(headnodes)
@@ -826,6 +827,7 @@ def show_headnode(nodename):
                }'
     """
     headnode = _must_find(model.Headnode, nodename)
+    get_auth_backend().require_project_access(headnode.project)
     return json.dumps({
         'name': headnode.label,
         'project': headnode.project.label,
