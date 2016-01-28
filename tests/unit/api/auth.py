@@ -350,19 +350,6 @@ pytestmark = pytest.mark.usefixtures('configure',
      False, 'runway',
      ['free_node_0', 'boot-nic', 'stock_int_pub']),
 
-    # node_power_cycle. The case of power_cycling a free node is handled in
-    # admin_calls, below. Here we just deal with nodes assigned to a project.
-
-    ## Legal: project power cycles its own node:
-    (api.node_power_cycle, None,
-     False, 'runway',
-     ['runway_node_0']),
-
-    ## Illegal: project tries to power cycle another project's node:
-    (api.node_power_cycle, AuthorizationError,
-     False, 'runway',
-     ['manhattan_node_0']),
-
     # list_project_nodes
 
     ## Legal: admin lists a project's nodes.
@@ -397,38 +384,12 @@ pytestmark = pytest.mark.usefixtures('configure',
      False, 'runway',
      ['manhattan_node_0']),
 
-    # project_connect_node
-
-    ## Legal cases:
-
-    ### Project connects a free node to itself:
-    (api.project_connect_node, None,
-     False, 'runway',
-     ['runway', 'free_node_0']),
-
-    ## Illegal cases:
-
-    ### Project tries to connect a free node to someone else:
-    (api.project_connect_node, AuthorizationError,
-     False, 'runway',
-     ['manhattan', 'free_node_0']),
-
-    ### Project tries to connect someone else's node to itself:
+    # project_connect_node: Project tries to connect someone else's node
+    # to itself. The basic cases of connecting a free node are covered by
+    # project_calls, below.
     (api.project_connect_node, BlockedError,
      False, 'runway',
      ['runway', 'manhattan_node_0']),
-
-    # project_detach_node
-
-    ## Legal: project detaches a node from itself:
-    (api.project_detach_node, None,
-     False, 'runway',
-     ['runway', 'runway_node_0']),
-
-    ## Illegal: project detaches a node from someone else:
-    (api.project_detach_node, AuthorizationError,
-     False, 'runway',
-     ['manhattan', 'manhattan_node_0']),
 ])
 def test_auth_call(fn, error, admin, project, args):
     return auth_call_test(fn, error, admin, project, args)
@@ -447,10 +408,23 @@ admin_calls = [
     (api.list_projects, []),
 
     # node_power_cycle, on free nodes only. Nodes assigned to a project are
-    # tested elsewhere.
+    # tested in project_calls, below.
     (api.node_power_cycle, ['free_node_0']),
 
     (api.project_delete, ['empty-project']),
+]
+
+
+# Similarly, there are a large number of calls that require access to a
+# particular project. This is a list of (function, args) pairs that should
+# succeed as project 'runway', and fail as project 'manhattan'.
+project_calls = [
+    # node_power_cycle, on allocated nodes only. Free nodes are testsed in
+    # admin_calls, above.
+    (api.node_power_cycle, ['runway_node_0']),
+
+    (api.project_connect_node, ['runway', 'free_node_0']),
+    (api.project_detach_node, ['runway', 'runway_node_0']),
 ]
 
 
@@ -466,6 +440,21 @@ def test_admin_fail(fn, args):
     auth_call_test(fn, AuthorizationError,
                    False, 'runway',
                    args)
+
+
+@pytest.mark.parametrize('fn,args', project_calls)
+def test_runway_succeed(fn, args):
+    auth_call_test(fn, None,
+                   False, 'runway',
+                   args)
+
+
+@pytest.mark.parametrize('fn,args', project_calls)
+def test_manhattan_fail(fn, args):
+    auth_call_test(fn, AuthorizationError,
+                   False, 'manhattan',
+                   args)
+
 
 
 class Test_node_detach_network(unittest.TestCase):
