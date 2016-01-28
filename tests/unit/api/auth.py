@@ -1,6 +1,7 @@
 
 import pytest
-from haas import api, config, model, server
+import unittest
+from haas import api, config, model, server, deferred
 from haas.network_allocator import get_network_allocator
 from haas.rest import RequestContext, local
 from haas.auth import get_auth_backend
@@ -335,3 +336,23 @@ def test_auth_call(fn, error, admin, project, args):
     else:
         with pytest.raises(error):
             fn(*args)
+
+
+class Test_node_detach_network(unittest.TestCase):
+
+    def setUp(self):
+        self.auth_backend = get_auth_backend()
+        self.runway = local.db.query(model.Project).filter_by(label='runway').one()
+        self.manhattan = local.db.query(model.Project).filter_by(label='manhattan').one()
+        self.auth_backend.set_project(self.manhattan)
+        api.node_connect_network('manhattan_node_0', 'boot-nic', 'stock_int_pub')
+        deferred.apply_networking()
+
+    def test_success(self):
+        self.auth_backend.set_project(self.manhattan)
+        api.node_detach_network('manhattan_node_0', 'boot-nic', 'stock_int_pub')
+
+    def test_wrong_project(self):
+        self.auth_backend.set_project(self.runway)
+        with pytest.raises(AuthorizationError):
+            api.node_detach_network('manhattan_node_0', 'boot-nic', 'stock_int_pub')

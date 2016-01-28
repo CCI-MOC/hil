@@ -272,12 +272,15 @@ def node_detach_network(node, nic, network):
     Raises BadArgumentError if the network is not attached to the nic.
     """
     db = local.db
+    auth_backend = get_auth_backend()
+
     node = _must_find(model.Node, node)
     network = _must_find(model.Network, network)
     nic = _must_find_n(node, model.Nic, nic)
 
     if not node.project:
         raise ProjectMismatchError("Node not in project")
+    auth_backend.require_project_access(node.project)
 
     if nic.current_action:
         raise BlockedError("A networking operation is already active on the nic.")
