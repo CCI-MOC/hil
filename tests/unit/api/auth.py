@@ -344,6 +344,23 @@ pytestmark = pytest.mark.usefixtures('configure',
     (api.list_project_nodes, AuthorizationError,
      False, 'runway',
      ['manhattan']),
+
+    # show_node
+
+    ## Legal: project shows a free node
+    (api.show_node, None,
+     False, 'runway',
+     ['free_node_0']),
+
+    ## Legal: project shows its own node.
+    (api.show_node, None,
+     False, 'runway',
+     ['runway_node_0']),
+
+    ## Illegal: project tries to show another project's node.
+    (api.show_node, AuthorizationError,
+     False, 'runway',
+     ['manhattan_node_0']),
 ])
 def test_auth_call(fn, error, admin, project, args):
     """Test the authorization properties of an api call.

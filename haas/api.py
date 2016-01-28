@@ -769,6 +769,8 @@ def show_node(nodename):
                }'
     """
     node = _must_find(model.Node, nodename)
+    if node.project is not None:
+        get_auth_backend().require_project_access(node.project)
     return json.dumps({
         'name': node.label,
         'free': node.project_id is None,
