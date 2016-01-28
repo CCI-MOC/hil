@@ -728,6 +728,7 @@ def list_project_nodes(project):
     Example:  '["node1", "node2", "node3"]'
     """
     project = _must_find(model.Project, project)
+    get_auth_backend().require_project_access(project)
     nodes = project.nodes
     nodes = [n.label for n in nodes]
     return json.dumps(nodes)
