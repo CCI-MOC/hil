@@ -116,6 +116,7 @@ def project_detach_node(project, node):
     BlockedError will be raised.
     """
     project = _must_find(model.Project, project)
+    get_auth_backend().require_project_access(project)
     node = _must_find(model.Node, node)
     if node not in project.nodes:
         raise NotFoundError("Node not in project")

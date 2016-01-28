@@ -391,6 +391,18 @@ pytestmark = pytest.mark.usefixtures('configure',
     (api.project_connect_node, BlockedError,
      False, 'runway',
      ['runway', 'manhattan_node_0']),
+
+    # project_detach_node
+
+    ## Legal: project detaches a node from itself:
+    (api.project_detach_node, None,
+     False, 'runway',
+     ['runway', 'runway_node_0']),
+
+    ## Illegal: project detaches a node from someone else:
+    (api.project_detach_node, AuthorizationError,
+     False, 'runway',
+     ['manhattan', 'manhattan_node_0']),
 ])
 def test_auth_call(fn, error, admin, project, args):
     """Test the authorization properties of an api call.
