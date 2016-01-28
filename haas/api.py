@@ -646,6 +646,7 @@ def switch_register_port(switch, port):
 
     If the port already exists, a DuplicateError will be raised.
     """
+    get_auth_backend().require_admin()
     switch = _must_find(model.Switch, switch)
     _assert_absent_n(switch, model.Port, port)
     port = model.Port(port, switch)
@@ -660,6 +661,7 @@ def switch_delete_port(switch, port):
 
     If the port does not exist, a NotFoundError will be raised.
     """
+    get_auth_backend().require_admin()
     switch = _must_find(model.Switch, switch)
     port = _must_find_n(switch, model.Port, port)
     if port.nic is not None:
@@ -680,6 +682,7 @@ def port_connect_nic(switch, port, node, nic):
     If the port or the nic is already connected to something, a DuplicateError will be
     raised.
     """
+    get_auth_backend().require_admin()
     switch = _must_find(model.Switch, switch)
     port = _must_find_n(switch, model.Port, port)
 
@@ -707,6 +710,7 @@ def port_detach_nic(switch, port):
     If the port is attached to a node which is not free, a BlockedError
     will be raised.
     """
+    get_auth_backend().require_admin()
     switch = _must_find(model.Switch, switch)
     port = _must_find_n(switch, model.Port, port)
 

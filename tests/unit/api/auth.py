@@ -135,6 +135,18 @@ def db(request):
                 get_network_allocator().get_new_network_id(session)
         session.add(model.Network(**net))
 
+    # ... Two switches. One of these is just empty, for testing deletion:
+    session.add(MockSwitch(label='empty-switch',
+                           type=MockSwitch.api_name))
+
+    # ... The other we'll actually attach stuff to for other tests:
+    switch = MockSwitch(label="stock_switch_0",
+                        type=MockSwitch.api_name)
+
+    # ... Some free ports:
+    session.add(model.Port('free_port_0', switch))
+    session.add(model.Port('free_port_1', switch))
+
     # ... Some nodes (with projets):
     nodes = [
         {'label': 'runway_node_0', 'project': runway},
@@ -148,6 +160,11 @@ def db(request):
         node = model.Node(node_dict['label'], '', '', '')
         node.project = node_dict['project']
         session.add(model.Nic(node, label='boot-nic', mac_addr='Unknown'))
+
+        # give it a nic that's attached to a port:
+        port_nic = model.Nic(node, label='nic-with-port', mac_addr='Unknown')
+        port = model.Port(node_dict['label'] + '_port', switch)
+        port.nic = port_nic
 
     # ... Some headnodes:
     headnodes = [
@@ -169,9 +186,6 @@ def db(request):
         hnic.network = session.query(model.Network)\
             .filter_by(label='pub_default').one()
 
-    # ... a switch:
-    session.add(MockSwitch(label="stock_switch_0",
-                           type=MockSwitch.api_name))
 
     # ... and at least one node with no nics (useful for testing delete):
     session.add(model.Node('no_nic_node', '', '', ''))
@@ -452,7 +466,12 @@ admin_calls = [
     (api.project_delete, ['empty-project']),
 
     (api.switch_register, ['new-switch', MockSwitch.api_name]),
-    (api.switch_delete, ['stock_switch_0']),
+    (api.switch_delete, ['empty-switch']),
+    (api.switch_register_port, ['stock_switch_0', 'new_port']),
+    (api.switch_delete_port, ['stock_switch_0', 'free_port_0']),
+    (api.port_connect_nic, ['stock_switch_0', 'free_port_0',
+                            'free_node_0', 'boot-nic']),
+    (api.port_detach_nic, ['stock_switch_0', 'free_node_0_port']),
 ]
 
 
