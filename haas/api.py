@@ -42,6 +42,7 @@ def list_projects():
 
     Example:  '["project1", "project2", "project3"]'
     """
+    get_auth_backend().require_admin()
     projects = local.db.query(model.Project).all()
     projects = [p.label for p in projects]
     return json.dumps(projects)
@@ -52,6 +53,7 @@ def project_create(project):
 
     If the project already exists, a DuplicateError will be raised.
     """
+    get_auth_backend().require_admin()
     _assert_absent(model.Project, project)
     project = model.Project(project)
     local.db.add(project)
@@ -177,6 +179,7 @@ def node_register_nic(node, nic, macaddr):
 
     If there is already an nic with that name, a DuplicateError will be raised.
     """
+    get_auth_backend().require_admin()
     node = _must_find(model.Node, node)
     _assert_absent_n(node, model.Nic, nic)
     nic = model.Nic(node, nic, macaddr)
@@ -190,6 +193,7 @@ def node_delete_nic(node, nic):
 
     If the node or nic does not exist, a NotFoundError will be raised.
     """
+    get_auth_backend().require_admin()
     nic = _must_find_n(_must_find(model.Node, node), model.Nic, nic)
     local.db.delete(nic)
     local.db.commit()

@@ -348,6 +348,10 @@ def test_auth_call(fn, error, admin, project, args):
 admin_calls = [
     (api.node_register, ['new_node', '', '', '']),
     (api.node_delete, ['no_nic_node']),
+    (api.node_register_nic, ['free_node_0', 'extra-nic', 'de:ad:be:ef:20:16']),
+    (api.node_delete_nic, ['free_node_0', 'boot-nic']),
+    (api.project_create, ['anvil-nextgen']),
+    (api.list_projects, []),
 ]
 
 
