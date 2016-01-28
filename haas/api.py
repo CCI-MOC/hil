@@ -158,6 +158,7 @@ def node_delete(node):
 
     If the node does not exist, a NotFoundError will be raised.
     """
+    get_auth_backend().require_admin()
     node = _must_find(model.Node, node)
     if node.nics != []:
         raise BlockedError("Node %r has nics; remove them before deleting %r.",

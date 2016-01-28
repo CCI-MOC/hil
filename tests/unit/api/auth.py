@@ -97,6 +97,9 @@ def db(request):
         node = model.Node(node_dict['label'], '', '', '')
         node.project = node_dict['project']
         session.add(model.Nic(node, label='boot-nic', mac_addr='Unknown'))
+
+    # at least one node with no nics (useful for testing delete):
+    session.add(model.Node('no_nic_node', '', '', ''))
     session.commit()
     return session
 
@@ -327,6 +330,23 @@ pytestmark = pytest.mark.usefixtures('configure',
     (api.node_register, AuthorizationError,
      False, 'runway',
      ['newnode', '', '', '']),
+
+    # node_delete
+
+    ## Legal cases
+
+    ### Admin tries to delete a node:
+    (api.node_delete, None,
+     True, None,
+     ['no_nic_node']),
+
+    ## Illegal cases
+
+    ### Non-admin tries to delete a node:
+    (api.node_delete, AuthorizationError,
+     False, 'runway',
+     ['no_nic_node']),
+
 ])
 def test_auth_call(fn, error, admin, project, args):
     """Test the authorization properties of an api call.
