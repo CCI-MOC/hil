@@ -49,6 +49,9 @@ class AuthBackend(object):
 
         ``project`` will be a ``Project`` object, *not* the name of the
         project.
+
+        Note that in general, have_admin should imply have_project_acccess,
+        but the backend must specifically implement this logic.
         """
 
     def require_admin(self):
