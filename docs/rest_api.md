@@ -813,3 +813,35 @@ Authorization requirements:
 
 * Administrative access.
 
+### project_add_user
+
+`POST /project/<project>/add_user`
+
+Request Body:
+
+{
+    "user": <username>
+}
+
+Add a user to a project.
+
+Authorization requirements:
+
+* Administrative access.
+
+### project_remove_user
+
+`POST /project/<project>/remove_user`
+
+Request Body:
+
+{
+    "user": <username>
+}
+
+Remove a user from a project.
+
+Authorization requirements:
+
+* Administrative access.
+
