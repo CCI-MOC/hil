@@ -208,7 +208,44 @@ pytestmark = pytest.mark.usefixtures('configure',
           'manhattan_pxe',
           'manhattan_provider',
           ]
-    ] + [
+    ] +
+
+    # show_network
+
+    ## Legal cases
+
+    ### Public networks should be accessible by anyone:
+    [(api.show_network, None,
+      admin, project,
+      [net]) for net in [
+          'stock_int_pub',
+          'stock_ext_pub',
+      ] for project in [
+          'runway',
+          'manhattan',
+      ] for admin in (True, False)] +
+
+    ### Projects should be able to view networks they have access to:
+    [(api.show_network, None,
+      False, project,
+      [net]) for (project, net) in [
+          ('runway', 'runway_pxe'),
+          ('runway', 'runway_provider'),
+          ('manhattan', 'manhattan_pxe'),
+          ('manhattan', 'manhattan_provider'),
+      ]] +
+
+    ## Illegal cases
+
+    ### Projects should not be able to access each other's networks:
+    [(api.show_network, AuthorizationError,
+      False, project,
+      [net]) for (project, net) in [
+          ('runway', 'manhattan_pxe'),
+          ('runway', 'manhattan_provider'),
+          ('manhattan', 'runway_pxe'),
+          ('manhattan', 'runway_provider'),
+      ]] + [
 ])
 def test_auth_call(fn, error, admin, project, args):
     """Test the authorization properties of an api call.

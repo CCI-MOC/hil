@@ -558,8 +558,13 @@ def show_network(network):
     for a full description of the output.
     """
     allocator = get_network_allocator()
+    auth_backend = get_auth_backend()
 
     network = _must_find(model.Network, network)
+
+    if network.access is not None:
+        auth_backend.require_project_access(network.access)
+
     result = {
         'name': network.label,
         'channels': allocator.legal_channels_for(local.db, network.network_id),
