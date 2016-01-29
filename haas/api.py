@@ -452,8 +452,6 @@ def headnode_delete_hnic(headnode, hnic):
 
     if not headnode.dirty:
         raise IllegalStateError
-    if not hnic:
-        raise NotFoundError("Hnic: " + hnic.label)
 
     local.db.delete(hnic)
     local.db.commit()
