@@ -256,6 +256,12 @@ def node_power_cycle(node):
     do_post(url)
 
 @cmd
+def node_power_off(node):
+    """Power off <node>"""
+    url = object_url('node', node, 'power_off')
+    do_post(url)
+
+@cmd
 def node_register_nic(node, nic, macaddr):
     """Register existence of a <nic> with the given <macaddr> on the given <node>"""
     url = object_url('node', node, 'nic', nic)

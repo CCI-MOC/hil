@@ -304,7 +304,14 @@ Authorization requirements:
 `POST /node/<node>/power_cycle`
 
 Power cycle the node named `<node>`, and set it's next boot device to
-PXE.
+PXE. If the node is powered off, this turns it on.
+
+### node_power_off
+
+`POST /node/<node>/power_off`
+
+Power off the node named `<node>`. If the node is already powered off,
+this will have no effect.
 
 Authorization requirements:
 
