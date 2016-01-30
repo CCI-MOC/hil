@@ -3,11 +3,13 @@
 Includes API calls for managing users.
 """
 from haas import api, model, auth
+from haas.auth import get_auth_backend
 from haas.rest import rest_call, local
 from haas.errors import *
-from sqlalchemy import Column, ForeignKey, String, Table
+from sqlalchemy import Column, ForeignKey, String, Boolean, Table
 from sqlalchemy.orm import relationship
 from passlib.hash import sha512_crypt
+from schema import Schema, Optional
 
 
 class User(model.Model):
@@ -17,6 +19,7 @@ class User(model.Model):
     to that process's resources. A user may also be flagged as an administrator.
     """
 
+    is_admin = Column(Boolean, nullable=False)
     # The user's salted & hashed password. We currently use sha512 as the
     # hashing algorithm:
     hashed_password = Column(String)
@@ -24,9 +27,10 @@ class User(model.Model):
     # The projects of which the user is a member.
     projects = relationship('Project', secondary='user_projects', backref='users')
 
-    def __init__(self, label, password):
+    def __init__(self, label, password, is_admin=False):
         """Create a user `label` with the specified (plaintext) password."""
         self.label = label
+        self.is_admin = is_admin
         self.set_password(password)
 
     def verify_password(self, password):
@@ -44,12 +48,16 @@ user_projects = Table('user_projects', model.Base.metadata,
                       Column('project_id', ForeignKey('project.id')))
 
 
-@rest_call('PUT', '/user/<user>')
-def user_create(user, password):
+@rest_call('PUT', '/user/<user>', schema=Schema({
+    'password': basestring,
+    Optional('is_admin'): bool,
+}))
+def user_create(user, password, is_admin=False):
     """Create user with given password.
 
     If the user already exists, a DuplicateError will be raised.
     """
+    get_auth_backend().require_admin()
 
     # XXX: We need to do a bit of refactoring, so this is available outside of
     # haas.api:
@@ -66,6 +74,7 @@ def user_delete(user):
 
     If the user does not exist, a NotFoundError will be raised.
     """
+    get_auth_backend().require_admin()
 
     # XXX: We need to do a bit of refactoring, so this is available outside of
     # haas.api:
@@ -81,6 +90,7 @@ def project_add_user(project, user):
 
     If the project or user does not exist, a NotFoundError will be raised.
     """
+    get_auth_backend().require_admin()
     user = api._must_find(User, user)
     project = api._must_find(model.Project, project)
     if project in user.projects:
@@ -96,6 +106,7 @@ def project_remove_user(project, user):
 
     If the project or user does not exist, a NotFoundError will be raised.
     """
+    get_auth_backend().require_admin()
     user = api._must_find(User, user)
     project = api._must_find(model.Project, project)
     if project not in user.projects:
@@ -108,24 +119,28 @@ def project_remove_user(project, user):
 class DatabaseAuthBackend(auth.AuthBackend):
 
     def authenticate(self):
-        authorization = rest.local.request.authorization()
+        authorization = local.request.authorization()
         if authorization.password is None:
-            rest.local.auth = None
+            local.auth = None
             return
 
         user = api._must_find(User, authorization.username)
         if user.verify_password(authorization.password):
-            rest.local.auth = user
+            local.auth = user
         else:
             # XXX: this is a bit gross; we really ought to just report an
             # authentication failure *now*. instead, this will cause
             # authorization queries to fail later:
-            rest.local.auth = None
+            local.auth = None
 
     def have_admin(self):
-        user = rest.local.auth
+        user = local.auth
         return user is not None and user.is_admin
 
     def have_project_access(self, project):
-        user = rest.local.auth
+        user = local.auth
         return user is not None and (user.is_admin or project in user.projects)
+
+
+def setup(*args, **kwargs):
+    auth.set_auth_backend(DatabaseAuthBackend())
