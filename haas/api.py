@@ -164,8 +164,12 @@ def node_power_cycle(node):
 
 @rest_call('POST', '/node/<node>/power_off')
 def node_power_off(node):
-    db = model.Session()
-    node = _must_find(db, model.Node, node)
+    auth_backend = get_auth_backend()
+    node = _must_find(model.Node, node)
+    if node.project is None:
+        auth_backend.require_admin()
+    else:
+        auth_backend.require_project_access(node.project)
     node.power_off()
 
 

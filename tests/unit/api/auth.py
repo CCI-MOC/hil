@@ -459,9 +459,10 @@ admin_calls = [
     (api.project_create, ['anvil-nextgen']),
     (api.list_projects, []),
 
-    # node_power_cycle, on free nodes only. Nodes assigned to a project are
+    # node_power_*, on free nodes only. Nodes assigned to a project are
     # tested in project_calls, below.
     (api.node_power_cycle, ['free_node_0']),
+    (api.node_power_off, ['free_node_0']),
 
     (api.project_delete, ['empty-project']),
 
@@ -479,9 +480,10 @@ admin_calls = [
 # particular project. This is a list of (function, args) pairs that should
 # succeed as project 'runway', and fail as project 'manhattan'.
 project_calls = [
-    # node_power_cycle, on allocated nodes only. Free nodes are testsed in
+    # node_power_*, on allocated nodes only. Free nodes are testsed in
     # admin_calls, above.
     (api.node_power_cycle, ['runway_node_0']),
+    (api.node_power_off, ['runway_node_0']),
 
     (api.project_connect_node, ['runway', 'free_node_0']),
     (api.project_detach_node, ['runway', 'runway_node_0']),
