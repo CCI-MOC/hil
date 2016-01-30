@@ -201,6 +201,13 @@ def node_power_cycle(node):
     node.power_cycle()
 
 
+@rest_call('POST', '/node/<node>/power_off')
+def node_power_off(node):
+    db = model.Session()
+    node = _must_find(db, model.Node, node)
+    node.power_off()
+
+
 @rest_call('DELETE', '/node/<node>')
 def node_delete(node):
     """Delete node.
