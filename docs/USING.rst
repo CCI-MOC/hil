@@ -23,6 +23,9 @@ which HaaS instance to use, be sure to do one of:
 * If both configuration methods are present, the ``HAAS_ENDPOINT`` environmental variable will take precedence over whatever is contained within ``haas.cfg``.
 * Though insignificant in some circumstances, the presence or absence of trailing slashes within the endpoint URL can cause issues in communicating with the HaaS server, such as "404" errors. For example, using ``http://127.0.0.1:5000`` vs ``http://127.0.0.1:5000/``.
 
+If using the basic auth/database auth backend, you must set the environment
+variables ``HAAS_USERNAME`` and ``HAAS_PASSWORD`` to the correct credentials.
+
 Deploying Machines
 ------------------
 

@@ -65,8 +65,18 @@ class FakeAuthRequest(object):
         self.username = username
         self.password = password
 
+    @property
     def authorization(self):
         return self
+
+
+class FakeNoAuthRequest(object):
+    """Fake (unauthenticated) request object.
+
+    Like `FakeAuthRequest`, except that the spoofed request is
+    unauthenticated.
+    """
+    authorization = None
 
 
 @pytest.fixture
@@ -81,6 +91,11 @@ def runway_auth():
     local.request = FakeAuthRequest('bob', 'password')
 
 
+@pytest.fixture
+def no_auth():
+    """Spoof an unauthenticated request."""
+    local.request = FakeNoAuthRequest()
+
 
 def use_fixtures(auth_fixture):
     return pytest.mark.usefixtures('configure',
@@ -91,8 +106,8 @@ def use_fixtures(auth_fixture):
 
 
 @use_fixtures('admin_auth')
-class TestUser(unittest.TestCase):
-    """Tests for the haas.api.user_* functions."""
+class TestUserCreateDelete(unittest.TestCase):
+    """Tests for user_create and user_delete."""
 
     def test_new_user(self):
         api._assert_absent(User, 'charlie')
@@ -117,10 +132,38 @@ class TestUser(unittest.TestCase):
         with pytest.raises(api.NotFoundError):
             user_delete('charlie')
 
+    def _new_user(self, is_admin):
+        """Helper method for creating/switching to a new user.
+
+        A new admin user will be created with the credentials:
+
+        username: 'charlie'
+        password: 'foo'
+
+        The argument is_admin determines whether the user has admin rights.
+
+        Once the user has been created, the authentication info will be
+        changed to that user.
+        """
+        user_create('charlie', 'foo', is_admin=is_admin)
+        local.request = FakeAuthRequest('charlie', 'foo')
+        local.auth = local.db.query(User).filter_by(label='charlie').one()
+
+    def test_new_admin_can_admin(self):
+        """Verify that a newly created admin can actually do admin stuff."""
+        self._new_user(is_admin=True)
+        user_delete('charlie')
+
+    def test_new_non_admin_cannot_admin(self):
+        """Verify that a newly created regular user can't do admin stuff."""
+        self._new_user(is_admin=False)
+        with pytest.raises(AuthorizationError):
+            user_delete('charlie')
+
 
 @use_fixtures('admin_auth')
-class TestProjectAddDeleteUser(unittest.TestCase):
-    """Tests for adding and deleting a user from a project"""
+class TestProjectAddRemoveUser(unittest.TestCase):
+    """Tests for project_add_user/project_remove_user."""
 
     def test_project_add_user(self):
         user_create('charlie', 'secret')
@@ -157,8 +200,12 @@ class TestProjectAddDeleteUser(unittest.TestCase):
 
 
 @pytest.mark.usefixtures('configure', 'db')
-class TestUsers(ModelTest):
-    """Test user-related functionality"""
+class TestUserModel(ModelTest):
+    """Basic sanity check for the User model.
+
+    Similar to the tests in /tests/unit/model.py, which cover the models
+    defined in HaaS core.
+    """
 
     def sample_obj(self):
         return User('charlie', 'secret')
@@ -177,11 +224,21 @@ admin_calls = [
 @pytest.mark.parametrize('fn,args', admin_calls)
 @use_fixtures('admin_auth')
 def test_admin_succeed(fn, args):
+    """Verify that an admin-only call succeds when invoked by an admin."""
     fn(*args)
 
 
 @pytest.mark.parametrize('fn,args', admin_calls)
 @use_fixtures('runway_auth')
-def test_admin_fail(fn, args):
+def test_admin_runway_fail(fn, args):
+    """Verify that an admin-only call fails when invoked by a non-admin user."""
+    with pytest.raises(AuthorizationError):
+        fn(*args)
+
+
+@pytest.mark.parametrize('fn,args', admin_calls)
+@use_fixtures('no_auth')
+def test_admin_noauth_fail(fn, args):
+    """Verify that an admin-only call fails when invoked without authentication."""
     with pytest.raises(AuthorizationError):
         fn(*args)

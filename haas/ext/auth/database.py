@@ -63,7 +63,7 @@ def user_create(user, password, is_admin=False):
     # haas.api:
     api._assert_absent(User, user)
 
-    user = User(user, password)
+    user = User(user, password, is_admin=is_admin)
     local.db.add(user)
     local.db.commit()
 
@@ -119,7 +119,10 @@ def project_remove_user(project, user):
 class DatabaseAuthBackend(auth.AuthBackend):
 
     def authenticate(self):
-        authorization = local.request.authorization()
+        if local.request.authorization is None:
+            local.auth = None
+            return
+        authorization = local.request.authorization
         if authorization.password is None:
             local.auth = None
             return
