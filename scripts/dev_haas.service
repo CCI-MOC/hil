@@ -1,0 +1,30 @@
+[Unit]
+# Change the port and the username to match your enviorment
+Description=HaaS Dev Server listening on port 5000, for user sahil
+After=network.target
+Wants=
+
+[Service]
+#Change the username your username. same for group
+User=sahil 
+Group=sahil
+
+#Provide absolute path to where Haas is installed.
+WorkingDirectory=/home/sahil/git/haas/
+
+#Provide path to your virtual env
+Environment=VIRTUAL_ENV="/home/sahil/git/haas/.venv"
+Environment=PATH="$VIRTUAL_ENV/bin:$PATH"
+
+#Provide exact path of the excutable, change port if you so desire.
+#If you change the port remember to change it in haas.cfg also.
+ExecStart=/home/sahil/git/haas/.venv/bin/haas serve 5000
+Type=simple
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+

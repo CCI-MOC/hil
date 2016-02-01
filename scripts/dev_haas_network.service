@@ -1,0 +1,33 @@
+[Unit]
+#Provide your username
+Description=HaaS Dev Network server for user Sahil
+
+After=network.target
+Requires=dev_haas.service
+Wants=
+
+[Service]
+#Change to your username and group
+User=sahil
+Group=sahil
+
+#Change to the directory where haas development enviornment
+#is installed on your system.
+WorkingDirectory=/home/sahil/git/haas/
+
+#Provide absolute path to .venv for haas
+Environment=VIRTUAL_ENV="/home/sahil/git/haas/.venv"
+Environment=PATH="$VIRTUAL_ENV/bin:$PATH"
+
+#Provide absolute path for the executable
+ExecStart=/home/sahil/git/haas/.venv/bin/haas serve_networks
+
+Type=simple
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+

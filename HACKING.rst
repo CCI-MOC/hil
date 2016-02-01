@@ -54,8 +54,41 @@ operations, set ``dry_run = True`` in the ``[devel]`` section. For supressing
 actual network switch operations, use the ``mock`` switch driver.
 
 Next initialize the database with the required tables, with ``haas init_db``.
-Run the server with ``haas serve`` and ``haas serve_networks`` in separate
-terminals.  Finally, ``haas help`` lists the various API commands one can use.
+
+Running HaaS using systemd
+==========================
+
+For a short testing simply running the server with ``haas serve`` and ``haas serve_networks`` in separate
+terminals should suffice. 
+
+For extensive testing, it is recomended to let systemd manage the processes. 
+On Centos systemd is the default way of managing processes.
+On Ubuntu you will have to install systemd. 
+
+Sample scripts for managing haas server and its network server is provided under 'scripts' folder.
+dev_haas.service manages the haas_server for your development enviornment
+dev_haas_network.service manages the network_server for haas for your development enviornment
+
+Instructions on how to modify the file to suit your enviornment are included in the file.
+After adjusting the parameters place both the file in
+/usr/lib/systemd/system (using sudo)
+
+Following commands will initialize and enable the services.
+
+systemctl daemon-reload
+systemctl start dev_haas
+systemctl start dev_haas_network
+
+To start the service on boot do the following:
+
+systemctl enable dev_haas  
+systemctl enable dev_haas_network
+
+
+Almost done:
+============
+
+Finally, ``haas help`` lists the various API commands one can use.
 Here is an example session, testing ``headnode_delete_hnic``::
 
   haas project_create proj
