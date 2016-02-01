@@ -1,0 +1,19 @@
+[Unit]
+Description=HaaS Network Server 
+After=network.target
+Requires=httpd.service
+
+[Service]
+User=haas_user
+Group=haas_user
+WorkingDirectory=/var/lib/haas/
+ExecStart=/usr/bin/haas serve_networks
+Type=simple
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+
