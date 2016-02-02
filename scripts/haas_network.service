@@ -1,7 +1,6 @@
 [Unit]
 Description=HaaS Network Server 
 After=network.target
-Requires=httpd.service
 
 [Service]
 User=haas_user

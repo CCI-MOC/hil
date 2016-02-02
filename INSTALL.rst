@@ -311,22 +311,43 @@ Running the network server:
 A systemd script for running the network server is available in the 'scripts' directory.
 Name of the script is: haas_network.service
 
-Centos uses systemd to controll all its processes. 
-Ubuntu does not use systemd by default. To use the following script
-on ubuntu server, you will have to install systemd.
+Centos:
+------
 
-Place the file haas_network.service under
-/usr/lib/systemd/system/
+Centos uses systemd to controll all its processes. 
+
+Place the file haas_network.service under:
+``/usr/lib/systemd/system/``
+
+Ubuntu:
+-------
+LTS version of Ubuntu, Ubuntu 14.04 does not come with systemd pre-installed.
+It uses "Upstart" an equivalent of systemd to manage its daemons/processes.
+
+Systemd is available from Ubuntu 15.04 onwards and LTS version 16.04 will ship with systemd by default.
+
+If you are using Ubuntu with any version prior to 15.04, you will have to install systemd before your can use the scripts provided here.
+
+WARNING: Since systemd is not optimized the way Upstart has been for Ubuntu, you may experience some delay in booting up and shutting down your server after switching to systemd.
+
+
+Place the file haas_network.service under:
+``/lib/systemd/system/``
+
+
+
+Starting the service:
+---------------------
 
 Following commands will start the daemon:
-systemctl daemon-reload
-systemctl start haas_network
+``systemctl daemon-reload``
+``systemctl start haas_network``
 
 You can check the status using:
-systemctl status haas_network
+``systemctl status haas_network``
 
 To auto-start the service on boot:
-systemctl enable haas_network
+``systemctl enable haas_network``
 
 
 
