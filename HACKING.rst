@@ -62,15 +62,46 @@ For a short testing simply running the server with ``haas serve`` and ``haas ser
 terminals should suffice. 
 
 For extensive testing, it is recomended to let systemd manage the processes. 
-On Centos systemd is the default way of managing processes.
-On Ubuntu you will have to install systemd. 
-
 Sample scripts for managing haas server and its network server is provided under 'scripts' folder.
 dev_haas.service manages the haas_server for your development enviornment
 dev_haas_network.service manages the network_server for haas for your development enviornment
 
+Ubuntu:
+-------
+
+LTS version of Ubuntu, Ubuntu 14.04 does not come with systemd pre-installed.
+It uses "Upstart" an equivalent of systemd to manage its daemons/processes.
+
+Systemd is available from Ubuntu 15.04 onwards and LTS version 16.04 will ship with systemd by default.
+
+If you are using Ubuntu with any version prior to 15.04, you will have to install systemd before your can use the scripts provided here.
+
 Instructions on how to modify the file to suit your enviornment are included in the file.
-After adjusting the parameters place both the file in
+After adjusting the parameters place both the files in
+/lib/systemd/system (using sudo)
+
+WARNING: Since systemd is not optimized the way Upstart has been for Ubuntu, you may experience some delay in booting up and shutting down your server after switching to systemd.
+
+Following commands will initialize and enable the services.
+
+systemctl daemon-reload
+systemctl start dev_haas
+systemctl start dev_haas_network
+
+To start the service on boot do the following:
+
+systemctl enable dev_haas  
+systemctl enable dev_haas_network
+
+
+Centos:
+-------
+ 
+On Centos systemd is the default way of managing processes.
+
+
+Instructions on how to modify the file to suit your enviornment are included in the file.
+After adjusting the parameters place both the files in
 /usr/lib/systemd/system (using sudo)
 
 Following commands will initialize and enable the services.

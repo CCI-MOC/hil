@@ -6,19 +6,19 @@ Wants=
 
 [Service]
 #Change the username your username. same for group
-User=sahil 
-Group=sahil
+User=user 
+Group=user
 
 #Provide absolute path to where Haas is installed.
-WorkingDirectory=/home/sahil/git/haas/
+WorkingDirectory=/home/user/git/haas/
 
 #Provide path to your virtual env
-Environment=VIRTUAL_ENV="/home/sahil/git/haas/.venv"
+Environment=VIRTUAL_ENV="/home/user/git/haas/.venv"
 Environment=PATH="$VIRTUAL_ENV/bin:$PATH"
 
 #Provide exact path of the excutable, change port if you so desire.
 #If you change the port remember to change it in haas.cfg also.
-ExecStart=/home/sahil/git/haas/.venv/bin/haas serve 5000
+ExecStart=/home/user/git/haas/.venv/bin/haas serve 5000
 Type=simple
 ExecReload=/bin/kill -HUP $MAINPID
 KillMode=process
