@@ -236,12 +236,31 @@ def headnode_stop(headnode):
     do_post(url)
 
 @cmd
-def node_register(node, ipmi_host, ipmi_user, ipmi_pass):
-    """Register a node named <node>, with the given ipmi host/user/password"""
+def node_register(node, subtype, *args):
+    """Register a node named <node>, with the given type
+	if obm is of type: ipmi then provide arguments
+	"ipmi", <hostname>, <ipmi-username>, <ipmi-password> 
+    """
+    obm_api = "http://schema.massopencloud.org/haas/v0/obm/"
+
+    if subtype=="ipmi":
+	if len(args) == 3:
+	    obminfo = {"type": obm_api+subtype, "host": args[0],
+	    		"user": args[1], "password": args[2]
+	    	      }
+	else:
+	    print "Error: subtype <ipmi> requires exactly 3 arguments"
+	    print "<hostname> <ipmi-username> <ipmi-password>"
+	    return
+    else: 
+	print "Wrong OBM subtype supplied"
+	print "Supported OBM sub-types: ipmi"
+	return
+
     url = object_url('node', node)
-    do_put(url, data={'ipmi_host': ipmi_host,
-                      'ipmi_user': ipmi_user,
-                      'ipmi_pass': ipmi_pass})
+    do_put(url, data={"obm": obminfo})
+
+
 
 @cmd
 def node_delete(node):

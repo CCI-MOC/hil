@@ -122,45 +122,53 @@ class Node(Model):
     project_id    = Column(ForeignKey('project.id'))
     project       = relationship("Project",backref=backref('nodes'))
 
+    # The Obm info is fetched from the obm class and its respective subclass
+    # pertaining to the node 
+    obm_id = Column(Integer, ForeignKey('obm.id'))
+    obm = relationship("Obm", uselist=False, backref="node")
+
+    # The node is initially registered with no nics; see the Nic class.
+
+
     # ipmi connection information:
-    ipmi_host = Column(String, nullable=False)
-    ipmi_user = Column(String, nullable=False)
-    ipmi_pass = Column(String, nullable=False)
+#    ipmi_host = Column(String, nullable=False)
+#    ipmi_user = Column(String, nullable=False)
+#    ipmi_pass = Column(String, nullable=False)
 
-    def __init__(self, label, ipmi_host, ipmi_user, ipmi_pass):
-        """Register the given node.
-
-        ipmi_* must be supplied to allow the HaaS to do things like reboot
-        the node.
-
-        The node is initially registered with no nics; see the Nic class.
-        """
-        self.label = label
-        self.ipmi_host = ipmi_host
-        self.ipmi_user = ipmi_user
-        self.ipmi_pass = ipmi_pass
-
-    def _ipmitool(self, args):
-        """Invoke ipmitool with the right host/pass etc. for this node.
-
-        `args` - A list of any additional arguments to pass to ipmitool.
-
-        Returns the exit status of ipmitool.
-
-        NOTE: Includes the ``-I lanplus`` flag, available only in IPMI v2+.
-        This is needed for machines which don't accept the older
-        ``lan`` wire protocol.
-        """
-
-        status = call(['ipmitool',
-            '-I', 'lanplus', # See docstring above
-            '-U', self.ipmi_user,
-            '-P', self.ipmi_pass,
-            '-H', self.ipmi_host] + args)
-        if status != 0:
-            logger = logging.getLogger(__name__)
-            logger.info('Nonzero exit status from ipmitool, args = %r', args)
-        return status
+#    def __init__(self, label, ipmi_host, ipmi_user, ipmi_pass):
+#        """Register the given node.
+#
+#        ipmi_* must be supplied to allow the HaaS to do things like reboot
+#        the node.
+#
+#        The node is initially registered with no nics; see the Nic class.
+#        """
+#        self.label = label
+#        self.ipmi_host = ipmi_host
+#        self.ipmi_user = ipmi_user
+#        self.ipmi_pass = ipmi_pass
+#
+#    def _ipmitool(self, args):
+#        """Invoke ipmitool with the right host/pass etc. for this node.
+#
+#        `args` - A list of any additional arguments to pass to ipmitool.
+#
+#        Returns the exit status of ipmitool.
+#
+#        NOTE: Includes the ``-I lanplus`` flag, available only in IPMI v2+.
+#        This is needed for machines which don't accept the older
+#        ``lan`` wire protocol.
+#        """
+#
+#        status = call(['ipmitool',
+#            '-I', 'lanplus', # See docstring above
+#            '-U', self.ipmi_user,
+#            '-P', self.ipmi_pass,
+#            '-H', self.ipmi_host] + args)
+#        if status != 0:
+#            logger = logging.getLogger(__name__)
+#            logger.info('Nonzero exit status from ipmitool, args = %r', args)
+#        return status
 
     @no_dry_run
     def power_cycle(self):
@@ -370,6 +378,49 @@ class Switch(Model):
         handle this is to define the two methods above on the switch object,
         and have ``session`` just return ``self``.
         """
+
+class Obm(AnonModel):
+    """Obm superclass supporting various drivers 
+
+    related to out of band management of servers.
+    """
+    type = Column(String, nullable=False)
+
+    __mapper_args__ = {
+            'polymorphic_on': type
+            }
+    @staticmethod
+    def validate(kwargs):
+        """Verify that ``kwargs`` is a legal set of keywords args to ``__init__``
+
+        Raise a ``schema.SchemaError`` if the  ``kwargs`` is invalid. 
+        Note well: This is a *static* method; it will be invoked on the class.
+        """     
+        assert False, "Subclasses MUST override the validate method "
+
+    def power_cycle(self):
+        """Power cycles the node.
+
+        Exact implementation to left to the subclasses.
+        """     
+        assert False, "Subclasses MUST override the power_cycle method "
+
+    def start_console(self):
+        """Starts logging to the console. """
+        assert False, "Subclasses MUST override the start_console method" 
+
+    def stop_console(self):
+        """Stops console logging. """
+        assert False, "Subclasses MUST override the stop_console method"
+
+    def delete_console(self):
+        assert False, "Subclasses MUST override the delete_console method"
+
+    def get_console(self):
+        assert False, "Subclasses MUST override the get_console method"
+
+    def get_console_log_filename(self):
+        assert False, "Subclasses MUST override this method"
 
 
 class User(Model):
