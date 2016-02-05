@@ -48,7 +48,7 @@ user_projects = Table('user_projects', model.Base.metadata,
                       Column('project_id', ForeignKey('project.id')))
 
 
-@rest_call('PUT', '/user/<user>', schema=Schema({
+@rest_call('PUT', '/auth/basic/user/<user>', schema=Schema({
     'password': basestring,
     Optional('is_admin'): bool,
 }))
@@ -68,7 +68,7 @@ def user_create(user, password, is_admin=False):
     local.db.commit()
 
 
-@rest_call('DELETE', '/user/<user>')
+@rest_call('DELETE', '/auth/basic/user/<user>')
 def user_delete(user):
     """Delete user.
 
@@ -84,8 +84,8 @@ def user_delete(user):
     local.db.commit()
 
 
-@rest_call('POST', '/project/<project>/add_user')
-def project_add_user(project, user):
+@rest_call('POST', '/auth/basic/user/<user>/add_project')
+def user_add_project(user, project):
     """Add a user to a project.
 
     If the project or user does not exist, a NotFoundError will be raised.
@@ -100,8 +100,8 @@ def project_add_user(project, user):
     local.db.commit()
 
 
-@rest_call('POST', '/project/<project>/remove_user')
-def project_remove_user(project, user):
+@rest_call('POST', '/auth/basic/user/<user>/remove_project')
+def user_remove_project(user, project):
     """Remove a user from a project.
 
     If the project or user does not exist, a NotFoundError will be raised.

@@ -791,7 +791,7 @@ configurations.
 
 ### user_create
 
-`PUT /user/<username>`
+`PUT /auth/basic/user/<username>`
 
 Request body:
 
@@ -812,7 +812,7 @@ Possible errors:
 
 ### user_delete
 
-`DELETE /user/<username>`
+`DELETE /auth/basic/user/<username>`
 
 Delete the user whose username is `<username>`
 
@@ -820,14 +820,14 @@ Authorization requirements:
 
 * Administrative access.
 
-### project_add_user
+### user_add_project
 
-`POST /project/<project>/add_user`
+`POST /auth/basic/user/<user>/add_project`
 
 Request Body:
 
 {
-    "user": <username>
+    "project": <project_name>
 }
 
 Add a user to a project.
@@ -836,14 +836,14 @@ Authorization requirements:
 
 * Administrative access.
 
-### project_remove_user
+### user_remove_project
 
-`POST /project/<project>/remove_user`
+`POST /auth/basic/user/<user>/remove_project`
 
 Request Body:
 
 {
-    "user": <username>
+    "project": <project_name>
 }
 
 Remove a user from a project.

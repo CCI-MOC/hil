@@ -162,7 +162,7 @@ def user_create(username, password, is_admin):
     <is_admin> may be either "admin" or "no-admin", and determines whether
     the user has administrative priveledges.
     """
-    url = object_url('user', username)
+    url = object_url('/auth/basic/user', username)
     if is_admin not in ('admin', 'no-admin'):
         raise TypeError
     do_put(url, data={
@@ -195,7 +195,7 @@ def network_delete(network):
 @cmd
 def user_delete(username):
     """Delete the user <username>"""
-    url = object_url('user', username)
+    url = object_url('/auth/basic/user', username)
     do_delete(url)
 
 @cmd
@@ -205,16 +205,16 @@ def list_projects():
     do_get(url)
 
 @cmd
-def project_add_user(project, user):
+def user_add_project(user, project):
     """Add <user> to <project>"""
-    url = object_url('project', project, 'add_user')
-    do_post(url, data={'user': user})
+    url = object_url('/auth/basic/user', user, 'add_project')
+    do_post(url, data={'project': project})
 
 @cmd
-def project_remove_user(project, user):
+def user_remove_project(user, project):
     """Remove <user> from <project>"""
-    url = object_url('project', project, 'remove_user')
-    do_post(url, data={'user': user})
+    url = object_url('/auth/basic/user', user, 'remove_project')
+    do_post(url, data={'project': project})
 
 @cmd
 def project_create(project):

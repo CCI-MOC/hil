@@ -4,7 +4,7 @@ from haas.test_common import config_testsuite, config_merge, fresh_database, \
 from haas.errors import AuthorizationError
 from haas.rest import RequestContext, local
 from haas.ext.auth.database import User, user_create, user_delete, \
-    project_add_user, project_remove_user
+    user_add_project, user_remove_project
 import pytest
 import unittest
 
@@ -162,41 +162,41 @@ class TestUserCreateDelete(unittest.TestCase):
 
 
 @use_fixtures('admin_auth')
-class TestProjectAddRemoveUser(unittest.TestCase):
-    """Tests for project_add_user/project_remove_user."""
+class TestUserAddRemoveProject(unittest.TestCase):
+    """Tests for user_add_project/user_remove_project."""
 
-    def test_project_add_user(self):
+    def test_user_add_project(self):
         user_create('charlie', 'secret')
         api.project_create('acme-corp')
-        project_add_user('acme-corp', 'charlie')
+        user_add_project('charlie', 'acme-corp')
         user = api._must_find(User, 'charlie')
         project = api._must_find(model.Project, 'acme-corp')
         assert project in user.projects
         assert user in project.users
 
-    def test_project_remove_user(self):
+    def test_user_remove_project(self):
         user_create('charlie', 'secret')
         api.project_create('acme-corp')
-        project_add_user('acme-corp', 'charlie')
-        project_remove_user('acme-corp', 'charlie')
+        user_add_project('charlie', 'acme-corp')
+        user_remove_project('charlie', 'acme-corp')
         user = api._must_find(User, 'charlie')
         project = api._must_find(model.Project, 'acme-corp')
         assert project not in user.projects
         assert user not in project.users
 
-    def test_duplicate_project_add_user(self):
+    def test_duplicate_user_add_project(self):
         user_create('charlie', 'secret')
         api.project_create('acme-corp')
-        project_add_user('acme-corp', 'charlie')
+        user_add_project('charlie', 'acme-corp')
         with pytest.raises(api.DuplicateError):
-            project_add_user('acme-corp', 'charlie')
+            user_add_project('charlie', 'acme-corp')
 
-    def test_bad_project_remove_user(self):
+    def test_bad_user_remove_project(self):
         """Tests that removing a user from a project they're not in fails."""
         user_create('charlie', 'secret')
         api.project_create('acme-corp')
         with pytest.raises(api.NotFoundError):
-            project_remove_user('acme-corp', 'charlie')
+            user_remove_project('charlie', 'acme-corp')
 
 
 @pytest.mark.usefixtures('configure', 'db')
@@ -216,8 +216,8 @@ admin_calls = [
     (user_create, ['charlie', '1337', False]),
     (user_create, ['charlie', '1337', True]),
     (user_delete, ['bob']),
-    (project_add_user, ['runway', 'bob']),
-    (project_remove_user, ['runway', 'alice']),
+    (user_add_project, ['bob', 'runway']),
+    (user_remove_project, ['alice', 'runway']),
 ]
 
 
