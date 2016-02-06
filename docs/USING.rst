@@ -50,3 +50,40 @@ to hard-disk booting the installed system.
 This is, as the filepath states, merely an example of how you might deploy to
 physical nodes.  Existing deployment systems such as Canonical's MAAS have also
 been run succesfully.
+
+Usage examples 
+====================
+
+Included herwith are some examples 
+
+ -- About bypassing cli.py and interacting with HaaS API directly using the curl
+utility.
+ -- Examples on how to use equivalent cli calls are also included. 
+
+Registering a Node which uses IPMI for out of band management
+-------------------------------------------------------------
+
+
+   - **Node name:**  dummyNoderHaaS-02
+   - **Ipmi info:**
+      + **hostname:**           ipmiHost4node-02
+      + **ipmi_username:**      ipmiUser4node-02
+      + **ipmi_password:**      ipmiPass4node-02
+
+For nodes using IPMI use the following api call:
+
+
+::
+
+   curl -X PUT http://127.0.0.1:5001/node/dummyNode01 -d '
+   > {"obm": { "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+   > "host": "ipmiHost4node-01",
+   > "user": "ipmiUser4node-01",
+   > "password": "ipmiPass4node-01"
+   > }}'
+
+Corresponding cli calls will be as follows:
+
+haas node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01
+
+
