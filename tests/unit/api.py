@@ -30,6 +30,7 @@ def configure():
     config_merge({
         'extensions': {
             'haas.ext.switches.mock': '',
+	    'haas.ext.obm.ipmi': '',
         },
     })
     config.load_extensions()
