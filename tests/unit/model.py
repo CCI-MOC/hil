@@ -76,8 +76,7 @@ class TestUsers(ModelTest):
 class TestNic(ModelTest):
 
     def sample_obj(self):
-        return Nic(Node('node-99', 'ipmihost', 'root', 'tapeworm'),
-                   'ipmi', '00:11:22:33:44:55')
+        return Nic(Node('node-99', 'ipmihost', 'root', 'tapeworm'), 'ipmi', '00:11:22:33:44:55')
 
 
 class TestNode(ModelTest):
