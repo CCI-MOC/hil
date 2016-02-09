@@ -55,6 +55,38 @@ actual network switch operations, use the ``mock`` switch driver.
 
 Next initialize the database with the required tables, with ``haas init_db``.
 
+Running HaaS without using systemd:
+===================================
+A script is provided that will run haas server and network server in background and 
+log all debug messages to its corresponding file in the ``../logs/`` directory.
+
+ScriptName: simple_haas.tar
+Location: haas/scripts
+
+Installation:
+copy simple_haas.tar to the main haas folder.
+Make sure haas.cfg and haas.db are in the same folder. 
+
+from the main haas directory. 
+run ``tar -xvf simple_haas.tar``
+This will create a folder ``logs`` and a copy a script ``simple_haas``
+in the current directory. 
+
+Open the script simple_haas and replace the port at line
+``PORT_NO="5000"`` with the port number of your choice. 
+
+Start the haas server and network server
+``./simple_haas start``
+
+All messages will be collected in corresponding files in the ``logs/`` directory. 
+For a given day, every restart will append the messages to the same file. 
+It will create a new file for a new day. 
+
+If a server does not start, related debug info will be collected in the 
+``haas_server_<todays-Date>.log`` or ``haas_networkQ_<todays-Date>.log``
+located under the ``logs/`` directory. 
+
+
 Running HaaS using systemd
 ==========================
 
@@ -92,7 +124,6 @@ To start the service on boot do the following:
 
 systemctl enable dev_haas  
 systemctl enable dev_haas_network
-
 
 Centos:
 -------
