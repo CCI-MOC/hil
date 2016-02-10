@@ -217,69 +217,76 @@ pytestmark = pytest.mark.usefixtures('configure',
 # in-line, we construct it in stages here:
 
 
-auth_call_params = []
-
-auth_call_params += [
-    # TODO: Find out if there's a way to pass these by kwargs; it would be more
-    # readable. For now, we try to make things a little better by formatting
-    # each entry as:
-    #
-    # (fn, error,
-    #  admin, project,
-    #  args),
-    #
-
+auth_call_params = [
     # network_create
 
     ### Legal cases:
 
     ### Admin creates a public network internal to HaaS:
-    (api.network_create, None,
-     True, None,
-     ['pub', 'admin', '', '']),
+    dict(fn=api.network_create,
+         error=None,
+         admin=True,
+         project=None,
+         args=['pub', 'admin', '', '']),
 
     ### Admin creates a public network with an existing net_id:
-    (api.network_create, None,
-     True, None,
-     ['pub', 'admin', '', 'some-id']),
+    dict(fn=api.network_create,
+         error=None,
+         admin=True,
+         project=None,
+         args=['pub', 'admin', '', 'some-id']),
 
     ### Admin creates a provider network for some project:
-    (api.network_create, None,
-     True, None,
-     ['pxe', 'admin', 'runway', 'some-id']),
+    dict(fn=api.network_create,
+         error=None,
+         admin=True,
+         project=None,
+         args=['pxe', 'admin', 'runway', 'some-id']),
 
     ### Admin creates an allocated network on behalf of a project. Silly, but
     ### legal.
-    (api.network_create, None,
-     True, None,
-     ['pxe', 'admin', 'runway', '']),
+    dict(fn=api.network_create,
+         error=None,
+         admin=True,
+         project=None,
+         args=['pxe', 'admin', 'runway', '']),
 
     ### Project creates a private network for themselves:
-    (api.network_create, None,
-     False, 'runway',
-     ['pxe', 'runway', 'runway', '']),
+    dict(fn=api.network_create,
+         error=None,
+         admin=False,
+         project='runway',
+         args=['pxe', 'runway', 'runway', '']),
 
     ## Illegal cases:
 
     ### Project tries to create a private network for another project.
-    (api.network_create, AuthorizationError,
-     False, 'runway',
-     ['pxe', 'manhattan', 'manhattan', '']),
+    dict(fn=api.network_create,
+         error=AuthorizationError,
+         admin=False,
+         project='runway',
+         args=['pxe', 'manhattan', 'manhattan', '']),
 
     ### Project tries to specify a net_id.
-    (api.network_create, BadArgumentError,
-     False, 'runway',
-     ['pxe', 'runway', 'runway', 'some-id']),
+    dict(fn=api.network_create,
+         error=BadArgumentError,
+         admin=False,
+         project='runway',
+         args=['pxe', 'runway', 'runway', 'some-id']),
 
     ### Project tries to create a public network:
-    (api.network_create, AuthorizationError,
-     False, 'runway',
-     ['pub', 'admin', '', '']),
+    dict(fn=api.network_create,
+         error=AuthorizationError,
+         admin=False,
+         project='runway',
+         args=['pub', 'admin', '', '']),
 
     ### Project tries to set creator to 'admin' on its own network:
-    (api.network_create, AuthorizationError,
-     False, 'runway',
-     ['pxe', 'admin', 'runway', '']),
+    dict(fn=api.network_create,
+         error=AuthorizationError,
+         admin=False,
+         project='runway',
+         args=['pxe', 'admin', 'runway', '']),
 ]
 
 # network_delete
@@ -295,14 +302,22 @@ for net in [
     'manhattan_pxe',
     'manhattan_provider',
 ]:
-    auth_call_params.append((api.network_delete, None,
-                             True, None,
-                             [net]))
+    auth_call_params.append(dict(
+        fn=api.network_delete,
+        error=None,
+        admin=True,
+        project=None,
+        args=[net]
+    ))
 
 ### project should be able to delete it's own (created) network:
-auth_call_params.append((api.network_delete, None,
-                         False, 'runway',
-                         ['runway_pxe']))
+auth_call_params.append(dict(
+    fn=api.network_delete,
+    error=None,
+    admin=False,
+    project='runway',
+    args=['runway_pxe']
+))
 
 ## Illegal cases:
 
@@ -312,18 +327,25 @@ for net in [
     'stock_ext_pub',
     'runway_provider',  # ... including networks created for said project.
 ]:
-    auth_call_params.append((api.network_delete, AuthorizationError,
-                             False, 'runway',
-                             [net]))
+    auth_call_params.append(dict(
+        fn=api.network_delete,
+        error=AuthorizationError,
+        admin=False,
+        project='runway',
+        args=[net]
+    ))
 
 ### Project should not be able to delete networks created by other projects.
 for net in [
     'manhattan_pxe',
     'manhattan_provider',
 ]:
-    auth_call_params.append((api.network_delete, AuthorizationError,
-                             False, 'runway',
-                             [net]))
+    auth_call_params.append(dict(
+        fn=api.network_delete,
+        error=AuthorizationError,
+        admin=False,
+        project='runway',
+        args=[net]))
 
 # show_network
 
@@ -333,9 +355,13 @@ for net in [
 for net in ('stock_int_pub', 'stock_ext_pub'):
     for project in ('runway', 'manhattan'):
         for admin in (True, False):
-            auth_call_params.append((api.show_network, None,
-                                     admin, project,
-                                     [net]))
+            auth_call_params.append(dict(
+                fn=api.show_network,
+                error=None,
+                admin=admin,
+                project=project,
+                args=[net]
+            ))
 
 ### Projects should be able to view networks they have access to:
 for (project, net) in [
@@ -344,9 +370,13 @@ for (project, net) in [
     ('manhattan', 'manhattan_pxe'),
     ('manhattan', 'manhattan_provider'),
 ]:
-    auth_call_params.append((api.show_network, None,
-                             False, project,
-                             [net]))
+    auth_call_params.append(dict(
+        fn=api.show_network,
+        error=None,
+        admin=False,
+        project=project,
+        args=[net]
+    ))
 
 ## Illegal cases
 
@@ -357,9 +387,14 @@ for (project, net) in [
     ('manhattan', 'runway_pxe'),
     ('manhattan', 'runway_provider'),
 ]:
-    auth_call_params.append((api.show_network, AuthorizationError,
-                             False, project,
-                             [net]))
+    auth_call_params.append(dict(
+        fn=api.show_network,
+        error=AuthorizationError,
+        admin=False,
+        project=project,
+        args=[net]
+    ))
+
 # node_connect_network
 
 ## Legal cases
@@ -371,9 +406,13 @@ for (project, node, net) in [
     ('manhattan', 'manhattan_node_0', 'manhattan_pxe'),
     ('manhattan', 'manhattan_node_1', 'manhattan_provider'),
 ]:
-    auth_call_params.append((api.node_connect_network, None,
-                             False, project,
-                             [node, 'boot-nic', net]))
+    auth_call_params.append(dict(
+        fn=api.node_connect_network,
+        error=None,
+        admin=False,
+        project=project,
+        args=[node, 'boot-nic', net]
+    ))
 
 
 ### Projects should be able to connect their nodes to public networks.
@@ -384,9 +423,12 @@ for net in ('stock_int_pub', 'stock_ext_pub'):
           ('manhattan', 'manhattan_node_0'),
           ('manhattan', 'manhattan_node_1'),
     ]:
-        auth_call_params.append((api.node_connect_network, None,
-                                 False, project,
-                                 [node, 'boot-nic', net]))
+        auth_call_params.append(dict(
+            fn=api.node_connect_network,
+            error=None,
+            admin=False,
+            project=project,
+            args=[node, 'boot-nic', net]))
 
 ## Illegal cases
 
@@ -396,68 +438,90 @@ for (node, net) in [
     ('runway_node_0', 'manhattan_pxe'),
     ('runway_node_1', 'manhattan_provider'),
 ]:
-     auth_call_params.append((api.node_connect_network, ProjectMismatchError,
-                              False, 'runway',
-                              [node, 'boot-nic', net]))
+     auth_call_params.append(dict(
+         fn=api.node_connect_network,
+         error=ProjectMismatchError,
+         admin=False,
+         project='runway',
+         args=[node, 'boot-nic', net]
+     ))
 
 auth_call_params += [
     ### Projects should not be able to attach each other's nodes to public networks.
-    (api.node_connect_network, AuthorizationError,
-       False, 'runway',
-       ['manhattan_node_0', 'boot-nic', 'stock_int_pub']),
+    dict(fn=api.node_connect_network,
+         error=AuthorizationError,
+         admin=False,
+         project='runway',
+         args=['manhattan_node_0', 'boot-nic', 'stock_int_pub']),
 
     ### Projects should not be able to attach free nodes to networks.
     ### The same node about the exception as above applies.
-    (api.node_connect_network, ProjectMismatchError,
-     False, 'runway',
-     ['free_node_0', 'boot-nic', 'stock_int_pub']),
+    dict(fn=api.node_connect_network,
+         error=ProjectMismatchError,
+         admin=False,
+         project='runway',
+         args=['free_node_0', 'boot-nic', 'stock_int_pub']),
 
     # list_project_nodes
 
     ## Legal: admin lists a project's nodes.
-    (api.list_project_nodes, None,
-     True, None,
-     ['runway']),
+    dict(fn=api.list_project_nodes,
+         error=None,
+         admin=True,
+         project=None,
+         args=['runway']),
 
     ## Legal: project lists its own nodes.
-    (api.list_project_nodes, None,
-     False, 'runway',
-     ['runway']),
+    dict(fn=api.list_project_nodes,
+         error=None,
+         admin=False,
+         project='runway',
+         args=['runway']),
 
     ## Illegal: project lists another project's nodes.
-    (api.list_project_nodes, AuthorizationError,
-     False, 'runway',
-     ['manhattan']),
+    dict(fn=api.list_project_nodes,
+         error=AuthorizationError,
+         admin=False,
+         project='runway',
+         args=['manhattan']),
 
     # show_node
 
     ## Legal: project shows a free node
-    (api.show_node, None,
-     False, 'runway',
-     ['free_node_0']),
+    dict(fn=api.show_node,
+         error=None,
+         admin=False,
+         project='runway',
+         args=['free_node_0']),
 
     ## Legal: project shows its own node.
-    (api.show_node, None,
-     False, 'runway',
-     ['runway_node_0']),
+    dict(fn=api.show_node,
+         error=None,
+         admin=False,
+         project='runway',
+         args=['runway_node_0']),
 
     ## Illegal: project tries to show another project's node.
-    (api.show_node, AuthorizationError,
-     False, 'runway',
-     ['manhattan_node_0']),
+    dict(fn=api.show_node,
+         error=AuthorizationError,
+         admin=False,
+         project='runway',
+         args=['manhattan_node_0']),
 
     # project_connect_node: Project tries to connect someone else's node
     # to itself. The basic cases of connecting a free node are covered by
     # project_calls, below.
-    (api.project_connect_node, BlockedError,
-     False, 'runway',
-     ['runway', 'manhattan_node_0']),
+    dict(fn=api.project_connect_node,
+         error=BlockedError,
+         admin=False,
+         project='runway',
+         args=['runway', 'manhattan_node_0']),
 ]
 
 
-@pytest.mark.parametrize('fn,error,admin,project,args', auth_call_params)
-def test_auth_call(fn, error, admin, project, args):
-    return auth_call_test(fn, error, admin, project, args)
+@pytest.mark.parametrize('kwargs', auth_call_params)
+def test_auth_call(kwargs):
+    return auth_call_test(**kwargs)
 
 
 # There are a whole bunch of api calls that just unconditionally require admin
@@ -519,31 +583,38 @@ project_calls = [
 
 @pytest.mark.parametrize('fn,args', admin_calls)
 def test_admin_succeed(fn, args):
-    auth_call_test(fn, None,
-                   True, None,
-                   args)
+    auth_call_test(fn=fn,
+                   error=None,
+                   admin=True,
+                   project=None,
+                   args=args)
 
 
 @pytest.mark.parametrize('fn,args', admin_calls)
 def test_admin_fail(fn, args):
-    auth_call_test(fn, AuthorizationError,
-                   False, 'runway',
-                   args)
+    auth_call_test(fn=fn,
+                   error=AuthorizationError,
+                   admin=False,
+                   project='runway',
+                   args=args)
 
 
 @pytest.mark.parametrize('fn,args', project_calls)
 def test_runway_succeed(fn, args):
-    auth_call_test(fn, None,
-                   False, 'runway',
-                   args)
+    auth_call_test(fn=fn,
+                   error=None,
+                   admin=False,
+                   project='runway',
+                   args=args)
 
 
 @pytest.mark.parametrize('fn,args', project_calls)
 def test_manhattan_fail(fn, args):
-    auth_call_test(fn, AuthorizationError,
-                   False, 'manhattan',
-                   args)
-
+    auth_call_test(fn=fn,
+                   error=AuthorizationError,
+                   admin=False,
+                   project='manhattan',
+                   args=args)
 
 
 class Test_node_detach_network(unittest.TestCase):
