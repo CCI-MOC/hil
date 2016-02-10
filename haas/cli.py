@@ -45,7 +45,7 @@ def cmd(f):
             f(*args, **kwargs)
         except TypeError:
             # TODO TypeError is probably too broad here.
-            sys.stderr.write('Wrong number of arguements.  Usage:\n')
+            sys.stderr.write('Invalid arguements.  Usage:\n')
             help(f.__name__)
     command_dict[f.__name__] = wrapped
     def get_usage(f):
