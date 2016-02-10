@@ -164,7 +164,7 @@ def user_create(username, password, is_admin):
     """
     url = object_url('/auth/basic/user', username)
     if is_admin not in ('admin', 'no-admin'):
-        raise TypeError
+        raise TypeError("is_admin must be either 'admin' or 'no-admin'")
     do_put(url, data={
         'password': password,
         'is_admin': is_admin == 'admin',
