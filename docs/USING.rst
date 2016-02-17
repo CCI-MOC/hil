@@ -80,6 +80,7 @@ api call
 cli call
 
 ::
+
        haas switch_register mock03 mock switchHost01 switchuser01 password1234
 
  
