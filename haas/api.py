@@ -904,8 +904,6 @@ def _assert_absent(cls, name):
     node = _must_find(model.Node, nodename)
     node.stop_console()
     node.delete_console()
-#    node.obm.stop_console()
-#    node.obm.delete_console()
 
 
     # Helper functions #
