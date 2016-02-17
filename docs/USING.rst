@@ -55,7 +55,7 @@ been run succesfully.
 Usage Examples
 =================
 
-Included herewith are some examples about using some newly added cli and api calls. 
+Included herewith are some examples about using cli and api calls. 
 
 
 

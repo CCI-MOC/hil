@@ -20,7 +20,6 @@ Meant for use in the test suite.
 from collections import defaultdict
 from haas.model import Switch
 import schema
-#from schema import Schema
 from sqlalchemy import Column, Integer, ForeignKey, String
 
 LOCAL_STATE = defaultdict(lambda: defaultdict(dict))
@@ -53,10 +52,6 @@ class MockSwitch(Switch):
             'password': basestring,
         }).validate(kwargs)
 
-
-#    @staticmethod
-#    def validate(kwargs):
-#        Schema({}).validate(kwargs)
 
     def session(self):
         return self
