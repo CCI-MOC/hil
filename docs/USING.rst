@@ -50,3 +50,38 @@ to hard-disk booting the installed system.
 This is, as the filepath states, merely an example of how you might deploy to
 physical nodes.  Existing deployment systems such as Canonical's MAAS have also
 been run succesfully.
+
+
+Usage Examples
+=================
+
+Included herewith are some examples about using some newly added cli and api calls. 
+
+
+
+1) Register a switch with HaaS:
+-------------------------------
+
+Eg> Switch name: mockswitch01
+     hostname: switchhost01
+     username: switchuser01
+     Password: password1234
+
+api call
+
+::
+
+    curl -X put http://127.0.0.1:5000/switch/mockswitch_fromapi -d '
+        {"type": "http://schema.massopencloud.org/haas/v0/switches/mock",
+        "hostname": "switchHost01",
+        "username": "switchuser01",
+        "password": "password1234"}'
+
+cli call
+
+::
+       haas switch_register mock03 mock switchHost01 switchuser01 password1234
+
+ 
+
+

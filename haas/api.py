@@ -899,6 +899,28 @@ def _assert_absent(cls, name):
 
     cls - the class of the object to query.
     name - the name of the object in question.
+    Stop logging output from the console and delete the log.
+    """
+    node = _must_find(model.Node, nodename)
+    node.stop_console()
+    node.delete_console()
+#    node.obm.stop_console()
+#    node.obm.delete_console()
+
+
+    # Helper functions #
+    ####################
+
+
+def _assert_absent(cls, name):
+    """Raises a DuplicateError if the given object is already in the database.
+
+    This is useful for most of the *_create functions.
+
+    Arguments:
+
+    cls - the class of the object to query.
+    name - the name of the object in question.
 
     Must be called within a request context.
     """
