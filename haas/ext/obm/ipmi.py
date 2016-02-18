@@ -46,7 +46,7 @@ class Ipmi(Obm):
             }).validate(kwargs)
 
     def _ipmitool(self, args):
-        """Invoke ipmitool with the right host/pass etc. for this code.
+        """Invoke ipmitool with the right host/pass etc. for this node.
 
         `args`- A list of any additional arguments to pass to ipmitool.
         Returns the exit status of ipmitool.
