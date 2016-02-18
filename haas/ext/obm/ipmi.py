@@ -1,4 +1,4 @@
-# Copyright 2013-2014 Massachusetts Open Cloud Contributors
+# Copyright 2015-2016 Massachusetts Open Cloud Contributors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the
@@ -48,7 +48,7 @@ class Ipmi(Obm):
     def _ipmitool(self, args):
         """Invoke ipmitool with the right host/pass etc. for this code.
 
-        `args`- A list of any additional arguments to pass the ipmitool.
+        `args`- A list of any additional arguments to pass to ipmitool.
         Returns the exit status of ipmitool.
 
         Note: Includes the ``-I lanplus`` flag, available only in IPMI v2+.

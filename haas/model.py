@@ -124,10 +124,8 @@ class Node(Model):
 
     # The Obm info is fetched from the obm class and its respective subclass
     # pertaining to the node 
-    obm_id = Column(Integer, ForeignKey('obm.id'))
+    obm_id = Column(Integer, ForeignKey('obm.id'), nullable=False)
     obm = relationship("Obm", uselist=False, backref="node")
-
-    # The node is initially registered with no nics; see the Nic class.
 
 
 class Project(Model):
@@ -290,10 +288,18 @@ class Obm(AnonModel):
     def power_cycle(self):
         """Power cycles the node.
 
-        Exact implementation to left to the subclasses.
+        Exact implementation is left to the subclasses.
         """     
         assert False, "Subclasses MUST override the power_cycle method "
+    
+    def power_off(self):
+	""" Shuts off the node.
 
+	Exact implementation is left to the subclasses. 
+	"""
+	
+	assert False, "Subclasses MUST override the power_off method "
+    
     def start_console(self):
         """Starts logging to the console. """
         assert False, "Subclasses MUST override the start_console method" 
