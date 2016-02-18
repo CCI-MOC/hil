@@ -22,6 +22,7 @@ import json
 
 
 MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/v0/switches/mock'
+MOCK_OBM_TYPE = 'http://schema.massopencloud.org/haas/v0/obm/mock'
 
 
 @pytest.fixture
@@ -31,6 +32,7 @@ def configure():
         'extensions': {
             'haas.ext.switches.mock': '',
 	    'haas.ext.obm.ipmi': '',
+	    'haas.ext.obm.mock': '',
         },
     })
     config.load_extensions()

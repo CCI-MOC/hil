@@ -22,7 +22,7 @@ from haas.model import Obm
 from haas.errors import OBMError
 from haas.dev_support import no_dry_run
 from subprocess import call, check_call, Popen, PIPE
-
+import os
 
 class Ipmi(Obm):
     id = Column(Integer, ForeignKey('obm.id'), primary_key=True)
@@ -122,7 +122,6 @@ class Ipmi(Obm):
         proc.wait()
 
     def delete_console(self):
-        return
         if os.path.isfile(self.get_console_log_filename()):
             os.remove(self.get_console_log_filename())
 
