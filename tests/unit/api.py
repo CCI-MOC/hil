@@ -1253,7 +1253,7 @@ class TestQuery:
         actual = json.loads(api.show_node('robocop'))
         expected = {
             'name': 'robocop',
-            'free': False,
+            'project':'anvil-nextgen',
             'nics': [
                 {
                     'label': 'eth0',
