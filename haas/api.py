@@ -791,22 +791,14 @@ def show_node(nodename):
                          {"label": "nic2", "macaddr": "12:34:56:78:90"}]
                }'
     """
+    
     node = _must_find(model.Node, nodename)
-    if node.project_id is None:
-	return json.dumps({
-            'name': node.label,
-            'project': "None",
-            'nics': [{'label': n.label, 'macaddr': n.mac_addr,
+    return json.dumps({
+	'name': node.label,
+	'project': 'None' if node.project_id is None else node.project.label,
+        'nics': [{'label': n.label, 'macaddr': n.mac_addr,
                   } for n in node.nics],
         })
-    else:
-	return json.dumps({
-            'name': node.label,
-            'project': node.project.label,
-            'nics': [{'label': n.label, 'macaddr': n.mac_addr,
-                  } for n in node.nics],
-        })
-        
 
 @rest_call('GET', '/project/<project>/headnodes')
 def list_project_headnodes(project):
