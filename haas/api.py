@@ -795,7 +795,7 @@ def show_node(nodename):
     if node.project_id is None:
 	return json.dumps({
             'name': node.label,
-            'free': node.project_id is None,
+            'project': "None",
             'nics': [{'label': n.label, 'macaddr': n.mac_addr,
                   } for n in node.nics],
         })
