@@ -63,17 +63,17 @@ Included herewith are some examples about using cli and api calls.
 -------------------------------
 
 Eg> Switch name: mockswitch01
-     hostname: switchhost01
-     username: switchuser01
-     Password: password1234
+     Host name:  switchhost01
+     User name:  switchuser01
+     Password:   password1234
 
 api call
 
 ::
 
-    curl -X put http://127.0.0.1:5000/switch/mockswitch_fromapi -d '
+    curl -X put http://127.0.0.1:5000/switch/mockswitch01 -d '
         {"type": "http://schema.massopencloud.org/haas/v0/switches/mock",
-        "hostname": "switchHost01",
+        "hostname": "switchhost01",
         "username": "switchuser01",
         "password": "password1234"}'
 
@@ -81,7 +81,7 @@ cli call
 
 ::
 
-       haas switch_register mock03 mock switchHost01 switchuser01 password1234
+       haas switch_register mockswitch02 mock switchhost01 switchuser01 password1234
 
  
 
