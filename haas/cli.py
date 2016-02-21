@@ -323,6 +323,13 @@ def switch_register(switch, subtype, *args):
     do_put(url, data=switchinfo)
 
 @cmd
+def switch_delete(switch):
+    """Delete a <switch> """
+    url = object_url('switch', switch)
+    do_delete(url)
+
+
+@cmd
 def port_register(port):
     """Register a <port> on a switch"""
     url = object_url('port', port)
