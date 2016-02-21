@@ -1,0 +1,9 @@
+global-include *.rst
+include LICENSE
+include COPYING
+graft docs
+graft tests/unit
+graft examples
+include scripts/haas_network.service
+
+
