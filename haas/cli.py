@@ -335,6 +335,18 @@ def headnode_detach_network(headnode, hnic):
     do_post(url)
 
 @cmd
+def switch_register(switch, subtype, *args):
+    """Register a switch with name <switch> and
+    <subtype>, <hostname>, <username>,  <password>
+    eg. haas switch_register mock03 mock mockhost01 mockuser01 mockpass01
+    """
+    switch_api = "http://schema.massopencloud.org/haas/v0/switches/"
+    switchinfo = { "type": switch_api+subtype, "hostname": args[0],
+                        "username": args[1], "password": args[2] }
+    url = object_url('switch', switch)
+    do_put(url, data=switchinfo)
+
+@cmd
 def port_register(port):
     """Register a <port> on a switch"""
     url = object_url('port', port)

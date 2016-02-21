@@ -19,8 +19,8 @@ Meant for use in the test suite.
 
 from collections import defaultdict
 from haas.model import Switch
-from schema import Schema
-from sqlalchemy import Column, Integer, ForeignKey
+import schema
+from sqlalchemy import Column, Integer, ForeignKey, String
 
 LOCAL_STATE = defaultdict(lambda: defaultdict(dict))
 
@@ -32,17 +32,26 @@ class MockSwitch(Switch):
     It's implementation is connectionless, so it is it's own session object as
     suggested int the superclass's documentation.
     """
-    id = Column(Integer, ForeignKey('switch.id'), primary_key=True)
 
     api_name = 'http://schema.massopencloud.org/haas/v0/switches/mock'
 
     __mapper_args__ = {
         'polymorphic_identity': api_name,
     }
+    
+    id = Column(Integer, ForeignKey('switch.id'), primary_key=True)
+    hostname = Column(String, nullable=False)
+    username = Column(String, nullable=False)
+    password = Column(String, nullable=False)
 
     @staticmethod
     def validate(kwargs):
-        Schema({}).validate(kwargs)
+        schema.Schema({
+            'username': basestring,
+            'hostname': basestring,
+            'password': basestring,
+        }).validate(kwargs)
+
 
     def session(self):
         return self

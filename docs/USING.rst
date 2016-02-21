@@ -54,13 +54,40 @@ been run succesfully.
 Usage examples 
 ====================
 
-Included herwith are some examples 
+Included herewith are some examples about
 
- -- About bypassing cli.py and interacting with HaaS API directly using the curl
-utility.
- -- Examples on how to use equivalent cli calls are also included. 
+ -- Interacting with HaaS API directly using the curl utility.
+ -- And using equivalent cli calls are also included. 
 
-Registering a Node which uses IPMI for out of band management
+haas node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01
+=======
+
+
+1) Register a switch with HaaS:
+-------------------------------
+
+Eg> Switch name: mockswitch01
+     Host name:  switchhost01
+     User name:  switchuser01
+     Password:   password1234
+
+api call
+
+::
+
+    curl -X put http://127.0.0.1:5000/switch/mockswitch01 -d '
+        {"type": "http://schema.massopencloud.org/haas/v0/switches/mock",
+        "hostname": "switchhost01",
+        "username": "switchuser01",
+        "password": "password1234"}'
+
+cli call
+
+::
+
+       haas switch_register mockswitch02 mock switchhost01 switchuser01 password1234
+
+2) Registering a Node which uses IPMI for out of band management
 -------------------------------------------------------------
 
 
@@ -84,6 +111,10 @@ For nodes using IPMI use the following api call:
 
 Corresponding cli calls will be as follows:
 
-haas node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01
+
+::
+
+        haas node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01
 
 
+ 
