@@ -2,7 +2,7 @@
 import sys
 # api must be loaded to register the api callbacks, even though we don't
 # call it directly from this module:
-from haas import model, api
+from haas import model, api, auth
 from haas.class_resolver import build_class_map_for
 from haas.network_allocator import get_network_allocator
 
@@ -18,7 +18,9 @@ def register_drivers():
 def validate_state():
     """Do some sanity checking before kicking things off. In particular:
 
-    * Make sure we have a network allocator
+    * Make sure we have extensions loaded for:
+      * a network allocator
+      * an auth backend
 
     (More checks may be added in the future).
 
@@ -28,6 +30,10 @@ def validate_state():
         sys.exit("ERROR: No network allocator registered; make sure your "
                  "haas.cfg loads an extension which provides the network "
                  "allocator.")
+    if auth.get_auth_backend() is None:
+        sys.exit("ERROR: No authentication/authorization backend registered; "
+                 "make sure your haas.cfg loads an extension which provides "
+                 "the auth backend.")
 
 
 def stop_orphan_consoles():

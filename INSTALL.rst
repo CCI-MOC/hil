@@ -262,9 +262,17 @@ Authentication and Authorization
 --------------------------------
 
 HaaS includes a pluggible architecture for authentication and authorization.
-Right now, the only authentication backend uses HTTP basic auth, with usernames
-and password stored in the database. to enable this, make sure the
-**[extensions]** section of ``haas.cfg`` contains::
+HaaS ships with two authentication backends. One uses HTTP basic auth, with
+usernames and passwords stored in the database. The other is a "null" backend,
+which does no authentication or authorization checks. This can be useful for
+testing and experimentation, but obviously should *not* be used in production.
+You must enable exactly one auth backend.
+
+Database Backend
+^^^^^^^^^^^^^^^^
+
+To enable the database backend, make sure the **[extensions]** section of
+``haas.cfg`` contains::
 
   haas.ext.auth.database =
 
@@ -277,6 +285,14 @@ system. You can do this by running the command::
 From within the directory containing the server's ``haas.cfg``. You can then
 create additional users via the HTTP API. You may want to subsequently delete
 the initial user; this can also be done via the API.
+
+Null Backend
+^^^^^^^^^^^^
+
+To enable the null backend, make sure **[extensions]** contains::
+
+  haas.ext.auth.null =
+
 
 Running the Server under Apache
 -------------------------------
