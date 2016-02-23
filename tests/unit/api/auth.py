@@ -21,7 +21,7 @@ from haas.test_common import config_testsuite, config_merge, fresh_database
 from haas.ext.switches.mock import MockSwitch
 
 
-def auth_call_test(fn, error, admin, project, args):
+def auth_call_test(fn, error, admin, project, args, kwargs={}):
     """Test the authorization properties of an api call.
 
     Parmeters:
@@ -41,10 +41,10 @@ def auth_call_test(fn, error, admin, project, args):
         auth_backend.set_project(project)
 
     if error is None:
-        fn(*args)
+        fn(*args, **kwargs)
     else:
         with pytest.raises(error):
-            fn(*args)
+            fn(*args, **kwargs)
 
 
 @pytest.fixture
@@ -137,10 +137,16 @@ def db(request):
 
     # ... Two switches. One of these is just empty, for testing deletion:
     session.add(MockSwitch(label='empty-switch',
+                           hostname='empty',
+                           username='alice',
+                           password='secret',
                            type=MockSwitch.api_name))
 
     # ... The other we'll actually attach stuff to for other tests:
     switch = MockSwitch(label="stock_switch_0",
+                        hostname='stock',
+                        username='bob',
+                        password='password',
                         type=MockSwitch.api_name)
 
     # ... Some free ports:
@@ -529,27 +535,31 @@ def test_auth_call(kwargs):
 # succed as admin and fail as a regular project. The actual test functions for
 # these are below.
 admin_calls = [
-    (api.node_register, ['new_node', '', '', '']),
-    (api.node_delete, ['no_nic_node']),
-    (api.node_register_nic, ['free_node_0', 'extra-nic', 'de:ad:be:ef:20:16']),
-    (api.node_delete_nic, ['free_node_0', 'boot-nic']),
-    (api.project_create, ['anvil-nextgen']),
-    (api.list_projects, []),
+    (api.node_register, ['new_node', '', '', ''], {}),
+    (api.node_delete, ['no_nic_node'], {}),
+    (api.node_register_nic, ['free_node_0', 'extra-nic', 'de:ad:be:ef:20:16'], {}),
+    (api.node_delete_nic, ['free_node_0', 'boot-nic'], {}),
+    (api.project_create, ['anvil-nextgen'], {}),
+    (api.list_projects, [], {}),
 
     # node_power_*, on free nodes only. Nodes assigned to a project are
     # tested in project_calls, below.
-    (api.node_power_cycle, ['free_node_0']),
-    (api.node_power_off, ['free_node_0']),
+    (api.node_power_cycle, ['free_node_0'], {}),
+    (api.node_power_off, ['free_node_0'], {}),
 
-    (api.project_delete, ['empty-project']),
+    (api.project_delete, ['empty-project'], {}),
 
-    (api.switch_register, ['new-switch', MockSwitch.api_name]),
-    (api.switch_delete, ['empty-switch']),
-    (api.switch_register_port, ['stock_switch_0', 'new_port']),
-    (api.switch_delete_port, ['stock_switch_0', 'free_port_0']),
+    (api.switch_register, ['new-switch', MockSwitch.api_name], {
+        'hostname': 'oak-ridge',
+        'username': 'alice',
+        'password': 'changeme',
+    }),
+    (api.switch_delete, ['empty-switch'], {}),
+    (api.switch_register_port, ['stock_switch_0', 'new_port'], {}),
+    (api.switch_delete_port, ['stock_switch_0', 'free_port_0'], {}),
     (api.port_connect_nic, ['stock_switch_0', 'free_port_0',
-                            'free_node_0', 'boot-nic']),
-    (api.port_detach_nic, ['stock_switch_0', 'free_node_0_port']),
+                            'free_node_0', 'boot-nic'], {}),
+    (api.port_detach_nic, ['stock_switch_0', 'free_node_0_port'], {}),
 ]
 
 
@@ -559,62 +569,66 @@ admin_calls = [
 project_calls = [
     # node_power_*, on allocated nodes only. Free nodes are testsed in
     # admin_calls, above.
-    (api.node_power_cycle, ['runway_node_0']),
-    (api.node_power_off, ['runway_node_0']),
+    (api.node_power_cycle, ['runway_node_0'], {}),
+    (api.node_power_off, ['runway_node_0'], {}),
 
-    (api.project_connect_node, ['runway', 'free_node_0']),
-    (api.project_detach_node, ['runway', 'runway_node_0']),
+    (api.project_connect_node, ['runway', 'free_node_0'], {}),
+    (api.project_detach_node, ['runway', 'runway_node_0'], {}),
 
-    (api.headnode_create, ['new-headnode', 'runway', 'base-headnode']),
-    (api.headnode_delete, ['runway_headnode_off']),
-    (api.headnode_start, ['runway_headnode_off']),
-    (api.headnode_stop, ['runway_headnode_on']),
-    (api.headnode_create_hnic, ['runway_headnode_off', 'extra-hnic']),
-    (api.headnode_delete_hnic, ['runway_headnode_off', 'pxe']),
+    (api.headnode_create, ['new-headnode', 'runway', 'base-headnode'], {}),
+    (api.headnode_delete, ['runway_headnode_off'], {}),
+    (api.headnode_start, ['runway_headnode_off'], {}),
+    (api.headnode_stop, ['runway_headnode_on'], {}),
+    (api.headnode_create_hnic, ['runway_headnode_off', 'extra-hnic'], {}),
+    (api.headnode_delete_hnic, ['runway_headnode_off', 'pxe'], {}),
 
-    (api.headnode_connect_network, ['runway_headnode_off', 'pxe', 'stock_int_pub']),
-    (api.headnode_connect_network, ['runway_headnode_off', 'pxe', 'runway_pxe']),
-    (api.headnode_detach_network, ['runway_headnode_off', 'public']),
+    (api.headnode_connect_network, ['runway_headnode_off', 'pxe', 'stock_int_pub'], {}),
+    (api.headnode_connect_network, ['runway_headnode_off', 'pxe', 'runway_pxe'], {}),
+    (api.headnode_detach_network, ['runway_headnode_off', 'public'], {}),
 
-    (api.list_project_headnodes, ['runway']),
-    (api.show_headnode, ['runway_headnode_on']),
+    (api.list_project_headnodes, ['runway'], {}),
+    (api.show_headnode, ['runway_headnode_on'], {}),
 ]
 
 
-@pytest.mark.parametrize('fn,args', admin_calls)
-def test_admin_succeed(fn, args):
+@pytest.mark.parametrize('fn,args,kwargs', admin_calls)
+def test_admin_succeed(fn, args, kwargs):
     auth_call_test(fn=fn,
                    error=None,
                    admin=True,
                    project=None,
-                   args=args)
+                   args=args,
+                   kwargs=kwargs)
 
 
-@pytest.mark.parametrize('fn,args', admin_calls)
-def test_admin_fail(fn, args):
+@pytest.mark.parametrize('fn,args,kwargs', admin_calls)
+def test_admin_fail(fn, args, kwargs):
     auth_call_test(fn=fn,
                    error=AuthorizationError,
                    admin=False,
                    project='runway',
-                   args=args)
+                   args=args,
+                   kwargs=kwargs)
 
 
-@pytest.mark.parametrize('fn,args', project_calls)
-def test_runway_succeed(fn, args):
+@pytest.mark.parametrize('fn,args,kwargs', project_calls)
+def test_runway_succeed(fn, args, kwargs):
     auth_call_test(fn=fn,
                    error=None,
                    admin=False,
                    project='runway',
-                   args=args)
+                   args=args,
+                   kwargs=kwargs)
 
 
-@pytest.mark.parametrize('fn,args', project_calls)
-def test_manhattan_fail(fn, args):
+@pytest.mark.parametrize('fn,args,kwargs', project_calls)
+def test_manhattan_fail(fn, args, kwargs):
     auth_call_test(fn=fn,
                    error=AuthorizationError,
                    admin=False,
                    project='manhattan',
-                   args=args)
+                   args=args,
+                   kwargs=kwargs)
 
 
 class Test_node_detach_network(unittest.TestCase):
