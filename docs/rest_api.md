@@ -11,11 +11,10 @@ Each possible API call has an entry below containing:
 * A human readable description of the semantics of the call
 * A summary of the response body for a successful request. Many calls do
   not return any data, in which case this is omitted.
-* A description of the requirements for an authorized call. This will be
-  combination of:
+* Any authorization requirements, which could include:
   * Administrative access
-  * Access to project `<project name>`
-  * No special access.
+  * Access to a particular project or
+  * No special access
  In general, administrative access is sufficient to perform any action.
 * A list of possible errors.
 
@@ -92,7 +91,7 @@ Request Body:
     }
 
 Create a network. For the semantics of each of the fields, see
-`docs/network.md`.
+[docs/networks.md](./networks.md).
 
 Authorization requirements:
 
@@ -201,7 +200,7 @@ Authorization requirements:
 
 * Access to the project to which `<node>` is assigned.
 * Either `<network>` must be public, or its `"access"` field must name
-  the project which owns `<node>`.
+  the project to which `<node>` is assigned.
 
 Possible errors:
 
@@ -315,8 +314,7 @@ this will have no effect.
 
 Authorization requirements:
 
-* Access to the project to which `<node>` is assigned (if any).
-* If the node is free, administrative access.
+* Access to the project to which `<node>` is assigned (if any) or administrative access.
 
 ### list_free_nodes
 
@@ -352,7 +350,7 @@ Response body:
 
 Authorization requirements:
 
-* Access to `<project>`
+* Access to `<project>` or administrative access
 
 ### show_node
 
@@ -433,7 +431,7 @@ free.
 
 Authorization requirements:
 
-* Access to `<project>`.
+* Access to `<project>` or administrative access.
 
 Possible errors:
 
@@ -454,7 +452,7 @@ pending network actions.
 
 Authorization requirements:
 
-* Access to `<project>`.
+* Access to `<project>` or administrative access.
 
 * 409, if the node is attached to any networks, or has pending network
   actions.
@@ -495,7 +493,7 @@ Create a headnode owned by project `<project>`, cloned from base image
 
 Authorization requirements:
 
-* Access to `<project>`.
+* Access to `<project>` or administrative access
 
 Possible errors:
 
@@ -509,7 +507,7 @@ Delete the headnode named `<headnode>`.
 
 Authorization requirements:
 
-* Access to the project which owns `<headnode>`.
+* Access to the project which owns `<headnode>` or administrative access.
 
 ### headnode_start
 
@@ -521,7 +519,7 @@ networks), only deleted --- even if it is stopped.
 
 Authorization requirements:
 
-* Access to the project which owns `<headnode>`.
+* Access to the project which owns `<headnode>` or administrative access.
 
 ### headnode_stop
 
@@ -532,7 +530,7 @@ not given the opportunity to shut down cleanly.
 
 Authorization requirements:
 
-* Access to the project which owns `<headnode>`.
+* Access to the project which owns `<headnode>` or administrative access.
 
 ### headnode_create_hnic
 
@@ -543,7 +541,7 @@ must not have previously been started.
 
 Authorization requirements:
 
-* Access to the project which owns `<headnode>`.
+* Access to the project which owns `<headnode>` or administrative access.
 
 Possible errors:
 
@@ -560,7 +558,7 @@ headnode must not have previously been started.
 
 Authorization requirements:
 
-* Access to the project which owns `<headnode>`.
+* Access to the project which owns `<headnode>` or administrative access.
 
 Possible errors:
 
@@ -599,7 +597,7 @@ important.
 
 Authorization requirements:
 
-* Access to the project which owns `<headnode>`.
+* Access to the project which owns `<headnode>` or administrative access.
 * Either `<network>` must be public, or its `"access"` field must name
   the project which owns `<headnode>`.
 
@@ -616,7 +614,7 @@ previously been started.
 
 Authorization requirements:
 
-* Access to the project which owns `<headnode>`.
+* Access to the project which owns `<headnode>` or administrative access.
 
 Possible errors:
 
@@ -638,7 +636,7 @@ Response body:
 
 Authorization requirements:
 
-* Access to `<project>`.
+* Access to `<project>` or administrative access.
 
 ### show_headnode
 
@@ -665,7 +663,7 @@ Response body:
 
 Authorization requirements:
 
-* Access to the project which owns `<headnode>`.
+* Access to the project which owns `<headnode>` or administrative access.
 
 ## Switches
 
@@ -718,8 +716,8 @@ Possible Errors:
 
 Register a port `<port>` on `<switch>`.
 
-The permissable values of `<port>`, and their meanings, are switch
-specific; see the documentation for the apropriate driver for more
+The permissible values of `<port>`, and their meanings, are switch
+specific; see the documentation for the appropriate driver for more
 information.
 
 Authorization requirements:
