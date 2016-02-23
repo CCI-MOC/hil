@@ -25,9 +25,11 @@ section with the same name as the module, e.g.:
     [some_3rd_party.haas.drivers.obm.robotic_power_button_pusher]
     push_duration = 3 seconds
 
-Extensions should not make use any part of the HaaS source tree that do not
-explicitly invite it (e.g. everything by default is *Private*). These currently
-include (see the docstrings in the specific components for details):
+Extensions should not make use any part of the HaaS source tree that does not
+explicitly invite it (i.e. everything by default is *Private*). Components
+which may be used from extensions will explicitly say so in their
+documentation, (and describe in detail how they may be used).
+Extension-approved components currently include:
 
 * Most of haas.network_allocator
 * haas.auth
@@ -35,3 +37,5 @@ include (see the docstrings in the specific components for details):
     * AnonModel
     * Model
     * Switch
+
+See the docstrings for each component for details.
