@@ -794,17 +794,16 @@ def show_node(nodename):
                          {"label": "nic2", "macaddr": "12:34:56:78:90"}]
                }'
     """
+    
     node = _must_find(model.Node, nodename)
     if node.project is not None:
         get_auth_backend().require_project_access(node.project)
     return json.dumps({
-        'name': node.label,
-        'free': node.project_id is None,
-        'nics': [{'label': n.label,
-                  'macaddr': n.mac_addr,
+	'name': node.label,
+	'project': 'None' if node.project_id is None else node.project.label,
+        'nics': [{'label': n.label, 'macaddr': n.mac_addr,
                   } for n in node.nics],
-    })
-
+        })
 
 @rest_call('GET', '/project/<project>/headnodes')
 def list_project_headnodes(project):
