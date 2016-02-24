@@ -159,12 +159,12 @@ def init_db():
 def user_create(username, password, is_admin):
     """Create a user <username> with password <password>.
 
-    <is_admin> may be either "admin" or "no-admin", and determines whether
+    <is_admin> may be either "admin" or "regular", and determines whether
     the user has administrative priveledges.
     """
     url = object_url('/auth/basic/user', username)
-    if is_admin not in ('admin', 'no-admin'):
-        raise TypeError("is_admin must be either 'admin' or 'no-admin'")
+    if is_admin not in ('admin', 'regular'):
+        raise TypeError("is_admin must be either 'admin' or 'regular'")
     do_put(url, data={
         'password': password,
         'is_admin': is_admin == 'admin',
