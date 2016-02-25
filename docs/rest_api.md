@@ -25,7 +25,7 @@ return:
 
 Below is an example.
 
-## my_api_call
+# my_api_call
 
 `POST /url/path/to/<thing>`
 
@@ -314,25 +314,25 @@ Response body:
 
 `GET /node/<node>`
 
-Show detailed information about a node. The response includes the
-following fields:
+Show details of a node.
 
-* "name", the name/label of the node.
-* "free", indicates whether the node is free or has been allocated
-    to a project.
-* "nics", a list of nics, each represted by a JSON object having
-    at least the following fields:
-        * "label", the nic's label.
-        * "macaddr", the nic's mac address.
+Returns a JSON object representing a node.
+The object will have at least the following fields:
+        * "name", the name/label of the node (string).
+        * "project", indicates whether the node belongs to a project, displaying None if not and the name of the project if so
+            to a project.
+        * "nics", a list of nics, each represted by a JSON object having
+            at least the following fields:
+                - "label", the nic's label.
+                - "macaddr", the nic's mac address.
 
-Response body:
-
-    {
-        "name": "box02",
-        "free": true,
-        "nics": ["ipmi", "pxe", "external",...]
-    }
-
+Example:  '{"name": "node1",
+            "project": "project1",
+            "nics": [{"label": "nic1", "macaddr": "01:23:45:67:89"},
+                     {"label": "nic2", "macaddr": "12:34:56:78:90"}]
+               }'
+    
+   
 ## Projects
 
 ### project_create
