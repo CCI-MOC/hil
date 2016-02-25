@@ -232,6 +232,13 @@ Possible Errors:
 
 `PUT /node/<node>`
 
+Request Body:
+	{"obm": { "type": <obm-subtype>,
+		<additional sub-type specific values>,}
+	}
+
+example provided in USING.rst
+
 Register a node named `<node>` with the database.
 
 Possible errors:
@@ -318,8 +325,8 @@ Show detailed information about a node. The response includes the
 following fields:
 
 * "name", the name/label of the node.
-* "free", indicates whether the node is free or has been allocated
-    to a project.
+* "project", indicates 'None' if the node is free or <project name> 
+	if it has been allocated to a project.
 * "nics", a list of nics, each represted by a JSON object having
     at least the following fields:
         * "label", the nic's label.
@@ -329,7 +336,7 @@ Response body:
 
     {
         "name": "box02",
-        "free": true,
+        "project": "proj01",
         "nics": ["ipmi", "pxe", "external",...]
     }
 
