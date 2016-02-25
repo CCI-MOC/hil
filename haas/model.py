@@ -315,7 +315,7 @@ class Obm(AnonModel):
         assert False, "Subclasses MUST override the get_console method"
 
     def get_console_log_filename(self):
-        assert False, "Subclasses MUST override this method"
+        assert False, "Subclasses MUST override the get_console_log_filename method"
 
 
 class User(Model):
