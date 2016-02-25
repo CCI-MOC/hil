@@ -617,7 +617,7 @@ def show_network(network):
     if network.access is not None:
         result['access'] = network.access.label
 
-    return json.dumps(result)
+    return json.dumps(result, sort_keys=True)
 
 
 @rest_call('PUT', '/switch/<switch>', schema=Schema({
@@ -796,9 +796,13 @@ def show_node(nodename):
     return json.dumps({
 	'name': node.label,
 	'project': 'None' if node.project_id is None else node.project.label,
-        'nics': [{'label': n.label, 'macaddr': n.mac_addr,
+        'nics': [{'label': n.label, 
+                  'macaddr': n.mac_addr,
+                  'networks': dict([(attachment.channel,
+                                     attachment.network.label)
+                                    for attachment in n.attachments]),
                   } for n in node.nics],
-        })
+        }, sort_keys=True)
 
 @rest_call('GET', '/project/<project>/headnodes')
 def list_project_headnodes(project):

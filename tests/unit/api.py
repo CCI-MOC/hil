@@ -17,6 +17,7 @@
 from haas import model, api, deferred, server, config
 from haas.test_common import *
 from haas.rest import RequestContext
+from haas.network_allocator import get_network_allocator
 import pytest
 import json
 
@@ -1238,6 +1239,13 @@ class TestQuery:
         assert json.loads(api.list_free_nodes()) == ['master-control-program']
 
     def test_show_node(self, db):
+        """Test the show_node api call.
+
+        We create a node, and query it twice: once before it is reserved,
+        and once after it has been reserved by a project and attached to
+        a network. Two things should change: (1) "free" should be false,
+        and (2) the newly attached network should be listed.
+        """
         api.node_register('robocop', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('robocop', 'eth0', 'DE:AD:BE:EF:20:14')
         api.node_register_nic('robocop', 'wlan0', 'DE:AD:BE:EF:20:15')
@@ -1250,10 +1258,12 @@ class TestQuery:
                 {
                     'label':'eth0',
                     'macaddr': 'DE:AD:BE:EF:20:14',
+                    "networks": {}
                 },
                 {
                     'label':'wlan0',
-                    'macaddr': 'DE:AD:BE:EF:20:15'
+                    'macaddr': 'DE:AD:BE:EF:20:15',
+                    "networks": {}
                 }
             ],
         }
@@ -1267,6 +1277,9 @@ class TestQuery:
 
         api.project_create('anvil-nextgen')
         api.project_connect_node('anvil-nextgen', 'robocop')
+        network_create_simple('pxe', 'anvil-nextgen')
+        api.node_connect_network('robocop', 'eth0', 'pxe')
+        deferred.apply_networking()
 
         actual = json.loads(api.show_node('robocop'))
         expected = {
@@ -1276,11 +1289,15 @@ class TestQuery:
                 {
                     'label': 'eth0',
                     'macaddr': 'DE:AD:BE:EF:20:14',
+                    "networks": {
+                        get_network_allocator().get_default_channel(db): 'pxe'
+                    }
                 },
                 {
                     'label': 'wlan0',
                     'macaddr': 'DE:AD:BE:EF:20:15',
-                },
+                    "networks": {}
+                }
             ],
         }
         self._compare_node_dumps(actual, expected)
