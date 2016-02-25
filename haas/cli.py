@@ -254,12 +254,12 @@ def node_register(node, subtype, *args):
 	    		"user": args[1], "password": args[2]
 	    	      }
 	else:
-	    print "Error: subtype <ipmi> requires exactly 3 arguments"
-	    print "<hostname> <ipmi-username> <ipmi-password>"
+	    sys.stderr.write('ERROR: subtype '+subtype+' requires exactly 3 arguments\n')
+	    sys.stderr.write('<hostname> <ipmi-username> <ipmi-password>\n')
 	    return
     else: 
-	print "Wrong OBM subtype supplied"
-	print "Supported OBM sub-types: ipmi"
+	sys.stderr.write('ERROR: Wrong OBM subtype supplied\n')
+	sys.stderr.write('Supported OBM sub-types: ipmi, mock\n')
 	return
 
     url = object_url('node', node)
