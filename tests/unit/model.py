@@ -85,7 +85,6 @@ class TestNic(ModelTest):
 class TestNode(ModelTest):
 
     def sample_obj(self):
-#        return Node('node-99', 'ipmihost', 'root', 'tapeworm')
 	return Node(label='node-99', obm=Ipmi(type="http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   host= "ipmihost", user= "root", password= "tapeworm"))
 
