@@ -1,6 +1,7 @@
 # Overview
 
-This document represents the developer policies and procedures for maintaining Hardware as a Service (HaaS).
+This document represents the developer policies and procedures for maintaining
+Hardware as a Service (HaaS), including the accepted [coding style](#Coding-style).
 
 Welcome! Overall, we follow the [github fork & pull
 model](http://scottchacon.com/2011/08/31/github-flow.html), where users fork
@@ -13,6 +14,29 @@ HaaS repository.
 * IRC: The MOC team hangs out on #moc on [freenode](https://www.freenode.net/)
 * IRL: The MOC group office is on the BU campus, at 3 Cummington Mall, Boston, MA room 451. Anyone interested in HaaS is welcome to drop in and work there.
 * Email: HaaS developers should subscribe to haas-dev-list@bu.edu by sending a plain text email to majordomo@bu.edu with "subscribe haas-dev-list" in the body.
+
+# Coding style
+
+By default, HaaS (like many other python projects) uses
+[PEP8](https://www.python.org/dev/peps/pep-0008/) as its guide. Departures are
+acceptable when called for, but should be discussed first.
+
+## Often-used code
+In certain cases, one will encounter heavily repeated code that gets run once per API call such as this:
+
+```python
+    db = local.db
+```
+
+In these cases, it is preferred to keep a reference in "local", and use it directly. For example, instead of:
+```python
+db = local.db
+db.delete(...)
+```
+one should prefer:
+```python
+local.db.delete(...)
+```
 
 # Prior to a pull request
 
@@ -74,6 +98,12 @@ page](https://github.com/CCI-MOC/haas/wiki/Issue-Tracker-Proposal#suggestions).
 
 ## Code review
 
+Code reviews help increase code quality by finding:
+* mistakes that can oftentimes be overlooked by a single developer
+* improving readability
+* helping reviewers to learn about different areas of the code
+
+Reviewers are the final guardians for good code quality.
 
 ## Friendliness
 
@@ -102,7 +132,7 @@ the interest of lowering the barrier to having better docs. For docs changes,
 typically one +1 is sufficient.
 
 Whomever provides the enabling +1 is responsible for clicking the merge button
-on github. If you do not have commit writes, then please add your +1 to the PR
+on github. If you do not have commit access, then please add your +1 to the PR
 and ask one of the Core Developers to complete the merge.
 
 ## Labels
