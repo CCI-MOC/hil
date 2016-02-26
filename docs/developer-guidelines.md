@@ -103,7 +103,9 @@ Code reviews help increase code quality by finding:
 * improving readability
 * helping reviewers to learn about different areas of the code
 
-Reviewers are the final guardians for good code quality.
+Reviewers are the final guardians for good code quality. If you see a piece of
+complex code, that is probably where you want to spend a lot of your review
+time. Remember the 80/20 rule (80% of the bugs come from 20% of the code).
 
 ## Friendliness
 
