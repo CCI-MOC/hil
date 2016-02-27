@@ -19,7 +19,7 @@ class User(model.Model):
     to that process's resources. A user may also be flagged as an administrator.
     """
 
-    is_admin = Column(Boolean, nullable=False)
+    is_admin = Column(Boolean, nullable=False, default=False)
     # The user's salted & hashed password. We currently use sha512 as the
     # hashing algorithm:
     hashed_password = Column(String)
