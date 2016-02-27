@@ -1,3 +1,7 @@
+"""'Null' auth backend
+
+This backend requires no authentication and permits everything. Useful for
+testing, do not use in production."""
 from haas import auth
 
 
