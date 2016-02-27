@@ -136,13 +136,13 @@ class DatabaseAuthBackend(auth.AuthBackend):
             # authorization queries to fail later:
             local.auth = None
 
-    def have_admin(self):
+    def _have_admin(self):
         user = local.auth
         return user is not None and user.is_admin
 
-    def have_project_access(self, project):
+    def _have_project_access(self, project):
         user = local.auth
-        return user is not None and (user.is_admin or project in user.projects)
+        return user is not None and project in user.projects
 
 
 def setup(*args, **kwargs):

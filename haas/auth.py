@@ -14,6 +14,11 @@ class AuthBackend(object):
     Extensions which implement authentication/authorization backends should
     inherit from this class, and invoke ``set_auth_backend()`` on an instance
     of the subclass
+
+    Subclasses of AuthBackend must override `authenticate`, `_have_admin`,
+    and `_have_project_access`, and nothing else. Users of the AuthBackend must
+    not invoke `_have_admin` and `_have_project_access`, preferring
+    `have_admin` and `have_project_access`.
     """
 
     __metaclass__ = ABCMeta
@@ -33,7 +38,7 @@ class AuthBackend(object):
         """
 
     @abstractmethod
-    def have_admin(self):
+    def _have_admin(self):
         """Check if the request is authorized to act as an administrator.
 
         Return True if so, False if not. This will be caled sometime after
@@ -41,6 +46,22 @@ class AuthBackend(object):
         """
 
     @abstractmethod
+    def _have_project_access(self, project):
+        """Check if the request is authorized to act as the given project.
+
+        Each backend must implement this method. The backend does not need
+        to deal with the case where the authenticated user is an admin here;
+        the `have_*` and `require_*` wrappers handle this.
+        """
+
+    def have_admin(self):
+        """Check if the request is authorized to act as an administrator.
+
+        Return True if so, False if not. This will be caled sometime after
+        ``authenticate()``.
+        """
+        return self._have_admin()
+
     def have_project_access(self, project):
         """Check if the request is authorized to act as the given project.
 
@@ -50,9 +71,9 @@ class AuthBackend(object):
         ``project`` will be a ``Project`` object, *not* the name of the
         project.
 
-        Note that in general, have_admin should imply have_project_acccess,
-        but the backend must specifically implement this logic.
+        Note that have_admin implies have_project_acccess.
         """
+        return self._have_admin() or self._have_project_access(project)
 
     def require_admin(self):
         """Ensure the request is authorized to act as an administrator.

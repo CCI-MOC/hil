@@ -10,10 +10,10 @@ class NullAuthBackend(auth.AuthBackend):
     def authenticate(self):
         pass
 
-    def have_admin(self):
+    def _have_admin(self):
         return True
 
-    def have_project_access(self, project):
+    def _have_project_access(self, project):
         return True
 
 

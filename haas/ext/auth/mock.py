@@ -20,12 +20,13 @@ class MockAuthBackend(auth.AuthBackend):
             'project': None,
             'admin': False,
         }
+        return True
 
-    def have_admin(self):
+    def _have_admin(self):
         return rest.local.auth['admin']
 
-    def have_project_access(self, project):
-        return self.have_admin() or project == rest.local.auth['project']
+    def _have_project_access(self, project):
+        return project == rest.local.auth['project']
 
     def set_project(self, project):
         """Change the project that the request is acting on behalf of."""
