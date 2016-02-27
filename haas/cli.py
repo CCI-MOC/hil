@@ -450,13 +450,16 @@ def stop_console(node):
     do_delete(url)
 
 @cmd
-def make_initial_admin(username, password):
-    """Create an initial admin user. Only valid for the database auth backend.
+def create_admin_user(username, password):
+    """Create an admin user. Only valid for the database auth backend.
 
     This must be run on the HaaS API server, with access to haas.cfg and the
-    database. It will create an initial user named <username> with password
-    <password>, who will have administrator priviledges. This user can then
-    create additional users via the API.
+    database. It will create an user named <username> with password
+    <password>, who will have administrator priviledges.
+
+    This command should only be used for bootstrapping the system; once you
+    have an initial admin, you can (and should) create additional users via
+    the API.
     """
     if not config.cfg.has_option('extensions', 'haas.ext.auth.database'):
         sys.exit("'make_inital_admin' is only valid with the database auth backend.")

@@ -280,7 +280,7 @@ Then initialize the database as described above. You will need to add an initial
 user with administrative priviledges to the database in order to bootstrap the
 system. You can do this by running the command::
 
-  haas make_initial_admin <username> <password>
+  haas create_admin_user <username> <password>
 
 From within the directory containing the server's ``haas.cfg``. You can then
 create additional users via the HTTP API. You may want to subsequently delete
