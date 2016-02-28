@@ -230,11 +230,17 @@ Possible Errors:
 
 ### node_register
 
+Register a node with OBM of <type>
+
+<type> (a string) is the type of OBM. The possible value depends on what drivers
+HaaS is configured to use. The remainder of the field are driver-specific;
+see the documentation of the OBM driver in question (read `docs/obm-drivers.md`).
+
 `PUT /node/<node>`
 
 Request Body:
 	{"obm": { "type": <obm-subtype>,
-		<additional sub-type specific values>,}
+		<additional sub-type specific values>}
 	}
 
 example provided in USING.rst
