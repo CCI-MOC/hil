@@ -307,12 +307,14 @@ You should also set apache to start on boot::
 Running the network server:
 ---------------------------
 
+Using systemd:
+--------------
 
 A systemd script for running the network server is available in the 'scripts' directory.
 Name of the script is: haas_network.service
 
 Centos:
-------
+-------
 
 Centos uses systemd to controll all its processes. 
 
@@ -335,7 +337,6 @@ Place the file haas_network.service under:
 ``/lib/systemd/system/``
 
 
-
 Starting the service:
 ---------------------
 
@@ -349,6 +350,17 @@ You can check the status using:
 To auto-start the service on boot:
 ``systemctl enable haas_network``
 
+
+Without systemd:
+----------------
+
+The networking server may be started as the HaaS user by running::
+
+  haas serve_networks &
+
+To make this happen on boot, add the following to ``/etc/rc.local``::
+
+  (cd /var/lib/haas && su haas_user -c 'haas serve_networks') &
 
 
 Congratulations- at this point, you should have a functional HaaS service running!
