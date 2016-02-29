@@ -16,7 +16,8 @@ from haas.rest import RequestContext, local
 from haas.auth import get_auth_backend
 from haas.errors import AuthorizationError, BadArgumentError, \
     ProjectMismatchError, BlockedError
-from haas.test_common import config_testsuite, config_merge, fresh_database
+from haas.test_common import config_testsuite, config_merge, fresh_database, \
+    do_request
 
 from haas.ext.switches.mock import MockSwitch
 

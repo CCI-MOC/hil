@@ -8,7 +8,7 @@ from haas import auth
 class NullAuthBackend(auth.AuthBackend):
 
     def authenticate(self):
-        pass
+        return True
 
     def _have_admin(self):
         return True

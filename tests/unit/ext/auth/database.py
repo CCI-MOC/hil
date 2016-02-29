@@ -13,6 +13,14 @@ import unittest
 def configure():
     config_testsuite()
     config_merge({
+        'auth': {
+            # The tests in this module are checking the specific authorization
+            # requirements of the API calls. as such, we don't want things to
+            # fail due to complete lack of authentication, where they should
+            # fail later when the specific authorization checks we're testing
+            # for happen.
+            'require_authentication': 'False',
+        },
         'extensions': {
             'haas.ext.auth.database': '',
             'haas.ext.auth.null': None,

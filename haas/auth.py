@@ -35,6 +35,9 @@ class AuthBackend(object):
         The attribute ``haas.rest.local.auth`` is reserved for use by auth
         backends; A backend may store any information it needs as that
         attribute.
+
+        This method must return a boolean indicating whether or not
+        authentication was successful -- True if so, False if not.
         """
 
     @abstractmethod

@@ -8,19 +8,33 @@ from haas import auth, rest
 
 
 class MockAuthBackend(auth.AuthBackend):
-    """An auth backend for mocking the request's project and admin status.
+    """An auth backend for mocking the request's authentication and
+    authorization status.
 
     By default, the request does not have access to a project, and does not
     have admin access. The functions `set_admin` and `set_project` can be
     used to change this.
+
+    If invoked before `authenticate`, `set_auth_success` may be used to change
+    the return value of `authenticate`, which is useful for testing cases where
+    the user is not authenticated at all. Note that if the api call functions
+    are invoked directly, `authenticate` is bypassed, so you will need to
+    actually spoof a full request. The defualt is True.
     """
+
+    def __init__(self):
+        self._auth_success = True
 
     def authenticate(self):
         rest.local.auth = {
             'project': None,
             'admin': False,
         }
-        return True
+        return self._auth_success
+
+    def set_auth_success(self, ok):
+        """Set the return value for `authenticate` to `ok`."""
+        self._auth_success = ok
 
     def _have_admin(self):
         return rest.local.auth['admin']

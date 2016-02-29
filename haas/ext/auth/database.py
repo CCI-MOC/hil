@@ -119,22 +119,19 @@ def user_remove_project(user, project):
 class DatabaseAuthBackend(auth.AuthBackend):
 
     def authenticate(self):
+        local.auth = None
         if local.request.authorization is None:
-            local.auth = None
-            return
+            return False
         authorization = local.request.authorization
         if authorization.password is None:
-            local.auth = None
-            return
+            return False
 
         user = api._must_find(User, authorization.username)
         if user.verify_password(authorization.password):
             local.auth = user
+            return True
         else:
-            # XXX: this is a bit gross; we really ought to just report an
-            # authentication failure *now*. instead, this will cause
-            # authorization queries to fail later:
-            local.auth = None
+            return False
 
     def _have_admin(self):
         user = local.auth
