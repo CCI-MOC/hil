@@ -320,7 +320,7 @@ Returns a JSON object representing a node.
 The object will have at least the following fields:
 
         * "name", the name/label of the node (string).
-        * "project", indicates whether the node belongs to a project, displaying None if not and the name of the project if so.
+        * "project", indicates whether the node belongs to a project, displaying null if not and the name of the project if so.
         * "nics", a list of nics, each represted by a JSON object having
             at least the following fields:
 

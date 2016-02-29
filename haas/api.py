@@ -774,14 +774,14 @@ def list_project_networks(project):
 @rest_call('GET', '/node/<nodename>')
 def show_node(nodename):
     '''
-    Shown the details of a node.
+    Show the details of a node.
     See rest_api.md for extended documentation.
     '''
 
     node = _must_find(model.Node, nodename)
     return json.dumps({
 	'name': node.label,
-	'project': 'None' if node.project_id is None else node.project.label,
+	'project': None if node.project_id is None else node.project.label,
         'nics': [{'label': n.label, 
                   'macaddr': n.mac_addr,
                   'networks': dict([(attachment.channel,
