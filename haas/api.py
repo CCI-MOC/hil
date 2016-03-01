@@ -773,10 +773,26 @@ def list_project_networks(project):
 
 @rest_call('GET', '/node/<nodename>')
 def show_node(nodename):
-    '''
-    Show the details of a node.
-    See rest_api.md for extended documentation.
-    '''
+    """Show the details of a node.
+
+    Returns a JSON object representing a node.
+
+    The object will have at least the following fields:
+
+        * "name", the name/label of the node (string).
+        * "project", indicates whether the node belongs to a project, displaying null if not and the name of the project if so.
+        * "nics", a list of nics, each represted by a JSON object having
+            at least the following fields:
+
+                - "label", the nic's label.
+                - "macaddr", the nic's mac address.
+
+    Example: '{"name": "node1",
+              "project": "project1",
+              "nics": [{"label": "nic1", "macaddr": "01:23:45:67:89"},
+                       {"label": "nic2", "macaddr": "12:34:56:78:90"}]
+	      }'
+    """
 
     node = _must_find(model.Node, nodename)
     return json.dumps({
