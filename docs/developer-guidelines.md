@@ -18,8 +18,9 @@ HaaS repository.
 # Coding style
 
 By default, HaaS (like many other python projects) uses
-[PEP8](https://www.python.org/dev/peps/pep-0008/) as its guide. Departures are
-acceptable when called for, but should be discussed first.
+[PEP8](https://www.python.org/dev/peps/pep-0008/) as its naming guide, and
+[PEP257](https://www.python.org/dev/peps/pep-0257/) for documentation.
+Departures are acceptable when called for, but should be discussed first.
 
 ## Often-used code
 In certain cases, one will encounter heavily repeated code that gets run once per API call such as this:
