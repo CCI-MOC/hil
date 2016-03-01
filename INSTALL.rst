@@ -323,15 +323,7 @@ Place the file haas_network.service under:
 
 Ubuntu:
 -------
-LTS version of Ubuntu, Ubuntu 14.04 does not come with systemd pre-installed.
-It uses "Upstart" an equivalent of systemd to manage its daemons/processes.
-
 Systemd is available from Ubuntu 15.04 onwards and LTS version 16.04 will ship with systemd by default.
-
-If you are using Ubuntu with any version prior to 15.04, you will have to install systemd before your can use the scripts provided here.
-
-WARNING: Since systemd is not optimized the way Upstart has been for Ubuntu, you may experience some delay in booting up and shutting down your server after switching to systemd.
-
 
 Place the file haas_network.service under:
 ``/lib/systemd/system/``
@@ -351,10 +343,12 @@ To auto-start the service on boot:
 ``systemctl enable haas_network``
 
 
-Without systemd:
-----------------
+For systems that do not support systemd:
+----------------------------------------
+Some systems like the LTS version of Ubuntu, Ubuntu 14.04 does not come with systemd pre-installed.
+It uses "Upstart" an equivalent of systemd to manage its daemons/processes.
 
-The networking server may be started as the HaaS user by running::
+For such systems, the networking server may be started as the HaaS user by running::
 
   haas serve_networks &
 
