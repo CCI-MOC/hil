@@ -178,8 +178,8 @@ class RequestContext(object):
             require_auth = True
         if not ok and require_auth:
             local.db.close()
-            raise AuthorizationError("Authentication failed. You must "
-                                     "be authenticated to use this service.")
+            raise AuthorizationError("Authentication failed. Authentication "
+                                     "is required to use this service.")
 
     def __exit__(self, exc_type, exc_value, traceback):
         local.db.close()
