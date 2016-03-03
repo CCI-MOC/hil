@@ -102,13 +102,13 @@ def admin_auth():
 @pytest.fixture
 def runway_auth():
     """Inject mock credentials that give the request access to the "runway" project."""
-    local.request = FakeAuthRequest('bob', 'password')
+    flask.request = FakeAuthRequest('bob', 'password')
 
 
 @pytest.fixture
 def no_auth():
     """Spoof an unauthenticated request."""
-    local.request = FakeNoAuthRequest()
+    flask.request = FakeNoAuthRequest()
 
 
 def use_fixtures(auth_fixture):
@@ -161,7 +161,7 @@ class TestUserCreateDelete(unittest.TestCase):
         changed to that user.
         """
         user_create('charlie', 'foo', is_admin=is_admin)
-        local.request = FakeAuthRequest('charlie', 'foo')
+        flask.request = FakeAuthRequest('charlie', 'foo')
         local.auth = local.db.query(User).filter_by(label='charlie').one()
 
     def test_new_admin_can_admin(self):
