@@ -1243,7 +1243,7 @@ class TestQuery:
 
         We create a node, and query it twice: once before it is reserved,
         and once after it has been reserved by a project and attached to
-        a network. Two things should change: (1) "free" should be false,
+        a network. Two things should change: (1) "project" should show registered project,
         and (2) the newly attached network should be listed.
         """
         api.node_register('robocop', 'ipmihost', 'root', 'tapeworm')
