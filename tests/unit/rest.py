@@ -256,13 +256,12 @@ class TestValidationError(HttpTest):
                                                       'baz': 'eve'})),
                          rest.ValidationError)
 
-    @pytest.mark.xfail
     def test_mixed_args_ok(self):
         """Test a call that has arguments in both the url and body."""
         resp = self.client.put('/mixed/args/foo',
                                data=json.dumps({'arg2': 'bar'}))
         assert resp.status_code == 200
-        assert json.loads(resp.get_data()) == {'arg1': 'foo', 'arg2': 'bar'}
+        assert json.loads(resp.get_data()) == ['foo', 'bar']
 
     def test_custom_schema(self):
         assert _is_error(self.client.put('/custom-schema', data=json.dumps({

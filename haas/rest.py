@@ -26,8 +26,6 @@ import inspect
 
 import flask
 
-from werkzeug.routing import parse_rule
-
 from haas.errors import APIError, ServerError, AuthorizationError
 from haas.config import cfg
 
@@ -112,7 +110,7 @@ def rest_call(method, path, schema=None):
     """
     def register(f):
         if schema is None:
-            _schema = _make_schema_for(path, f)
+            _schema = _make_schema_for(f)
         else:
             _schema = schema
         app.add_url_rule(path,
@@ -123,29 +121,19 @@ def rest_call(method, path, schema=None):
     return register
 
 
-def _make_schema_for(path, func):
-    """Build a default schema for `func` at `path`.
+def _make_schema_for(func):
+    """Build a default schema for the api function `func`.
 
-    `func` is an api function.
-    `path` is a url path, as recognized by werkzeug's router.
-
-    `_make_schema_for` will build a schema to validate the body of a request,
-    which will expect the body to be a json object whose keys are (exactly)
-    the set of positional arguments to `func` which cannot be drawn from
-    `path`, and whose values are strings.
+    `_make_schema_for` will build a schema to validate the arguments to an
+    API call, which will expect each argument to be a string. Any arguments
+    not found in the url will be pulled from a JSON object in the body of a
+    request.
 
     If all of the arguments to `func` are accounted for by `path`,
     `_make_schema_for` will return `None` instead.
     """
-    path_vars = [var for (converter, args, var) in parse_rule(path)
-                 if converter is not None]
     argnames, _, _, _ = inspect.getargspec(func)
-    schema = dict((name, basestring) for name in argnames)
-    for var in path_vars:
-        del schema[var]
-    if schema == {}:
-        return None
-    return Schema(schema)
+    return Schema(dict((name, basestring) for name in argnames))
 
 
 def _rest_wrapper(f, schema):
