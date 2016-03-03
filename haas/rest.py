@@ -196,6 +196,7 @@ def _do_validation(schema, kwargs):
         # which, while fairly clear and helpful, is obviously
         # talking about python types, which is gross.
         raise validation_error
+    return kwargs
 
 
 def _rest_wrapper(f, schema):
