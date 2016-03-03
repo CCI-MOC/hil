@@ -19,8 +19,11 @@ and ServerError.
 """
 
 import json
+import flask
+from werkzeug.exceptions import HTTPException, InternalServerError
 
-class APIError(Exception):
+
+class APIError(HTTPException):
     """An exception indicating an error that should be reported to the user.
 
     i.e. If such an error occurs in a rest API call, it should be reported as
@@ -28,16 +31,23 @@ class APIError(Exception):
     """
     status_code = 400  # Bad Request
 
-    def response_body(self):
+    def __init__(self, message=''):
+        # HTTPException has its own custom __init__ method, but we want the
+        # usual "First argument is the message" behavior.
+        HTTPException.__init__(self)
+        self.message = message
+
+    def get_response(self, environ):
         """The body of the http response corresponding to this error."""
         # TODO: We're getting deprecation errors about the use of self.message.
         # We should figure out what the right way to do this is.
-        return json.dumps({'type': self.__class__.__name__,
-                           'msg': self.message,
-                           })
+        return flask.make_response(json.dumps({
+            'type': self.__class__.__name__,
+            'msg': self.message,
+        }), self.status_code)
 
 
-class ServerError(Exception):
+class ServerError(InternalServerError):
     """An error occurred when trying to process the request.
 
     This is likely not the client's fault; as such the HTTP status is 500.
@@ -46,7 +56,6 @@ class ServerError(Exception):
     In general, we do *not* want to report the details to the client,
     though we should log them for our own purposes.
     """
-    status_code = 500
 
 
 class NotFoundError(APIError):

@@ -210,23 +210,12 @@ def _rest_wrapper(f, schema):
     """
 
     def wrapper(**kwargs):
-        try:
-            kwargs = _do_validation(schema, kwargs)
-            logger.debug('Got api call: %s(%s)' %
-                         (f.__name__, _format_arglist(**kwargs)))
-            with DBContext():
-                init_auth()
-                return f(**kwargs)
-        except APIError as e:
-            logger.debug('Invalid call to api function %s, '
-                         'raised exception: %r',
-                         f.__name__, e)
-            return e.response_body(), e.status_code
-        except ServerError as e:
-            logger.error('Server-side failure in function %s, '
-                         'raised exception: %r',
-                         f.__name__, e)
-            flask.abort(500)
+        kwargs = _do_validation(schema, kwargs)
+        logger.debug('Got api call: %s(%s)' %
+                        (f.__name__, _format_arglist(**kwargs)))
+        with DBContext():
+            init_auth()
+            return f(**kwargs)
     return wrapper
 
 

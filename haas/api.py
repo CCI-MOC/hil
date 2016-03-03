@@ -182,8 +182,8 @@ def node_delete(node):
     get_auth_backend().require_admin()
     node = _must_find(model.Node, node)
     if node.nics != []:
-        raise BlockedError("Node %r has nics; remove them before deleting %r.",
-                           (node.label, node.label))
+        raise BlockedError("Node %r has nics; remove them before deleting %r."
+                           % (node.label, node.label))
     node.stop_console()
     node.delete_console()
     local.db.delete(node)
@@ -794,7 +794,7 @@ def show_node(nodename):
                          {"label": "nic2", "macaddr": "12:34:56:78:90"}]
                }'
     """
-    
+
     node = _must_find(model.Node, nodename)
     if node.project is not None:
         get_auth_backend().require_project_access(node.project)
