@@ -136,7 +136,20 @@ def _make_schema_for(func):
     return Schema(dict((name, basestring) for name in argnames))
 
 
-def _rest_wrapper(f, schema):
+def _do_validation(schema, kwargs):
+    """Validate the current request against `schema`.
+
+    `schema` should be a schema as passed to `rest_call`.
+
+    `kwargs` should be the arguments to the API call pulled from the URL.
+
+    If the schema validates, this will return a dictioiniary of *all* of the
+    arguments to the function, both from the URL and the body. The argument
+    `kwargs` may be distructively updated.
+
+    If the schema does not validate, this will raise an instance of
+    `ValidationError`.
+    """
 
     def _validates(value):
         """Retrun true if `schema` validates `value`, False otherwise.
@@ -151,38 +164,53 @@ def _rest_wrapper(f, schema):
             return False
         return True
 
+    if schema is None or _validates(kwargs):
+        return kwargs
+
+    # One innocuous reason validation can fail is simply that we
+    # need parameters from the body (in json). Let's get those and
+    # try again.
+    #
+    # Without `force=True`, this will fail unless the
+    # "Content-Type" header is set to "application/json". We'll be
+    # a little more lienient here; we can discuss whether we want
+    # to tighten this up later, but this makes mucking around with
+    # curl less annoying, and is consistent with pre-flask
+    # behavior.
+    body = flask.request.get_json(force=True)
+
+    validation_error = ValidationError(
+        "The request body %r is not valid for "
+        "this request." % body)
+    for k in body.keys():
+        if k in kwargs:
+            raise validation_error  # Duplicate key in body + url
+        kwargs[k] = body[k]
+    if not _validates(kwargs):
+        # It would be nice to return a more helpful error message
+        # here, but it's a little awkward to extract one from the
+        # schema library. You can easily get something like:
+        #
+        #   'hello' should be instance of <type 'int'>
+        #
+        # which, while fairly clear and helpful, is obviously
+        # talking about python types, which is gross.
+        raise validation_error
+
+
+def _rest_wrapper(f, schema):
+    """Return a wrapper around `f` that does the following:
+
+    * Validate the current request agains the schema.
+    * Implement the exception handling described in the documentation to
+      `rest_call`.
+
+    The result of this is suitable to hand directly to flask.
+    """
+
     def wrapper(**kwargs):
         try:
-            if schema is not None and not _validates(kwargs):
-                # One innocuous reason validation can fail is simply that we
-                # need parameters from the body (in json). Let's get those and
-                # try again.
-                #
-                # Without `force=True`, this will fail unless the
-                # "Content-Type" header is set to "application/json". We'll be
-                # a little more lienient here; we can discuss whether we want
-                # to tighten this up later, but this makes mucking around with
-                # curl less annoying, and is consistent with pre-flask
-                # behavior.
-                body = flask.request.get_json(force=True)
-
-                validation_error = ValidationError(
-                    "The request body %r is not valid for "
-                    "this request." % body)
-                for k in body.keys():
-                    if k in kwargs:
-                        raise validation_error  # Duplicate key in body + url
-                    kwargs[k] = body[k]
-                if not _validates(kwargs):
-                    # It would be nice to return a more helpful error message
-                    # here, but it's a little awkward to extract one from the
-                    # schema library. You can easily get something like:
-                    #
-                    #   'hello' should be instance of <type 'int'>
-                    #
-                    # which, while fairly clear and helpful, is obviously
-                    # talking about python types, which is gross.
-                    raise validation_error
+            kwargs = _do_validation(schema, kwargs)
             logger.debug('Got api call: %s(%s)' %
                          (f.__name__, _format_arglist(**kwargs)))
             with DBContext():
