@@ -259,7 +259,6 @@ def serve(port, debug=True):
     made to the source code. The `debug` parameter can be used to change this
     behavior.
     """
-    from werkzeug.serving import run_simple
-    run_simple('127.0.0.1', port, app,
-               use_debugger=debug,
-               use_reloader=debug)
+    app.run(port=port,
+            use_debugger=debug,
+            use_reloader=debug)
