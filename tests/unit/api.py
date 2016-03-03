@@ -1269,8 +1269,38 @@ class TestQuery:
         }
         self._compare_node_dumps(actual, expected)
 
+    def test_show_node(self, db):
+        """Test the show_node api call.
 
-    def test_show_node_unavailable(self, db):
+        We create a node, and query it twice: once before it is reserved,
+        and once after it has been reserved by a project and attached to
+        a network. Two things should change: (1) "project" should show registered project,
+        and (2) the newly attached network should be listed.
+        """
+        api.node_register('robocop', 'ipmihost', 'root', 'tapeworm')
+        api.node_register_nic('robocop', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.node_register_nic('robocop', 'wlan0', 'DE:AD:BE:EF:20:15')
+
+        actual = json.loads(api.show_node('robocop'))
+        expected = {
+            'name': 'robocop',
+            'project': None,
+            'nics': [
+                {
+                    'label':'eth0',
+                    'macaddr': 'DE:AD:BE:EF:20:14',
+                    "networks": {}
+                },
+                {
+                    'label':'wlan0',
+                    'macaddr': 'DE:AD:BE:EF:20:15',
+                    "networks": {}
+                }
+            ],
+        }
+        self._compare_node_dumps(actual, expected)
+
+    def test_show_node_multiple_network(self, db):
         api.node_register('robocop', 'ipmihost', 'root', 'tapeworm')
         api.node_register_nic('robocop', 'eth0', 'DE:AD:BE:EF:20:14')
         api.node_register_nic('robocop', 'wlan0', 'DE:AD:BE:EF:20:15')
@@ -1279,6 +1309,8 @@ class TestQuery:
         api.project_connect_node('anvil-nextgen', 'robocop')
         network_create_simple('pxe', 'anvil-nextgen')
         api.node_connect_network('robocop', 'eth0', 'pxe')
+        network_create_simple('storage', 'anvil-nextgen')
+        api.node_connect_network('robocop', 'wlan0', 'storage')
         deferred.apply_networking()
 
         actual = json.loads(api.show_node('robocop'))
@@ -1296,7 +1328,9 @@ class TestQuery:
                 {
                     'label': 'wlan0',
                     'macaddr': 'DE:AD:BE:EF:20:15',
-                    "networks": {}
+                    "networks": {
+                        get_network_allocator().get_default_channel(db): 'storage'
+                    }
                 }
             ],
         }
