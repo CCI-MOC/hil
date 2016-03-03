@@ -265,7 +265,7 @@ class TestValidationError(HttpTest):
         assert json.loads(resp.get_data()) == {'arg1': 'foo', 'arg2': 'bar'}
 
     def test_custom_schema(self):
-        assert _is_error(self._do_request(json.dumps({
+        assert _is_error(self.client.put('/custom-schema', data=json.dumps({
             'the_value': 'Not an integer!',
         })), rest.ValidationError)
 
