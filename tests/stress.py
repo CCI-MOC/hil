@@ -1,5 +1,5 @@
 
-from haas.test_common import do_request, config_testsuite, fresh_database
+from haas.test_common import config_testsuite, fresh_database
 from haas import api, config, server, rest
 
 import json
@@ -34,17 +34,22 @@ def test_many_http_queries():
     This is intended to shake out problems like the resource leak discussed
     in issue #454.
     """
-    with rest.RequestContext():
-        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
-        api.node_register('node-98', 'ipmihost', 'root', 'tapeworm')
-        api.node_register('node-97', 'ipmihost', 'root', 'tapeworm')
-        api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
-        api.node_register_nic('node-98', 'eth0', 'DE:AD:BE:EF:20:15')
-        api.node_register_nic('node-97', 'eth0', 'DE:AD:BE:EF:20:16')
-        api.project_create('anvil-nextgen')
-        api.project_create('anvil-legacy')
-        api.project_connect_node('anvil-nextgen', 'node-99')
-        api.project_connect_node('anvil-legacy', 'node-98')
+    with rest.app.test_request_context():
+        with rest.DBContext():
+            rest.init_auth()
+
+            api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
+            api.node_register('node-98', 'ipmihost', 'root', 'tapeworm')
+            api.node_register('node-97', 'ipmihost', 'root', 'tapeworm')
+            api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
+            api.node_register_nic('node-98', 'eth0', 'DE:AD:BE:EF:20:15')
+            api.node_register_nic('node-97', 'eth0', 'DE:AD:BE:EF:20:16')
+            api.project_create('anvil-nextgen')
+            api.project_create('anvil-legacy')
+            api.project_connect_node('anvil-nextgen', 'node-99')
+            api.project_connect_node('anvil-legacy', 'node-98')
+
+    client = rest.app.test_client()
 
     def _show_nodes(path):
         """Helper for the loop below.
@@ -54,17 +59,17 @@ def test_many_http_queries():
         not return 200 or has a body which is not valid json, the test will
         fail.
         """
-        resp = do_request('GET', path)
+        resp = client.get(path)
         assert resp.status_code == 200
         for node in json.loads(resp.get_data()):
-            resp = do_request('GET', '/node/%s' % node)
+            resp = client.get('/node/%s' % node)
             assert resp.status_code == 200
             # At least make sure the body parses:
             json.loads(resp.get_data())
 
     for i in range(100):
         _show_nodes('/free_nodes')
-        resp = do_request('GET', '/projects')
+        resp = client.get('/projects')
         assert resp.status_code == 200
         for project in json.loads(resp.get_data()):
             _show_nodes('/project/%s/nodes' % project)

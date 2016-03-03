@@ -2,9 +2,10 @@ from haas import api, model, config, server
 from haas.test_common import config_testsuite, config_merge, fresh_database, \
     ModelTest
 from haas.errors import AuthorizationError
-from haas.rest import RequestContext, local
+from haas.rest import app, init_auth, DBContext, local
 from haas.ext.auth.database import User, user_create, user_delete, \
     user_add_project, user_remove_project
+import flask
 import pytest
 import unittest
 
@@ -55,17 +56,22 @@ def server_init():
     server.register_drivers()
     server.validate_state()
 
-
 @pytest.yield_fixture
-def with_request_context():
-    with RequestContext():
-        yield
+def db_context():
+    with app.test_request_context():
+        with DBContext():
+            yield
+
+
+@pytest.fixture
+def auth_context():
+    init_auth()
 
 
 class FakeAuthRequest(object):
     """Fake (authenticated) request object.
 
-    This spoofs just enough of werkzeug's request functionality for the
+    This spoofs just enough of flask's request functionality for the
     database auth plugin to work.
     """
 
@@ -90,7 +96,7 @@ class FakeNoAuthRequest(object):
 @pytest.fixture
 def admin_auth():
     """Inject mock credentials that give the request admin access."""
-    local.request = FakeAuthRequest('alice', 'secret')
+    flask.request = FakeAuthRequest('alice', 'secret')
 
 
 @pytest.fixture
@@ -109,8 +115,9 @@ def use_fixtures(auth_fixture):
     return pytest.mark.usefixtures('configure',
                                    'db',
                                    'server_init',
+                                   'db_context',
                                    auth_fixture,
-                                   'with_request_context')
+                                   'auth_context')
 
 
 @use_fixtures('admin_auth')

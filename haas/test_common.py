@@ -14,15 +14,14 @@
 
 from haas.model import *
 from haas.config import cfg
-from haas import api, config, rest
+from haas.rest import app, DBContext, init_auth
+from haas import api, config
 from StringIO import StringIO
 from abc import ABCMeta, abstractmethod
 import json
 import subprocess
 import sys
 import os.path
-
-from werkzeug.wrappers import Request
 
 
 def config_testsuite():
@@ -139,6 +138,19 @@ def fresh_database(request):
     db = newDB()
     request.addfinalizer(lambda: releaseDB(db))
     return db
+
+
+def with_request_context():
+    """Run the test inside of a request context.
+
+    This combines flask's request context with our own setup. It is intended
+    to be used via pytests' `yield_fixture`, but like the other fixtures in
+    this module, must be declared as such in the test module itself.
+    """
+    with app.test_request_context():
+        with DBContext():
+            init_auth()
+            yield
 
 
 class ModelTest:
@@ -300,14 +312,3 @@ def wsgi_mkenv(method, path, data=None):
     else:
         env['wsgi.input'] = StringIO(data)
     return env
-
-
-def do_request(method, path, data=None):
-    """Submit a fake HTTP api call.
-
-    This invokes the request handler with an HTTP request corresponding to
-    the given arguments.
-    """
-    response = rest.request_handler(Request(wsgi_mkenv(method, path, data)))
-    rest.local_manager.cleanup()
-    return response

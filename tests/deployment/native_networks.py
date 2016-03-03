@@ -16,7 +16,7 @@
 internal setup only and will most likely not work on
 other HaaS configurations."""
 
-from haas import api, model, deferred, server, rest
+from haas import api, model, deferred, server
 from haas.test_common import *
 import importlib
 import pytest
@@ -38,10 +38,7 @@ def server_init():
     server.validate_state()
 
 
-@pytest.yield_fixture
-def with_request_context():
-    with rest.RequestContext():
-        yield
+with_request_context = pytest.yield_fixture(with_request_context)
 
 
 site_layout = pytest.fixture(site_layout)

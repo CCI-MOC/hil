@@ -12,12 +12,12 @@ import pytest
 import unittest
 from haas import api, config, model, server, deferred
 from haas.network_allocator import get_network_allocator
-from haas.rest import RequestContext, local
+from haas.rest import local
 from haas.auth import get_auth_backend
 from haas.errors import AuthorizationError, BadArgumentError, \
     ProjectMismatchError, BlockedError
 from haas.test_common import config_testsuite, config_merge, fresh_database, \
-    do_request
+    with_request_context
 
 from haas.ext.switches.mock import MockSwitch
 
@@ -207,10 +207,7 @@ def server_init():
     server.validate_state()
 
 
-@pytest.yield_fixture
-def with_request_context():
-    with RequestContext():
-        yield
+with_request_context = pytest.yield_fixture(with_request_context)
 
 
 pytestmark = pytest.mark.usefixtures('configure',

@@ -24,12 +24,10 @@ The main things of interest in this module are:
 """
 import logging
 import inspect
-import json
 
-from werkzeug.wrappers import Request, Response
-from werkzeug.routing import Map, Rule, parse_rule
-from werkzeug.exceptions import HTTPException, InternalServerError
-from werkzeug.local import Local, LocalManager
+import flask
+
+from werkzeug.routing import parse_rule
 
 from haas.errors import APIError, ServerError, AuthorizationError
 from haas.config import cfg
@@ -39,12 +37,10 @@ from schema import Schema, SchemaError
 from haas import auth
 from haas.model import Session
 
-local = Local()
-local_manager = LocalManager([local])
+app = flask.Flask(__name__.split('.')[0])
+local = flask.g
 
 logger = logging.getLogger(__name__)
-
-_url_map = Map()
 
 
 class ValidationError(APIError):
@@ -61,7 +57,7 @@ def rest_call(method, path, schema=None):
     Arguments:
 
     * path - the url-path to map the function to. The format is the same as for
-            werkzeug's router (e.g. '/foo/<bar>/baz')
+            flask's router (e.g. '/foo/<bar>/baz')
     * method - the HTTP method for the api call (e.g. POST, GET...)
     * schema (optional) - an instance of ``schema.Schema`` with which to
             validate the body of the request. It should assume its argument is
@@ -120,7 +116,10 @@ def rest_call(method, path, schema=None):
             _schema = _make_schema_for(path, f)
         else:
             _schema = schema
-        _url_map.add(Rule(path, endpoint=(f, _schema), methods=[method]))
+        app.add_url_rule(path,
+                         f.__name__,
+                         _rest_wrapper(f, _schema),
+                         methods=[method])
         return f
     return register
 
@@ -150,6 +149,71 @@ def _make_schema_for(path, func):
     return Schema(schema)
 
 
+def _rest_wrapper(f, schema):
+
+    def _validates(value):
+        """Retrun true if `schema` validates `value`, False otherwise.
+
+        The schema library's `validate` method raises an exception, which is
+        nice for short-circuting when just doing a simple check, but a bit
+        awkward in more complex cases like the below.
+        """
+        try:
+            schema.validate(value)
+        except SchemaError:
+            return False
+        return True
+
+    def wrapper(**kwargs):
+        try:
+            if schema is not None and not _validates(kwargs):
+                # One innocuous reason validation can fail is simply that we
+                # need parameters from the body (in json). Let's get those and
+                # try again.
+                #
+                # Without `force=True`, this will fail unless the
+                # "Content-Type" header is set to "application/json". We'll be
+                # a little more lienient here; we can discuss whether we want
+                # to tighten this up later, but this makes mucking around with
+                # curl less annoying, and is consistent with pre-flask
+                # behavior.
+                body = flask.request.get_json(force=True)
+
+                validation_error = ValidationError(
+                    "The request body %r is not valid for "
+                    "this request." % body)
+                for k in body.keys():
+                    if k in kwargs:
+                        raise validation_error  # Duplicate key in body + url
+                    kwargs[k] = body[k]
+                if not _validates(kwargs):
+                    # It would be nice to return a more helpful error message
+                    # here, but it's a little awkward to extract one from the
+                    # schema library. You can easily get something like:
+                    #
+                    #   'hello' should be instance of <type 'int'>
+                    #
+                    # which, while fairly clear and helpful, is obviously
+                    # talking about python types, which is gross.
+                    raise validation_error
+            logger.debug('Got api call: %s(%s)' %
+                         (f.__name__, _format_arglist(**kwargs)))
+            with DBContext():
+                init_auth()
+                return f(**kwargs)
+        except APIError as e:
+            logger.debug('Invalid call to api function %s, '
+                         'raised exception: %r',
+                         f.__name__, e)
+            return e.response_body(), e.status_code
+        except ServerError as e:
+            logger.error('Server-side failure in function %s, '
+                         'raised exception: %r',
+                         f.__name__, e)
+            flask.abort(500)
+    return wrapper
+
+
 def _format_arglist(*args, **kwargs):
     """Format the argument list in a human readable way.
 
@@ -162,8 +226,8 @@ def _format_arglist(*args, **kwargs):
     return ', '.join(args)
 
 
-class RequestContext(object):
-    """Context manager that sets up `local` for use in the request handler.
+class DBContext(object):
+    """Context manager to set up a database session for the request handler
 
     This is used internally by the request handler, but is exposed to make
     testing easier.
@@ -171,99 +235,24 @@ class RequestContext(object):
 
     def __enter__(self):
         local.db = Session()
-        ok = auth.get_auth_backend().authenticate()
-        if cfg.has_option('auth', 'require_authentication'):
-            require_auth = cfg.getboolean('auth', 'require_authentication')
-        else:
-            require_auth = True
-        if not ok and require_auth:
-            local.db.close()
-            raise AuthorizationError("Authentication failed. Authentication "
-                                     "is required to use this service.")
 
     def __exit__(self, exc_type, exc_value, traceback):
         local.db.close()
 
 
-def request_handler(request):
-    """Handle an http request.
+def init_auth():
+    ok = auth.get_auth_backend().authenticate()
+    if cfg.has_option('auth', 'require_authentication'):
+        require_auth = cfg.getboolean('auth', 'require_authentication')
+    else:
+        require_auth = True
+    if not ok and require_auth:
+        raise AuthorizationError("Authentication failed. Authentication "
+                                 "is required to use this service.")
 
-    The parameter `request` must be an instance of werkzeug's `Request` class.
-    The return value will be a werkzeug `Response` object.
-    """
-    local.request = request
+# TODO: Remove this alias and adjust client code accordingly.
+wsgi_handler = app
 
-    adapter = _url_map.bind_to_environ(request.environ)
-    try:
-        (f, schema), values = adapter.match()
-        if schema is None:
-            # no data needed from the body:
-            request_data = {}
-            # XXX: It would be nice to detect if the body is erroneously
-            # non-empty, which is probably indicitave of a bug in the client.
-        else:
-            try:
-                # Parse the body as json and validate it with the schema:
-                request_handle = request.environ['wsgi.input']
-                request_json = request_handle.read(request.content_length)
-                request_data = schema.validate(json.loads(request_json))
-                if not isinstance(request_data, dict):
-                    raise ValidationError("The body of the request is not a JSON object.")
-            except ValueError:
-                # Parsing the json failed.
-                raise ValidationError("The body of the request is not valid JSON.")
-            except SchemaError:
-                # Validating the schema failed.
-
-                # It would be nice to return a more helpful error message here, but
-                # it's a little awkward to extract one from the exception. You can
-                # easily get something like:
-                #
-                #   'hello' should be instance of <type 'int'>
-                #
-                # which, while fairly clear and helpful, is obviously talking about
-                # python types, which is gross.
-                raise ValidationError("The request body %r is not valid for "
-                                        "this request." % request_json)
-        for k, v in values.iteritems():
-            if k in request_data:
-                logger.error("Argument %r to api function %r exists in both "
-                             "the URL path and the body of the request. "
-                             "This is a BUG in the schema for %r; the schema "
-                             "is responsible for eliminating this possibility.",
-                             k, f.__name__, f.__name__)
-                raise InternalServerError()
-            request_data[k] = v
-        logger.debug('Recieved api call %s(%s)', f.__name__, _format_arglist(**request_data))
-        with RequestContext():
-            result = f(**request_data)
-        if result is None:
-            response_body, status = "", 200
-        elif type(result) is tuple:
-            response_body, status = result
-        else:
-            # result is a string:
-            response_body, status = result, 200
-        logger.debug("completed call to api function %s, "
-                     "response body: %r", f.__name__, response_body)
-        return Response(response_body, status=status)
-    except APIError as e:
-        logger.debug('Invalid call to api function %s, raised exception: %r',
-                     f.__name__, e)
-        return Response(e.response_body(), status=e.status_code)
-    except ServerError as e:
-        logger.error('Server-side failure in function %s, raised exception: %r',
-                     f.__name__, e)
-        return InternalServerError()
-    except HTTPException, e:
-        return e
-
-
-@local_manager.middleware
-def wsgi_handler(environ, start_response):
-    """The wsgi entry point to the API."""
-    response = request_handler(Request(environ))
-    return response(environ, start_response)
 
 def serve(port, debug=True):
     """Start an http server running the API.
