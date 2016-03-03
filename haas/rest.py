@@ -11,12 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module `rest` provides a wsgi application implementing a REST API.
-
-The function `wsgi_handler` is the wsgi entry point to the app.
+"""Module `rest` provides a flask application implementing a REST API.
 
 The main things of interest in this module are:
 
+    * `app`, the flask application itself.
     * The decorator `rest_call`
     * The variable `local`. `local.db` is a SQLAlchemy session object which
       is local to the current request. It is cleaned up automatically when the
@@ -250,9 +249,6 @@ def init_auth():
         raise AuthorizationError("Authentication failed. Authentication "
                                  "is required to use this service.")
 
-# TODO: Remove this alias and adjust client code accordingly.
-wsgi_handler = app
-
 
 def serve(port, debug=True):
     """Start an http server running the API.
@@ -264,6 +260,6 @@ def serve(port, debug=True):
     behavior.
     """
     from werkzeug.serving import run_simple
-    run_simple('127.0.0.1', port, wsgi_handler,
+    run_simple('127.0.0.1', port, app,
                use_debugger=debug,
                use_reloader=debug)
