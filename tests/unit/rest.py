@@ -215,6 +215,10 @@ class TestValidationError(HttpTest):
         def api_call(foo, bar):
             pass
 
+        @rest.rest_call('PUT', '/mixed/args/<arg1>')
+        def mixed_args(arg1, arg2):
+            return json.dumps([arg1, arg2])
+
         @rest.rest_call('PUT', '/custom-schema', schema=Schema({
             "the_value": int,
         }))
@@ -251,6 +255,14 @@ class TestValidationError(HttpTest):
                                                       'bar': 'bob',
                                                       'baz': 'eve'})),
                          rest.ValidationError)
+
+    @pytest.mark.xfail
+    def test_mixed_args_ok(self):
+        """Test a call that has arguments in both the url and body."""
+        resp = self.client.put('/mixed/args/foo',
+                               data=json.dumps({'arg2': 'bar'}))
+        assert resp.status_code == 200
+        assert json.loads(resp.get_data()) == {'arg1': 'foo', 'arg2': 'bar'}
 
     def test_custom_schema(self):
         assert _is_error(self._do_request(json.dumps({
