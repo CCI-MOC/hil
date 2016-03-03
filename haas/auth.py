@@ -27,10 +27,11 @@ class AuthBackend(object):
     def authenticate(self):
         """Authenticate the api call, and prepare for later authorization checks.
 
-        This method will be invoked inside of a request context, meaning
-        ``haas.rest.local.request`` will be available. It is responsible for
-        authenticating the request, and storing any data it will need later to
-        determine whether the requested operation is authorized.
+        This method will be invoked inside of a flask request context,
+        with ``haas.rest.local.db`` initialized to a valid database session.
+        It is responsible for authenticating the request, and storing any
+        data it will need later to determine whether the requested operation
+        is authorized.
 
         The attribute ``haas.rest.local.auth`` is reserved for use by auth
         backends; A backend may store any information it needs as that
