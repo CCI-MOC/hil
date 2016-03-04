@@ -3,17 +3,12 @@
 This document represents the developer policies and procedures for maintaining
 Hardware as a Service (HaaS), including the accepted [coding style](#Coding-style).
 
-Welcome! Overall, we follow the [github fork & pull
-model](http://scottchacon.com/2011/08/31/github-flow.html), where users fork
-the [main HaaS repository][repo], push changes to their personal fork and then
-create a [Pull Request][pr](PR) to merge it back to the master branch of the
-HaaS repository.
 
 ## Communicating
 
 * IRC: The MOC team hangs out on #moc on [freenode](https://www.freenode.net/)
-* IRL: The MOC group office is on the BU campus, at 3 Cummington Mall, Boston, MA room 451. Anyone interested in HaaS is welcome to drop in and work there.
-* Email: HaaS developers should subscribe to haas-dev-list@bu.edu by sending a plain text email to majordomo@bu.edu with "subscribe haas-dev-list" in the body.
+* IRL (In Real Life): The MOC group office is on the BU campus, at 3 Cummington Mall, Boston, MA room 451. Anyone interested in HaaS is welcome to drop in and work there.
+* Email: HaaS developers or anyone else wishing to stay up to date should subscribe to haas-dev-list@bu.edu by sending a plain text email to majordomo@bu.edu with "subscribe haas-dev-list" in the body.
 
 # Coding style
 
@@ -26,7 +21,7 @@ Departures are acceptable when called for, but should be discussed first.
 In certain cases, one will encounter heavily repeated code that gets run once per API call such as this:
 
 ```python
-    db = local.db
+db = local.db
 ```
 
 In these cases, it is preferred to keep a reference in "local", and use it directly. For example, instead of:
@@ -39,18 +34,28 @@ one should prefer:
 local.db.delete(...)
 ```
 
-# Prior to a pull request
+# Submitting code / Pull Requests
 
-This short list summarizes what should be done prior to a pull request:
+
+Overall, HaaS follows the [github fork & pull
+model](http://scottchacon.com/2011/08/31/github-flow.html) to integrate
+contributions, where users fork the [main HaaS repository][repo], push changes
+to their personal fork and then create a [Pull Request][pr](PR) to merge it
+into the master branch of the HaaS repository.
+
+## Prior to the pull request
+This summarizes what should be done prior to a pull request:
 
 - [ ] If functionality could have architectural implications or controversial, have a discussion with the team. Ideally, prior to coding to save effort.
-- [ ] Ensure any user, deployer or developer documentation is updated
+- [ ] Ensure any user, deployer or developer documentation is updated.
+- [ ] If a change affects an external API, be sure to update docs/rest\_api.md.
 - [ ] Testing:
-  - [ ] Ensure existing tests pass.
+  - [ ] Ensure unit tests pass by running `py.test tests/unit` from the top-level haas directory.
+  - [ ] Add unit tests in the corresponding file and create one if none are present.
+  - [ ] If practical, bug fixes should have an reproducing test to ensure that the bug does not come back.
   - [ ] Run deployment tests if code could affect switches
-  - [ ] Implement any new tests.
 
-## Get agreement
+### Get agreement
 
 The HaaS effort appreciates all ideas and submissions. In the past, we've
 discussed several alternatives to how things currently work (which we're trying
@@ -58,9 +63,9 @@ to get better about writing down), and it would be good to have agreement that
 includes input from these past discussions as well as the wisdom of the
 community. The best way to do this is to [file an
 issue](https://github.com/CCI-MOC/haas/issues) on github, email
-haas-dev-list@bu.edu or speak with one of the "core developers".
+haas-dev-list@bu.edu or speak with one of the core developers.
 
-## Documentation
+### Documentation
 
 * [Documentation listing](../README.rst#documentation)
 
@@ -73,7 +78,7 @@ While most end-user and developer documentation can be found in the documentatio
 (linked above), developer documentation may be found in the [docs
 directory](./).
 
-## Testing
+### Testing
 
 * [Testing document](testing.md)
 
@@ -88,7 +93,7 @@ should be added that provide adequate coverage.
 If fixing a bug, a regression test should accompany the bug fix to ensure that
 the bug does not return.
 
-# Code reviews / pull requests
+## Pull Requests
 
 Once the checklist above has been met, issue a [pull request][pr] from your
 personal fork to the [main HaaS repo][repo]. 
@@ -122,7 +127,7 @@ write up than simply to do, it can be considered a courtesy to check out the
 submitter's branch, make the changes yourself, then submit a Pull Request
 directly to the submitter's branch. This is especially helpful for
 documentation PRs. When doing so, it can help to notify the submitter directly
-as they may otherwise your pending PR.
+as they may otherwise miss your pending PR (they likely won't be expecting it).
 
 ## Approval criteria
 
