@@ -36,7 +36,6 @@ local.db.delete(...)
 
 # Submitting code / Pull Requests
 
-
 Overall, HaaS follows the [github fork & pull
 model](http://scottchacon.com/2011/08/31/github-flow.html) to integrate
 contributions, where users fork the [main HaaS repository][repo], push changes
@@ -61,9 +60,9 @@ The HaaS effort appreciates all ideas and submissions. In the past, we've
 discussed several alternatives to how things currently work (which we're trying
 to get better about writing down), and it would be good to have agreement that
 includes input from these past discussions as well as the wisdom of the
-community. The best way to do this is to [file an
-issue](https://github.com/CCI-MOC/haas/issues) on github, email
-haas-dev-list@bu.edu or speak with one of the core developers.
+community. The best way to do this is to email haas-dev-list@bu.edu, though you
+can also [file an issue](https://github.com/CCI-MOC/haas/issues) on github or
+speak with one of the core developers.
 
 ### Documentation
 
