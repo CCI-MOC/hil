@@ -125,7 +125,7 @@ class Node(Model):
     # The Obm info is fetched from the obm class and its respective subclass
     # pertaining to the node 
     obm_id = Column(Integer, ForeignKey('obm.id'), nullable=False)
-    obm = relationship("Obm", uselist=False, backref="node")
+    obm = relationship("Obm", uselist=False, backref="node", single_parent=True, cascade='all, delete-orphan')
 
 
 class Project(Model):
