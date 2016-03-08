@@ -25,7 +25,7 @@ return:
 
 Below is an example.
 
-## my_api_call
+# my_api_call
 
 `POST /url/path/to/<thing>`
 
@@ -327,25 +327,29 @@ Response body:
 
 `GET /node/<node>`
 
-Show detailed information about a node. The response includes the
-following fields:
+Show details of a node.
 
-* "name", the name/label of the node.
-* "project", indicates 'None' if the node is free or <project name> 
-	if it has been allocated to a project.
-* "nics", a list of nics, each represted by a JSON object having
-    at least the following fields:
-        * "label", the nic's label.
-        * "macaddr", the nic's mac address.
+Returns a JSON object representing a node.
+The object will have at least the following fields:
+
+        * "name", the name/label of the node (string).
+        * "project", the name of the project a node belongs to or null if the node does not belong to a project
+        * "nics", a list of nics, each represted by a JSON object having
+            at least the following fields:
+
+                - "label", the nic's label.
+                - "macaddr", the nic's mac address.
+		- "networks", a JSON object describing what networks are attached to the nic. The keys are channels and the values are the names of networks attached to those channels.
 
 Response body:
 
-    {
-        "name": "box02",
-        "project": "proj01",
-        "nics": ["ipmi", "pxe", "external",...]
-    }
-
+	{"name": "node1",
+	 "project": "project1",
+         "nics": [{"label": "nic1", "macaddr": "01:23:45:67:89", "networks": {"vlan/native": "pxe", "vlan/235": "storage"}},
+                       {"label": "nic2", "macaddr": "12:34:56:78:90", "networks":{"vlan/native": "public"}}]
+	}
+    
+   
 ## Projects
 
 ### project_create
