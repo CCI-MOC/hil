@@ -341,13 +341,58 @@ You should also set apache to start on boot::
 
   sudo chkconfig httpd on
 
-The networking server may be started by running::
+Running the network server:
+---------------------------
+
+Using systemd:
+--------------
+
+A systemd script for running the network server is available in the 'scripts' directory.
+Name of the script is: haas_network.service
+
+Centos:
+-------
+
+Centos uses systemd to controll all its processes. 
+
+Place the file haas_network.service under:
+``/usr/lib/systemd/system/``
+
+Ubuntu:
+-------
+Systemd is available from Ubuntu 15.04 onwards and LTS version 16.04 will ship with systemd by default.
+
+Place the file haas_network.service under:
+``/lib/systemd/system/``
+
+
+Starting the service:
+---------------------
+
+Following commands will start the daemon:
+``systemctl daemon-reload``
+``systemctl start haas_network``
+
+You can check the status using:
+``systemctl status haas_network``
+
+To auto-start the service on boot:
+``systemctl enable haas_network``
+
+
+For systems that do not support systemd:
+----------------------------------------
+Some systems like the LTS version of Ubuntu, Ubuntu 14.04 does not come with systemd pre-installed.
+It uses "Upstart" an equivalent of systemd to manage its daemons/processes.
+
+For such systems, the networking server may be started as the HaaS user by running::
 
   haas serve_networks &
 
-as the HaaS user. To make this happen on boot, add the following to ``/etc/rc.local``::
+To make this happen on boot, add the following to ``/etc/rc.local``::
 
   (cd /var/lib/haas && su haas_user -c 'haas serve_networks') &
+
 
 Congratulations- at this point, you should have a functional HaaS service running!
 
