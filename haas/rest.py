@@ -143,7 +143,7 @@ def _do_validation(schema, kwargs):
 
     `kwargs` should be the arguments to the API call pulled from the URL.
 
-    If the schema validates, this will return a dictioiniary of *all* of the
+    If the schema validates, this will return a dictionary of *all* of the
     arguments to the function, both from the URL and the body. The argument
     `kwargs` may be distructively updated.
 
@@ -152,7 +152,7 @@ def _do_validation(schema, kwargs):
     """
 
     def _validates(value):
-        """Retrun true if `schema` validates `value`, False otherwise.
+        """Return True if `schema` validates `value`, False otherwise.
 
         The schema library's `validate` method raises an exception, which is
         nice for short-circuting when just doing a simple check, but a bit
