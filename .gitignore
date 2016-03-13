@@ -10,3 +10,4 @@ dist
 *.db
 /haas.cfg
 /testsuite.cfg
+/.cache
