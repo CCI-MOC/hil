@@ -26,6 +26,7 @@ import inspect
 
 import flask
 
+from haas.flaskapp import app
 from haas.errors import APIError, ServerError, AuthorizationError
 from haas.config import cfg
 
@@ -34,7 +35,6 @@ from schema import Schema, SchemaError
 from haas import auth
 from haas.model import Session
 
-app = flask.Flask(__name__.split('.')[0])
 local = flask.g
 
 logger = logging.getLogger(__name__)
