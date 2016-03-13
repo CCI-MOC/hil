@@ -329,7 +329,7 @@ class Switch(Model):
     def session(self):
         """Return a session object for the switch.
 
-        Conceputally, a session is an active connection to the switch; it lets
+        Conceptually, a session is an active connection to the switch; it lets
         HaaS avoid connecting and disconnecting for each change. the session
         object must have the methods:
 
