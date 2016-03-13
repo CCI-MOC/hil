@@ -17,7 +17,6 @@ from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import relationship, sessionmaker,backref
 from subprocess import call, check_call, Popen, PIPE
-import subprocess
 from haas.network_allocator import get_network_allocator
 from haas.config import cfg
 from haas.dev_support import no_dry_run
