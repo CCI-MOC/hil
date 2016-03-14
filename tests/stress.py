@@ -1,6 +1,7 @@
 
 from haas.test_common import config_testsuite, fresh_database
 from haas import api, config, server, rest
+from haas.flaskapp import app
 
 import json
 import pytest
@@ -34,22 +35,26 @@ def test_many_http_queries():
     This is intended to shake out problems like the resource leak discussed
     in issue #454.
     """
-    with rest.app.test_request_context():
-        with rest.DBContext():
-            rest.init_auth()
+    # NOTE: Now that the session is managed by Flask-SQLAlchemy, failures here
+    # are unlikely to be regressions of the issue that #454 fixed; we're no
+    # longer managing the lifecycle of the session ourselves. It's not obvious
+    # that this is more than clutter now, but let's not be too trigger happy
+    # about deleting tests.
+    with app.test_request_context():
+        rest.init_auth()
 
-            api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
-            api.node_register('node-98', 'ipmihost', 'root', 'tapeworm')
-            api.node_register('node-97', 'ipmihost', 'root', 'tapeworm')
-            api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
-            api.node_register_nic('node-98', 'eth0', 'DE:AD:BE:EF:20:15')
-            api.node_register_nic('node-97', 'eth0', 'DE:AD:BE:EF:20:16')
-            api.project_create('anvil-nextgen')
-            api.project_create('anvil-legacy')
-            api.project_connect_node('anvil-nextgen', 'node-99')
-            api.project_connect_node('anvil-legacy', 'node-98')
+        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
+        api.node_register('node-98', 'ipmihost', 'root', 'tapeworm')
+        api.node_register('node-97', 'ipmihost', 'root', 'tapeworm')
+        api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.node_register_nic('node-98', 'eth0', 'DE:AD:BE:EF:20:15')
+        api.node_register_nic('node-97', 'eth0', 'DE:AD:BE:EF:20:16')
+        api.project_create('anvil-nextgen')
+        api.project_create('anvil-legacy')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.project_connect_node('anvil-legacy', 'node-98')
 
-    client = rest.app.test_client()
+    client = app.test_client()
 
     def _show_nodes(path):
         """Helper for the loop below.
