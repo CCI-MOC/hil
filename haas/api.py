@@ -143,8 +143,8 @@ def project_detach_node(project, node):
     for nic in node.nics:
         if nic.current_action is not None:
             raise BlockedError("Node has pending network actions")
-    node.stop_console()
-    node.delete_console()
+    node.obm.stop_console()
+    node.obm.delete_console()
     project.nodes.remove(node)
     local.db.commit()
 
@@ -183,29 +183,39 @@ def project_remove_user(project, user):
                             #############
 
 
-@rest_call('PUT', '/node/<node>')
-def node_register(node, ipmi_host, ipmi_user, ipmi_pass):
+@rest_call('PUT', '/node/<node>', schema=Schema({
+    'obm':{
+	'type': basestring, 
+	Optional(object):object,
+	},
+}))
+def node_register(node, **kwargs):
     """Create node.
 
     If the node already exists, a DuplicateError will be raised.
+    The node is initially registered with no nics; see the method node_register_nic.
     """
     _assert_absent(model.Node, node)
-    node = model.Node(node, ipmi_host, ipmi_user, ipmi_pass)
-    local.db.add(node)
+    obm_type = kwargs['obm']['type']
+    cls = concrete_class_for(model.Obm, obm_type)
+    if cls is None:
+        raise BadArgumentError('%r is not a valid OBM type.' % obm_type)
+    cls.validate(kwargs['obm'])
+    node_obj = model.Node(label=node, obm=cls(**kwargs['obm']))
+    local.db.add(node_obj)
     local.db.commit()
 
 
 @rest_call('POST', '/node/<node>/power_cycle')
 def node_power_cycle(node):
     node = _must_find(model.Node, node)
-    node.power_cycle()
+    node.obm.power_cycle()
 
 
 @rest_call('POST', '/node/<node>/power_off')
 def node_power_off(node):
-    db = model.Session()
-    node = _must_find(db, model.Node, node)
-    node.power_off()
+    node = _must_find(model.Node, node)
+    node.obm.power_off()
 
 
 @rest_call('DELETE', '/node/<node>')
@@ -218,15 +228,15 @@ def node_delete(node):
     if node.nics != []:
         raise BlockedError("Node %r has nics; remove them before deleting %r.",
                            (node.label, node.label))
-    node.stop_console()
-    node.delete_console()
+    node.obm.stop_console()
+    node.obm.delete_console()
     local.db.delete(node)
     local.db.commit()
 
 
 @rest_call('PUT', '/node/<node>/nic/<nic>')
 def node_register_nic(node, nic, macaddr):
-    """Register exitence of nic attached to given node.
+    """Register existence of nic attached to given node.
 
     If the node does not exist, a NotFoundError will be raised.
 
@@ -872,7 +882,7 @@ def list_headnode_images():
 def show_console(nodename):
     """Show the contents of the console log."""
     node = _must_find(model.Node, nodename)
-    log = node.get_console()
+    log = node.obm.get_console()
     if log is None:
         raise NotFoundError('The console log for %s '
                             'does not exist.' % nodename)
@@ -882,14 +892,14 @@ def show_console(nodename):
 def start_console(nodename):
     """Start logging output from the console."""
     node = _must_find(model.Node, nodename)
-    node.start_console()
+    node.obm.start_console()
 
 @rest_call('DELETE', '/node/<nodename>/console')
 def stop_console(nodename):
     """Stop logging output from the console and delete the log."""
     node = _must_find(model.Node, nodename)
-    node.stop_console()
-    node.delete_console()
+    node.obm.stop_console()
+    node.obm.delete_console()
 
 
     # Helper functions #

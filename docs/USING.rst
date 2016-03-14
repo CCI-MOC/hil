@@ -51,12 +51,16 @@ This is, as the filepath states, merely an example of how you might deploy to
 physical nodes.  Existing deployment systems such as Canonical's MAAS have also
 been run succesfully.
 
+Usage examples 
+====================
 
-Usage Examples
-=================
+Included herewith are some examples about
 
-Included herewith are some examples about using cli and api calls. 
+ -- Interacting with HaaS API directly using the curl utility.
+ -- And using equivalent cli calls are also included. 
 
+haas node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01
+=======
 
 
 1) Register a switch with HaaS:
@@ -83,6 +87,34 @@ cli call
 
        haas switch_register mockswitch02 mock switchhost01 switchuser01 password1234
 
+2) Registering a Node which uses IPMI for out of band management
+-------------------------------------------------------------
+
+
+   - **Node name:**  dummyNoderHaaS-02
+   - **Ipmi info:**
+      + **hostname:**           ipmiHost4node-02
+      + **ipmi_username:**      ipmiUser4node-02
+      + **ipmi_password:**      ipmiPass4node-02
+
+For nodes using IPMI use the following api call:
+
+
+::
+
+   curl -X PUT http://127.0.0.1:5001/node/dummyNode01 -d '
+   > {"obm": { "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+   > "host": "ipmiHost4node-01",
+   > "user": "ipmiUser4node-01",
+   > "password": "ipmiPass4node-01"
+   > }}'
+
+Corresponding cli calls will be as follows:
+
+
+::
+
+        haas node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01
+
+
  
-
-

@@ -25,6 +25,7 @@ from abc import ABCMeta, abstractmethod
 
 from haas.model import *
 from haas import config
+from haas.ext.obm.ipmi import Ipmi
 
 from haas.test_common import fresh_database, config_testsuite
 import pytest
@@ -76,15 +77,16 @@ class TestUsers(ModelTest):
 class TestNic(ModelTest):
 
     def sample_obj(self):
-        return Nic(Node('node-99', 'ipmihost', 'root', 'tapeworm'),
-                   'ipmi', '00:11:22:33:44:55')
+        return Nic(Node(label='node-99', obm=Ipmi(type="http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                  host= "ipmihost", user= "root", password= "tapeworm")), 'ipmi', '00:11:22:33:44:55')
+        
 
 
 class TestNode(ModelTest):
 
     def sample_obj(self):
-        return Node('node-99', 'ipmihost', 'root', 'tapeworm')
-
+	return Node(label='node-99', obm=Ipmi(type="http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                  host= "ipmihost", user= "root", password= "tapeworm"))
 
 class TestProject(ModelTest):
 
@@ -114,8 +116,8 @@ class TestNetwork(ModelTest):
 class TestNetworkingAction(ModelTest):
 
     def sample_obj(self):
-        nic = Nic(Node('node-99', 'ipmihost', 'root', 'tapeworm'),
-                  'ipmi', '00:11:22:33:44:55')
+	nic = Nic(Node(label='node-99', obm=Ipmi(type="http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                  host= "ipmihost", user= "root", password= "tapeworm")), 'ipmi', '00:11:22:33:44:55')
         project = Project('anvil-nextgen')
         network = Network(project, project, True, '102', 'hammernet')
         return NetworkingAction(nic=nic,
