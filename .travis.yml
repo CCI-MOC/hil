@@ -4,6 +4,6 @@ python:
 install: "python setup.py install"
 script: "py.test tests/unit"
 branches:
-	only:
-		- master
-		- dogfood
+    only:
+        - master
+        - dogfood
