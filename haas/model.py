@@ -13,10 +13,12 @@
 # governing permissions and limitations under the License.
 """core database objects for the HaaS"""
 
-from sqlalchemy import *
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import relationship, sessionmaker,backref
+# from sqlalchemy import *
+# from sqlalchemy.ext.declarative import declarative_base, declared_attr
+# from sqlalchemy.orm import relationship, sessionmaker,backref
+from flask.ext.sqlalchemy import SQLAlchemy
 from subprocess import call, check_call, Popen, PIPE
+from haas.flaskapp import app
 from haas.network_allocator import get_network_allocator
 from haas.config import cfg
 from haas.dev_support import no_dry_run
@@ -26,8 +28,8 @@ import xml.etree.ElementTree
 import logging
 import os
 
-Base=declarative_base()
-Session = sessionmaker()
+
+db = SQLAlchemy(app)
 
 
 def init_db(create=False, uri=None):
@@ -39,67 +41,34 @@ def init_db(create=False, uri=None):
     `uri` is the uri to use for the databse. If it is None, the uri from the
     config file will be used.
     """
-
-    if uri == None:
+    if uri is None:
         uri = cfg.get('database', 'uri')
-
-    engine = create_engine(uri)
-    if create:
-        Base.metadata.create_all(engine)
-    Session.configure(bind=engine)
-    if create:
-        get_network_allocator().populate(Session())
-
-class AnonModel(Base):
-    """A database model with a primary key, 'id', but no user-visible label
-
-    All our database models descend from this class.
-
-    Its main purpose is to reduce boilerplate by doing things such as
-    auto-generating table names.
-
-    Extensions may inherit from this class to create new talbles.
-    """
-    __abstract__ = True
-    id = Column(Integer, primary_key=True, nullable=False)
-
-    def __repr__(self):
-        return '%s<%r>' % (self.__class__.__name__, self.id)
-
-    @declared_attr
-    def __tablename__(cls):
-        """Automatically generate the table name."""
-        return cls.__name__.lower()
+    app.config.update(SQLALCHEMY_DATABASE_URI=uri)
+    if not create:
+        return
+    with app.app_context():
+        db.create_all()
+        get_network_allocator().populate(db.session)
+        db.session.commit()
 
 
-class Model(AnonModel):
-    """A database model with a primary key 'id' and a user-visible label.
-
-    All objects in the HaaS API are referenced by their 'label', so all such
-    objects descend from this class.
-
-    Extensions may inherit from this class to create new talbles.
-    """
-    __abstract__ = True
-    label = Column(String, nullable=False)
-
-    def __repr__(self):
-        return '%s<%r>' % (self.__class__.__name__, self.label)
-
-
-class Nic(Model):
+class Nic(db.Model):
     """a nic belonging to a Node"""
 
+    id = db.Column(db.Integer, primary_key=True)
+    label = db.Column(db.String, nullable=False)
+
     # The Node to which the nic belongs:
-    owner_id   = Column(ForeignKey('node.id'), nullable=False)
-    owner     = relationship("Node",backref=backref('nics'))
+    owner_id  = db.Column(db.ForeignKey('node.id'), nullable=False)
+    owner     = db.relationship("Node", backref=db.backref('nics'))
 
     # The mac address of the nic:
-    mac_addr  = Column(String)
+    mac_addr  = db.Column(db.String)
 
     # The switch port to which the nic is attached:
-    port_id   = Column(ForeignKey('port.id'))
-    port      = relationship("Port",backref=backref('nic',uselist=False))
+    port_id   = db.Column(db.ForeignKey('port.id'))
+    port      = db.relationship("Port",
+                                backref=db.backref('nic',uselist=False))
 
     def __init__(self, node, label, mac_addr):
         self.owner     = node
@@ -107,18 +76,20 @@ class Nic(Model):
         self.mac_addr  = mac_addr
 
 
-class Node(Model):
+class Node(db.Model):
     """a (physical) machine"""
+    id = db.Column(db.Integer, primary_key=True)
+    label = db.Column(db.String, nullable=False)
 
     # The project to which this node is allocated. If the project is null, the
     # node is unallocated:
-    project_id    = Column(ForeignKey('project.id'))
-    project       = relationship("Project",backref=backref('nodes'))
+    project_id = db.Column(db.ForeignKey('project.id'))
+    project    = db.relationship("Project",backref=db.backref('nodes'))
 
     # ipmi connection information:
-    ipmi_host = Column(String, nullable=False)
-    ipmi_user = Column(String, nullable=False)
-    ipmi_pass = Column(String, nullable=False)
+    ipmi_host = db.Column(db.String, nullable=False)
+    ipmi_user = db.Column(db.String, nullable=False)
+    ipmi_pass = db.Column(db.String, nullable=False)
 
     def __init__(self, label, ipmi_host, ipmi_user, ipmi_pass):
         """Register the given node.
@@ -226,43 +197,47 @@ class Node(Model):
         return '/var/run/haas_console_logs/%s.log' % self.ipmi_host
 
 
-class Project(Model):
+class Project(db.Model):
     """a collection of resources
 
     A project may contain allocated nodes, networks, and headnodes.
     """
+    id = db.Column(db.Integer, primary_key=True)
+    label = db.Column(db.String, nullable=False)
 
     def __init__(self, label):
         """Create a project with the given label."""
         self.label = label
 
 
-class Network(Model):
+class Network(db.Model):
     """A link-layer network.
 
     See docs/networks.md for more information on the parameters.
     """
+    id = db.Column(db.Integer, primary_key=True)
+    label = db.Column(db.String, nullable=False)
 
     # The project to which the network belongs, or None if the network was
     # created by the administrator.  This field determines who can delete a
     # network.
-    creator_id = Column(ForeignKey('project.id'))
-    creator    = relationship("Project",
-                              backref=backref('networks_created'),
-                              foreign_keys=[creator_id])
+    creator_id = db.Column(db.ForeignKey('project.id'))
+    creator    = db.relationship("Project",
+                                 backref=db.backref('networks_created'),
+                                 foreign_keys=[creator_id])
     # The project that has access to the network, or None if the network is
     # public.  This field determines who can connect a node or headnode to a
     # network.
-    access_id = Column(ForeignKey('project.id'))
-    access    = relationship("Project",
-                             backref=backref('networks_access'),
-                             foreign_keys=[access_id])
+    access_id = db.Column(db.ForeignKey('project.id'))
+    access    = db.relationship("Project",
+                                backref=db.backref('networks_access'),
+                                foreign_keys=[access_id])
     # True if network_id was allocated by the driver; False if it was
     # assigned by an administrator.
-    allocated = Column(Boolean)
+    allocated = db.Column(db.Boolean)
 
     # An identifier meaningful to the networking driver:
-    network_id    = Column(String, nullable=False)
+    network_id    = db.Column(db.String, nullable=False)
 
     def __init__(self, creator, access, allocated, network_id, label):
         """Create a network.
@@ -278,14 +253,16 @@ class Network(Model):
         self.label = label
 
 
-class Port(Model):
+class Port(db.Model):
     """a port on a switch
 
     The port's label is an identifier that is meaningful only to the
     corresponding switch's driver.
     """
-    owner_id = Column(ForeignKey('switch.id'), nullable=False)
-    owner = relationship('Switch', backref=backref('ports'))
+    id       = db.Column(db.Integer, primary_key=True)
+    label    = db.Column(db.String, nullable=False)
+    owner_id = db.Column(db.ForeignKey('switch.id'), nullable=False)
+    owner    = db.relationship('Switch', backref=db.backref('ports'))
 
     def __init__(self, label, switch):
         """Register a port on a switch."""
@@ -293,7 +270,7 @@ class Port(Model):
         self.owner = switch
 
 
-class Switch(Model):
+class Switch(db.Model):
     """A network switch.
 
     This is meant to be subclassed by switch-specific drivers, implemented
@@ -301,8 +278,10 @@ class Switch(Model):
 
     Subclasses MUST override both ``validate`` and ``session``.
     """
+    id = db.Column(db.Integer, primary_key=True)
+    label = db.Column(db.String, nullable=False)
 
-    type = Column(String, nullable=False)
+    type = db.Column(db.String, nullable=False)
 
     __mapper_args__ = {
         'polymorphic_identity': 'switch',
@@ -375,20 +354,22 @@ def _on_virt_uri(args_list):
     return [args_list[0], '--connect', libvirt_endpoint] + args_list[1:]
 
 
-class Headnode(Model):
+class Headnode(db.Model):
     """A virtual machine used to administer a project."""
+    id = db.Column(db.Integer, primary_key=True)
+    label = db.Column(db.String, nullable=False)
 
     # The project to which this Headnode belongs:
-    project_id = Column(ForeignKey('project.id'), nullable=False)
-    project = relationship("Project", backref=backref('headnodes', uselist=True))
+    project_id = db.Column(db.ForeignKey('project.id'), nullable=False)
+    project = db.relationship("Project", backref=db.backref('headnodes', uselist=True))
 
     # True iff there are unapplied changes to the Headnode:
-    dirty = Column(Boolean, nullable=False)
-    base_img = Column(String, nullable=False)
+    dirty = db.Column(db.Boolean, nullable=False)
+    base_img = db.Column(db.String, nullable=False)
 
     # We need a guaranteed unique name to generate the libvirt machine name;
     # The name is therefore a function of a uuid:
-    uuid = Column(String, nullable=False, unique=True)
+    uuid = db.Column(db.String, nullable=False, unique=True)
 
     def __init__(self, project, label, base_img):
         """Create a headnode belonging to `project` with the given label."""
@@ -478,16 +459,18 @@ class Headnode(Model):
         return None
 
 
-class Hnic(Model):
+class Hnic(db.Model):
     """a network interface for a Headnode"""
+    id = db.Column(db.Integer, primary_key=True)
+    label = db.Column(db.String, nullable=False)
 
     # The Headnode to which this Hnic belongs:
-    owner_id    = Column(ForeignKey('headnode.id'), nullable=False)
-    owner       = relationship("Headnode", backref = backref('hnics'))
+    owner_id    = db.Column(db.ForeignKey('headnode.id'), nullable=False)
+    owner       = db.relationship("Headnode", backref=db.backref('hnics'))
 
     # The network to which this Hnic is attached.
-    network_id  = Column(ForeignKey('network.id'))
-    network     = relationship("Network", backref=backref('hnics'))
+    network_id  = db.Column(db.ForeignKey('network.id'))
+    network     = db.relationship("Network", backref=db.backref('hnics'))
 
     def __init__(self, headnode, label):
         """Create an Hnic attached to the given headnode. with the given label."""
@@ -514,31 +497,35 @@ class Hnic(Model):
                                  '--config']))
 
 
-class NetworkingAction(AnonModel):
+class NetworkingAction(db.Model):
     """A journal entry representing a pending networking change."""
+    id = db.Column(db.Integer, primary_key=True)
 
     # This model is not visible in the API, so inherit from AnonModel
 
-    nic_id         = Column(ForeignKey('nic.id'), nullable=False)
-    new_network_id = Column(ForeignKey('network.id'), nullable=True)
-    channel        = Column(String, nullable=False)
+    nic_id         = db.Column(db.ForeignKey('nic.id'), nullable=False)
+    new_network_id = db.Column(db.ForeignKey('network.id'), nullable=True)
+    channel        = db.Column(db.String, nullable=False)
 
-    nic = relationship("Nic", backref=backref('current_action', uselist=False))
-    new_network = relationship("Network",
-                               backref=backref('scheduled_nics',
-                                               uselist=True))
+    nic = db.relationship("Nic",
+                          backref=db.backref('current_action', uselist=False))
+    new_network = db.relationship("Network",
+                                  backref=db.backref('scheduled_nics',
+                                                     uselist=True))
 
 
-class NetworkAttachment(AnonModel):
+class NetworkAttachment(db.Model):
     """An attachment of a network to a particular nic on a channel"""
+    id = db.Column(db.Integer, primary_key=True)
+
     # TODO: it would be nice to place explicit unique constraints on some
     # things:
     #
     # * (nic_id, network_id)
     # * (nic_id, channel)
-    nic_id     = Column(ForeignKey('nic.id'),     nullable=False)
-    network_id = Column(ForeignKey('network.id'), nullable=False)
-    channel    = Column(String, nullable=False)
+    nic_id     = db.Column(db.ForeignKey('nic.id'),     nullable=False)
+    network_id = db.Column(db.ForeignKey('network.id'), nullable=False)
+    channel    = db.Column(db.String, nullable=False)
 
-    nic     = relationship('Nic', backref=backref('attachments'))
-    network = relationship('Network', backref=backref('attachments'))
+    nic     = db.relationship('Nic',     backref=db.backref('attachments'))
+    network = db.relationship('Network', backref=db.backref('attachments'))

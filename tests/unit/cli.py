@@ -5,16 +5,6 @@ import signal
 from subprocess import check_call, Popen
 from time import sleep
 
-config = """
-[headnode]
-base_imgs = base-headnode, img1, img2, img3, img4
-[database]
-uri = sqlite:///haas.db
-[extensions]
-haas.ext.auth.null =
-haas.ext.network_allocators.null =
-"""
-
 
 @pytest.fixture(autouse=True)
 def make_config(request):
@@ -22,6 +12,18 @@ def make_config(request):
     cwd = os.getcwd()
     os.chdir(tmpdir)
     with open('haas.cfg', 'w') as f:
+        # We need to make sure the database ends up in the tmpdir directory,
+        # and Flask-SQLAlchemy doesn't seem to want to do relative paths, so
+        # we can't just do a big string literal.
+        config = '\n'.join([
+            '[headnode]',
+            'base_imgs = base-headnode, img1, img2, img3, img4',
+            '[database]',
+            'uri = sqlite:///%s/haas.db' % tmpdir,
+            '[extensions]',
+            'haas.ext.auth.null =',
+            'haas.ext.network_allocators.null =',
+        ])
         f.write(config)
 
     def cleanup():

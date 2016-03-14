@@ -23,9 +23,7 @@ import re
 import schema
 import logging
 
-from sqlalchemy import Column, String, Integer, ForeignKey
-
-from haas.model import Switch
+from haas.model import db, Switch
 from haas.ext.switches import _console
 
 logger = logging.getLogger(__name__)
@@ -38,11 +36,11 @@ class Nexus(Switch):
         'polymorphic_identity': api_name,
     }
 
-    id = Column(Integer, ForeignKey('switch.id'), primary_key=True)
-    hostname = Column(String, nullable=False)
-    username = Column(String, nullable=False)
-    password = Column(String, nullable=False)
-    dummy_vlan = Column(String, nullable=False)
+    id = db.Column(db.Integer, db.ForeignKey('switch.id'), primary_key=True)
+    hostname = db.Column(db.String, nullable=False)
+    username = db.Column(db.String, nullable=False)
+    password = db.Column(db.String, nullable=False)
+    dummy_vlan = db.Column(db.String, nullable=False)
 
     @staticmethod
     def validate(kwargs):

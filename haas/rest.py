@@ -17,9 +17,7 @@ The main things of interest in this module are:
 
     * `app`, the flask application itself.
     * The decorator `rest_call`
-    * The variable `local`. `local.db` is a SQLAlchemy session object which
-      is local to the current request. It is cleaned up automatically when the
-      request finishes (rolling back any changes which have not been comitted).
+    * The variable `local`, which is an alias for `flask.g`
 """
 import logging
 import inspect
@@ -33,7 +31,6 @@ from haas.config import cfg
 from schema import Schema, SchemaError
 
 from haas import auth
-from haas.model import Session
 
 local = flask.g
 
@@ -212,10 +209,9 @@ def _rest_wrapper(f, schema):
     def wrapper(**kwargs):
         kwargs = _do_validation(schema, kwargs)
         logger.debug('Got api call: %s(%s)' %
-                        (f.__name__, _format_arglist(**kwargs)))
-        with DBContext():
-            init_auth()
-            return f(**kwargs)
+                     (f.__name__, _format_arglist(**kwargs)))
+        init_auth()
+        return f(**kwargs)
     return wrapper
 
 
@@ -229,20 +225,6 @@ def _format_arglist(*args, **kwargs):
     for k, v in kwargs.iteritems():
         args.append('%s=%r' % (k, v))
     return ', '.join(args)
-
-
-class DBContext(object):
-    """Context manager to set up a database session for the request handler
-
-    This is used internally by the request handler, but is exposed to make
-    testing easier.
-    """
-
-    def __enter__(self):
-        local.db = Session()
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        local.db.close()
 
 
 def init_auth():

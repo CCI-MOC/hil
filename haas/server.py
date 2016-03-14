@@ -3,6 +3,7 @@ import sys
 # api must be loaded to register the api callbacks, even though we don't
 # call it directly from this module:
 from haas import model, api, auth
+from haas.model import db
 from haas.class_resolver import build_class_map_for
 from haas.network_allocator import get_network_allocator
 
@@ -42,8 +43,7 @@ def stop_orphan_consoles():
     These may exist if HaaS was shut down ucleanly.
     """
     # Stop all orphan console logging processes on startup
-    db = model.Session()
-    nodes = db.query(model.Node).all()
+    nodes = db.session.query(model.Node).all()
     for node in nodes:
         node.stop_console()
         node.delete_console()

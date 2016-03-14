@@ -3,9 +3,8 @@
 import logging
 
 from haas.network_allocator import NetworkAllocator, set_network_allocator
-from haas.model import AnonModel
+from haas.model import db
 from haas.config import cfg
-from sqlalchemy import Column, Integer, Boolean
 
 
 def get_vlan_list():
@@ -60,7 +59,7 @@ class VlanAllocator(NetworkAllocator):
         return "vlan/native"
 
 
-class Vlan(AnonModel):
+class Vlan(db.Model):
     """A VLAN for the Dell switch
 
     This is used to track which vlan numbers are available; when a Network is
@@ -70,8 +69,9 @@ class Vlan(AnonModel):
     2. The VLAN number is actually allocated to the HaaS; on some deployments we
        may have specific vlan numbers that we are allowed to use.
     """
-    vlan_no = Column(Integer, nullable=False, unique=True)
-    available = Column(Boolean, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    vlan_no = db.Column(db.Integer, nullable=False, unique=True)
+    available = db.Column(db.Boolean, nullable=False)
 
     def __init__(self, vlan_no):
         self.vlan_no = vlan_no

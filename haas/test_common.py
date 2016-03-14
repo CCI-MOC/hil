@@ -14,7 +14,7 @@
 
 from haas.model import *
 from haas.config import cfg
-from haas.rest import app, DBContext, init_auth
+from haas.rest import app, init_auth
 from haas import api, config
 from StringIO import StringIO
 from abc import ABCMeta, abstractmethod
@@ -117,15 +117,13 @@ def network_create_simple(network, project):
 
 def newDB():
     """Configures and returns a connection to a freshly initialized DB."""
-    init_db(create=True)
-    return Session()
+    with app.app_context():
+        init_db(create=True)
 
-def releaseDB(db):
+def releaseDB():
     """Do we need to do anything here to release resources?"""
-    db.close_all()
-    # According to the documentation, we shouldn't need the Session().bind, but this
-    # breaks without it.
-    Base.metadata.drop_all(Session().bind)
+    with app.app_context():
+        db.drop_all()
 
 def fresh_database(request):
     """Runs the test against a newly populated DB.
@@ -135,9 +133,8 @@ def fresh_database(request):
 
     This must run *after* the config file (or equivalent) has been loaded.
     """
-    db = newDB()
-    request.addfinalizer(lambda: releaseDB(db))
-    return db
+    newDB()
+    request.addfinalizer(lambda: releaseDB())
 
 
 def with_request_context():
@@ -148,9 +145,8 @@ def with_request_context():
     this module, must be declared as such in the test module itself.
     """
     with app.test_request_context():
-        with DBContext():
-            init_auth()
-            yield
+        init_auth()
+        yield
 
 
 class ModelTest:
@@ -174,8 +170,8 @@ class ModelTest:
     def test_repr(self):
         print(self.sample_obj())
 
-    def test_insert(self, db):
-        db.add(self.sample_obj())
+    def test_insert(self):
+        db.session.add(self.sample_obj())
 
 
 class NetworkTest:

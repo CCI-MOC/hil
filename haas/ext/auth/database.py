@@ -3,30 +3,33 @@
 Includes API calls for managing users.
 """
 from haas import api, model, auth
+from haas.model import db
 from haas.auth import get_auth_backend
 from haas.rest import rest_call, local
 from haas.errors import *
-from sqlalchemy import Column, ForeignKey, String, Boolean, Table
-from sqlalchemy.orm import relationship
 from passlib.hash import sha512_crypt
 from schema import Schema, Optional
 import flask
 
 
-class User(model.Model):
+class User(db.Model):
     """A user of the HaaS.
 
     A user can be a member of any number of projects, which grants them access
     to that process's resources. A user may also be flagged as an administrator.
     """
+    id = db.Column(db.Integer, primary_key=True)
+    label = db.Column(db.String, nullable=False)
 
-    is_admin = Column(Boolean, nullable=False, default=False)
+    is_admin = db.Column(db.Boolean, nullable=False, default=False)
     # The user's salted & hashed password. We currently use sha512 as the
     # hashing algorithm:
-    hashed_password = Column(String)
+    hashed_password = db.Column(db.String)
 
     # The projects of which the user is a member.
-    projects = relationship('Project', secondary='user_projects', backref='users')
+    projects = db.relationship('Project',
+                               secondary='user_projects',
+                               backref='users')
 
     def __init__(self, label, password, is_admin=False):
         """Create a user `label` with the specified (plaintext) password."""
@@ -44,9 +47,9 @@ class User(model.Model):
 
 
 # A joining table for users and projects, which have a many to many relationship:
-user_projects = Table('user_projects', model.Base.metadata,
-                      Column('user_id', ForeignKey('user.id')),
-                      Column('project_id', ForeignKey('project.id')))
+user_projects = db.Table('user_projects',
+                         db.Column('user_id', db.ForeignKey('user.id')),
+                         db.Column('project_id', db.ForeignKey('project.id')))
 
 
 @rest_call('PUT', '/auth/basic/user/<user>', schema=Schema({
@@ -65,8 +68,8 @@ def user_create(user, password, is_admin=False):
     api._assert_absent(User, user)
 
     user = User(user, password, is_admin=is_admin)
-    local.db.add(user)
-    local.db.commit()
+    db.session.add(user)
+    db.session.commit()
 
 
 @rest_call('DELETE', '/auth/basic/user/<user>')
@@ -81,8 +84,8 @@ def user_delete(user):
     # haas.api:
     user = api._must_find(User, user)
 
-    local.db.delete(user)
-    local.db.commit()
+    db.session.delete(user)
+    db.session.commit()
 
 
 @rest_call('POST', '/auth/basic/user/<user>/add_project')
@@ -98,7 +101,7 @@ def user_add_project(user, project):
         raise DuplicateError('User %s is already in project %s'%
                              (user.label, project.label))
     user.projects.append(project)
-    local.db.commit()
+    db.session.commit()
 
 
 @rest_call('POST', '/auth/basic/user/<user>/remove_project')
@@ -114,7 +117,7 @@ def user_remove_project(user, project):
         raise NotFoundError("User %s is not in project %s"%
                             (user.label, project.label))
     user.projects.remove(project)
-    local.db.commit()
+    db.session.commit()
 
 
 class DatabaseAuthBackend(auth.AuthBackend):
