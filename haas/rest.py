@@ -221,7 +221,7 @@ def request_handler(request):
                              k, f.__name__, f.__name__)
                 raise InternalServerError()
             request_data[k] = v
-        logger.debug('Recieved api call %s(%s)', f.__name__, _format_arglist(**request_data))
+        logger.debug('Received api call %s(%s)', f.__name__, _format_arglist(**request_data))
         with RequestContext():
             result = f(**request_data)
         if result is None:

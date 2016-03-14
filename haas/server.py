@@ -8,7 +8,7 @@ from haas.network_allocator import get_network_allocator
 
 
 def register_drivers():
-    """Put all of the loaded drviers somewhere where the server can find them.
+    """Put all of the loaded drivers somewhere where the server can find them.
 
     This must be run *after* extensions have been loaded.
     """
@@ -33,7 +33,7 @@ def validate_state():
 def stop_orphan_consoles():
     """Stop any orphaned console logging processes.
 
-    These may exist if HaaS was shut down ucleanly.
+    These may exist if HaaS was shut down uncleanly.
     """
     # Stop all orphan console logging processes on startup
     db = model.Session()
@@ -46,7 +46,7 @@ def stop_orphan_consoles():
 def init(init_db=False, stop_consoles=False):
     """Set up the api server's internal state.
 
-    This is a convienience wrapper that calls the other setup routines in
+    This is a convenience wrapper that calls the other setup routines in
     this module in the correct order, as well as ``model.init_db``
     """
     register_drivers()
