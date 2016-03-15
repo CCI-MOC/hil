@@ -19,6 +19,7 @@ difficult to run in other contexts.
 """
 
 from haas.test_common import *
+from haas.dev_support import have_dry_run
 from haas import config, server, rest
 import pytest
 
@@ -51,19 +52,21 @@ pytestmark = pytest.mark.usefixtures('configure',
 
 class TestHeadNode:
 
-    def test_headnode(self, db):
+    def test_headnode(self):
         api.project_create('anvil-nextgen')
         network_create_simple('spider-web', 'anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hnic-0')
         api.headnode_connect_network('hn-0', 'hnic-0', 'spider-web')
+        if have_dry_run():
+            pytest.xfail("Running in dry-run mode; can't talk to libvirt.")
         assert json.loads(api.show_headnode('hn-0'))['vncport'] is None
         api.headnode_start('hn-0')
         assert json.loads(api.show_headnode('hn-0'))['vncport'] is not None
         api.headnode_stop('hn-0')
         api.headnode_delete('hn-0')
 
-    def test_headnode_deletion_while_running(self, db):
+    def test_headnode_deletion_while_running(self):
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode-2')
         api.headnode_start('hn-0')

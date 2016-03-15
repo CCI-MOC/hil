@@ -17,6 +17,11 @@ from haas import config
 from functools import wraps
 
 
+def have_dry_run():
+    """Detect True if we're executing in dry_run mode, False otherwise."""
+    return config.cfg.has_option('devel', 'dry_run')
+
+
 def no_dry_run(f):
     """A decorator which "disables" a function during a dry run.
 
@@ -35,7 +40,7 @@ def no_dry_run(f):
     """
     @wraps(f)
     def wrapper(*args, **kwargs):
-        if config.cfg.has_option('devel', 'dry_run'):
+        if have_dry_run():
             logger = logging.getLogger(__name__)
             logger.info('dry run, not executing: %s.%s(*%r,**%r)' %
                          (f.__module__, f.__name__, args, kwargs))

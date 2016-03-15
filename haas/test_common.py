@@ -211,12 +211,12 @@ class NetworkTest:
                 ports.append(nic.port)
         return ports
 
-    def collect_nodes(self, db):
+    def collect_nodes(self):
         """Add 4 available nodes with nics to the project.
 
         If there are not enough nodes, this will rais an api.AllocationError.
         """
-        free_nodes = db.query(Node).filter_by(project_id=None).all()
+        free_nodes = db.session.query(Node).filter_by(project_id=None).all()
         nodes = []
         for node in free_nodes:
             if len(node.nics) > 0:
@@ -270,8 +270,7 @@ def headnode_cleanup(request):
     """
 
     def undefine_headnodes():
-        db = Session()
-        for hn in db.query(Headnode):
+        for hn in db.session.query(Headnode):
             # XXX: Our current version of libvirt has a bug that causes this
             # command to hang for a minute and throw an error before
             # completing successfully.  For this reason, we are ignoring any
