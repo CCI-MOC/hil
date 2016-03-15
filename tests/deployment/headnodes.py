@@ -29,9 +29,7 @@ def configure():
     config.load_extensions()
 
 
-@pytest.fixture
-def db(request):
-    return fresh_database(request)
+fresh_database = pytest.fixture(fresh_database)
 
 
 @pytest.fixture
@@ -46,7 +44,7 @@ with_request_context = pytest.yield_fixture(with_request_context)
 headnode_cleanup = pytest.fixture(headnode_cleanup)
 pytestmark = pytest.mark.usefixtures('configure',
                                      'server_init',
-                                     'db',
+                                     'fresh_database',
                                      'with_request_context',
                                      'headnode_cleanup')
 

@@ -13,9 +13,7 @@ def configure():
     config.load_extensions()
 
 
-@pytest.fixture
-def db(request):
-    return fresh_database(request)
+fresh_database = pytest.fixture(fresh_database)
 
 
 @pytest.fixture
@@ -25,7 +23,7 @@ def server_init():
 
 
 pytestmark = pytest.mark.usefixtures('configure',
-                                     'db',
+                                     'fresh_database',
                                      'server_init')
 
 

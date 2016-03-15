@@ -27,16 +27,17 @@ from haas import config
 from haas.test_common import fresh_database, config_testsuite, ModelTest
 import pytest
 
+
 @pytest.fixture
 def configure():
     config_testsuite()
     config.load_extensions()
 
-@pytest.fixture
-def db(request):
-    return fresh_database(request)
 
-pytestmark = pytest.mark.usefixtures('configure', 'db')
+fresh_database = pytest.fixture(fresh_database)
+
+
+pytestmark = pytest.mark.usefixtures('configure', 'fresh_database')
 
 
 class TestNic(ModelTest):
