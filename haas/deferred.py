@@ -51,11 +51,6 @@ def apply_networking():
         nic = action.nic
         network = action.new_network
         if nic.port:
-            if network:
-                network_id = network.network_id
-            else:
-                network_id = None
-
             switch = nic.port.owner
             if switch.label not in switch_sessions:
                 switch_sessions[switch.label] = switch.session()
