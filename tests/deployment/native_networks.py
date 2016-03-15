@@ -97,7 +97,7 @@ class TestNativeNetwork(NetworkTest):
 
         def delete_networks():
             # Query the DB for nodes on this project
-            project = api._must_find(db, model.Project, 'anvil-nextgen')
+            project = api._must_find(model.Project, 'anvil-nextgen')
             nodes = project.nodes
             ports = self.get_all_ports(nodes)
 
