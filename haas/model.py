@@ -393,6 +393,7 @@ class Headnode(db.Model):
         for hnic in self.hnics:
             hnic.create()
 
+    @no_dry_run
     def delete(self):
         """Delete the vm, including associated storage"""
         # Don't check return value.  If the headnode was powered off, this
