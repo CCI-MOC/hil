@@ -18,7 +18,11 @@ setup(name='haas',
       version='0.2rc2',
       url='https://github.com/CCI-MOC/haas',
       packages=find_packages(),
+      # TODO: we should merge scripts into entry_points, below.
       scripts=['scripts/haas', 'scripts/create_bridges'],
+      entry_points={
+          'console_scripts': ['haas-admin=haas.commands.admin:main'],
+      },
       install_requires=['Flask-SQLAlchemy',
                         'Werkzeug>=0.9.4,<0.10',
                         'Flask>=0.10.1,<0.11',
