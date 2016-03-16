@@ -11,7 +11,15 @@
 # IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
-"""core database objects for the HaaS"""
+"""Core database logic for HaaS
+
+This module defines a number of built-in database objects used by HaaS.
+In addition, it provides some general infrastructure for dealing with the
+database.
+
+Extensions are permitted to create new database objects by subclassing from
+`db.Model`.
+"""
 
 # from sqlalchemy import *
 # from sqlalchemy.ext.declarative import declarative_base, declared_attr

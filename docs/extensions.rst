@@ -34,8 +34,7 @@ Extension-approved components currently include:
 * Most of haas.network_allocator
 * haas.auth
 * From haas.model:
-    * AnonModel
-    * Model
+    * db.Model
     * Switch
 
 See the docstrings for each component for details.
