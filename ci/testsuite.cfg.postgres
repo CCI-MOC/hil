@@ -1,0 +1,12 @@
+# This is almost exactly testsuite.cfg.default; the only difference is that we
+# use postgres for the datbase. This is desigend for running the usual test
+# suite against postgres on travis ci.
+[extensions]
+haas.ext.network_allocators.null =
+haas.ext.auth.null =
+[devel]
+dry_run = True
+[headnode]
+base_imgs = base-headnode, img1, img2, img3, img4
+[database]
+uri = postgresql://postgres@localhost/haas_travis
