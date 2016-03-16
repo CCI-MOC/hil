@@ -54,7 +54,6 @@ class TestRegisterCorrectObm:
     """Tests that node_register stores obm driver information into 
     correct corresponding tables
     """
-
     def test_ipmi(self, db):
 	api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
