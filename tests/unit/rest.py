@@ -205,6 +205,26 @@ def _is_error(resp, errtype):
         return False
 
 
+class TestNoneReturnValue(HttpTest):
+    """Test returning None from API calls.
+
+    Flask itself doesn't allow this, but we've been doing it for a long time
+    so our wrapper supports it. This test verifies that it ctually works.
+    """
+
+    def setUp(self):
+        HttpTest.setUp(self)
+
+        @rest.rest_call('GET', '/nothing')
+        def api_call():
+            return None
+
+    def test_none_return(self):
+        resp = self.client.get('/nothing')
+        assert resp.status_code == 200
+        assert resp.get_data() == ''
+
+
 class TestValidationError(HttpTest):
     """basic tests for input validation."""
 

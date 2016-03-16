@@ -202,6 +202,7 @@ def _rest_wrapper(f, schema):
     * Validate the current request agains the schema.
     * Implement the exception handling described in the documentation to
       `rest_call`.
+    * Convert `None` return values to empty bodies.
 
     The result of this is suitable to hand directly to flask.
     """
@@ -211,7 +212,10 @@ def _rest_wrapper(f, schema):
         logger.debug('Got api call: %s(%s)' %
                      (f.__name__, _format_arglist(**kwargs)))
         init_auth()
-        return f(**kwargs)
+        ret = f(**kwargs)
+        if ret is None:
+            ret = ''
+        return ret
     return wrapper
 
 
