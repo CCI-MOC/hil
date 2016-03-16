@@ -25,22 +25,22 @@ class NullNetworkAllocator(NetworkAllocator):
 
     Conforms to the interface specified for its superclass, NetworkAllocator.
     """
-    def get_new_network_id(self, db):
+    def get_new_network_id(self):
         return str(uuid.uuid1())
 
-    def free_network_id(self, db, net_id):
+    def free_network_id(self, net_id):
         pass
 
-    def populate(self, db):
+    def populate(self):
         pass
 
-    def legal_channels_for(self, db, net_id):
+    def legal_channels_for(self, net_id):
         return ["null"]
 
-    def is_legal_channel_for(self, db, channel_id, net_id):
+    def is_legal_channel_for(self, channel_id, net_id):
         return channel_id == "null"
 
-    def get_default_channel(self, db):
+    def get_default_channel(self):
         return "null"
 
 

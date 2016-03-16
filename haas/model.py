@@ -62,7 +62,7 @@ def init_db(create=False, uri=None):
         return
     with app.app_context():
         db.create_all()
-        get_network_allocator().populate(db.session)
+        get_network_allocator().populate()
         db.session.commit()
 
 

@@ -270,12 +270,12 @@ def node_connect_network(node, nic, network, channel=None):
         raise BlockedError("The network is already attached to the nic.")
 
     if channel is None:
-        channel = allocator.get_default_channel(db.session)
+        channel = allocator.get_default_channel()
 
     if _have_attachment(nic, model.NetworkAttachment.channel == channel):
         raise BlockedError("The channel is already in use on the nic.")
 
-    if not allocator.is_legal_channel_for(db.session, channel, network.network_id):
+    if not allocator.is_legal_channel_for(channel, network.network_id):
         raise BadArgumentError("Channel %r, is not legal for this network." %
                                channel)
 
@@ -539,7 +539,7 @@ def network_create(network, creator, access, net_id):
 
     # Allocate net_id, if requested
     if net_id == "":
-        net_id = get_network_allocator().get_new_network_id(db.session)
+        net_id = get_network_allocator().get_new_network_id()
         if net_id is None:
             raise AllocationError('No more networks')
         allocated = True
@@ -576,7 +576,7 @@ def network_delete(network):
     if len(network.scheduled_nics) != 0:
         raise BlockedError("There are pending actions on this network")
     if network.allocated:
-        get_network_allocator().free_network_id(db.session, network.network_id)
+        get_network_allocator().free_network_id(network.network_id)
 
     db.session.delete(network)
     db.session.commit()
@@ -599,7 +599,7 @@ def show_network(network):
 
     result = {
         'name': network.label,
-        'channels': allocator.legal_channels_for(db.session, network.network_id),
+        'channels': allocator.legal_channels_for(network.network_id),
     }
     if network.creator is None:
         result['creator'] = 'admin'

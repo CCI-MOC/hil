@@ -137,7 +137,7 @@ def initial_db(request):
         for net in networks:
             if net['allocated']:
                 net['network_id'] = \
-                    get_network_allocator().get_new_network_id(db.session)
+                    get_network_allocator().get_new_network_id()
             db.session.add(model.Network(**net))
 
         # ... Two switches. One of these is just empty, for testing deletion:

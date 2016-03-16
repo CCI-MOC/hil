@@ -1254,14 +1254,14 @@ class TestQuery:
                     'label': 'eth0',
                     'macaddr': 'DE:AD:BE:EF:20:14',
                     "networks": {
-                        get_network_allocator().get_default_channel(db): 'pxe'
+                        get_network_allocator().get_default_channel(): 'pxe'
                     }
                 },
                 {
                     'label': 'wlan0',
                     'macaddr': 'DE:AD:BE:EF:20:15',
                     "networks": {
-                        get_network_allocator().get_default_channel(db): 'storage'
+                        get_network_allocator().get_default_channel(): 'storage'
                     }
                 }
             ],

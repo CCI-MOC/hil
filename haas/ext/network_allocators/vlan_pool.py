@@ -26,36 +26,36 @@ def get_vlan_list():
 class VlanAllocator(NetworkAllocator):
     """A allocator of VLANs. The interface is as specified in ``NetworkAllocator``."""
 
-    def get_new_network_id(self, db):
-        vlan = db.query(Vlan).filter_by(available=True).first()
+    def get_new_network_id(self):
+        vlan = db.session.query(Vlan).filter_by(available=True).first()
         if not vlan:
             return None
         vlan.available = False
         returnee = str(vlan.vlan_no)
         return returnee
 
-    def free_network_id(self, db, net_id):
-        vlan = db.query(Vlan).filter_by(vlan_no=net_id).first()
+    def free_network_id(self, net_id):
+        vlan = db.session.query(Vlan).filter_by(vlan_no=net_id).first()
         if not vlan:
             logger = logging.getLogger(__name__)
             logger.error('vlan %s does not exist in database' % net_id)
             return
         vlan.available = True
 
-    def populate(self, db):
+    def populate(self):
         vlan_list = get_vlan_list()
         for vlan in vlan_list:
-            db.add(Vlan(vlan))
-        db.commit()
+            db.session.add(Vlan(vlan))
+        db.session.commit()
 
-    def legal_channels_for(self, db, net_id):
+    def legal_channels_for(self, net_id):
         return ["vlan/native",
                 "vlan/" + net_id]
 
-    def is_legal_channel_for(self, db, channel_id, net_id):
-        return channel_id in self.legal_channels_for(db, net_id)
+    def is_legal_channel_for(self, channel_id, net_id):
+        return channel_id in self.legal_channels_for(net_id)
 
-    def get_default_channel(self, db):
+    def get_default_channel(self):
         return "vlan/native"
 
 
