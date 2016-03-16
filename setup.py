@@ -23,7 +23,7 @@ setup(name='haas',
       entry_points={
           'console_scripts': ['haas-admin=haas.commands.admin:main'],
       },
-      install_requires=['Flask-SQLAlchemy',
+      install_requires=['Flask-SQLAlchemy>=2.1,<3.0',
                         'Werkzeug>=0.9.4,<0.10',
                         'Flask>=0.10.1,<0.11',
                         'schema==0.3.1',
