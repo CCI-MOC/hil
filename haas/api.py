@@ -16,7 +16,6 @@
 
 TODO: Spec out and document what sanitization is required.
 """
-import importlib
 import json
 
 from schema import Schema, Optional

@@ -19,7 +19,6 @@ other HaaS configurations."""
 from haas import api, model, deferred, server
 from haas.model import db
 from haas.test_common import *
-import importlib
 import pytest
 
 @pytest.fixture
