@@ -31,6 +31,12 @@ import os
 
 db = SQLAlchemy(app)
 
+# without setting this explicitly, we get a warning that this option
+# will default to disabled in future versions (due to incurring a lot
+# of overhed). We aren't using the relevant functionality, so let's
+# just opt-in to the change now:
+app.config.update(SQLALCHEMY_TRACK_MODIFICATIONS=False)
+
 
 def init_db(create=False, uri=None):
     """Start up the DB connection.
