@@ -12,5 +12,4 @@ install:
 before_script:
   - sh -c "if [ $DB = postgres ]; then psql -c 'CREATE DATABASE haas_travis;' -U postgres; fi"
   - sh -c "if [ $DB = postgres ]; then cp ci/testsuite.cfg.postgres testsuite.cfg; fi"
-script: "py.test tests/unit"
-
+script: "py.test tests/unit tests/stress.py"
