@@ -2,8 +2,13 @@ from flask_migrate import Migrate, MigrateCommand, stamp
 from haas.flaskapp import app
 from haas.model import db
 from haas.network_allocator import get_network_allocator
+from os.path import join, dirname
 
-migrate = Migrate(app, db)
+migrate = Migrate(app, db,
+                  # Use the package's directory. This ensures that the
+                  # migration scripts are available when the package is
+                  # installed system-wide:
+                  directory=join(dirname(__file__), 'migrations'))
 command = MigrateCommand
 
 

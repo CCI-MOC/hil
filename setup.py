@@ -23,6 +23,15 @@ setup(name='haas',
       entry_points={
           'console_scripts': ['haas-admin=haas.commands.admin:main'],
       },
+      package_data={
+          'haas': [
+              'migrations/env.py',
+              'migrations/alembic.ini',
+              'migrations/script.py.mako',
+              'migrations/versions/*.py',
+          ],
+      },
+      zip_safe=False,  # migrations folder needs to be extracted to work.
       install_requires=['Flask-SQLAlchemy>=2.1,<3.0',
                         'Flask-Migrate>=1.8,<2.0',
                         'Flask-Script>=2.0.5,<3.0',
