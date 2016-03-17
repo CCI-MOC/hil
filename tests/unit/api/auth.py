@@ -21,6 +21,7 @@ from haas.test_common import config_testsuite, config_merge, fresh_database, \
     with_request_context
 
 from haas.ext.switches.mock import MockSwitch
+from haas.ext.obm.mock import MockObm
 
 
 def auth_call_test(fn, error, admin, project, args, kwargs={}):
@@ -60,8 +61,8 @@ def configure():
             # This extension is enabled by default in the tests, so we need to
             # disable it explicitly:
             'haas.ext.auth.null': None,
-
             'haas.ext.switches.mock': '',
+            'haas.ext.obm.mock': ''
         },
     })
     config.load_extensions()
@@ -142,10 +143,10 @@ def initial_db(request):
 
         # ... Two switches. One of these is just empty, for testing deletion:
         db.session.add(MockSwitch(label='empty-switch',
-                                hostname='empty',
-                                username='alice',
-                                password='secret',
-                                type=MockSwitch.api_name))
+                                  hostname='empty',
+                                  username='alice',
+                                  password='secret',
+                                  type=MockSwitch.api_name))
 
         # ... The other we'll actually attach stuff to for other tests:
         switch = MockSwitch(label="stock_switch_0",
@@ -168,7 +169,11 @@ def initial_db(request):
             {'label': 'free_node_1', 'project': None},
         ]
         for node_dict in nodes:
-            node = model.Node(node_dict['label'], '', '', '')
+            obm=MockObm(type=MockObm.api_name,
+                        host=node_dict['label'],
+                        user='user',
+                        password='password')
+            node = model.Node(label=node_dict['label'], obm=obm)
             node.project = node_dict['project']
             db.session.add(model.Nic(node, label='boot-nic', mac_addr='Unknown'))
 
@@ -197,8 +202,14 @@ def initial_db(request):
             hnic.network = db.session.query(model.Network)\
                 .filter_by(label='pub_default').one()
 
+
         # ... and at least one node with no nics (useful for testing delete):
-        db.session.add(model.Node('no_nic_node', '', '', ''))
+        obm=MockObm(type=MockObm.api_name,
+            host='hostname',
+            user='user',
+            password='password')
+        db.session.add(model.Node(label='no_nic_node', obm=obm))
+
         db.session.commit()
 
 
@@ -533,8 +544,14 @@ def test_auth_call(kwargs):
 # access. This is  a list of (function, args) pairs, each of which should
 # succed as admin and fail as a regular project. The actual test functions for
 # these are below.
+
 admin_calls = [
-    (api.node_register, ['new_node', '', '', ''], {}),
+    (api.node_register, ['new_node'], {'obm':{
+              "type": MockObm.api_name,
+	      "host": "ipmihost",
+	      "user": "root",
+	      "password": "tapeworm"}}),
+#    (api.node_register, ['new_node', obm=obm, {}),
     (api.node_delete, ['no_nic_node'], {}),
     (api.node_register_nic, ['free_node_0', 'extra-nic', 'de:ad:be:ef:20:16'], {}),
     (api.node_delete_nic, ['free_node_0', 'boot-nic'], {}),

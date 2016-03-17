@@ -250,8 +250,7 @@ def site_layout():
         api.switch_register(**switch)
 
     for node in layout['nodes']:
-        api.node_register(node['name'], node['ipmi']['host'],
-            node['ipmi']['user'], node['ipmi']['pass'])
+        api.node_register(node['name'],obm=node['obm'])
         for nic in node['nics']:
             api.node_register_nic(node['name'], nic['name'], nic['mac'])
             api.switch_register_port(nic['switch'], nic['port'])

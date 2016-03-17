@@ -49,8 +49,8 @@ files are well commented; read them carefully.
 
 HaaS can be configured to not perform state-changing operations on nodes,
 headnodes and networks, allowing developers to run and test parts of a haas
-server without requiring physical hardware. To supress actual node and headnode
-operations, set ``dry_run = True`` in the ``[devel]`` section. For supressing
+server without requiring physical hardware. To suppress actual node and headnode
+operations, set ``dry_run = True`` in the ``[devel]`` section. For suppressing
 actual network switch operations, use the ``mock`` switch driver.
 
 Next initialize the database with the required tables, with ``haas init_db``.

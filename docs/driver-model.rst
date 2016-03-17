@@ -15,7 +15,7 @@ class hierarchies to the database.
 Each type of object that supports different drivers has a top-level superclass,
 e.g. ``Switch`` or ``OBM``, and the drivers themselves are subclasses of that
 superclass (typically defined from within extensions). Under most
-curcumstances, SQLAlchemy makes this "just work"; when fetching the object from
+circumstances, SQLAlchemy makes this "just work"; when fetching the object from
 the database, the right subclass will be automatically used. However, when
 *creating* an object for the first time, HaaS must be told which driver to use
 (is the switch a powerconnect or a nexus?). For these cases, the api calls in
