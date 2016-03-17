@@ -4,6 +4,7 @@ import sys
 # call it directly from this module:
 from haas import model, api, auth
 from haas.model import db
+from haas.migrations import create_db
 from haas.class_resolver import build_class_map_for
 from haas.network_allocator import get_network_allocator
 
@@ -50,7 +51,7 @@ def stop_orphan_consoles():
         node.obm.delete_console()
 
 
-def init(init_db=False, stop_consoles=False):
+def init(stop_consoles=False):
     """Set up the api server's internal state.
 
     This is a convenience wrapper that calls the other setup routines in
@@ -58,6 +59,6 @@ def init(init_db=False, stop_consoles=False):
     """
     register_drivers()
     validate_state()
-    model.init_db(create=init_db)
+    model.init_db()
     if stop_consoles:
         stop_orphan_consoles()

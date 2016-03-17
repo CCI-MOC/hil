@@ -13,6 +13,7 @@
 # governing permissions and limitations under the License.
 
 from haas.model import *
+from haas.migrations import create_db
 from haas.config import cfg
 from haas.rest import app, init_auth
 from haas import api, config
@@ -118,7 +119,8 @@ def network_create_simple(network, project):
 def newDB():
     """Configures and returns a connection to a freshly initialized DB."""
     with app.app_context():
-        init_db(create=True)
+        init_db()
+        create_db()
 
 def releaseDB():
     """Do we need to do anything here to release resources?"""

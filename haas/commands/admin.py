@@ -1,9 +1,16 @@
-from haas import config, migrations, model
+from haas import config, migrations, model, server
 from haas.flaskapp import app
 from flask.ext.script import Manager
 
 manager = Manager(app)
 manager.add_command('migrate', migrations.command)
+
+
+@manager.command
+def create_db():
+    """Initialize the database."""
+    server.init()
+    migrations.create_db()
 
 
 def main():

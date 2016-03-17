@@ -46,11 +46,8 @@ db = SQLAlchemy(app)
 app.config.update(SQLALCHEMY_TRACK_MODIFICATIONS=False)
 
 
-def init_db(create=False, uri=None):
+def init_db(uri=None):
     """Start up the DB connection.
-
-    If `create` is True, this will generate the schema for the database, and
-    perform initial population of tables.
 
     `uri` is the uri to use for the databse. If it is None, the uri from the
     config file will be used.
@@ -58,12 +55,6 @@ def init_db(create=False, uri=None):
     if uri is None:
         uri = cfg.get('database', 'uri')
     app.config.update(SQLALCHEMY_DATABASE_URI=uri)
-    if not create:
-        return
-    with app.app_context():
-        db.create_all()
-        get_network_allocator().populate()
-        db.session.commit()
 
 
 class Nic(db.Model):
