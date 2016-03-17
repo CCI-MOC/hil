@@ -35,9 +35,21 @@ def test_many_http_queries():
     in issue #454.
     """
     with rest.RequestContext():
-        api.node_register('node-99', 'ipmihost', 'root', 'tapeworm')
-        api.node_register('node-98', 'ipmihost', 'root', 'tapeworm')
-        api.node_register('node-97', 'ipmihost', 'root', 'tapeworm')
+        api.node_register('node-99', obm={
+                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                  "host": "ipmihost",
+                  "user": "root",
+                  "password": "tapeworm"})
+        api.node_register('node-98', obm={
+                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                  "host": "ipmihost",
+                  "user": "root",
+                  "password": "tapeworm"})
+        api.node_register('node-97', obm={
+                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                  "host": "ipmihost",
+                  "user": "root",
+                  "password": "tapeworm"})
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
         api.node_register_nic('node-98', 'eth0', 'DE:AD:BE:EF:20:15')
         api.node_register_nic('node-97', 'eth0', 'DE:AD:BE:EF:20:16')
