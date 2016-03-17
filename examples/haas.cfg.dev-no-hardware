@@ -5,6 +5,9 @@
 [general]
 log_level = debug
 
+[auth]
+require_authentication = False
+
 [headnode]
 trunk_nic = eth0
 base_imgs = img1, img2, img3, img4
@@ -22,6 +25,7 @@ dry_run=True
 
 [extensions]
 haas.ext.switches.mock =
+haas.ext.auth.null =
 
 # haas.ext.network_allocators.null =
 #

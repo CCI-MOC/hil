@@ -31,10 +31,12 @@ from werkzeug.routing import Map, Rule, parse_rule
 from werkzeug.exceptions import HTTPException, InternalServerError
 from werkzeug.local import Local, LocalManager
 
-from haas.errors import APIError, ServerError
+from haas.errors import APIError, ServerError, AuthorizationError
+from haas.config import cfg
 
 from schema import Schema, SchemaError
 
+from haas import auth
 from haas.model import Session
 
 local = Local()
@@ -169,6 +171,15 @@ class RequestContext(object):
 
     def __enter__(self):
         local.db = Session()
+        ok = auth.get_auth_backend().authenticate()
+        if cfg.has_option('auth', 'require_authentication'):
+            require_auth = cfg.getboolean('auth', 'require_authentication')
+        else:
+            require_auth = True
+        if not ok and require_auth:
+            local.db.close()
+            raise AuthorizationError("Authentication failed. Authentication "
+                                     "is required to use this service.")
 
     def __exit__(self, exc_type, exc_value, traceback):
         local.db.close()
@@ -180,6 +191,8 @@ def request_handler(request):
     The parameter `request` must be an instance of werkzeug's `Request` class.
     The return value will be a werkzeug `Response` object.
     """
+    local.request = request
+
     adapter = _url_map.bind_to_environ(request.environ)
     try:
         (f, schema), values = adapter.match()

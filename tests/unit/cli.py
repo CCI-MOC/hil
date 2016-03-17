@@ -11,6 +11,7 @@ base_imgs = base-headnode, img1, img2, img3, img4
 [database]
 uri = sqlite:///haas.db
 [extensions]
+haas.ext.auth.null =
 haas.ext.network_allocators.null =
 """
 
