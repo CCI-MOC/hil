@@ -1,3 +1,7 @@
+"""Tests for the command line tools.
+
+Note that this is not just `haas.cli`, but `haas.command` as well.
+"""
 import pytest
 import tempfile
 import os
@@ -35,8 +39,8 @@ def make_config(request):
     request.addfinalizer(cleanup)
 
 
-def test_init_db():
-    check_call(['haas', 'init_db'])
+def test_db_create():
+    check_call(['haas-admin', 'db', 'create'])
 
 
 def runs_for_seconds(cmd, seconds=1):
@@ -64,10 +68,10 @@ def runs_for_seconds(cmd, seconds=1):
 
 
 def test_serve():
-    check_call(['haas', 'init_db'])
+    check_call(['haas-admin', 'db', 'create'])
     assert runs_for_seconds(['haas', 'serve', '5000'], seconds=1)
 
 
 def test_serve_networks():
-    check_call(['haas', 'init_db'])
+    check_call(['haas-admin', 'db', 'create'])
     assert runs_for_seconds(['haas', 'serve_networks'], seconds=1)
