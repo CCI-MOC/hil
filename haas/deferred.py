@@ -36,7 +36,7 @@ def apply_networking():
     """
     db = model.Session()
 
-    # Get the journal enries
+    # Get the journal entries
     actions = db.query(model.NetworkingAction).\
         order_by(model.NetworkingAction.id).all()
 
