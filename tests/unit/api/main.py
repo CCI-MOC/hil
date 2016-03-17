@@ -63,33 +63,6 @@ pytestmark = pytest.mark.usefixtures('configure',
                                      'with_request_context')
 
 
-class TestUser:
-    """Tests for the haas.api.user_* functions."""
-
-    def test_new_user(self, db):
-        api._assert_absent(model.User, 'bob')
-        api.user_create('bob', 'foo')
-
-    def test_duplicate_user(self, db):
-        api.user_create('alice', 'secret')
-        with pytest.raises(api.DuplicateError):
-                api.user_create('alice', 'password')
-
-    def test_delete_user(self, db):
-        api.user_create('bob', 'foo')
-        api.user_delete('bob')
-
-    def test_delete_missing_user(self, db):
-        with pytest.raises(api.NotFoundError):
-            api.user_delete('bob')
-
-    def test_delete_user_twice(self, db):
-        api.user_create('bob', 'foo')
-        api.user_delete('bob')
-        with pytest.raises(api.NotFoundError):
-            api.user_delete('bob')
-
-
 class TestProjectCreateDelete:
     """Tests for the haas.api.project_* functions."""
 
@@ -153,28 +126,6 @@ class TestProjectCreateDelete:
         with pytest.raises(api.BlockedError):
             api.project_delete('anvil-nextgen')
 
-class TestProjectAddDeleteUser:
-    """Tests for adding and deleting a user from a project"""
-
-    def test_project_add_user(self, db):
-        api.user_create('alice', 'secret')
-        api.project_create('acme-corp')
-        api.project_add_user('acme-corp', 'alice')
-        user = api._must_find(model.User, 'alice')
-        project = api._must_find(model.Project, 'acme-corp')
-        assert project in user.projects
-        assert user in project.users
-
-    def test_project_remove_user(self, db):
-        api.user_create('alice', 'secret')
-        api.project_create('acme-corp')
-        api.project_add_user('acme-corp', 'alice')
-        api.project_remove_user('acme-corp', 'alice')
-        user = api._must_find(model.User, 'alice')
-        project = api._must_find(model.Project, 'acme-corp')
-        assert project not in user.projects
-        assert user not in project.users
-
     def test_project_delete(self, db):
         api.project_create('acme-corp')
         api.project_delete('acme-corp')
@@ -185,20 +136,6 @@ class TestProjectAddDeleteUser:
         api.project_create('acme-corp')
         with pytest.raises(api.DuplicateError):
             api.project_create('acme-corp')
-
-    def test_duplicate_project_add_user(self, db):
-        api.user_create('alice', 'secret')
-        api.project_create('acme-corp')
-        api.project_add_user('acme-corp', 'alice')
-        with pytest.raises(api.DuplicateError):
-            api.project_add_user('acme-corp', 'alice')
-
-    def test_bad_project_remove_user(self, db):
-        """Tests that removing a user from a project they're not in fails."""
-        api.user_create('alice', 'secret')
-        api.project_create('acme-corp')
-        with pytest.raises(api.NotFoundError):
-            api.project_remove_user('acme-corp', 'alice')
 
 
 class TestNetworking:

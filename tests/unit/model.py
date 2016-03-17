@@ -21,13 +21,11 @@
 # some point, which is definitely wrong. The test_repr methods are there just
 # to make sure it isn't throwing an exception.
 
-from abc import ABCMeta, abstractmethod
-
 from haas.model import *
 from haas import config
 from haas.ext.obm.ipmi import Ipmi
 
-from haas.test_common import fresh_database, config_testsuite
+from haas.test_common import fresh_database, config_testsuite, ModelTest
 import pytest
 
 @pytest.fixture
@@ -40,38 +38,6 @@ def db(request):
     return fresh_database(request)
 
 pytestmark = pytest.mark.usefixtures('configure', 'db')
-
-
-class ModelTest:
-    """Superclass with tests common to all models.
-
-    Inheriting from ``ModelTest`` will generate tests in the subclass (each
-    of the methods beginning with ``test_`` below), but the ``ModelTest`` class
-    itself does not generate tests. (pytest will ignore it because the name of
-    the class does not start with ``Test`).
-    """
-    __metaclass__ = ABCMeta
-
-    @abstractmethod
-    def sample_obj(self):
-        """returns a sample object, which can be used for various tests.
-
-        There aren't really any specific requirements for the object, just that
-        it be "valid."
-        """
-
-    def test_repr(self):
-        print(self.sample_obj())
-
-    def test_insert(self, db):
-        db.add(self.sample_obj())
-
-
-class TestUsers(ModelTest):
-    """Test user-related functionality"""
-
-    def sample_obj(self):
-        return User('bob', 'secret')
 
 
 class TestNic(ModelTest):

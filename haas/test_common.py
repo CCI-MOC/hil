@@ -16,6 +16,7 @@ from haas.model import *
 from haas.config import cfg
 from haas import api, config, rest
 from StringIO import StringIO
+from abc import ABCMeta, abstractmethod
 import json
 import subprocess
 import sys
@@ -43,8 +44,9 @@ def config_testsuite():
     else:
         config_set({
             'extensions': {
-                # Use the null network allocator for these tests
+                # Use the null network allocator and auth plugin by default:
                 'haas.ext.network_allocators.null': '',
+                'haas.ext.auth.null': '',
             },
             'devel': {
                 'dry_run': True,
@@ -139,6 +141,31 @@ def fresh_database(request):
     return db
 
 
+class ModelTest:
+    """Superclass with tests common to all models.
+
+    Inheriting from ``ModelTest`` will generate tests in the subclass (each
+    of the methods beginning with ``test_`` below), but the ``ModelTest`` class
+    itself does not generate tests. (pytest will ignore it because the name of
+    the class does not start with ``Test`).
+    """
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def sample_obj(self):
+        """returns a sample object, which can be used for various tests.
+
+        There aren't really any specific requirements for the object, just that
+        it be "valid."
+        """
+
+    def test_repr(self):
+        print(self.sample_obj())
+
+    def test_insert(self, db):
+        db.add(self.sample_obj())
+
+
 class NetworkTest:
     """Superclass for network-related deployment tests"""
 
@@ -215,14 +242,7 @@ def site_layout():
         api.switch_register(**switch)
 
     for node in layout['nodes']:
-        api.node_register(node['name'],
-                            obm={
-                                "type": node['obm']['type'], 
-                                "host": node['obm']['host'],
-                                "user": node['obm']['user'],
-                                "password": node['obm']['pass']
-                            })
-
+        api.node_register(node['name'],obm=node['obm'])
         for nic in node['nics']:
             api.node_register_nic(node['name'], nic['name'], nic['mac'])
             api.switch_register_port(nic['switch'], nic['port'])

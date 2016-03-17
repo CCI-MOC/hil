@@ -45,7 +45,7 @@ def cmd(f):
             f(*args, **kwargs)
         except TypeError:
             # TODO TypeError is probably too broad here.
-            sys.stderr.write('Wrong number of arguments.  Usage:\n')
+            sys.stderr.write('Invalid arguements.  Usage:\n')
             help(f.__name__)
     command_dict[f.__name__] = wrapped
     def get_usage(f):
@@ -79,17 +79,38 @@ def object_url(*args):
         url += '/' + urllib.quote(arg,'')
     return url
 
+def do_request(fn, url, data={}):
+    """Helper function for making HTTP requests against the API.
+
+    Arguments:
+
+        `fn` - a function from the requests library, one of requests.put,
+               requests.get...
+        `url` - The url to make the request to
+        `data` - the body of the request.
+
+    If the environment variables HAAS_USERNAME and HAAS_PASSWORD are
+    defined, The request will use HTTP basic auth to authenticate, with
+    the given username and password.
+    """
+    kwargs = {}
+    username = os.getenv('HAAS_USERNAME')
+    password = os.getenv('HAAS_PASSWORD')
+    if username is not None and password is not None:
+        kwargs['auth'] = (username, password)
+    return check_status_code(fn(url, data=data, **kwargs))
+
 def do_put(url, data={}):
-    return check_status_code(requests.put(url, data=json.dumps(data)))
+    return do_request(requests.put, url, data=json.dumps(data))
 
 def do_post(url, data={}):
-    return check_status_code(requests.post(url, data=json.dumps(data)))
+    return do_request(requests.post, url, data=json.dumps(data))
 
 def do_get(url):
-    return check_status_code(requests.get(url))
+    return do_request(requests.get, url)
 
 def do_delete(url):
-    return check_status_code(requests.delete(url))
+    return do_request(requests.delete, url)
 
 @cmd
 def serve(port):
@@ -135,10 +156,19 @@ def init_db():
     server.init(init_db=True)
 
 @cmd
-def user_create(username, password):
-    """Create a user <username> with password <password>."""
-    url = object_url('user', username)
-    do_put(url, data={'password': password})
+def user_create(username, password, is_admin):
+    """Create a user <username> with password <password>.
+
+    <is_admin> may be either "admin" or "regular", and determines whether
+    the user has administrative priveledges.
+    """
+    url = object_url('/auth/basic/user', username)
+    if is_admin not in ('admin', 'regular'):
+        raise TypeError("is_admin must be either 'admin' or 'regular'")
+    do_put(url, data={
+        'password': password,
+        'is_admin': is_admin == 'admin',
+    })
 
 @cmd
 def network_create(network, creator, access, net_id):
@@ -165,7 +195,7 @@ def network_delete(network):
 @cmd
 def user_delete(username):
     """Delete the user <username>"""
-    url = object_url('user', username)
+    url = object_url('/auth/basic/user', username)
     do_delete(url)
 
 @cmd
@@ -175,16 +205,16 @@ def list_projects():
     do_get(url)
 
 @cmd
-def project_add_user(project, user):
+def user_add_project(user, project):
     """Add <user> to <project>"""
-    url = object_url('project', project, 'add_user')
-    do_post(url, data={'user': user})
+    url = object_url('/auth/basic/user', user, 'add_project')
+    do_post(url, data={'project': project})
 
 @cmd
-def project_remove_user(project, user):
+def user_remove_project(user, project):
     """Remove <user> from <project>"""
-    url = object_url('project', project, 'remove_user')
-    do_post(url, data={'user': user})
+    url = object_url('/auth/basic/user', user, 'remove_project')
+    do_post(url, data={'project': project})
 
 @cmd
 def project_create(project):
@@ -442,6 +472,27 @@ def stop_console(node):
     """Stop logging console output from <node> and delete the log"""
     url = object_url('node', node, 'console')
     do_delete(url)
+
+@cmd
+def create_admin_user(username, password):
+    """Create an admin user. Only valid for the database auth backend.
+
+    This must be run on the HaaS API server, with access to haas.cfg and the
+    database. It will create an user named <username> with password
+    <password>, who will have administrator priviledges.
+
+    This command should only be used for bootstrapping the system; once you
+    have an initial admin, you can (and should) create additional users via
+    the API.
+    """
+    if not config.cfg.has_option('extensions', 'haas.ext.auth.database'):
+        sys.exit("'make_inital_admin' is only valid with the database auth backend.")
+    from haas import model
+    from haas.ext.auth.database import User
+    model.init_db(create=False)
+    db = model.Session()
+    db.add(User(label=username, password=password, is_admin=True))
+    db.commit()
 
 @cmd
 def help(*commands):

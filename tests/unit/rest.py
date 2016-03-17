@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from haas import rest
+from haas import rest, config
 
 from abc import ABCMeta, abstractmethod
 import unittest
@@ -26,7 +26,12 @@ from schema import Schema, Optional
 # complains and doesn't give us a report.
 import pytest
 
-from haas.test_common import wsgi_mkenv
+from haas.test_common import wsgi_mkenv, config_testsuite
+
+@pytest.fixture(autouse=True)
+def configure():
+    config_testsuite()
+    config.load_extensions()
 
 
 class HttpTest(unittest.TestCase):
