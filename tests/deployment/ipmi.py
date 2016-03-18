@@ -40,10 +40,7 @@ def server_init():
     server.validate_state()
 
 
-@pytest.yield_fixture
-def with_request_context():
-    with rest.RequestContext():
-        yield
+with_request_context = pytest.yield_fixture(with_request_context)
 
 
 headnode_cleanup = pytest.fixture(headnode_cleanup)
@@ -52,15 +49,15 @@ pytestmark = pytest.mark.usefixtures('configure',
                                      'db',
                                      'with_request_context',
                                      'headnode_cleanup')
-    
+
 
 
 class TestIpmi():
     """ Test IPMI driver calls using functions included in the IPMI driver. """
 
     def collect_nodes(self, db):
-        """ Collects nodes in the free list. 
-	Raises error if free-nodes are less than 2. 
+        """ Collects nodes in the free list.
+	Raises error if free-nodes are less than 2.
         """
         free_nodes = db.query(Node).filter_by(project_id=None).all()
         return free_nodes
