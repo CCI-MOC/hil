@@ -56,9 +56,7 @@ class TestIpmi():
     """ Test IPMI driver calls using functions included in the IPMI driver. """
 
     def collect_nodes(self, db):
-        """ Collects nodes in the free list.
-	Raises error if free-nodes are less than 2.
-        """
+        """Collects nodes in the free list."""
         free_nodes = db.query(Node).filter_by(project_id=None).all()
         return free_nodes
 
