@@ -384,27 +384,27 @@ def switch_delete(switch):
 
 
 @cmd
-def port_register(port):
-    """Register a <port> on a switch"""
-    url = object_url('port', port)
+def port_register(switch, port):
+    """Register a <port> with <switch> """
+    url = object_url('switch', switch, 'port', port)
     do_put(url)
 
 @cmd
-def port_delete(port):
-    """Delete a <port> on a switch"""
-    url = object_url('port', port)
+def port_delete(switch, port):
+    """Delete a <port> from a <switch>"""
+    url = object_url('switch', switch, 'port', port)
     do_delete(url)
 
 @cmd
-def port_connect_nic(port, node, nic):
-    """Connect a <port> on a switch to a <nic> on a <node>"""
-    url = object_url('port', port, 'connect_nic')
+def port_connect_nic(switch, port, node, nic):
+    """Connect a <port> on a <switch> to a <nic> on a <node>"""
+    url = object_url('switch', switch, 'port', port, 'connect_nic')
     do_post(url, data={'node': node, 'nic': nic})
 
 @cmd
-def port_detach_nic(port):
-    """Detach a <port> on a switch from whatever's connected to it"""
-    url = object_url('port', port, 'detach_nic')
+def port_detach_nic(switch, port):
+    """Detach a <port> on a <switch> from whatever's connected to it"""
+    url = object_url('switch', switch, 'port', port, 'detach_nic')
     do_post(url)
 
 @cmd
