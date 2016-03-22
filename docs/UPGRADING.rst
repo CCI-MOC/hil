@@ -12,6 +12,6 @@ This file describes the procedure for upgrading HaaS to a new version.
 
 3. Upgrade the database::
 
-     $ haas-admin db upgrade
+     $ haas-admin db upgrade heads
 
 4. Restart the HaaS services
