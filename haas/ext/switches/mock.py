@@ -38,7 +38,7 @@ class MockSwitch(Switch):
     __mapper_args__ = {
         'polymorphic_identity': api_name,
     }
-    
+
     id = Column(Integer, ForeignKey('switch.id'), primary_key=True)
     hostname = Column(String, nullable=False)
     username = Column(String, nullable=False)
