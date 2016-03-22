@@ -23,7 +23,11 @@ import logging
 import schema
 
 from haas.model import db, Switch
+from haas.migrations import paths
 from haas.ext.switches import _console
+from os.path import dirname, join
+
+paths[__name__] = join(dirname(__file__), 'migrations', 'dell')
 
 logger = logging.getLogger(__name__)
 

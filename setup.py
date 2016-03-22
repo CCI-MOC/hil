@@ -30,6 +30,7 @@ setup(name='haas',
               'migrations/script.py.mako',
               'migrations/versions/*.py',
           ],
+          'haas.ext.switches': ['migrations/*/*.py'],
       },
       zip_safe=False,  # migrations folder needs to be extracted to work.
       install_requires=['Flask-SQLAlchemy>=2.1,<3.0',
