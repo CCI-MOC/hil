@@ -270,6 +270,7 @@ former is a WSGI application, which we recommend running with Apache's
   <VirtualHost 127.0.0.1:80>
     ServerName 127.0.0.1
     AllowEncodedSlashes On
+    WSGIPassAuthorization On
     WSGIDaemonProcess haas_user user=haas_user group=haas_user threads=2
     WSGIScriptAlias / /var/www/haas/haas.wsgi
     <Directory /var/www/haas>
