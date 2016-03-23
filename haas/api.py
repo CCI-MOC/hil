@@ -140,7 +140,7 @@ def project_detach_node(project, node):
 
 @rest_call('PUT', '/node/<node>', schema=Schema({
     'obm':{
-	'type': basestring, 
+	'type': basestring,
 	Optional(object):object,
 	},
 }))
@@ -193,8 +193,8 @@ def node_delete(node):
     get_auth_backend().require_admin()
     node = _must_find(model.Node, node)
     if node.nics != []:
-        raise BlockedError("Node %r has nics; remove them before deleting %r.",
-                           (node.label, node.label))
+        raise BlockedError("Node %r has nics; remove them before deleting %r."
+                           % (node.label, node.label))
     node.obm.stop_console()
     node.obm.delete_console()
     local.db.delete(node)
@@ -815,7 +815,7 @@ def show_node(nodename):
     return json.dumps({
 	'name': node.label,
 	'project': None if node.project_id is None else node.project.label,
-        'nics': [{'label': n.label, 
+        'nics': [{'label': n.label,
                   'macaddr': n.mac_addr,
                   'networks': dict([(attachment.channel,
                                      attachment.network.label)

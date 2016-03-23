@@ -7,8 +7,8 @@ as well. grr.
 import pytest
 from haas import config, server
 from haas.auth import get_auth_backend
-from haas.test_common import config_testsuite, config_merge, do_request, \
-    fresh_database
+from haas.rest import app
+from haas.test_common import config_testsuite, config_merge, fresh_database
 
 
 @pytest.fixture
@@ -50,5 +50,6 @@ def test_require_auth():
     """
     auth_backend = get_auth_backend()
     auth_backend.set_auth_success(False)
-    resp = do_request('GET', '/free_nodes')
+    client = app.test_client()
+    resp = client.get('/free_nodes')
     assert resp.status_code == 401

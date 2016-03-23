@@ -2,8 +2,9 @@ from haas import config, server
 from haas.auth import get_auth_backend
 from haas.errors import AuthorizationError
 from haas.model import Project
-from haas.rest import RequestContext, local
-from haas.test_common import config_testsuite, config_merge, fresh_database
+from haas.rest import local
+from haas.test_common import config_testsuite, config_merge, fresh_database, \
+    with_request_context
 import pytest
 
 
@@ -30,10 +31,7 @@ def server_init():
     server.validate_state()
 
 
-@pytest.yield_fixture
-def with_request_context():
-    with RequestContext():
-        yield
+with_request_contex = pytest.yield_fixture(with_request_context)
 
 
 @pytest.fixture

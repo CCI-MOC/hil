@@ -16,7 +16,6 @@
 import haas
 from haas import model, api, deferred, server, config
 from haas.test_common import *
-from haas.rest import RequestContext
 from haas.network_allocator import get_network_allocator
 import pytest
 import json
@@ -51,10 +50,7 @@ def server_init():
     server.validate_state()
 
 
-@pytest.yield_fixture
-def with_request_context():
-    with RequestContext():
-        yield
+with_request_context = pytest.yield_fixture(with_request_context)
 
 
 pytestmark = pytest.mark.usefixtures('configure',
@@ -141,7 +137,7 @@ class TestProjectCreateDelete:
 class TestNetworking:
 
     def test_networking_involved(self, db):
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE, 
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
 		username="switch_user", password="switch_pass", hostname="switchname")
         for port in '1', '2', '3':
             api.switch_register_port('sw0', port)
@@ -1189,16 +1185,16 @@ class Test_switch_register:
 
     def test_basic(self, db):
         """Calling switch_register should create an object in the db."""
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE, 
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
 		username="switch_user", password="switch_pass", hostname="switchname")
         assert db.query(model.Switch).one().label == 'sw0'
 
     def test_duplicate(self, db):
         """switch_register should complain if asked to make a duplicate switch."""
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE, 
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
 		username="switch_user", password="switch_pass", hostname="switchname")
         with pytest.raises(api.DuplicateError):
-            api.switch_register('sw0', type=MOCK_SWITCH_TYPE, 
+            api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
 		username="switch_user", password="switch_pass", hostname="switchname")
 
 
@@ -1206,7 +1202,7 @@ class Test_switch_delete:
 
     def test_basic(self, db):
         """Deleting a switch should actually remove it."""
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE, 
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
 		username="switch_user", password="switch_pass", hostname="switchname")
         api.switch_delete('sw0')
         assert db.query(model.Switch).count() == 0
@@ -1221,7 +1217,7 @@ class Test_switch_register_port:
 
     def test_basic(self, db):
         """Creating a port on an existing switch should succeed."""
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE, 
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
 		username="switch_user", password="switch_pass", hostname="switchname")
         api.switch_register_port('sw0', '5')
         port = db.query(model.Port).one()
@@ -1238,7 +1234,7 @@ class Test_switch_delete_port:
 
     def test_basic(self, db):
         """Removing a port should remove it from the db."""
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE, 
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
 		username="switch_user", password="switch_pass", hostname="switchname")
         api.switch_register_port('sw0', '5')
         api.switch_delete_port('sw0', '5')
@@ -1251,7 +1247,7 @@ class Test_switch_delete_port:
 
     def test_port_nexist(self, db):
         """Removing a port that does not exist should report the error"""
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE, 
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
 		username="switch_user", password="switch_pass", hostname="switchname")
         with pytest.raises(api.NotFoundError):
             api.switch_delete_port('sw0', '5')
@@ -1260,7 +1256,7 @@ class Test_switch_delete_port:
 class TestPortConnectDetachNic:
 
     def test_port_connect_nic_success(self, db):
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE, 
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
 		username="switch_user", password="switch_pass", hostname="switchname")
         api.switch_register_port('sw0', '3')
         api.node_register('compute-01', obm={
@@ -1282,7 +1278,7 @@ class TestPortConnectDetachNic:
             api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
 
     def test_port_connect_nic_no_such_port(self, db):
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE, 
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
 		username="switch_user", password="switch_pass", hostname="switchname")
         api.node_register('compute-01', obm={
 		  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
@@ -1294,14 +1290,14 @@ class TestPortConnectDetachNic:
             api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
 
     def test_port_connect_nic_no_such_node(self, db):
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE, 
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
 		username="switch_user", password="switch_pass", hostname="switchname")
         api.switch_register_port('sw0', '3')
         with pytest.raises(api.NotFoundError):
             api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
 
     def test_port_connect_nic_no_such_nic(self, db):
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE, 
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
 		username="switch_user", password="switch_pass", hostname="switchname")
         api.switch_register_port('sw0', '3')
         api.node_register('compute-01', obm={
@@ -1313,7 +1309,7 @@ class TestPortConnectDetachNic:
             api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
 
     def test_port_connect_nic_already_attached_to_same(self, db):
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE, 
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
 		username="switch_user", password="switch_pass", hostname="switchname")
         api.switch_register_port('sw0', '3')
         api.node_register('compute-01', obm={
@@ -1327,7 +1323,7 @@ class TestPortConnectDetachNic:
             api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
 
     def test_port_connect_nic_nic_already_attached_differently(self, db):
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE, 
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
 		username="switch_user", password="switch_pass", hostname="switchname")
         api.switch_register_port('sw0', '3')
         api.switch_register_port('sw0', '4')
@@ -1342,7 +1338,7 @@ class TestPortConnectDetachNic:
             api.port_connect_nic('sw0', '4', 'compute-01', 'eth0')
 
     def test_port_connect_nic_port_already_attached_differently(self, db):
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE, 
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
 		username="switch_user", password="switch_pass", hostname="switchname")
         api.switch_register_port('sw0', '3')
         api.node_register('compute-01', obm={
@@ -1362,7 +1358,7 @@ class TestPortConnectDetachNic:
             api.port_connect_nic('sw0', '3', 'compute-02', 'eth1')
 
     def test_port_detach_nic_success(self, db):
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE, 
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
 		username="switch_user", password="switch_pass", hostname="switchname")
         api.switch_register_port('sw0', '3')
         api.node_register('compute-01', obm={
@@ -1379,7 +1375,7 @@ class TestPortConnectDetachNic:
             api.port_detach_nic('sw0', '3')
 
     def test_port_detach_nic_not_attached(self, db):
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE, 
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
 		username="switch_user", password="switch_pass", hostname="switchname")
         api.switch_register_port('sw0', '3')
         api.node_register('compute-01', obm={
@@ -1393,7 +1389,7 @@ class TestPortConnectDetachNic:
 
     def port_detach_nic_node_not_free(self, db):
         """should refuse to detach a nic if it has pending actions."""
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE, 
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
 		username="switch_user", password="switch_pass", hostname="switchname")
         api.switch_register_port('sw0', '3')
         api.node_register('compute-01', obm={

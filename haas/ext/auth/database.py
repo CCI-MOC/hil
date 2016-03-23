@@ -10,6 +10,7 @@ from sqlalchemy import Column, ForeignKey, String, Boolean, Table
 from sqlalchemy.orm import relationship
 from passlib.hash import sha512_crypt
 from schema import Schema, Optional
+import flask
 
 
 class User(model.Model):
@@ -120,9 +121,9 @@ class DatabaseAuthBackend(auth.AuthBackend):
 
     def authenticate(self):
         local.auth = None
-        if local.request.authorization is None:
+        if flask.request.authorization is None:
             return False
-        authorization = local.request.authorization
+        authorization = flask.request.authorization
         if authorization.password is None:
             return False
 

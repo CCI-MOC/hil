@@ -40,10 +40,7 @@ def server_init():
     server.validate_state()
 
 
-@pytest.yield_fixture
-def with_request_context():
-    with rest.RequestContext():
-        yield
+with_request_context = pytest.yield_fixture(with_request_context)
 
 
 headnode_cleanup = pytest.fixture(headnode_cleanup)
