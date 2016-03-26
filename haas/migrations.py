@@ -40,6 +40,8 @@ def create_db():
     with app.app_context():
         db.create_all()
         for head in paths.keys():
+            # Record the version of each branch. Each extension which uses the
+            # database will have its own branch.
             stamp(revision=head)
         get_network_allocator().populate()
         db.session.commit()

@@ -14,4 +14,7 @@ This file describes the procedure for upgrading HaaS to a new version.
 
      $ haas-admin db upgrade heads
 
-4. Restart the HaaS services
+4. If additional extensions have been added to ``haas.cfg``, re-run ``haas db
+   create``, which will create any tables needed by those extensions.
+
+5. Restart the HaaS services.
