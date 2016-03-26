@@ -1,5 +1,7 @@
 """Rename mockswitch table for Flask-SQLAlchemy
 
+See the docstring in 'haas/migrations/versions/6a8c19565060_move_to_flask.py'
+
 Revision ID: b5b31d19257d
 Revises:
 Create Date: 2016-03-22 05:11:19.585905

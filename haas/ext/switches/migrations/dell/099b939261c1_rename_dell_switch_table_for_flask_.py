@@ -1,5 +1,7 @@
 """Rename dell switch table for Flask-SQLAlchemy
 
+See the docstring in 'haas/migrations/versions/6a8c19565060_move_to_flask.py'
+
 Revision ID: 099b939261c1
 Revises:
 Create Date: 2016-03-22 04:34:49.141555
