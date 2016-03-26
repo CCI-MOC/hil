@@ -36,6 +36,6 @@ Extension-approved components currently include:
 * From haas.model:
     * db.Model
     * Switch
-* The ``paths`` dictionary in haas.migrations
+* The migration framework; see ``migrations.md`` for an overview.
 
 See the docstrings for each component for details.
