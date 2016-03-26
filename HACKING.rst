@@ -36,7 +36,7 @@ in the next step if you are using PostgreSQL database. You may need to run::
 
   pip install psycopg2
 
-`Testing.md <docs/testing.md>`_ contains more information about testing HaaS.
+`testing.md <docs/testing.md>`_ contains more information about testing HaaS.
 
 Configuring HaaS
 ================
