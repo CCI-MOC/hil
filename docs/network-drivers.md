@@ -52,6 +52,10 @@ will use VLANs specified in the configuration file. An example::
     vlans = 300, 500-700, 800-950
     ...
 
+Once HaaS has been started, removing VLANs from this list is *not*
+supported. You may add additional VLANs, but you will have to re-run
+``haas-admin db create``.
+
 # Security
 
 It is VERY IMPORTANT that you be sure to configure your switches to

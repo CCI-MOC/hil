@@ -46,7 +46,9 @@ class NetworkAllocator(object):
     def populate(self):
         """Populate the database with any initial state needed by the allocator.
 
-        This is invoked once when the haas database is first initialized.
+        This is invoked when the haas database is first initialized. It *must*
+        be safe to call this method multiple times, including on a database that
+        has been modified in ways during the course of normal HaaS operation.
         """
 
     @abstractmethod
