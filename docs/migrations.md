@@ -43,25 +43,61 @@ extensions; Developers should be familiar with this part of alembic's
 interface. Each extension should have its own head. We do not merge
 these heads.
 
-When a new migration script needs to be written, a developer may execute
-`haas-admin db migrate`, which will generate a script under
-`haas/migrations/versions/`. If the migration is for a change in HaaS
-core, this is the correct location. If the change is due to an
-extension, the script should be moved somewhere closer to the source
-code for the extension itself. Note that this works just as well for
-third-party extensions maintained outside of the HaaS source tree. Take
-care to set the `down_revision` and `branch_labels` fields correctly.
-The latter should be a one-element tuple containing the module name for
-the extension.
+When a new migration script needs to be written, the procedure depends
+on whether or not the migration script concerns an extension which does
+not already have any migration scripts.
 
-Note that alembic's auto-generation support should not be relied upon to
-produce correct scripts; while in many cases it just does the right
-thing, you should always verify the output and change as needed.
+### If the extension does not have migration scripts already
 
-Extensions using the migration framework must register themselves in the
-dictionary `haas.migrations.paths`; see the comments next to its
-definition in `haas/migrations.py` for details, and existing extensions
-which use it for examples (e.g. `haas.ext.switches.dell`).
+First, choose a directory in which to store the migration scripts for the
+extension. Storing the migrations as close to the module as possible is
+recommended. Add code to your extension to register this directory with
+`haas.migrations.paths`, e.g.:
+
+    from haas.migrations import paths:
+
+    paths[__name__] = 'Path to my migrations directory'
+
+Make sure the value will be correct regardless of where the source tree is
+located; making it a function of `__file__` is a good idea. Have a look at
+existing extensions for examples if need be. `haas.ext.switches.dell` is a
+good example.
+
+Also, make sure that the migration scripts will be included in the final
+package. This usually just means adding an appropriate entry to `package_data`
+in `setup.py`. If the extension is maintained outside of the HaaS core source
+tree, make sure you pass `zip_safe=False` to `setup`.
+
+Next, to generate a template migration, execute:
+
+    haas-admin db migrate --head haas@head \
+        --branch-label ${name_of_extension_module} \
+        -m 'Summary of change'
+
+Alembic will look at the differences between the schema in the database and
+the one derived from the HaaS source, and generate its best attempt at a
+migration script. The script will be stored in `haas/migrations/versions`.
+Copy it to the directory you chose, and change the value of `down_revision` to
+`None`.
+
+Sanity check the output; Alembic often does a good job generating scripts, but
+it should not be trusted blindly.
+
+Finally, run `haas-admin db upgrade heads` to upgrade the database according
+to your new migration.
+
+### If the extension already has migrations, or the script is for HaaS core
+
+To generate a new migration script, execute:
+
+    haas-admin db migrate --head ${branch_name}@head \
+        -m 'Summary of change'
+
+Where `${branch_name}` is either the name of the extension's module (if the
+script is for an extension) or `haas` (if the script is for HaaS core).
+
+Alembic will generate a migration script in the appropriate directory. Again,
+sanity check the output; Alembic's guesses should not be trusted blindly.
 
 [1]: http://www.sqlalchemy.org/
 [2]: http://flask-sqlalchemy.pocoo.org/2.1/
