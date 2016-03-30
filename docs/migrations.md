@@ -66,7 +66,7 @@ which use it for examples (e.g. `haas.ext.switches.dell`).
 [1]: http://www.sqlalchemy.org/
 [2]: http://flask-sqlalchemy.pocoo.org/2.1/
 [3]: http://flask.pocoo.org/
-[4]: https://flask-migrate.readthedocs.org/en/latest/9
+[4]: https://flask-migrate.readthedocs.org/en/latest/
 [5]: http://alembic.readthedocs.org/en/latest/
 [6]: http://flask-script.readthedocs.org/en/latest/
 [7]: http://alembic.readthedocs.org/en/latest/branches.html
