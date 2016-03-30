@@ -45,6 +45,9 @@ class VlanAllocator(NetworkAllocator):
     def populate(self):
         vlan_list = get_vlan_list()
         for vlan in vlan_list:
+            if Vlan.query.filter_by(vlan_no=vlan).count() == 1:
+                # Already created by a previous call; leave it alone.
+                continue
             db.session.add(Vlan(vlan))
         db.session.commit()
 

@@ -29,7 +29,6 @@ pytestmark = pytest.mark.usefixtures('configure',
                                      )
 
 
-@pytest.mark.xfail
 def test_populate_dirty_db():
     """running the allocator's populate() on an existing db should be ok.
 
