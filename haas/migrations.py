@@ -32,6 +32,15 @@ def _configure_alembic(config):
     return config
 
 
+# Alembic will create this table itself if need be when doing "stamp" in the
+# create_db  function below, but unless we declare it, db.drop_all() won't
+# know about it, and will leave us with a one-table database.
+_alembic_version_table = db.Table(
+    'alembic_version', db.metadata,
+    db.Column('version_num', db.String(32), nullable=False)
+)
+
+
 def create_db():
     """Create and populate the initial database.
 
