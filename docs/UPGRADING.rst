@@ -21,6 +21,8 @@ This file describes the procedure for upgrading HaaS to a new version.
 4. If additional extensions have been added to ``haas.cfg``, re-run ``haas-admin
    db create``, which will create any tables needed by those extensions.
 
+   Note that removing extensions is not currently supported.
+
 5. Restart the HaaS services. e.g.::
 
      $ systemctl start httpd
