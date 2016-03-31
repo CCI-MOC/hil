@@ -508,13 +508,10 @@ def main():
     There is a script located at ${source_tree}/scripts/haas, which invokes
     this function.
     """
-    config.load()
-    config.configure_logging()
-    config.load_extensions()
+    config.setup()
 
     if len(sys.argv) < 2 or sys.argv[1] not in command_dict:
         # Display usage for all commands
         help()
     else:
         command_dict[sys.argv[1]](*sys.argv[2:])
-

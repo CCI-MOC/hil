@@ -9,8 +9,6 @@ manager.add_command('db', db.command)
 
 def main():
     """Entrypoint for the haas-admin command."""
-    config.load()
-    config.configure_logging()
-    config.load_extensions()
+    config.setup()
     model.init_db()
     manager.run()

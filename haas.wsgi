@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 import haas.api
 from haas import config, model, server
-config.load('/etc/haas.cfg')
-config.configure_logging()
-config.load_extensions()
+config.setup('/etc/haas.cfg')
 server.init()
 from haas.rest import app as application
