@@ -21,7 +21,9 @@ Once `load` has been called, it will be ready to use.
 
 import ConfigParser
 import logging
+from logging import handlers
 import importlib
+import os
 import sys
 
 cfg = ConfigParser.RawConfigParser()
@@ -59,6 +61,21 @@ def configure_logging():
     else:
         # Default to 'warning'
         logging.basicConfig(level=logging.WARNING)
+
+    # Configure the formatter
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    logging._defaultFormatter = formatter
+
+    # Add the file handlers for the modules
+    if cfg.has_option('general', 'log_dir'):
+        log_dir = cfg.get('general', 'log_dir')
+
+        # API logging
+        api_log_file = os.path.join(log_dir, 'api.log')
+        api_logger = logging.getLogger('haas.rest')
+        api_logger.addHandler(logging.handlers.TimedRotatingFileHandler(
+                api_log_file, when='D', interval=1))
 
 
 def load_extensions():

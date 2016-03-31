@@ -137,6 +137,12 @@ class DatabaseAuthBackend(auth.AuthBackend):
         else:
             return False
 
+    def get_user(self):
+        if hasattr(local, 'auth') and local.auth:
+            return local.auth.label
+        else:
+            return None
+
     def _have_admin(self):
         user = local.auth
         return user is not None and user.is_admin

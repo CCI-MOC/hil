@@ -209,9 +209,12 @@ def _rest_wrapper(f, schema):
 
     def wrapper(**kwargs):
         kwargs = _do_validation(schema, kwargs)
-        logger.debug('Got api call: %s(%s)' %
-                     (f.__name__, _format_arglist(**kwargs)))
+
         init_auth()
+        username = auth.get_auth_backend().get_user() or '(guest)'
+        logger.info('%s - API call: %s(%s)' %
+                    (username, f.__name__, _format_arglist(**kwargs)))
+
         ret = f(**kwargs)
         if ret is None:
             ret = ''
