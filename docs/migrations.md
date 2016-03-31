@@ -72,7 +72,7 @@ Next, to generate a template migration, execute:
 
     haas-admin db migrate --head haas@head \
         --branch-label ${name_of_extension_module} \
-        -m 'Summary of change'
+        -m '<Summary of change>'
 
 Alembic will look at the differences between the schema in the database and
 the one derived from the HaaS source, and generate its best attempt at a
@@ -91,7 +91,7 @@ to your new migration.
 To generate a new migration script, execute:
 
     haas-admin db migrate --head ${branch_name}@head \
-        -m 'Summary of change'
+        -m '<Summary of change>'
 
 Where `${branch_name}` is either the name of the extension's module (if the
 script is for an extension) or `haas` (if the script is for HaaS core).
