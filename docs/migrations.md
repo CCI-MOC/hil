@@ -99,6 +99,35 @@ script is for an extension) or `haas` (if the script is for HaaS core).
 Alembic will generate a migration script in the appropriate directory. Again,
 sanity check the output; Alembic's guesses should not be trusted blindly.
 
+## Writing tests
+
+The file ``tests/unit/migrations.py`` provides some basic infrastructure
+for testing migrations. The comments there describe things in full
+detail, but the basic strategy is, back up a database with a known set
+of objects using ``pg_dump``, and place the result in
+``tests/unit/migrations/``. To generate a dump, execute::
+
+    pg_dump -U $haas_user $database_name --column-inserts > filename.sql
+
+``--column-inserts`` is necessary to ensure that the result can be
+loaded via SQLAlchemy; the default is not valid SQL and takes advantage
+of specific features of the ``psql`` command. You will also need to edit
+the file manually, doing the following:
+
+- Delete all statements using the keywords GRANT, REVOKE, or EXTENSION.
+  These will cause permission errors if your database user is not root.
+- At the top of the file, document the following:
+  - In roughly what stage of HaaS's development this dump was taken,
+    e.g. "Just after re-integrating flask" or "first integration of
+    openvpn"
+  - The commit hash of the revision of HaaS which created the database.
+  - A list of extensions that were loaded into HaaS when the database
+    was created.
+  - Any other options in the config file that would have affected the
+    contents of the database.
+  - How the database was generated, e.g. "by the function haas.foo.bar
+    as of commit ``$hash``."
+
 [1]: http://www.sqlalchemy.org/
 [2]: http://flask-sqlalchemy.pocoo.org/2.1/
 [3]: http://flask.pocoo.org/

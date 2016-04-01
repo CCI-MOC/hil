@@ -20,9 +20,15 @@ from alembic import op
 
 def upgrade():
     op.rename_table('networkattachment', 'network_attachment')
+    # The _id_seq is a postgres-specific thing; it has to do with the
+    # AUTO INCREMENT functionality.
+    op.rename_table('networkattachment_id_seq', 'network_attachment_id_seq')
     op.rename_table('networkingaction', 'networking_action')
+    op.rename_table('networkingaction_id_seq', 'networking_action_id_seq')
 
 
 def downgrade():
     op.rename_table('network_attachment', 'networkattachment')
+    op.rename_table('network_attachment_id_seq', 'networkattachment_id_seq')
     op.rename_table('networking_action', 'networkingaction')
+    op.rename_table('networking_action_id_seq', 'networkingaction_id_seq')
