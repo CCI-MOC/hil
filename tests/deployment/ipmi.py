@@ -20,7 +20,6 @@ difficult to run in other contexts.
 
 from haas.test_common import *
 from haas import config, server, rest
-from haas.model import db
 import pytest
 
 
@@ -56,7 +55,7 @@ class TestIpmi():
 
     def collect_nodes(self):
         """Collects nodes in the free list."""
-        free_nodes = db.session.query(Node).filter_by(project_id=None).all()
+        free_nodes = Node.query.filter_by(project_id=None).all()
         return free_nodes
 
     def test_node_power_cycle(self):

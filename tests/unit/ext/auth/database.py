@@ -157,7 +157,7 @@ class TestUserCreateDelete(unittest.TestCase):
         """
         user_create('charlie', 'foo', is_admin=is_admin)
         flask.request = FakeAuthRequest('charlie', 'foo')
-        local.auth = db.session.query(User).filter_by(label='charlie').one()
+        local.auth = User.query.filter_by(label='charlie').one()
 
     def test_new_admin_can_admin(self):
         """Verify that a newly created admin can actually do admin stuff."""

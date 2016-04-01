@@ -40,7 +40,7 @@ def auth_call_test(fn, error, admin, project, args, kwargs={}):
     auth_backend = get_auth_backend()
     auth_backend.set_admin(admin)
     if not admin:
-        project = db.session.query(model.Project)\
+        project = model.Project.query \
             .filter_by(label=project).one()
         auth_backend.set_project(project)
 
@@ -199,7 +199,7 @@ def initial_db(request):
 
             # Connect them to a network, so we can test detaching.
             hnic = model.Hnic(headnode, 'public')
-            hnic.network = db.session.query(model.Network)\
+            hnic.network = model.Network.query \
                 .filter_by(label='pub_default').one()
 
 
@@ -651,8 +651,8 @@ class Test_node_detach_network(unittest.TestCase):
 
     def setUp(self):
         self.auth_backend = get_auth_backend()
-        self.runway = db.session.query(model.Project).filter_by(label='runway').one()
-        self.manhattan = db.session.query(model.Project).filter_by(label='manhattan').one()
+        self.runway = model.Project.query.filter_by(label='runway').one()
+        self.manhattan = model.Project.query.filter_by(label='manhattan').one()
         self.auth_backend.set_project(self.manhattan)
         api.node_connect_network('manhattan_node_0', 'boot-nic', 'stock_int_pub')
         deferred.apply_networking()

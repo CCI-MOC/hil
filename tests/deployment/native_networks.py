@@ -101,7 +101,7 @@ class TestNativeNetwork(NetworkTest):
 
             # Remove all nodes from their networks
             for node in nodes:
-                attachment = db.session.query(model.NetworkAttachment)\
+                attachment = model.NetworkAttachment.query \
                     .filter_by(nic=node.nics[0]).one()
                 api.node_detach_network(node.label,
                                         node.nics[0].label,

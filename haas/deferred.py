@@ -36,8 +36,8 @@ def apply_networking():
     tight-looping.
     """
     # Get the journal enries
-    actions = db.session.query(model.NetworkingAction).\
-        order_by(model.NetworkingAction.id).all()
+    actions = model.NetworkingAction.query \
+        .order_by(model.NetworkingAction.id).all()
 
     switch_sessions = {}
 
@@ -71,7 +71,7 @@ def apply_networking():
     # Then perform the database changes and delete them
     for action in actions:
         if action.new_network is None:
-            db.session.query(model.NetworkAttachment)\
+            model.NetworkAttachment.query \
                 .filter_by(nic=action.nic, channel=action.channel)\
                 .delete()
         else:

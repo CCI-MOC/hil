@@ -43,7 +43,7 @@ def list_projects():
     Example:  '["project1", "project2", "project3"]'
     """
     get_auth_backend().require_admin()
-    projects = db.session.query(model.Project).all()
+    projects = model.Project.query.all()
     projects = [p.label for p in projects]
     return json.dumps(projects)
 
@@ -120,7 +120,7 @@ def project_detach_node(project, node):
     node = _must_find(model.Node, node)
     if node not in project.nodes:
         raise NotFoundError("Node not in project")
-    num_attachments = db.session.query(model.NetworkAttachment)\
+    num_attachments = model.NetworkAttachment.query \
         .filter(model.Nic.owner == node,
                 model.NetworkAttachment.nic_id == model.Nic.id).count()
     if num_attachments != 0:
@@ -252,7 +252,7 @@ def node_connect_network(node, nic, network, channel=None):
 
         ``query`` should an argument suitable to pass to db.query(...).filter
         """
-        return db.session.query(model.NetworkAttachment).filter(
+        return model.NetworkAttachment.query.filter(
             model.NetworkAttachment.nic == nic,
             query,
         ).count() != 0
@@ -318,7 +318,7 @@ def node_detach_network(node, nic, network):
 
     if nic.current_action:
         raise BlockedError("A networking operation is already active on the nic.")
-    attachment = db.session.query(model.NetworkAttachment)\
+    attachment = model.NetworkAttachment.query \
         .filter_by(nic=nic, network=network).first()
     if attachment is None:
         raise BadArgumentError("The network is not attached to the nic.")
@@ -747,7 +747,7 @@ def list_free_nodes():
 
     Example:  '["node1", "node2", "node3"]'
     """
-    nodes = db.session.query(model.Node).filter_by(project_id=None).all()
+    nodes = model.Node.query.filter_by(project_id=None).all()
     nodes = [n.label for n in nodes]
     return json.dumps(nodes)
 

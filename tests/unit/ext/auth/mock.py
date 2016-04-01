@@ -60,7 +60,7 @@ def test_default_no_project(auth_backend):
     """By default, access to an arbitrary project should be denied."""
     with pytest.raises(AuthorizationError):
         auth_backend\
-            .require_project_access(db.session.query(Project).first())
+            .require_project_access(Project.query.first())
 
 
 def test_set_admin(auth_backend):
@@ -74,8 +74,8 @@ def test_set_admin(auth_backend):
 
 def test_set_project_access(auth_backend):
     """Setting the project should affect require_project_access."""
-    runway = db.session.query(Project).filter_by(label="runway").one()
-    manhattan = db.session.query(Project).filter_by(label="manhattan").one()
+    runway = Project.query.filter_by(label="runway").one()
+    manhattan = Project.query.filter_by(label="manhattan").one()
     auth_backend.set_project(runway)
     auth_backend.require_project_access(runway)
     auth_backend.set_project(manhattan)
@@ -86,8 +86,8 @@ def test_set_project_access(auth_backend):
 
 def test_admin_implies_project_access(auth_backend):
     """Admin access implies access to any project."""
-    runway = db.session.query(Project).filter_by(label="runway").one()
-    manhattan = db.session.query(Project).filter_by(label="manhattan").one()
+    runway = Project.query.filter_by(label="runway").one()
+    manhattan = Project.query.filter_by(label="manhattan").one()
     auth_backend.set_admin(True)
     auth_backend.require_project_access(runway)
     auth_backend.require_project_access(manhattan)

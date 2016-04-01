@@ -133,7 +133,7 @@ class TestNetworkVlan(NetworkTest):
             # objects across such calls however, things could get harry.
             all_attachments = []
             for node in nodes:
-                attachments = db.session.query(model.NetworkAttachment)\
+                attachments = model.NetworkAttachment.query \
                     .filter_by(nic=node.nics[0]).all()
                 for attachment in attachments:
                     all_attachments.append((node.label,

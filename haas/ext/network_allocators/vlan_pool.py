@@ -27,7 +27,7 @@ class VlanAllocator(NetworkAllocator):
     """A allocator of VLANs. The interface is as specified in ``NetworkAllocator``."""
 
     def get_new_network_id(self):
-        vlan = db.session.query(Vlan).filter_by(available=True).first()
+        vlan = Vlan.query.filter_by(available=True).first()
         if not vlan:
             return None
         vlan.available = False
@@ -35,7 +35,7 @@ class VlanAllocator(NetworkAllocator):
         return returnee
 
     def free_network_id(self, net_id):
-        vlan = db.session.query(Vlan).filter_by(vlan_no=net_id).first()
+        vlan = Vlan.query.filter_by(vlan_no=net_id).first()
         if not vlan:
             logger = logging.getLogger(__name__)
             logger.error('vlan %s does not exist in database' % net_id)

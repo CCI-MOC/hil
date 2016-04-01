@@ -45,7 +45,7 @@ def stop_orphan_consoles():
     These may exist if HaaS was shut down uncleanly.
     """
     # Stop all orphan console logging processes on startup
-    nodes = db.session.query(model.Node).all()
+    nodes = model.Node.query.all()
     for node in nodes:
         node.obm.stop_console()
         node.obm.delete_console()

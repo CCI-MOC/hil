@@ -330,7 +330,7 @@ class TestRegisterCorrectObm:
                   "user": "root",
                   "password": "tapeworm"})
 
-        node_obj = db.session.query(model.Node).filter_by(label="compute-01")\
+        node_obj = model.Node.query.filter_by(label="compute-01")\
                         .join(model.Obm).join(haas.ext.obm.ipmi.Ipmi).first()
 
 
@@ -346,7 +346,7 @@ class TestRegisterCorrectObm:
                   "user": "root",
                   "password": "tapeworm"})
 
-        node_obj = db.session.query(model.Node).filter_by(label="compute-01")\
+        node_obj = model.Node.query.filter_by(label="compute-01")\
                         .join(model.Obm).join(haas.ext.obm.mock.MockObm).first()
 
         assert str(node_obj.label) == 'compute-01'              #Comes from table node
@@ -517,8 +517,8 @@ class TestNodeConnectDetachNetwork:
 
         network = api._must_find(model.Network, 'hammernet')
         nic = api._must_find(model.Nic, '99-eth0')
-        db.session.query(model.NetworkAttachment).filter_by(network=network,
-                         nic=nic).one()
+        model.NetworkAttachment.query.filter_by(network=network,
+                                                nic=nic).one()
 
     def test_node_connect_network_wrong_node_in_project(self):
         api.node_register('node-99', obm={
@@ -682,7 +682,7 @@ class TestNodeConnectDetachNetwork:
         deferred.apply_networking()
         network = api._must_find(model.Network, 'hammernet')
         nic = api._must_find(model.Nic, '99-eth0')
-        assert db.session.query(model.NetworkAttachment)\
+        assert model.NetworkAttachment.query \
             .filter_by(network=network, nic=nic).count() == 0
 
     def test_node_detach_network_not_attached(self):
@@ -1186,7 +1186,7 @@ class Test_switch_register:
         """Calling switch_register should create an object in the db."""
         api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
                 username="switch_user", password="switch_pass", hostname="switchname")
-        assert db.session.query(model.Switch).one().label == 'sw0'
+        assert model.Switch.query.one().label == 'sw0'
 
     def test_duplicate(self):
         """switch_register should complain if asked to make a duplicate switch."""
@@ -1204,7 +1204,7 @@ class Test_switch_delete:
         api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
                 username="switch_user", password="switch_pass", hostname="switchname")
         api.switch_delete('sw0')
-        assert db.session.query(model.Switch).count() == 0
+        assert model.Switch.query.count() == 0
 
     def test_nexist(self):
         """switch_delete should complain if asked to delete a switch that doesn't exist."""
@@ -1219,7 +1219,7 @@ class Test_switch_register_port:
         api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
                 username="switch_user", password="switch_pass", hostname="switchname")
         api.switch_register_port('sw0', '5')
-        port = db.session.query(model.Port).one()
+        port = model.Port.query.one()
         assert port.label == '5'
         assert port.owner.label == 'sw0'
 
@@ -1237,7 +1237,7 @@ class Test_switch_delete_port:
                 username="switch_user", password="switch_pass", hostname="switchname")
         api.switch_register_port('sw0', '5')
         api.switch_delete_port('sw0', '5')
-        assert db.session.query(model.Port).count() == 0
+        assert model.Port.query.count() == 0
 
     def test_switch_nexist(self):
         """Removing a port on a switch that does not exist should report the error."""

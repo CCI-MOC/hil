@@ -218,7 +218,7 @@ class NetworkTest:
 
         If there are not enough nodes, this will rais an api.AllocationError.
         """
-        free_nodes = db.session.query(Node).filter_by(project_id=None).all()
+        free_nodes = Node.query.filter_by(project_id=None).all()
         nodes = []
         for node in free_nodes:
             if len(node.nics) > 0:
@@ -271,7 +271,7 @@ def headnode_cleanup(request):
     """
 
     def undefine_headnodes():
-        for hn in db.session.query(Headnode):
+        for hn in Headnode.query:
             # XXX: Our current version of libvirt has a bug that causes this
             # command to hang for a minute and throw an error before
             # completing successfully.  For this reason, we are ignoring any
