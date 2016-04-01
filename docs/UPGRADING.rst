@@ -18,6 +18,13 @@ This file describes the procedure for upgrading HaaS to a new version.
 
      $ haas-admin db upgrade heads
 
+   ``heads`` indicates that HaaS core and all extensions should be upgraded
+   together. This is the only workflow we support, but the curious can read the
+   (developer-oriented) alembic documentation for more information:
+
+   - `<https://alembic.readthedocs.org/en/latest/>`_
+   - `<https://alembic.readthedocs.org/en/latest/branches.html>`_
+
 4. If additional extensions have been added to ``haas.cfg``, re-run ``haas-admin
    db create``, which will create any tables needed by those extensions.
 
