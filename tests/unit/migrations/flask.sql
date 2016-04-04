@@ -55,8 +55,6 @@ CREATE TABLE headnode (
 );
 
 
-ALTER TABLE headnode OWNER TO haas;
-
 --
 -- Name: headnode_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
 --
@@ -68,8 +66,6 @@ CREATE SEQUENCE headnode_id_seq
     NO MAXVALUE
     CACHE 1;
 
-
-ALTER TABLE headnode_id_seq OWNER TO haas;
 
 --
 -- Name: headnode_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
@@ -90,8 +86,6 @@ CREATE TABLE hnic (
 );
 
 
-ALTER TABLE hnic OWNER TO haas;
-
 --
 -- Name: hnic_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
 --
@@ -103,8 +97,6 @@ CREATE SEQUENCE hnic_id_seq
     NO MAXVALUE
     CACHE 1;
 
-
-ALTER TABLE hnic_id_seq OWNER TO haas;
 
 --
 -- Name: hnic_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
@@ -125,8 +117,6 @@ CREATE TABLE ipmi (
 );
 
 
-ALTER TABLE ipmi OWNER TO haas;
-
 --
 -- Name: mockobm; Type: TABLE; Schema: public; Owner: haas; Tablespace:
 --
@@ -139,8 +129,6 @@ CREATE TABLE mockobm (
 );
 
 
-ALTER TABLE mockobm OWNER TO haas;
-
 --
 -- Name: mockswitch; Type: TABLE; Schema: public; Owner: haas; Tablespace:
 --
@@ -152,8 +140,6 @@ CREATE TABLE mockswitch (
     password character varying NOT NULL
 );
 
-
-ALTER TABLE mockswitch OWNER TO haas;
 
 --
 -- Name: network; Type: TABLE; Schema: public; Owner: haas; Tablespace:
@@ -169,8 +155,6 @@ CREATE TABLE network (
 );
 
 
-ALTER TABLE network OWNER TO haas;
-
 --
 -- Name: network_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
 --
@@ -182,8 +166,6 @@ CREATE SEQUENCE network_id_seq
     NO MAXVALUE
     CACHE 1;
 
-
-ALTER TABLE network_id_seq OWNER TO haas;
 
 --
 -- Name: network_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
@@ -204,8 +186,6 @@ CREATE TABLE networkattachment (
 );
 
 
-ALTER TABLE networkattachment OWNER TO haas;
-
 --
 -- Name: networkattachment_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
 --
@@ -217,8 +197,6 @@ CREATE SEQUENCE networkattachment_id_seq
     NO MAXVALUE
     CACHE 1;
 
-
-ALTER TABLE networkattachment_id_seq OWNER TO haas;
 
 --
 -- Name: networkattachment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
@@ -239,8 +217,6 @@ CREATE TABLE networkingaction (
 );
 
 
-ALTER TABLE networkingaction OWNER TO haas;
-
 --
 -- Name: networkingaction_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
 --
@@ -252,8 +228,6 @@ CREATE SEQUENCE networkingaction_id_seq
     NO MAXVALUE
     CACHE 1;
 
-
-ALTER TABLE networkingaction_id_seq OWNER TO haas;
 
 --
 -- Name: networkingaction_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
@@ -275,8 +249,6 @@ CREATE TABLE nexus (
 );
 
 
-ALTER TABLE nexus OWNER TO haas;
-
 --
 -- Name: nic; Type: TABLE; Schema: public; Owner: haas; Tablespace:
 --
@@ -290,8 +262,6 @@ CREATE TABLE nic (
 );
 
 
-ALTER TABLE nic OWNER TO haas;
-
 --
 -- Name: nic_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
 --
@@ -303,8 +273,6 @@ CREATE SEQUENCE nic_id_seq
     NO MAXVALUE
     CACHE 1;
 
-
-ALTER TABLE nic_id_seq OWNER TO haas;
 
 --
 -- Name: nic_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
@@ -325,8 +293,6 @@ CREATE TABLE node (
 );
 
 
-ALTER TABLE node OWNER TO haas;
-
 --
 -- Name: node_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
 --
@@ -338,8 +304,6 @@ CREATE SEQUENCE node_id_seq
     NO MAXVALUE
     CACHE 1;
 
-
-ALTER TABLE node_id_seq OWNER TO haas;
 
 --
 -- Name: node_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
@@ -358,8 +322,6 @@ CREATE TABLE obm (
 );
 
 
-ALTER TABLE obm OWNER TO haas;
-
 --
 -- Name: obm_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
 --
@@ -371,8 +333,6 @@ CREATE SEQUENCE obm_id_seq
     NO MAXVALUE
     CACHE 1;
 
-
-ALTER TABLE obm_id_seq OWNER TO haas;
 
 --
 -- Name: obm_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
@@ -392,8 +352,6 @@ CREATE TABLE port (
 );
 
 
-ALTER TABLE port OWNER TO haas;
-
 --
 -- Name: port_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
 --
@@ -405,8 +363,6 @@ CREATE SEQUENCE port_id_seq
     NO MAXVALUE
     CACHE 1;
 
-
-ALTER TABLE port_id_seq OWNER TO haas;
 
 --
 -- Name: port_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
@@ -427,8 +383,6 @@ CREATE TABLE powerconnect55xx (
 );
 
 
-ALTER TABLE powerconnect55xx OWNER TO haas;
-
 --
 -- Name: project; Type: TABLE; Schema: public; Owner: haas; Tablespace:
 --
@@ -438,8 +392,6 @@ CREATE TABLE project (
     label character varying NOT NULL
 );
 
-
-ALTER TABLE project OWNER TO haas;
 
 --
 -- Name: project_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
@@ -452,8 +404,6 @@ CREATE SEQUENCE project_id_seq
     NO MAXVALUE
     CACHE 1;
 
-
-ALTER TABLE project_id_seq OWNER TO haas;
 
 --
 -- Name: project_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
@@ -473,8 +423,6 @@ CREATE TABLE switch (
 );
 
 
-ALTER TABLE switch OWNER TO haas;
-
 --
 -- Name: switch_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
 --
@@ -486,8 +434,6 @@ CREATE SEQUENCE switch_id_seq
     NO MAXVALUE
     CACHE 1;
 
-
-ALTER TABLE switch_id_seq OWNER TO haas;
 
 --
 -- Name: switch_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
@@ -508,7 +454,6 @@ CREATE TABLE "user" (
 );
 
 
-ALTER TABLE "user" OWNER TO haas;
 
 --
 -- Name: user_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
@@ -522,7 +467,6 @@ CREATE SEQUENCE user_id_seq
     CACHE 1;
 
 
-ALTER TABLE user_id_seq OWNER TO haas;
 
 --
 -- Name: user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
@@ -541,7 +485,6 @@ CREATE TABLE user_projects (
 );
 
 
-ALTER TABLE user_projects OWNER TO haas;
 
 --
 -- Name: vlan; Type: TABLE; Schema: public; Owner: haas; Tablespace:
@@ -554,7 +497,6 @@ CREATE TABLE vlan (
 );
 
 
-ALTER TABLE vlan OWNER TO haas;
 
 --
 -- Name: vlan_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
@@ -568,7 +510,6 @@ CREATE SEQUENCE vlan_id_seq
     CACHE 1;
 
 
-ALTER TABLE vlan_id_seq OWNER TO haas;
 
 --
 -- Name: vlan_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
