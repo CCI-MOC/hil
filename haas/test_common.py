@@ -60,7 +60,7 @@ def config_testsuite():
         })
 
 
-def initial_db(request):
+def initial_db():
     """Populates the database with a useful set of objects.
 
     This allows us to avoid some boilerplate in tests which need a few objects
@@ -78,8 +78,6 @@ def initial_db(request):
 
     from haas.ext.switches.mock import MockSwitch
     from haas.ext.obm.mock import MockObm
-
-    fresh_database(request)
 
     with app.app_context():
         # Create a couple projects:

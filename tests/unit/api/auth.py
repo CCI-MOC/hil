@@ -81,6 +81,7 @@ with_request_context = pytest.yield_fixture(with_request_context)
 
 
 pytestmark = pytest.mark.usefixtures('configure',
+                                     'fresh_database',
                                      'initial_db',
                                      'server_init',
                                      'with_request_context')
