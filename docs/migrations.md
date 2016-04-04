@@ -114,8 +114,15 @@ loaded via SQLAlchemy; the default is not valid SQL and takes advantage
 of specific features of the ``psql`` command. You will also need to edit
 the file manually, doing the following:
 
+- If the option lock_timeout is set (``SET lock_timeout = ...``), remove
+  that statement; the version of postgres used by Travis doesn't support
+  it, so it will cause failures. It also isn't required.
 - Delete all statements using the keywords GRANT, REVOKE, or EXTENSION.
   These will cause permission errors if your database user is not root.
+- Delete all statements of the form ``ALTER TABLE ... SET OWNER TO
+  ...``; these may cause failures if the connection details on the
+  machine which runs the tests are different from yours, since the
+  refer to specific database users/roles.
 - At the top of the file, document the following:
   - In roughly what stage of HaaS's development this dump was taken,
     e.g. "Just after re-integrating flask" or "first integration of
