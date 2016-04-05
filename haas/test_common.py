@@ -60,164 +60,6 @@ def config_testsuite():
         })
 
 
-def initial_db():
-    """Populates the database with a useful set of objects.
-
-    This allows us to avoid some boilerplate in tests which need a few objects
-    in the database in order to work.
-
-    Note that this fixture requires the use of the following extensions:
-
-        - haas.ext.switches.mock
-        - haas.ext.obm.mock
-    """
-    for required_extension in 'haas.ext.switches.mock', 'haas.ext.obm.mock':
-        assert required_extension in sys.modules, \
-            "The 'initial_db' fixture requires the extension %r" % \
-            required_extension
-
-    from haas.ext.switches.mock import MockSwitch
-    from haas.ext.obm.mock import MockObm
-
-    with app.app_context():
-        # Create a couple projects:
-        runway = Project("runway")
-        manhattan = Project("manhattan")
-        for proj in [runway, manhattan]:
-            db.session.add(proj)
-
-        # ...including at least one with nothing in it:
-        db.session.add(Project('empty-project'))
-
-        # ...A variety of networks:
-
-        networks = [
-            {
-                'creator': None,
-                'access': None,
-                'allocated': True,
-                'label': 'stock_int_pub',
-            },
-            {
-                'creator': None,
-                'access': None,
-                'allocated': False,
-                'network_id': 'ext_pub_chan',
-                'label': 'stock_ext_pub',
-            },
-            {
-                # For some tests, we want things to initial be attached to a
-                # network. This one serves that purpose; using the others would
-                # interfere with some of the network_delete tests.
-                'creator': None,
-                'access': None,
-                'allocated': True,
-                'label': 'pub_default',
-            },
-            {
-                'creator': runway,
-                'access': runway,
-                'allocated': True,
-                'label': 'runway_pxe'
-            },
-            {
-                'creator': None,
-                'access': runway,
-                'allocated': False,
-                'network_id': 'runway_provider_chan',
-                'label': 'runway_provider',
-            },
-            {
-                'creator': manhattan,
-                'access': manhattan,
-                'allocated': True,
-                'label': 'manhattan_pxe'
-            },
-            {
-                'creator': None,
-                'access': manhattan,
-                'allocated': False,
-                'network_id': 'manhattan_provider_chan',
-                'label': 'manhattan_provider',
-            },
-        ]
-
-        for net in networks:
-            if net['allocated']:
-                net['network_id'] = \
-                    get_network_allocator().get_new_network_id()
-            db.session.add(Network(**net))
-
-        # ... Two switches. One of these is just empty, for testing deletion:
-        db.session.add(MockSwitch(label='empty-switch',
-                                  hostname='empty',
-                                  username='alice',
-                                  password='secret',
-                                  type=MockSwitch.api_name))
-
-        # ... The other we'll actually attach stuff to for other tests:
-        switch = MockSwitch(label="stock_switch_0",
-                            hostname='stock',
-                            username='bob',
-                            password='password',
-                            type=MockSwitch.api_name)
-
-        # ... Some free ports:
-        db.session.add(Port('free_port_0', switch))
-        db.session.add(Port('free_port_1', switch))
-
-        # ... Some nodes (with projets):
-        nodes = [
-            {'label': 'runway_node_0', 'project': runway},
-            {'label': 'runway_node_1', 'project': runway},
-            {'label': 'manhattan_node_0', 'project': manhattan},
-            {'label': 'manhattan_node_1', 'project': manhattan},
-            {'label': 'free_node_0', 'project': None},
-            {'label': 'free_node_1', 'project': None},
-        ]
-        for node_dict in nodes:
-            obm=MockObm(type=MockObm.api_name,
-                        host=node_dict['label'],
-                        user='user',
-                        password='password')
-            node = Node(label=node_dict['label'], obm=obm)
-            node.project = node_dict['project']
-            db.session.add(Nic(node, label='boot-nic', mac_addr='Unknown'))
-
-            # give it a nic that's attached to a port:
-            port_nic = Nic(node, label='nic-with-port', mac_addr='Unknown')
-            port = Port(node_dict['label'] + '_port', switch)
-            port.nic = port_nic
-
-        # ... Some headnodes:
-        headnodes = [
-            {'label': 'runway_headnode_on', 'project': runway, 'on': True},
-            {'label': 'runway_headnode_off', 'project': runway, 'on': False},
-            {'label': 'runway_manhattan_on', 'project': manhattan, 'on': True},
-            {'label': 'runway_manhattan_off', 'project': manhattan, 'on': False},
-        ]
-        for hn_dict in headnodes:
-            headnode = Headnode(hn_dict['project'],
-                                    hn_dict['label'],
-                                    'base-headnode')
-            headnode.dirty = not hn_dict['on']
-            hnic = Hnic(headnode, 'pxe')
-            db.session.add(hnic)
-
-            # Connect them to a network, so we can test detaching.
-            hnic = Hnic(headnode, 'public')
-            hnic.network = Network.query \
-                .filter_by(label='pub_default').one()
-
-
-        # ... and at least one node with no nics (useful for testing delete):
-        obm=MockObm(type=MockObm.api_name,
-            host='hostname',
-            user='user',
-            password='password')
-        db.session.add(Node(label='no_nic_node', obm=obm))
-
-        db.session.commit()
 
 
 def config_merge(config_dict):
@@ -443,3 +285,163 @@ def headnode_cleanup(request):
                 pass
 
     request.addfinalizer(undefine_headnodes)
+
+
+def initial_db():
+    """Populates the database with a useful set of objects.
+
+    This allows us to avoid some boilerplate in tests which need a few objects
+    in the database in order to work.
+
+    Note that this fixture requires the use of the following extensions:
+
+        - haas.ext.switches.mock
+        - haas.ext.obm.mock
+    """
+    for required_extension in 'haas.ext.switches.mock', 'haas.ext.obm.mock':
+        assert required_extension in sys.modules, \
+            "The 'initial_db' fixture requires the extension %r" % \
+            required_extension
+
+    from haas.ext.switches.mock import MockSwitch
+    from haas.ext.obm.mock import MockObm
+
+    with app.app_context():
+        # Create a couple projects:
+        runway = Project("runway")
+        manhattan = Project("manhattan")
+        for proj in [runway, manhattan]:
+            db.session.add(proj)
+
+        # ...including at least one with nothing in it:
+        db.session.add(Project('empty-project'))
+
+        # ...A variety of networks:
+
+        networks = [
+            {
+                'creator': None,
+                'access': None,
+                'allocated': True,
+                'label': 'stock_int_pub',
+            },
+            {
+                'creator': None,
+                'access': None,
+                'allocated': False,
+                'network_id': 'ext_pub_chan',
+                'label': 'stock_ext_pub',
+            },
+            {
+                # For some tests, we want things to initial be attached to a
+                # network. This one serves that purpose; using the others would
+                # interfere with some of the network_delete tests.
+                'creator': None,
+                'access': None,
+                'allocated': True,
+                'label': 'pub_default',
+            },
+            {
+                'creator': runway,
+                'access': runway,
+                'allocated': True,
+                'label': 'runway_pxe'
+            },
+            {
+                'creator': None,
+                'access': runway,
+                'allocated': False,
+                'network_id': 'runway_provider_chan',
+                'label': 'runway_provider',
+            },
+            {
+                'creator': manhattan,
+                'access': manhattan,
+                'allocated': True,
+                'label': 'manhattan_pxe'
+            },
+            {
+                'creator': None,
+                'access': manhattan,
+                'allocated': False,
+                'network_id': 'manhattan_provider_chan',
+                'label': 'manhattan_provider',
+            },
+        ]
+
+        for net in networks:
+            if net['allocated']:
+                net['network_id'] = \
+                    get_network_allocator().get_new_network_id()
+            db.session.add(Network(**net))
+
+        # ... Two switches. One of these is just empty, for testing deletion:
+        db.session.add(MockSwitch(label='empty-switch',
+                                  hostname='empty',
+                                  username='alice',
+                                  password='secret',
+                                  type=MockSwitch.api_name))
+
+        # ... The other we'll actually attach stuff to for other tests:
+        switch = MockSwitch(label="stock_switch_0",
+                            hostname='stock',
+                            username='bob',
+                            password='password',
+                            type=MockSwitch.api_name)
+
+        # ... Some free ports:
+        db.session.add(Port('free_port_0', switch))
+        db.session.add(Port('free_port_1', switch))
+
+        # ... Some nodes (with projets):
+        nodes = [
+            {'label': 'runway_node_0', 'project': runway},
+            {'label': 'runway_node_1', 'project': runway},
+            {'label': 'manhattan_node_0', 'project': manhattan},
+            {'label': 'manhattan_node_1', 'project': manhattan},
+            {'label': 'free_node_0', 'project': None},
+            {'label': 'free_node_1', 'project': None},
+        ]
+        for node_dict in nodes:
+            obm=MockObm(type=MockObm.api_name,
+                        host=node_dict['label'],
+                        user='user',
+                        password='password')
+            node = Node(label=node_dict['label'], obm=obm)
+            node.project = node_dict['project']
+            db.session.add(Nic(node, label='boot-nic', mac_addr='Unknown'))
+
+            # give it a nic that's attached to a port:
+            port_nic = Nic(node, label='nic-with-port', mac_addr='Unknown')
+            port = Port(node_dict['label'] + '_port', switch)
+            port.nic = port_nic
+
+        # ... Some headnodes:
+        headnodes = [
+            {'label': 'runway_headnode_on', 'project': runway, 'on': True},
+            {'label': 'runway_headnode_off', 'project': runway, 'on': False},
+            {'label': 'runway_manhattan_on', 'project': manhattan, 'on': True},
+            {'label': 'runway_manhattan_off', 'project': manhattan, 'on': False},
+        ]
+        for hn_dict in headnodes:
+            headnode = Headnode(hn_dict['project'],
+                                    hn_dict['label'],
+                                    'base-headnode')
+            headnode.dirty = not hn_dict['on']
+            hnic = Hnic(headnode, 'pxe')
+            db.session.add(hnic)
+
+            # Connect them to a network, so we can test detaching.
+            hnic = Hnic(headnode, 'public')
+            hnic.network = Network.query \
+                .filter_by(label='pub_default').one()
+
+
+        # ... and at least one node with no nics (useful for testing delete):
+        obm=MockObm(type=MockObm.api_name,
+            host='hostname',
+            user='user',
+            password='password')
+        db.session.add(Node(label='no_nic_node', obm=obm))
+
+        db.session.commit()
