@@ -307,6 +307,7 @@ former is a WSGI application, which we recommend running with Apache's
   <VirtualHost 127.0.0.1:80>
     ServerName 127.0.0.1
     AllowEncodedSlashes On
+    WSGIPassAuthorization On
     WSGIDaemonProcess haas_user user=haas_user group=haas_user threads=2
     WSGIScriptAlias / /var/www/haas/haas.wsgi
     <Directory /var/www/haas>
@@ -325,6 +326,13 @@ strings that should be escaped (see `issue 361 <https://github.com/CCI-MOC/haas/
 allow <https://stackoverflow.com/questions/4390436/need-to-allow-encoded-slashes-on-apache>`_
 this due to security concerns. ``AllowEncodedSlashes On`` enables the passing
 of these arguments.
+
+**Note:** For apache to be able to pass the authentication headers to HaaS 
+following directive will have to be turned on
+
+``WSGIPassAuthorization On``
+
+(see http://stackoverflow.com/questions/20940651/how-to-access-apache-basic-authentication-user-in-flask )
 
 If you haven't already, create the directory that will contain the HaaS WSGI module::
 
