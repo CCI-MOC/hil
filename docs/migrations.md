@@ -127,7 +127,8 @@ the file manually, doing the following:
   - In roughly what stage of HaaS's development this dump was taken,
     e.g. "Just after re-integrating flask" or "first integration of
     openvpn"
-  - The commit hash of the revision of HaaS which created the database.
+  - The git commit hash of the revision of HaaS which created the
+    database.
   - A list of extensions that were loaded into HaaS when the database
     was created.
   - Any other options in the config file that would have affected the
