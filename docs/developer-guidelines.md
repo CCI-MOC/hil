@@ -3,8 +3,25 @@
 This document represents the developer policies and procedures for maintaining
 Hardware as a Service (HaaS), including the accepted [coding style](#Coding-style).
 
+## Getting started
 
-## Communicating
+If you are new to HaaS and would like to jump in, then welcome!
+
+Contributions can come in many forms: installing haas and using it in your
+environment (and giving us feedback), improving the testing, squashing bugs and
+introducing new functionality.
+
+If you are interested in any of this, a good place to start is by reading the
+documentation (linked from the [README](../README.rst)).
+
+If you're looking to code, there are a few ways to help:
+* Improving the HaaS documentation
+* Better testing
+* Reviewing [Pull Requests](https://github.com/CCI-MOC/haas/pulls)
+* Taking a github issue marked with the [easy label](https://github.com/CCI-MOC/haas/labels/easy). (Talk to one of the core team members to have it assigned to you officially!)
+* Taking on a github issue that is part of one of the next [milestones in github](https://github.com/CCI-MOC/haas/milestones?state=open)
+
+## Commuinicating
 
 * IRC: The MOC team hangs out on #moc on [freenode](https://www.freenode.net/)
 * IRL (In Real Life): The MOC group office is on the BU campus, at 3 Cummington Mall, Boston, MA room 451. Anyone interested in HaaS is welcome to drop in and work there.
@@ -49,20 +66,20 @@ This summarizes what should be done prior to a pull request:
 - [ ] Ensure any user, deployer or developer documentation is updated.
 - [ ] If a change affects an external API, be sure to update docs/rest\_api.md.
 - [ ] Testing:
-  - [ ] Ensure unit tests pass by running `py.test tests/unit` from the top-level haas directory.
+  - [ ] Ensure tests pass after making your changes by running `py.test tests/unit tests/stress.py` from the top-level haas directory. Parallel testing can be used on multi-core systems by running `py.test tests/unit tests/stress.py -n auto`
   - [ ] Add unit tests in the corresponding file and create one if none are present.
   - [ ] If practical, bug fixes should have an reproducing test to ensure that the bug does not come back.
   - [ ] Run deployment tests if code could affect switches
 
 ### Get agreement
 
-The HaaS effort appreciates all ideas and submissions. In the past, we've
+The HaaS project appreciates all ideas and submissions. In the past, we've
 discussed several alternatives to how things currently work (which we're trying
 to get better about writing down), and it would be good to have agreement that
 includes input from these past discussions as well as the wisdom of the
-community. The best way to do this is to email haas-dev-list@bu.edu, though you
-can also [file an issue](https://github.com/CCI-MOC/haas/issues) on github or
-speak with one of the core developers.
+community. The best way to do this is to [file an
+issue](https://github.com/CCI-MOC/haas/issues) on github, email
+haas-dev-list@bu.edu or speak with one of the core developers directly.
 
 ### Documentation
 
@@ -71,7 +88,8 @@ speak with one of the core developers.
 In HaaS, we primarily have 3 types of users: end-users (API/CLI users),
 deployers (HaaS instance admins) and developers (you!). If your change affects
 any of HaaS's extensive documentation, please be sure to update the
-accompanying documentation.
+accompanying documentation. For example, if an API call signature is changed or
+added, please update [docs/rest_api.md](./rest_api.md).
 
 While most end-user and developer documentation can be found in the documentation listing
 (linked above), developer documentation may be found in the [docs
@@ -165,12 +183,13 @@ Core developers are the trusted gatekeepers of the HaaS codebase. They consist o
 * Jon Bell
 * Ian Denhardt
 * Jason Hennessey (PTL)
+* Kyle Hogan
+* Kristi Nikolla
 * George Silvis
 * Sahil Tikale
 
 Anyone who has had a few successful commits is invited to speak to the PTL
-about being added as one.
+(Project Team Lead) about being added as one.
 
 [repo]: https://github.com/CCI-MOC/haas
 [pr]: https://help.github.com/articles/using-pull-requests/
-
