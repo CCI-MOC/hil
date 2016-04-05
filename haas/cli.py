@@ -382,6 +382,11 @@ def switch_delete(switch):
     url = object_url('switch', switch)
     do_delete(url)
 
+@cmd
+def list_switches():
+    """List all switches"""
+    url = object_url('switches')
+    do_get(url)
 
 @cmd
 def port_register(switch, port):
