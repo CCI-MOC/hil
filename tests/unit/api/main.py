@@ -1251,6 +1251,24 @@ class Test_switch_delete_port:
         with pytest.raises(api.NotFoundError):
             api.switch_delete_port('sw0', '5')
 
+class Test_list_switches:
+
+    def test_list_switches(self, db):
+        assert json.loads(api.list_switches()) == []
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE, 
+		username="foo", password="bar", hostname="baz")
+        assert db.query(model.Switch).one().label == 'sw0'
+        assert json.loads(api.list_switches()) == ['sw0']
+
+        api.switch_register('mock', type=MOCK_SWITCH_TYPE, 
+		username="user", password="password", hostname="host")
+        api.switch_register('cirius', type=MOCK_SWITCH_TYPE, 
+		username="user", password="password", hostname="switch")
+        assert sorted(json.loads(api.list_switches())) == [
+            'cirius',
+            'mock',
+            'sw0',
+        ]
 
 class TestPortConnectDetachNic:
 
