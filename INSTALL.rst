@@ -290,6 +290,13 @@ allow <https://stackoverflow.com/questions/4390436/need-to-allow-encoded-slashes
 this due to security concerns. ``AllowEncodedSlashes On`` enables the passing
 of these arguments.
 
+**Note:** For apache to be able to pass the authentication headers to HaaS 
+following directive will have to be turned on
+
+``WSGIPassAuthorization On``
+
+(see http://stackoverflow.com/questions/20940651/how-to-access-apache-basic-authentication-user-in-flask )
+
 If you haven't already, create the directory that will contain the HaaS WSGI module::
 
  sudo mkdir /var/www/haas/
