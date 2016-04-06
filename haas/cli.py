@@ -371,10 +371,48 @@ def switch_register(switch, subtype, *args):
     eg. haas switch_register mock03 mock mockhost01 mockuser01 mockpass01
     """
     switch_api = "http://schema.massopencloud.org/haas/v0/switches/"
-    switchinfo = { "type": switch_api+subtype, "hostname": args[0],
+@cmd
+def switch_register(switch, subtype, *args):
+    """Register a switch with name <switch> and
+    <subtype>, <hostname>, <username>,  <password>
+    eg. haas switch_register mock03 mock mockhost01 mockuser01 mockpass01
+    """
+    switch_api = "http://schema.massopencloud.org/haas/v0/switches/"
+    if subtype == "nexus":
+        if len(args) == 4:
+            switchinfo = { "type": switch_api+subtype, "hostname": args[0],
+                        "username": args[1], "password": args[2], "dummy_vlan": args[3] }
+        else:
+            sys.stderr.write('ERROR: subtype '+subtype+' requires exactly 4 arguments\n')
+            sys.stderr.write('<hostname> <username> <password> <dummy_vlan_no>\n')
+            return
+
+
+    elif subtype == "mock":
+        if len(args) == 3:
+            switchinfo = { "type": switch_api+subtype, "hostname": args[0],
                         "username": args[1], "password": args[2] }
+        else:
+            sys.stderr.write('ERROR: subtype '+subtype+' requires exactly 3 arguments\n')
+            sys.stderr.write('<hostname> <username> <password>\n')
+            return
+
+    elif subtype == "powerconnect55xx":
+        if len(args) == 3:
+            switchinfo = { "type": switch_api+subtype, "hostname": args[0],
+                        "username": args[1], "password": args[2] }
+        else:
+            sys.stderr.write('ERROR: subtype '+subtype+' requires exactly 3 arguments\n')
+            sys.stderr.write('<hostname> <username> <password>\n')
+            return
+
+    else:
+        sys.stderr.write('ERROR: Wrong subtype supplied\n')
+        return
+
     url = object_url('switch', switch)
     do_put(url, data=switchinfo)
+
 
 @cmd
 def switch_delete(switch):
