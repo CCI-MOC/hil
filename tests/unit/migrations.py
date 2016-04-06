@@ -173,7 +173,7 @@ def test_db_eq(filename, extra_config):
         """
         hex_re = r'[0-9a-f]'
         uuid_re = hex_re * 8 + ('-' + hex_re * 4) * 3 + '-' + hex_re * 12
-        return '<<UUID>>'.join(re.split(uuid_re, string))
+        return re.sub(uuid_re, '<<UUID>>', string)
 
     differ = difflib.Differ()
     upgraded = censor_nondeterminism(pformat(upgraded)).split('\n')
