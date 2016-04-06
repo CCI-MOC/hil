@@ -44,7 +44,7 @@ def list_projects():
     """
     get_auth_backend().require_admin()
     projects = model.Project.query.all()
-    projects = [p.label for p in projects]
+    projects = sorted([p.label for p in projects])
     return json.dumps(projects)
 
 @rest_call('PUT', '/project/<project>')
@@ -748,7 +748,7 @@ def list_free_nodes():
     Example:  '["node1", "node2", "node3"]'
     """
     nodes = model.Node.query.filter_by(project_id=None).all()
-    nodes = [n.label for n in nodes]
+    nodes = sorted([n.label for n in nodes])
     return json.dumps(nodes)
 
 
@@ -777,7 +777,7 @@ def list_project_networks(project):
     """
     project = _must_find(model.Project, project)
     networks = project.networks_access
-    networks = [n.label for n in networks]
+    networks = sorted([n.label for n in networks])
     return json.dumps(networks)
 
 
@@ -830,7 +830,7 @@ def list_project_headnodes(project):
     project = _must_find(model.Project, project)
     get_auth_backend().require_project_access(project)
     headnodes = project.headnodes
-    headnodes = [hn.label for hn in headnodes]
+    headnodes = sorted([hn.label for hn in headnodes])
     return json.dumps(headnodes)
 
 
@@ -875,7 +875,7 @@ def list_headnode_images():
     Example:  '["headnode1.img", "headnode2.img", "headnode3.img"]'
     """
     valid_imgs = cfg.get('headnode', 'base_imgs')
-    valid_imgs = [img.strip() for img in valid_imgs.split(',')]
+    valid_imgs = sorted([img.strip() for img in valid_imgs.split(',')])
     return json.dumps(valid_imgs)
 
 
