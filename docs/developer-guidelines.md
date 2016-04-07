@@ -21,7 +21,7 @@ If you're looking to code, there are a few ways to help:
 * Taking a github issue marked with the [easy label](https://github.com/CCI-MOC/haas/labels/easy). (Talk to one of the core team members to have it assigned to you officially!)
 * Taking on a github issue that is part of one of the next [milestones in github](https://github.com/CCI-MOC/haas/milestones?state=open)
 
-## Commuinicating
+## Communicating
 
 * IRC: The MOC team hangs out on #moc on [freenode](https://www.freenode.net/)
 * IRL (In Real Life): The MOC group office is on the BU campus, at 3 Cummington Mall, Boston, MA room 451. Anyone interested in HaaS is welcome to drop in and work there.
