@@ -1,8 +1,7 @@
 from haas import config, server
 from haas.auth import get_auth_backend
 from haas.errors import AuthorizationError
-from haas.model import Project
-from haas.rest import local
+from haas.model import db, Project
 from haas.test_common import config_testsuite, config_merge, fresh_database, \
     with_request_context
 import pytest
@@ -20,9 +19,7 @@ def configure():
     config.load_extensions()
 
 
-@pytest.fixture
-def db(request):
-    return fresh_database(request)
+fresh_database = pytest.fixture(fresh_database)
 
 
 @pytest.fixture
@@ -37,8 +34,8 @@ with_request_contex = pytest.yield_fixture(with_request_context)
 @pytest.fixture
 def load_projects():
     """Add a couple probjects to the database for us to work with"""
-    local.db.add(Project("manhattan"))
-    local.db.add(Project("runway"))
+    db.session.add(Project("manhattan"))
+    db.session.add(Project("runway"))
 
 
 @pytest.fixture
@@ -47,7 +44,7 @@ def auth_backend():
 
 
 pytestmark = pytest.mark.usefixtures('configure',
-                                     'db',
+                                     'fresh_database',
                                      'server_init',
                                      'with_request_context',
                                      'load_projects')
@@ -63,7 +60,7 @@ def test_default_no_project(auth_backend):
     """By default, access to an arbitrary project should be denied."""
     with pytest.raises(AuthorizationError):
         auth_backend\
-            .require_project_access(local.db.query(Project).first())
+            .require_project_access(Project.query.first())
 
 
 def test_set_admin(auth_backend):
@@ -77,8 +74,8 @@ def test_set_admin(auth_backend):
 
 def test_set_project_access(auth_backend):
     """Setting the project should affect require_project_access."""
-    runway = local.db.query(Project).filter_by(label="runway").one()
-    manhattan = local.db.query(Project).filter_by(label="manhattan").one()
+    runway = Project.query.filter_by(label="runway").one()
+    manhattan = Project.query.filter_by(label="manhattan").one()
     auth_backend.set_project(runway)
     auth_backend.require_project_access(runway)
     auth_backend.set_project(manhattan)
@@ -89,8 +86,8 @@ def test_set_project_access(auth_backend):
 
 def test_admin_implies_project_access(auth_backend):
     """Admin access implies access to any project."""
-    runway = local.db.query(Project).filter_by(label="runway").one()
-    manhattan = local.db.query(Project).filter_by(label="manhattan").one()
+    runway = Project.query.filter_by(label="runway").one()
+    manhattan = Project.query.filter_by(label="manhattan").one()
     auth_backend.set_admin(True)
     auth_backend.require_project_access(runway)
     auth_backend.require_project_access(manhattan)

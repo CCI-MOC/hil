@@ -16,15 +16,15 @@
 
 TODO: Spec out and document what sanitization is required.
 """
-import importlib
 import json
 
 from schema import Schema, Optional
 
 from haas import model
+from haas.model import db
 from haas.auth import get_auth_backend
 from haas.config import cfg
-from haas.rest import rest_call, local
+from haas.rest import rest_call
 from haas.class_resolver import concrete_class_for
 from haas.network_allocator import get_network_allocator
 from haas.errors import *
@@ -43,7 +43,7 @@ def list_projects():
     Example:  '["project1", "project2", "project3"]'
     """
     get_auth_backend().require_admin()
-    projects = local.db.query(model.Project).all()
+    projects = model.Project.query.all()
     projects = sorted([p.label for p in projects])
     return json.dumps(projects)
 
@@ -56,8 +56,8 @@ def project_create(project):
     get_auth_backend().require_admin()
     _assert_absent(model.Project, project)
     project = model.Project(project)
-    local.db.add(project)
-    local.db.commit()
+    db.session.add(project)
+    db.session.commit()
 
 
 @rest_call('DELETE', '/project/<project>')
@@ -85,8 +85,8 @@ def project_delete(project):
         raise BlockedError("Project can still access networks")
     if project.headnodes:
         raise BlockedError("Project still has a headnode")
-    local.db.delete(project)
-    local.db.commit()
+    db.session.delete(project)
+    db.session.commit()
 
 
 @rest_call('POST', '/project/<project>/connect_node')
@@ -103,7 +103,7 @@ def project_connect_node(project, node):
     if node.project is not None:
         raise BlockedError("Node is already owned by a project.")
     project.nodes.append(node)
-    local.db.commit()
+    db.session.commit()
 
 
 @rest_call('POST', '/project/<project>/detach_node')
@@ -120,7 +120,7 @@ def project_detach_node(project, node):
     node = _must_find(model.Node, node)
     if node not in project.nodes:
         raise NotFoundError("Node not in project")
-    num_attachments = local.db.query(model.NetworkAttachment)\
+    num_attachments = model.NetworkAttachment.query \
         .filter(model.Nic.owner == node,
                 model.NetworkAttachment.nic_id == model.Nic.id).count()
     if num_attachments != 0:
@@ -131,7 +131,7 @@ def project_detach_node(project, node):
     node.obm.stop_console()
     node.obm.delete_console()
     project.nodes.remove(node)
-    local.db.commit()
+    db.session.commit()
 
 
                             # Node Code #
@@ -158,8 +158,8 @@ def node_register(node, **kwargs):
         raise BadArgumentError('%r is not a valid OBM type.' % obm_type)
     cls.validate(kwargs['obm'])
     node_obj = model.Node(label=node, obm=cls(**kwargs['obm']))
-    local.db.add(node_obj)
-    local.db.commit()
+    db.session.add(node_obj)
+    db.session.commit()
 
 
 @rest_call('POST', '/node/<node>/power_cycle')
@@ -197,8 +197,8 @@ def node_delete(node):
                            % (node.label, node.label))
     node.obm.stop_console()
     node.obm.delete_console()
-    local.db.delete(node)
-    local.db.commit()
+    db.session.delete(node)
+    db.session.commit()
 
 
 @rest_call('PUT', '/node/<node>/nic/<nic>')
@@ -213,8 +213,8 @@ def node_register_nic(node, nic, macaddr):
     node = _must_find(model.Node, node)
     _assert_absent_n(node, model.Nic, nic)
     nic = model.Nic(node, nic, macaddr)
-    local.db.add(nic)
-    local.db.commit()
+    db.session.add(nic)
+    db.session.commit()
 
 
 @rest_call('DELETE', '/node/<node>/nic/<nic>')
@@ -225,8 +225,8 @@ def node_delete_nic(node, nic):
     """
     get_auth_backend().require_admin()
     nic = _must_find_n(_must_find(model.Node, node), model.Nic, nic)
-    local.db.delete(nic)
-    local.db.commit()
+    db.session.delete(nic)
+    db.session.commit()
 
 
 @rest_call('POST', '/node/<node>/nic/<nic>/connect_network', schema=Schema({
@@ -252,12 +252,11 @@ def node_connect_network(node, nic, network, channel=None):
 
         ``query`` should an argument suitable to pass to db.query(...).filter
         """
-        return local.db.query(model.NetworkAttachment).filter(
+        return model.NetworkAttachment.query.filter(
             model.NetworkAttachment.nic == nic,
             query,
         ).count() != 0
 
-    db = local.db
     auth_backend = get_auth_backend()
 
     node = _must_find(model.Node, node)
@@ -282,19 +281,19 @@ def node_connect_network(node, nic, network, channel=None):
         raise BlockedError("The network is already attached to the nic.")
 
     if channel is None:
-        channel = allocator.get_default_channel(db)
+        channel = allocator.get_default_channel()
 
     if _have_attachment(nic, model.NetworkAttachment.channel == channel):
         raise BlockedError("The channel is already in use on the nic.")
 
-    if not allocator.is_legal_channel_for(db, channel, network.network_id):
+    if not allocator.is_legal_channel_for(channel, network.network_id):
         raise BadArgumentError("Channel %r, is not legal for this network." %
                                channel)
 
-    db.add(model.NetworkingAction(nic=nic,
-                                  new_network=network,
-                                  channel=channel))
-    db.commit()
+    db.session.add(model.NetworkingAction(nic=nic,
+                                          new_network=network,
+                                          channel=channel))
+    db.session.commit()
     return '', 202
 
 @rest_call('POST', '/node/<node>/nic/<nic>/detach_network')
@@ -307,7 +306,6 @@ def node_detach_network(node, nic, network):
 
     Raises BadArgumentError if the network is not attached to the nic.
     """
-    db = local.db
     auth_backend = get_auth_backend()
 
     node = _must_find(model.Node, node)
@@ -320,14 +318,14 @@ def node_detach_network(node, nic, network):
 
     if nic.current_action:
         raise BlockedError("A networking operation is already active on the nic.")
-    attachment = db.query(model.NetworkAttachment)\
+    attachment = model.NetworkAttachment.query \
         .filter_by(nic=nic, network=network).first()
     if attachment is None:
         raise BadArgumentError("The network is not attached to the nic.")
-    db.add(model.NetworkingAction(nic=nic,
-                                  channel=attachment.channel,
-                                  new_network=None))
-    db.commit()
+    db.session.add(model.NetworkingAction(nic=nic,
+                                          channel=attachment.channel,
+                                          new_network=None))
+    db.session.commit()
     return '', 202
 
 
@@ -360,8 +358,8 @@ def headnode_create(headnode, project, base_img):
 
     headnode = model.Headnode(project, headnode, base_img)
 
-    local.db.add(headnode)
-    local.db.commit()
+    db.session.add(headnode)
+    db.session.commit()
 
 
 @rest_call('DELETE', '/headnode/<headnode>')
@@ -375,9 +373,9 @@ def headnode_delete(headnode):
     if not headnode.dirty:
         headnode.delete()
     for hnic in headnode.hnics:
-        local.db.delete(hnic)
-    local.db.delete(headnode)
-    local.db.commit()
+        db.session.delete(hnic)
+    db.session.delete(headnode)
+    db.session.commit()
 
 
 @rest_call('POST', '/headnode/<headnode>/start')
@@ -394,7 +392,7 @@ def headnode_start(headnode):
     if headnode.dirty:
         headnode.create()
     headnode.start()
-    local.db.commit()
+    db.session.commit()
 
 
 @rest_call('POST', '/headnode/<headnode>/stop')
@@ -430,8 +428,8 @@ def headnode_create_hnic(headnode, hnic):
         raise IllegalStateError
 
     hnic = model.Hnic(headnode, hnic)
-    local.db.add(hnic)
-    local.db.commit()
+    db.session.add(hnic)
+    db.session.commit()
 
 
 @rest_call('DELETE', '/headnode/<headnode>/hnic/<hnic>')
@@ -450,8 +448,8 @@ def headnode_delete_hnic(headnode, hnic):
     if not headnode.dirty:
         raise IllegalStateError
 
-    local.db.delete(hnic)
-    local.db.commit()
+    db.session.delete(hnic)
+    db.session.commit()
 
 
 @rest_call('POST', '/headnode/<headnode>/hnic/<hnic>/connect_network')
@@ -485,7 +483,7 @@ def headnode_connect_network(headnode, hnic, network):
         raise ProjectMismatchError("Project does not have access to given network.")
 
     hnic.network = network
-    local.db.commit()
+    db.session.commit()
 
 
 @rest_call('POST', '/headnode/<headnode>/hnic/<hnic>/detach_network')
@@ -502,7 +500,7 @@ def headnode_detach_network(headnode, hnic):
         raise IllegalStateError
 
     hnic.network = None
-    local.db.commit()
+    db.session.commit()
 
                             # Network Code #
                             ################
@@ -528,7 +526,6 @@ def network_create(network, creator, access, net_id):
     Details of the various combinations of network attributes are in
     docs/networks.md
     """
-    db = local.db
     auth_backend = get_auth_backend()
     _assert_absent(model.Network, network)
 
@@ -553,7 +550,7 @@ def network_create(network, creator, access, net_id):
 
     # Allocate net_id, if requested
     if net_id == "":
-        net_id = get_network_allocator().get_new_network_id(db)
+        net_id = get_network_allocator().get_new_network_id()
         if net_id is None:
             raise AllocationError('No more networks')
         allocated = True
@@ -561,8 +558,8 @@ def network_create(network, creator, access, net_id):
         allocated = False
 
     network = model.Network(creator, access, allocated, net_id, network)
-    db.add(network)
-    db.commit()
+    db.session.add(network)
+    db.session.commit()
 
 
 @rest_call('DELETE', '/network/<network>')
@@ -574,7 +571,6 @@ def network_delete(network):
     If the network is connected to nodes or headnodes, or there are pending
     network actions involving it, a BlockedError will be raised.
     """
-    db = local.db
     auth_backend = get_auth_backend()
 
     network = _must_find(model.Network, network)
@@ -591,10 +587,10 @@ def network_delete(network):
     if len(network.scheduled_nics) != 0:
         raise BlockedError("There are pending actions on this network")
     if network.allocated:
-        get_network_allocator().free_network_id(db, network.network_id)
+        get_network_allocator().free_network_id(network.network_id)
 
-    db.delete(network)
-    db.commit()
+    db.session.delete(network)
+    db.session.commit()
 
 
 @rest_call('GET', '/network/<network>')
@@ -614,7 +610,7 @@ def show_network(network):
 
     result = {
         'name': network.label,
-        'channels': allocator.legal_channels_for(local.db, network.network_id),
+        'channels': allocator.legal_channels_for(network.network_id),
     }
     if network.creator is None:
         result['creator'] = 'admin'
@@ -643,8 +639,8 @@ def switch_register(switch, type, **kwargs):
     obj.label = switch
     obj.type = type
 
-    local.db.add(obj)
-    local.db.commit()
+    db.session.add(obj)
+    db.session.commit()
 
 
 @rest_call('DELETE', '/switch/<switch>')
@@ -656,8 +652,8 @@ def switch_delete(switch):
         raise BlockedError("Switch %r has ports; delete them first." %
                            switch.label)
 
-    local.db.delete(switch)
-    local.db.commit()
+    db.session.delete(switch)
+    db.session.commit()
 
 
 @rest_call('PUT', '/switch/<switch>/port/<path:port>')
@@ -671,8 +667,8 @@ def switch_register_port(switch, port):
     _assert_absent_n(switch, model.Port, port)
     port = model.Port(port, switch)
 
-    local.db.add(port)
-    local.db.commit()
+    db.session.add(port)
+    db.session.commit()
 
 
 @rest_call('DELETE', '/switch/<switch>/port/<path:port>')
@@ -688,8 +684,8 @@ def switch_delete_port(switch, port):
         raise BlockedError("Port %r is attached to a nic; please detach "
                            "it first." % port.label)
 
-    local.db.delete(port)
-    local.db.commit()
+    db.session.delete(port)
+    db.session.commit()
 
 
 @rest_call('POST', '/switch/<switch>/port/<path:port>/connect_nic')
@@ -716,7 +712,7 @@ def port_connect_nic(switch, port, node, nic):
         raise DuplicateError(port.label)
 
     nic.port = port
-    local.db.commit()
+    db.session.commit()
 
 
 @rest_call('POST', '/switch/<switch>/port/<path:port>/detach_nic')
@@ -740,7 +736,7 @@ def port_detach_nic(switch, port):
         raise BlockedError("The port is attached to a node which is not free")
 
     port.nic = None
-    local.db.commit()
+    db.session.commit()
 
 
 @rest_call('GET', '/free_nodes')
@@ -751,7 +747,7 @@ def list_free_nodes():
 
     Example:  '["node1", "node2", "node3"]'
     """
-    nodes = local.db.query(model.Node).filter_by(project_id=None).all()
+    nodes = model.Node.query.filter_by(project_id=None).all()
     nodes = sorted([n.label for n in nodes])
     return json.dumps(nodes)
 
@@ -926,7 +922,7 @@ def _assert_absent(cls, name):
 
     Must be called within a request context.
     """
-    obj = local.db.query(cls).filter_by(label=name).first()
+    obj = db.session.query(cls).filter_by(label=name).first()
     if obj:
         raise DuplicateError("%s %s already exists." % (cls.__name__, name))
 
@@ -944,14 +940,14 @@ def _must_find(cls, name):
 
     Must be called within a request context.
     """
-    obj = local.db.query(cls).filter_by(label=name).first()
+    obj = db.session.query(cls).filter_by(label=name).first()
     if not obj:
         raise NotFoundError("%s %s does not exist." % (cls.__name__, name))
     return obj
 
 def _namespaced_query(obj_outer, cls_inner, name_inner):
     """Helper function to search for subobjects of an object."""
-    return local.db.query(cls_inner) \
+    return db.session.query(cls_inner) \
         .filter_by(owner = obj_outer) \
         .filter_by(label = name_inner).first()
 

@@ -150,12 +150,6 @@ def serve_networks():
         sleep(2)
 
 @cmd
-def init_db():
-    """Initialize the database"""
-    from haas import model
-    server.init(init_db=True)
-
-@cmd
 def user_create(username, password, is_admin):
     """Create a user <username> with password <password>.
 
@@ -269,16 +263,16 @@ def headnode_stop(headnode):
 def node_register(node, subtype, *args):
     """Register a node named <node>, with the given type
 	if obm is of type: ipmi then provide arguments
-	"ipmi", <hostname>, <ipmi-username>, <ipmi-password> 
+	"ipmi", <hostname>, <ipmi-username>, <ipmi-password>
     """
     obm_api = "http://schema.massopencloud.org/haas/v0/obm/"
     obm_types = [ "ipmi", "mock" ]
     #Currently the classes are hardcoded
     #In principle this should come from api.py
     #In future an api call to list which plugins are active will be added.
-    
 
-    if subtype in obm_types: 
+
+    if subtype in obm_types:
 	if len(args) == 3:
 	    obminfo = {"type": obm_api+subtype, "host": args[0],
 	    		"user": args[1], "password": args[2]
@@ -287,7 +281,7 @@ def node_register(node, subtype, *args):
 	    sys.stderr.write('ERROR: subtype '+subtype+' requires exactly 3 arguments\n')
 	    sys.stderr.write('<hostname> <ipmi-username> <ipmi-password>\n')
 	    return
-    else: 
+    else:
 	sys.stderr.write('ERROR: Wrong OBM subtype supplied\n')
 	sys.stderr.write('Supported OBM sub-types: ipmi, mock\n')
 	return
@@ -514,13 +508,10 @@ def main():
     There is a script located at ${source_tree}/scripts/haas, which invokes
     this function.
     """
-    config.load()
-    config.configure_logging()
-    config.load_extensions()
+    config.setup()
 
     if len(sys.argv) < 2 or sys.argv[1] not in command_dict:
         # Display usage for all commands
         help()
     else:
         command_dict[sys.argv[1]](*sys.argv[2:])
-

@@ -10,14 +10,15 @@ the mix. They are still tested here, since they are important for security.
 
 import pytest
 import unittest
+from haas.flaskapp import app
 from haas import api, config, model, server, deferred
+from haas.model import db
 from haas.network_allocator import get_network_allocator
-from haas.rest import local
 from haas.auth import get_auth_backend
 from haas.errors import AuthorizationError, BadArgumentError, \
     ProjectMismatchError, BlockedError
 from haas.test_common import config_testsuite, config_merge, fresh_database, \
-    with_request_context
+    with_request_context, initial_db
 
 from haas.ext.switches.mock import MockSwitch
 from haas.ext.obm.mock import MockObm
@@ -39,7 +40,8 @@ def auth_call_test(fn, error, admin, project, args, kwargs={}):
     auth_backend = get_auth_backend()
     auth_backend.set_admin(admin)
     if not admin:
-        project = local.db.query(model.Project).filter_by(label=project).one()
+        project = model.Project.query \
+            .filter_by(label=project).one()
         auth_backend.set_project(project)
 
     if error is None:
@@ -47,6 +49,9 @@ def auth_call_test(fn, error, admin, project, args, kwargs={}):
     else:
         with pytest.raises(error):
             fn(*args, **kwargs)
+
+
+initial_db = pytest.fixture(initial_db)
 
 
 @pytest.fixture
@@ -67,150 +72,6 @@ def configure():
 
 
 @pytest.fixture
-def db(request):
-    session = fresh_database(request)
-    # Create a couple projects:
-    runway = model.Project("runway")
-    manhattan = model.Project("manhattan")
-    for proj in [runway, manhattan]:
-        session.add(proj)
-
-    # ...including at least one with nothing in it:
-    session.add(model.Project('empty-project'))
-
-    # ...A variety of networks:
-
-    networks = [
-        {
-            'creator': None,
-            'access': None,
-            'allocated': True,
-            'label': 'stock_int_pub',
-        },
-        {
-            'creator': None,
-            'access': None,
-            'allocated': False,
-            'network_id': 'ext_pub_chan',
-            'label': 'stock_ext_pub',
-        },
-        {
-            # For some tests, we want things to initial be attached to a
-            # network. This one serves that purpose; using the others would
-            # interfere with some of the network_delete tests.
-            'creator': None,
-            'access': None,
-            'allocated': True,
-            'label': 'pub_default',
-        },
-        {
-            'creator': runway,
-            'access': runway,
-            'allocated': True,
-            'label': 'runway_pxe'
-        },
-        {
-            'creator': None,
-            'access': runway,
-            'allocated': False,
-            'network_id': 'runway_provider_chan',
-            'label': 'runway_provider',
-        },
-        {
-            'creator': manhattan,
-            'access': manhattan,
-            'allocated': True,
-            'label': 'manhattan_pxe'
-        },
-        {
-            'creator': None,
-            'access': manhattan,
-            'allocated': False,
-            'network_id': 'manhattan_provider_chan',
-            'label': 'manhattan_provider',
-        },
-    ]
-
-    for net in networks:
-        if net['allocated']:
-            net['network_id'] = \
-                get_network_allocator().get_new_network_id(session)
-        session.add(model.Network(**net))
-
-    # ... Two switches. One of these is just empty, for testing deletion:
-    session.add(MockSwitch(label='empty-switch',
-                           hostname='empty',
-                           username='alice',
-                           password='secret',
-                           type=MockSwitch.api_name))
-
-    # ... The other we'll actually attach stuff to for other tests:
-    switch = MockSwitch(label="stock_switch_0",
-                        hostname='stock',
-                        username='bob',
-                        password='password',
-                        type=MockSwitch.api_name)
-
-    # ... Some free ports:
-    session.add(model.Port('free_port_0', switch))
-    session.add(model.Port('free_port_1', switch))
-
-    # ... Some nodes (with projets):
-    nodes = [
-        {'label': 'runway_node_0', 'project': runway},
-        {'label': 'runway_node_1', 'project': runway},
-        {'label': 'manhattan_node_0', 'project': manhattan},
-        {'label': 'manhattan_node_1', 'project': manhattan},
-        {'label': 'free_node_0', 'project': None},
-        {'label': 'free_node_1', 'project': None},
-    ]
-    for node_dict in nodes:
-        obm=MockObm(type=MockObm.api_name,
-                    host=node_dict['label'],
-                    user='user',
-                    password='password')
-        node = model.Node(label=node_dict['label'], obm=obm)
-        node.project = node_dict['project']
-        session.add(model.Nic(node, label='boot-nic', mac_addr='Unknown'))
-
-        # give it a nic that's attached to a port:
-        port_nic = model.Nic(node, label='nic-with-port', mac_addr='Unknown')
-        port = model.Port(node_dict['label'] + '_port', switch)
-        port.nic = port_nic
-
-    # ... Some headnodes:
-    headnodes = [
-        {'label': 'runway_headnode_on', 'project': runway, 'on': True},
-        {'label': 'runway_headnode_off', 'project': runway, 'on': False},
-        {'label': 'runway_manhattan_on', 'project': manhattan, 'on': True},
-        {'label': 'runway_manhattan_off', 'project': manhattan, 'on': False},
-    ]
-    for hn_dict in headnodes:
-        headnode = model.Headnode(hn_dict['project'],
-                                  hn_dict['label'],
-                                  'base-headnode')
-        headnode.dirty = not hn_dict['on']
-        hnic = model.Hnic(headnode, 'pxe')
-        session.add(hnic)
-
-        # Connect them to a network, so we can test detaching.
-        hnic = model.Hnic(headnode, 'public')
-        hnic.network = session.query(model.Network)\
-            .filter_by(label='pub_default').one()
-
-
-    # ... and at least one node with no nics (useful for testing delete):
-    obm=MockObm(type=MockObm.api_name,
-        host='hostname',
-        user='user',
-        password='password')
-    session.add(model.Node(label='no_nic_node', obm=obm))
-
-    session.commit()
-    return session
-
-
-@pytest.fixture
 def server_init():
     server.register_drivers()
     server.validate_state()
@@ -220,7 +81,8 @@ with_request_context = pytest.yield_fixture(with_request_context)
 
 
 pytestmark = pytest.mark.usefixtures('configure',
-                                     'db',
+                                     'fresh_database',
+                                     'initial_db',
                                      'server_init',
                                      'with_request_context')
 
@@ -648,8 +510,8 @@ class Test_node_detach_network(unittest.TestCase):
 
     def setUp(self):
         self.auth_backend = get_auth_backend()
-        self.runway = local.db.query(model.Project).filter_by(label='runway').one()
-        self.manhattan = local.db.query(model.Project).filter_by(label='manhattan').one()
+        self.runway = model.Project.query.filter_by(label='runway').one()
+        self.manhattan = model.Project.query.filter_by(label='manhattan').one()
         self.auth_backend.set_project(self.manhattan)
         api.node_connect_network('manhattan_node_0', 'boot-nic', 'stock_int_pub')
         deferred.apply_networking()

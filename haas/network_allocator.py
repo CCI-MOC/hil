@@ -21,33 +21,38 @@ class NetworkAllocator(object):
     This class is abstract; extensions should subclass it and provide the
     specified methods, then call ``set_network_allocator`` to register the
     allocator.
+
+    Instances of this class may expect to only be invoked from within a flask
+    application context.
     """
 
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def get_new_network_id(self, db):
+    def get_new_network_id(self):
         """Gets a new network ID, valid for this driver.  Returns 'None' if there
         are no more possible IDs available.  Pass in the database connection, to
         make the allocation part of the current transaction.
         """
 
     @abstractmethod
-    def free_network_id(self, db, net_id):
+    def free_network_id(self, net_id):
         """Marks a network ID as unused, so that it can be re-used for a new
         network.  Can be a no-op on some drivers.  Pass in the database
         connection, to make the freeing part of the current transaction.
         """
 
     @abstractmethod
-    def populate(self, db):
+    def populate(self):
         """Populate the database with any initial state needed by the allocator.
 
-        This is invoked once when the haas database is first initialized.
+        This is invoked when the haas database is first initialized. It *must*
+        be safe to call this method multiple times, including on a database that
+        has been modified in ways during the course of normal HaaS operation.
         """
 
     @abstractmethod
-    def legal_channels_for(self, db, net_id):
+    def legal_channels_for(self, net_id):
         """Returns a list of legal channel specifications for ``net_id``.
 
         Note that this is not necessarily a list of each possible channel id;
@@ -58,14 +63,11 @@ class NetworkAllocator(object):
         """
 
     @abstractmethod
-    def is_legal_channel_for(self, db, channel_id, net_id):
-        """Returns True if ``channel_id`` is legal for ``net_id``, False otherwise.
-
-        ``db`` is a database session which the allocator may use if desired.
-        """
+    def is_legal_channel_for(self, channel_id, net_id):
+        """Returns True if ``channel_id`` is legal for ``net_id``, False otherwise."""
 
     @abstractmethod
-    def get_default_channel(self, db):
+    def get_default_channel(self):
         """Return the "default" channel which is used if a channel is unspecified."""
 
 

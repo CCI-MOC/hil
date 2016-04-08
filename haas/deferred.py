@@ -15,6 +15,7 @@
 """Performs deferred networking actions."""
 
 from haas import model
+from haas.model import db
 import logging
 
 def apply_networking():
@@ -34,17 +35,15 @@ def apply_networking():
     for new entries to be added.  This keeps the networking server from
     tight-looping.
     """
-    db = model.Session()
-
-    # Get the journal entries
-    actions = db.query(model.NetworkingAction).\
-        order_by(model.NetworkingAction.id).all()
+    # Get the journal enries
+    actions = model.NetworkingAction.query \
+        .order_by(model.NetworkingAction.id).all()
 
     switch_sessions = {}
 
     if actions == []:
         # No actions to perform.  Return False immediately.
-        db.commit()
+        db.session.commit()
         return False
 
     for action in actions:
@@ -72,14 +71,14 @@ def apply_networking():
     # Then perform the database changes and delete them
     for action in actions:
         if action.new_network is None:
-            db.query(model.NetworkAttachment)\
+            model.NetworkAttachment.query \
                 .filter_by(nic=action.nic, channel=action.channel)\
                 .delete()
         else:
-            db.add(model.NetworkAttachment(nic=action.nic,
+            db.session.add(model.NetworkAttachment(nic=action.nic,
                                            network=action.new_network,
                                            channel=action.channel))
-        db.delete(action)
+        db.session.delete(action)
 
-    db.commit()
+    db.session.commit()
     return True

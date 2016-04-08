@@ -21,10 +21,13 @@ import pexpect
 import re
 import logging
 import schema
-from sqlalchemy import Column, ForeignKey, Integer, String
 
-from haas.model import Switch
+from haas.model import db, Switch
+from haas.migrations import paths
 from haas.ext.switches import _console
+from os.path import dirname, join
+
+paths[__name__] = join(dirname(__file__), 'migrations', 'dell')
 
 logger = logging.getLogger(__name__)
 
@@ -36,10 +39,10 @@ class PowerConnect55xx(Switch):
         'polymorphic_identity': api_name,
     }
 
-    id = Column(Integer, ForeignKey('switch.id'), primary_key=True)
-    hostname = Column(String, nullable=False)
-    username = Column(String, nullable=False)
-    password = Column(String, nullable=False)
+    id = db.Column(db.Integer, db.ForeignKey('switch.id'), primary_key=True)
+    hostname = db.Column(db.String, nullable=False)
+    username = db.Column(db.String, nullable=False)
+    password = db.Column(db.String, nullable=False)
 
     @staticmethod
     def validate(kwargs):

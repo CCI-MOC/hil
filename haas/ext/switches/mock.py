@@ -19,8 +19,12 @@ Meant for use in the test suite.
 
 from collections import defaultdict
 from haas.model import Switch
+from haas.migrations import paths
 import schema
 from sqlalchemy import Column, Integer, ForeignKey, String
+from os.path import dirname, join
+
+paths[__name__] = join(dirname(__file__), 'migrations', 'mock')
 
 LOCAL_STATE = defaultdict(lambda: defaultdict(dict))
 
@@ -38,7 +42,7 @@ class MockSwitch(Switch):
     __mapper_args__ = {
         'polymorphic_identity': api_name,
     }
-    
+
     id = Column(Integer, ForeignKey('switch.id'), primary_key=True)
     hostname = Column(String, nullable=False)
     username = Column(String, nullable=False)

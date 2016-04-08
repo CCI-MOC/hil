@@ -29,9 +29,7 @@ def configure():
     config.load_extensions()
 
 
-@pytest.fixture
-def db(request):
-    return fresh_database(request)
+fresh_database = pytest.fixture(fresh_database)
 
 
 @pytest.fixture
@@ -46,7 +44,7 @@ with_request_context = pytest.yield_fixture(with_request_context)
 headnode_cleanup = pytest.fixture(headnode_cleanup)
 pytestmark = pytest.mark.usefixtures('configure',
                                      'server_init',
-                                     'db',
+                                     'fresh_database',
                                      'with_request_context',
                                      'headnode_cleanup')
 
@@ -55,19 +53,17 @@ pytestmark = pytest.mark.usefixtures('configure',
 class TestIpmi():
     """ Test IPMI driver calls using functions included in the IPMI driver. """
 
-    def collect_nodes(self, db):
+    def collect_nodes(self):
         """Collects nodes in the free list."""
-        free_nodes = db.query(Node).filter_by(project_id=None).all()
+        free_nodes = Node.query.filter_by(project_id=None).all()
         return free_nodes
 
-    def test_node_power_cycle(self, db):
-        nodes = self.collect_nodes(db)
+    def test_node_power_cycle(self):
+        nodes = self.collect_nodes()
         for node in nodes:
             api.node_power_cycle(node.label)
 
-    def test_node_power_off(self, db):
-        nodes = self.collect_nodes(db)
+    def test_node_power_off(self):
+        nodes = self.collect_nodes()
         for node in nodes:
             api.node_power_off(node.label)
-
-

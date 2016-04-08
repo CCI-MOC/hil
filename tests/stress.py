@@ -1,6 +1,7 @@
 
 from haas.test_common import config_testsuite, fresh_database
 from haas import api, config, server, rest
+from haas.flaskapp import app
 
 import json
 import pytest
@@ -12,9 +13,7 @@ def configure():
     config.load_extensions()
 
 
-@pytest.fixture
-def db(request):
-    return fresh_database(request)
+fresh_database = pytest.fixture(fresh_database)
 
 
 @pytest.fixture
@@ -24,7 +23,7 @@ def server_init():
 
 
 pytestmark = pytest.mark.usefixtures('configure',
-                                     'db',
+                                     'fresh_database',
                                      'server_init')
 
 
@@ -34,31 +33,35 @@ def test_many_http_queries():
     This is intended to shake out problems like the resource leak discussed
     in issue #454.
     """
+    # NOTE: Now that the session is managed by Flask-SQLAlchemy, failures here
+    # are unlikely to be regressions of the issue that #454 fixed; we're no
+    # longer managing the lifecycle of the session ourselves. It's not obvious
+    # that this is more than clutter now, but let's not be too trigger happy
+    # about deleting tests.
     with rest.app.test_request_context():
-        with rest.DBContext():
-            rest.init_auth()
-            api.node_register('node-99', obm={
-                    "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                    "host": "ipmihost",
-                    "user": "root",
-                    "password": "tapeworm"})
-            api.node_register('node-98', obm={
-                    "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                    "host": "ipmihost",
-                    "user": "root",
-                    "password": "tapeworm"})
-            api.node_register('node-97', obm={
-                    "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                    "host": "ipmihost",
-                    "user": "root",
-                    "password": "tapeworm"})
-            api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
-            api.node_register_nic('node-98', 'eth0', 'DE:AD:BE:EF:20:15')
-            api.node_register_nic('node-97', 'eth0', 'DE:AD:BE:EF:20:16')
-            api.project_create('anvil-nextgen')
-            api.project_create('anvil-legacy')
-            api.project_connect_node('anvil-nextgen', 'node-99')
-            api.project_connect_node('anvil-legacy', 'node-98')
+        rest.init_auth()
+        api.node_register('node-99', obm={
+                "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                "host": "ipmihost",
+                "user": "root",
+                "password": "tapeworm"})
+        api.node_register('node-98', obm={
+                "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                "host": "ipmihost",
+                "user": "root",
+                "password": "tapeworm"})
+        api.node_register('node-97', obm={
+                "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                "host": "ipmihost",
+                "user": "root",
+                "password": "tapeworm"})
+        api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.node_register_nic('node-98', 'eth0', 'DE:AD:BE:EF:20:15')
+        api.node_register_nic('node-97', 'eth0', 'DE:AD:BE:EF:20:16')
+        api.project_create('anvil-nextgen')
+        api.project_create('anvil-legacy')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.project_connect_node('anvil-legacy', 'node-98')
 
     client = rest.app.test_client()
 

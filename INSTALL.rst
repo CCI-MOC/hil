@@ -49,6 +49,12 @@ The HaaS software itself can then be installed by running::
     cd haas
     sudo python setup.py install
 
+To create the database tables, first make sure ``haas.cfg`` is set up the way
+you need, including any extensions you plan to use, then (from the directory
+containing ``haas.cfg``) exectue::
+
+    haas-admin db create
+
 Disable SELinux
 ---------------
 
@@ -246,17 +252,6 @@ Users may find the scripts in ``examples/puppet_headnode`` useful for
 configuring the ubuntu headnode to act as a PXE server; see the README in
 that directory for more information.
 
-Database
-------------
-
-HaaS currently supports SQLite for maintaining state. Because SQLAlchemy is
-used as a database access layer, other DBs can and should be easily supported
-in future releases. The database must be readable and writable by the HaaS
-user.  Running the following command as ``haas_user`` will create it (in the
-location specified in ``haas.cfg``) and initialize its tables::
-
-  haas init_db
-
 
 Authentication and Authorization
 --------------------------------
@@ -361,7 +356,7 @@ Name of the script is: haas_network.service
 Centos:
 -------
 
-Centos uses systemd to controll all its processes. 
+Centos uses systemd to controll all its processes.
 
 Place the file haas_network.service under:
 ``/usr/lib/systemd/system/``

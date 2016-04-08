@@ -18,17 +18,17 @@ from sqlalchemy import Column, String, Integer, ForeignKey
 import schema
 import subprocess
 
-from haas.model import Obm
+from haas.model import db, Obm
 from haas.errors import OBMError
 from haas.dev_support import no_dry_run
 from subprocess import call, check_call, Popen, PIPE
 import os
 
 class Ipmi(Obm):
-    id = Column(Integer, ForeignKey('obm.id'), primary_key=True)
-    host = Column(String, nullable=False)
-    user = Column(String, nullable=False)
-    password = Column(String, nullable=False)
+    id = db.Column(db.Integer, db.ForeignKey('obm.id'), primary_key=True)
+    host = db.Column(db.String, nullable=False)
+    user = db.Column(db.String, nullable=False)
+    password = db.Column(db.String, nullable=False)
 
     api_name = 'http://schema.massopencloud.org/haas/v0/obm/ipmi'
 
@@ -73,7 +73,7 @@ class Ipmi(Obm):
         if self._ipmitool(['chassis', 'power', 'on']) == 0:
             # power cycle will fail if the machine is not running.
             # To avoid such a situation, just turn it on anyways.
-            # Doing this saves power by turning things off without 
+            # Doing this saves power by turning things off without
             # Without breaking the HaaS.
             return
         # If it is still does not work, then it is a real error:

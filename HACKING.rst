@@ -1,7 +1,7 @@
 The first time you start working in the repository, set up a clean test
-environment (Before you start make sure that you have setup a database 
-to be used by for HaaS. HaaS supports SQLIte and PostgreSQL databases. 
-You should setup either of the two before you start further. Details to 
+environment (Before you start make sure that you have setup a database
+to be used by for HaaS. HaaS supports SQLIte and PostgreSQL databases.
+You should setup either of the two before you start further. Details to
 setup a database can be found in INSTALL.rst)::
 
   virtualenv .venv
@@ -31,12 +31,14 @@ you may need to run::
 
   pip install importlib
 
-You may get an error 'psycopg2 package not found' when you do 'haas init_db' 
+You may get an error 'psycopg2 package not found' when you do 'haas-admin db create'
 in the next step if you are using PostgreSQL database. You may need to run::
 
   pip install psycopg2
 
-`Testing.md <docs/testing.md>`_ contains more information about testing HaaS.
+`testing.md <docs/testing.md>`_ contains more information about testing HaaS.
+`migrations.md <docs/migrations.md>`_ dicsusses working with database migrations
+and schema changes.
 
 Configuring HaaS
 ================
@@ -45,7 +47,7 @@ Now the ``haas`` executable should be in your path.  First, create a
 configuration file ``haas.cfg``. There are two examples for you to work from,
 ``examples/haas.cfg.dev-example``, which is oriented towards development, and
 ``examples/haas.cfg.example`` which is more production oriented.  These config
-files are well commented; read them carefully. 
+files are well commented; read them carefully.
 
 HaaS can be configured to not perform state-changing operations on nodes,
 headnodes and networks, allowing developers to run and test parts of a haas
@@ -53,7 +55,7 @@ server without requiring physical hardware. To suppress actual node and headnode
 operations, set ``dry_run = True`` in the ``[devel]`` section. For suppressing
 actual network switch operations, use the ``mock`` switch driver.
 
-Next initialize the database with the required tables, with ``haas init_db``.
+Next initialize the database with the required tables, with ``haas-admin db create``.
 Run the server with ``haas serve`` and ``haas serve_networks`` in separate
 terminals.  Finally, ``haas help`` lists the various API commands one can use.
 Here is an example session, testing ``headnode_delete_hnic``::

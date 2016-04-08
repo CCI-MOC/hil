@@ -20,6 +20,11 @@ import schema
 from haas.model import Obm
 from haas.dev_support import no_dry_run
 
+from os.path import join, dirname
+from haas.migrations import paths
+
+paths[__name__] = join(dirname(__file__), 'migrations', 'mock')
+
 
 class MockObm(Obm):
     id = Column(Integer, ForeignKey('obm.id'), primary_key=True)

@@ -74,3 +74,14 @@ def load_extensions():
     for name in cfg.options('extensions'):
         if hasattr(sys.modules[name], 'setup'):
             sys.modules[name].setup()
+
+
+def setup(filename='haas.cfg'):
+    """Do full configuration setup.
+
+    This is equivalent to calling load, configure_logging, and
+    load_extensions in sequence.
+    """
+    load(filename)
+    configure_logging()
+    load_extensions()

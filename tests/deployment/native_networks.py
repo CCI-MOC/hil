@@ -17,8 +17,8 @@ internal setup only and will most likely not work on
 other HaaS configurations."""
 
 from haas import api, model, deferred, server
+from haas.model import db
 from haas.test_common import *
-import importlib
 import pytest
 
 @pytest.fixture
@@ -27,9 +27,7 @@ def configure():
     config.load_extensions()
 
 
-@pytest.fixture
-def db(request):
-    return fresh_database(request)
+fresh_database = pytest.fixture(fresh_database)
 
 
 @pytest.fixture
@@ -45,17 +43,17 @@ site_layout = pytest.fixture(site_layout)
 
 pytestmark = pytest.mark.usefixtures('configure',
                                      'server_init',
-                                     'db',
+                                     'fresh_database',
                                      'with_request_context',
                                      'site_layout')
 
 
 class TestNativeNetwork(NetworkTest):
 
-    def test_isolated_networks(self, db):
+    def test_isolated_networks(self):
 
         def create_networks():
-            nodes = self.collect_nodes(db)
+            nodes = self.collect_nodes()
 
             # Create two networks
             network_create_simple('net-0', 'anvil-nextgen')
@@ -103,7 +101,7 @@ class TestNativeNetwork(NetworkTest):
 
             # Remove all nodes from their networks
             for node in nodes:
-                attachment = db.query(model.NetworkAttachment)\
+                attachment = model.NetworkAttachment.query \
                     .filter_by(nic=node.nics[0]).one()
                 api.node_detach_network(node.label,
                                         node.nics[0].label,

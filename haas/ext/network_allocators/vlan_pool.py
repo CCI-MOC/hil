@@ -3,9 +3,8 @@
 import logging
 
 from haas.network_allocator import NetworkAllocator, set_network_allocator
-from haas.model import AnonModel
+from haas.model import db
 from haas.config import cfg
-from sqlalchemy import Column, Integer, Boolean
 
 
 def get_vlan_list():
@@ -27,40 +26,43 @@ def get_vlan_list():
 class VlanAllocator(NetworkAllocator):
     """A allocator of VLANs. The interface is as specified in ``NetworkAllocator``."""
 
-    def get_new_network_id(self, db):
-        vlan = db.query(Vlan).filter_by(available=True).first()
+    def get_new_network_id(self):
+        vlan = Vlan.query.filter_by(available=True).first()
         if not vlan:
             return None
         vlan.available = False
         returnee = str(vlan.vlan_no)
         return returnee
 
-    def free_network_id(self, db, net_id):
-        vlan = db.query(Vlan).filter_by(vlan_no=net_id).first()
+    def free_network_id(self, net_id):
+        vlan = Vlan.query.filter_by(vlan_no=net_id).first()
         if not vlan:
             logger = logging.getLogger(__name__)
             logger.error('vlan %s does not exist in database' % net_id)
             return
         vlan.available = True
 
-    def populate(self, db):
+    def populate(self):
         vlan_list = get_vlan_list()
         for vlan in vlan_list:
-            db.add(Vlan(vlan))
-        db.commit()
+            if Vlan.query.filter_by(vlan_no=vlan).count() == 1:
+                # Already created by a previous call; leave it alone.
+                continue
+            db.session.add(Vlan(vlan))
+        db.session.commit()
 
-    def legal_channels_for(self, db, net_id):
+    def legal_channels_for(self, net_id):
         return ["vlan/native",
                 "vlan/" + net_id]
 
-    def is_legal_channel_for(self, db, channel_id, net_id):
-        return channel_id in self.legal_channels_for(db, net_id)
+    def is_legal_channel_for(self, channel_id, net_id):
+        return channel_id in self.legal_channels_for(net_id)
 
-    def get_default_channel(self, db):
+    def get_default_channel(self):
         return "vlan/native"
 
 
-class Vlan(AnonModel):
+class Vlan(db.Model):
     """A VLAN for the Dell switch
 
     This is used to track which vlan numbers are available; when a Network is
@@ -70,8 +72,9 @@ class Vlan(AnonModel):
     2. The VLAN number is actually allocated to the HaaS; on some deployments we
        may have specific vlan numbers that we are allowed to use.
     """
-    vlan_no = Column(Integer, nullable=False, unique=True)
-    available = Column(Boolean, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    vlan_no = db.Column(db.Integer, nullable=False, unique=True)
+    available = db.Column(db.Boolean, nullable=False)
 
     def __init__(self, vlan_no):
         self.vlan_no = vlan_no
