@@ -81,6 +81,7 @@ Documentation
 * `apidesc.md <docs/apidesc.md>`_ describes the API at a conceptual level (enough to use it via the ``haas`` command line tool)
 * `rest_api.md <docs/rest_api.md>`_ provides a detailed mapping of that API to http requests.
 * `HACKING.rst <HACKING.rst>`_ has information about running HaaS in a development environment, including flags that remove the need to have real hardware.
+* `developer-guidelines.md <docs/developer-guidelines.md>`_ discusses our code submission and approval process.
 * `examples <examples/>`_ contains examples of config files, templates for creating headnode VM images and a script to register nodes with HaaS.
 * `The docs directory <docs/>`_ contains assorted other documentation
 
@@ -92,7 +93,7 @@ Mass Open Cloud
 ===============
 
 This project is part of the larger `Massachusetts Open Cloud
-<http://www.massopencloud.org>`_. For a description of the team, development
-workflow, etc. see
+<http://www.massopencloud.org>`_. For a description of the team and other
+information, see
 `<https://github.com/CCI-MOC/moc-public/blob/master/README.md>`_.
 
