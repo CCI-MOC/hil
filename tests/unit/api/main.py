@@ -1247,7 +1247,7 @@ class Test_switch_delete_port:
 
     def test_port_nexist(self, db):
         """Removing a port that does not exist should report the error"""
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE, 
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
 		username="switch_user", password="switch_pass", hostname="switchname")
         with pytest.raises(api.NotFoundError):
             api.switch_delete_port('sw0', '5')
