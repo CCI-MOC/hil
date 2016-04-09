@@ -1265,7 +1265,7 @@ class Test_list_switches:
 		username="user", password="password", hostname="host")
         api.switch_register('cirius', type=MOCK_SWITCH_TYPE, 
 		username="user", password="password", hostname="switch")
-        assert sorted(json.loads(api.list_switches())) == [
+        assert json.loads(api.list_switches()) == [
             'cirius',
             'mock',
             'sw0',
