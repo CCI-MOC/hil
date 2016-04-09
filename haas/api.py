@@ -698,6 +698,7 @@ def list_switches():
     get_auth_backend().require_admin()
     switches = local.db.query(model.Switch).all()
     snames = [s.label for s in switches]
+    snames.sort()
     return json.dumps(snames)
 
 @rest_call('POST', '/switch/<switch>/port/<path:port>/connect_nic')
