@@ -482,11 +482,11 @@ def create_admin_user(username, password):
     if not config.cfg.has_option('extensions', 'haas.ext.auth.database'):
         sys.exit("'make_inital_admin' is only valid with the database auth backend.")
     from haas import model
+    from haas.model import db
     from haas.ext.auth.database import User
-    model.init_db(create=False)
-    db = model.Session()
-    db.add(User(label=username, password=password, is_admin=True))
-    db.commit()
+    model.init_db()
+    db.session.add(User(label=username, password=password, is_admin=True))
+    db.session.commit()
 
 @cmd
 def help(*commands):
