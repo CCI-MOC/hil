@@ -726,6 +726,24 @@ Possible Errors:
 
 * 409, if not all of the switch's ports have been deleted.
 
+### list_switches
+
+`GET /switches`
+
+Return a list of all switches registered in HaaS
+
+Response body:
+
+    [
+        "switch1",
+        "hickory",
+        ...
+    ]
+
+Authorization requirements:
+
+* Administrative access.
+
 ### switch_register_port
 
 `PUT /switch/<switch>/port/<port>`
