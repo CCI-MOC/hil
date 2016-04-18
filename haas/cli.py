@@ -377,6 +377,10 @@ def switch_register(switch, subtype, *args):
     """Register a switch with name <switch> and
     <subtype>, <hostname>, <username>,  <password>
     eg. haas switch_register mock03 mock mockhost01 mockuser01 mockpass01
+
+    FIXME: current design needs to change. CLI should not know about every backend.
+    ideally, this should be taken care of in the driver itself or 
+    client library (work-in-progress) should manage it.
     """
     switch_api = "http://schema.massopencloud.org/haas/v0/switches/"
     if subtype == "nexus":
@@ -404,7 +408,7 @@ def switch_register(switch, subtype, *args):
             sys.stderr.write('<hostname> <username> <password>\n')
             return
     else:
-        sys.stderr.write('ERROR: Wrong subtype supplied\n')
+        sys.stderr.write('ERROR: Invalid subtype supplied\n')
         return
     url = object_url('switch', switch)
     do_put(url, data=switchinfo)
