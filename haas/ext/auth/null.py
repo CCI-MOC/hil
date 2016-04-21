@@ -10,6 +10,9 @@ class NullAuthBackend(auth.AuthBackend):
     def authenticate(self):
         return True
 
+    def get_user(self):
+        return None
+
     def _have_admin(self):
         return True
 

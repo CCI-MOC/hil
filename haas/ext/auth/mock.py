@@ -29,8 +29,12 @@ class MockAuthBackend(auth.AuthBackend):
         rest.local.auth = {
             'project': None,
             'admin': False,
+            'user': 'user',
         }
         return self._auth_success
+
+    def get_user(self):
+        return rest.local.auth['user']
 
     def set_auth_success(self, ok):
         """Set the return value for `authenticate` to `ok`."""
@@ -48,6 +52,9 @@ class MockAuthBackend(auth.AuthBackend):
 
     def set_admin(self, admin):
         rest.local.auth['admin'] = admin
+
+    def set_user(self, user):
+        rest.local.auth['user'] = user
 
 
 def setup(*args, **kwargs):
