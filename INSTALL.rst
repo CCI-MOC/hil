@@ -64,7 +64,16 @@ now the solution is to disable SELinux::
 
     sudo setenforce 0
 
-Make sure SELinux is also disabled on startup.
+Make sure SELinux is also disabled on startup. To do this [on
+CentOS/RHEL](https://wiki.centos.org/HowTos/SELinux), edit
+`/etc/selinux/config` to change:
+```
+SELINUX=enforcing
+```
+to
+```
+SELINUX=permissive
+```
 
 Create User
 -----------
