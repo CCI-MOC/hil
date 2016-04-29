@@ -696,9 +696,8 @@ def list_switches():
     Example:  '["cisco3", "brocade1", "mock2"]'
     """
     get_auth_backend().require_admin()
-    switches = local.db.query(model.Switch).all()
-    snames = [s.label for s in switches]
-    snames.sort()
+    switches = model.Switch.query.all()
+    snames = sorted([s.label for s in switches])
     return json.dumps(snames)
 
 @rest_call('POST', '/switch/<switch>/port/<path:port>/connect_nic')

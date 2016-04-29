@@ -1253,17 +1253,19 @@ class Test_switch_delete_port:
 
 class Test_list_switches:
 
-    def test_list_switches(self, db):
+    def test_list_switches(self):
         assert json.loads(api.list_switches()) == []
         api.switch_register('sw0', type=MOCK_SWITCH_TYPE, 
 		username="foo", password="bar", hostname="baz")
-        assert db.query(model.Switch).one().label == 'sw0'
+        api._must_find(model.Switch, 'sw0')
         assert json.loads(api.list_switches()) == ['sw0']
 
         api.switch_register('mock', type=MOCK_SWITCH_TYPE, 
 		username="user", password="password", hostname="host")
+        api._must_find(model.Switch, 'mock')
         api.switch_register('cirius', type=MOCK_SWITCH_TYPE, 
 		username="user", password="password", hostname="switch")
+        api._must_find(model.Switch, 'cirius')
         assert json.loads(api.list_switches()) == [
             'cirius',
             'mock',
