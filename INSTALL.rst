@@ -17,7 +17,7 @@ repositories, as well as the EPEL repository. EPEL can be enabled via::
 
 Then, the rest of the packages can be installed via::
 
-    yum install libvirt bridge-utils ipmitool telnet httpd mod_wsgi python-pip qemu-kvm python-virtinst virt-install python-psycopg2
+    yum install libvirt bridge-utils ipmitool telnet httpd mod_wsgi python-pip qemu-kvm python-virtinst virt-install python-psycopg2 vconfig net-tools
 
 In addition, HaaS depends on a number of python libraries. Many of these are
 available as RPMs as well, but we recommend installing them with pip, since
