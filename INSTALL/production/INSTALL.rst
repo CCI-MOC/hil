@@ -24,36 +24,6 @@ available as RPMs as well, but we recommend installing them with pip, since
 this will install the versions that HaaS has been tested with.  This is done
 automatically by the instructions below.
 
-Setting Up HaaS Database
-------------------------
-
-The only DBMS currently supported for production use is PostgreSQL. (SQLite is
-supported for development purposes *only*). There are many guides on the web
-which describe setting up PostgreSQL; in these instructions we assume that
-you've done so successfully.
-
-You need to create a postgresql user and database for HaaS. Once you've done so,
-the ``uri`` option in ``haas.cfg``'s ``database`` must be set to::
-
-        postgresql://<user>:<password>@<address>/<dbname>
-
-Where ``<user>`` is the name of the postgres user you created, ``<password>`` is
-its password, ``<dbname>`` is the name of the database you created, and
-``<address>`` is the address which haas should use to connect to postgres (In a
-typical default postgres setup, the right value is ``localhost``).
-
-
-The HaaS software itself can then be installed by running::
-
-    git clone https://github.com/CCI-MOC/haas
-    cd haas
-    sudo python setup.py install
-
-To create the database tables, first make sure ``haas.cfg`` is set up the way
-you need, including any extensions you plan to use, then (from the directory
-containing ``haas.cfg``) exectue::
-
-    haas-admin db create
 
 Disable SELinux
 ---------------
@@ -75,12 +45,20 @@ to
 SELINUX=permissive
 ```
 
-Create User
------------
+Setting up system user for HaaS:
+--------------------------------
 
-First create a system user ``haas_user`` with::
+First create a system user ``haas`` with::
 
-  sudo useradd haas_user -d /var/lib/haas -m -r
+  sudo useradd haas -d /var/lib/haas -m -r
+
+
+The HaaS software itself can then be installed by running::
+
+    git clone https://github.com/CCI-MOC/haas
+        cd haas
+            sudo python setup.py install
+
 
 haas.cfg
 --------
@@ -120,6 +98,59 @@ set to the ``haas_user``::
   sudo chown haas_user:haas_user /etc/haas.cfg
   sudo chmod 400 /etc/haas.cfg
 
+Authentication and Authorization
+--------------------------------
+
+HaaS includes a pluggable architecture for authentication and authorization.
+HaaS ships with two authentication backends. One uses HTTP basic auth, with
+usernames and passwords stored in the haas database. The other is a "null"
+backend, which does no authentication or authorization checks. This can be
+useful for testing and experimentation but *should not* be used in production.
+You must enable exactly one auth backend.
+
+Database Backend
+^^^^^^^^^^^^^^^^
+
+To enable the database backend, make sure the **[extensions]** section of
+``haas.cfg`` contains::
+
+  haas.ext.auth.database =
+
+Null Backend
+^^^^^^^^^^^^
+
+To enable the null backend, make sure **[extensions]** contains::
+
+  haas.ext.auth.null =
+
+Setting Up HaaS Database
+------------------------
+
+The only DBMS currently supported for production use is PostgreSQL. (SQLite is
+supported for development purposes *only*).
+There are many ways of setting up postgreSQL server. 
+`Install_configure_postgreSQL_CENTOS7.md <INSTALL/Install_configure_postgreSQL_CENTOS7.md>`_
+provides one way to accomplish this. 
+
+To create the database tables, first make sure ``haas.cfg`` is set up the way
+you need, including any extensions you plan to use, then::
+
+    sudo -i -u haas
+    haas-admin db create
+
+If the authorization backend activated in ``haas.cfg`` is  ``haas.ext.auth.database =``
+then you will need to add an initial user with administrative privileges to the 
+database in order to bootstrap the system. 
+You can do this by running the following command (as user ``haas``)::
+
+  sudo -i -u haas
+  haas create_admin_user <username> <password>
+
+You can then create additional users via the HTTP API. You may want to
+subsequently delete the initial user; this can also be done via the API.
+
+
+    
 All HaaS commands in these instructions should be run in this directory::
 
   cd /var/lib/haas

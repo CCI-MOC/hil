@@ -47,9 +47,8 @@ before installing ``psycopg2`` in the virtualenv for HaaS::
 
   pip install psycopg2
 
-`testing.md <docs/testing.md>`_ contains more information about testing HaaS.
-`migrations.md <docs/migrations.md>`_ dicsusses working with database migrations
-and schema changes.
+After this follow instructions provided in
+`Install_configure_postgreSQL_CENTOS7.md <INSTALL/Install_configure_postgreSQL_CENTOS7.md>`
 
 Configuring HaaS
 ================
@@ -80,3 +79,9 @@ Additionally, before each commit, run the automated test suite with ``py.test
 tests/unit``. If at all possible, run the deployment tests as well (``py.test
 tests/deployment``), but this requires access to a sepcialized setup, so if the
 patch is sufficiently unintrusive it may be acceptable to skip this step.
+
+`testing.md <docs/testing.md>`_ contains more information about testing HaaS.
+`migrations.md <docs/migrations.md>`_ dicsusses working with database migrations
+and schema changes.
+
+
