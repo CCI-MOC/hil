@@ -34,8 +34,8 @@ now the solution is to disable SELinux::
 
     sudo setenforce 0
 
-Make sure SELinux is also disabled on startup. To do this [on
-CentOS/RHEL](https://wiki.centos.org/HowTos/SELinux), edit
+Make sure SELinux is also disabled on startup. To do this `on
+CentOS/RHEL <https://wiki.centos.org/HowTos/SELinux>`_, edit
 `/etc/selinux/config` to change:
 ```
 SELINUX=enforcing
@@ -93,9 +93,9 @@ administrative information to users, such as usernames and passwords. To
 avoid this, users should have their own copy of ``haas.cfg`` that is stripped
 of all sections except for the ``[client]`` section.  Additionally, the
 ``/etc/haas.cfg`` should have its permissions set to read-only and ownership
-set to the ``haas_user``::
+set to the ``haas``::
 
-  sudo chown haas_user:haas_user /etc/haas.cfg
+  sudo chown haas:haas /etc/haas.cfg
   sudo chmod 400 /etc/haas.cfg
 
 Authentication and Authorization
@@ -129,7 +129,7 @@ Setting Up HaaS Database
 The only DBMS currently supported for production use is PostgreSQL. (SQLite is
 supported for development purposes *only*).
 There are many ways of setting up postgreSQL server. 
-`Install_configure_postgreSQL_CENTOS7.md <INSTALL/Install_configure_postgreSQL_CENTOS7.md>`_
+`Install_configure_postgreSQL_CENTOS7.md <../Install_configure_postgreSQL_CENTOS7.md>`_
 provides one way to accomplish this. 
 
 To create the database tables, first make sure ``haas.cfg`` is set up the way
@@ -198,7 +198,7 @@ uncomment the following lines::
 Then create the group 'libvirt' and add the HaaS user to that group::
 
   sudo groupadd libvirt
-  sudo gpasswd libvirt -a haas_user
+  sudo gpasswd libvirt -a haas
 
 Finally, restart ``libvirt`` with::
 
@@ -296,42 +296,6 @@ configuring the ubuntu headnode to act as a PXE server; see the README in
 that directory for more information.
 
 
-Authentication and Authorization
---------------------------------
-
-HaaS includes a pluggable architecture for authentication and authorization.
-HaaS ships with two authentication backends. One uses HTTP basic auth, with
-usernames and passwords stored in the haas database. The other is a "null"
-backend, which does no authentication or authorization checks. This can be
-useful for testing and experimentation but *should not* be used in production.
-You must enable exactly one auth backend.
-
-Database Backend
-^^^^^^^^^^^^^^^^
-
-To enable the database backend, make sure the **[extensions]** section of
-``haas.cfg`` contains::
-
-  haas.ext.auth.database =
-
-Then initialize the database as described above. You will need to add an
-initial user with administrative privileges to the database in order to
-bootstrap the system. You can do this by running the following command from
-within the directory containing the server's ``haas.cfg``::
-
-  haas create_admin_user <username> <password>
-
-You can then create additional users via the HTTP API. You may want to
-subsequently delete the initial user; this can also be done via the API.
-
-Null Backend
-^^^^^^^^^^^^
-
-To enable the null backend, make sure **[extensions]** contains::
-
-  haas.ext.auth.null =
-
-
 Running the Server under Apache
 -------------------------------
 
@@ -346,10 +310,10 @@ former is a WSGI application, which we recommend running with Apache's
     ServerName 127.0.0.1
     AllowEncodedSlashes On
     WSGIPassAuthorization On
-    WSGIDaemonProcess haas_user user=haas_user group=haas_user threads=2
+    WSGIDaemonProcess haas user=haas group=haas threads=2
     WSGIScriptAlias / /var/www/haas/haas.wsgi
     <Directory /var/www/haas>
-      WSGIProcessGroup haas_user
+      WSGIProcessGroup haas
       WSGIApplicationGroup %{GLOBAL}
       Order deny,allow
       Allow from all
@@ -437,10 +401,27 @@ For such systems, the networking server may be started as the HaaS user by runni
 
 To make this happen on boot, add the following to ``/etc/rc.local``::
 
-  (cd /var/lib/haas && su haas_user -c 'haas serve_networks') &
+  (cd /var/lib/haas && su haas -c 'haas serve_networks') &
 
 
-Congratulations- at this point, you should have a functional HaaS service running!
+HaaS Client:
+------------
+
+If you created a admin user for haas as a part of `Authentication and Authorization` step, 
+you will have to pass those credentials to HaaS to be able to access, change state of HaaS.
+Create a file ``client_env`` with following entries::
+
+    export HAAS_ENDPOINT=http://127.0.0.1/
+    export HAAS_USERNAME=<haas_admin_username>
+    export HAAS_PASSWORD=<haas_admin_password>
+
+To get started with HaaS from your home dir do the following::
+
+    source client_env
+    haas list_free_nodes
+
+If you get an empty list ``[]`` as output then congratulations !! 
+At this point, you should have a functional HaaS service running!
 
 Describe datacenter resources
 ===================================
