@@ -32,7 +32,18 @@ you may need to run::
   pip install importlib
 
 You may get an error 'psycopg2 package not found' when you do 'haas-admin db create'
-in the next step if you are using PostgreSQL database. You may need to run::
+in the next step if you are using PostgreSQL database. You may need to install
+following package on your system 
+
+if its Centos::  
+
+  yum install postgresql-devel
+
+if its Ubuntu::
+  
+  sudo apt-get install libpq-dev
+
+before installing ``psycopg2`` in the virtualenv for HaaS::
 
   pip install psycopg2
 
