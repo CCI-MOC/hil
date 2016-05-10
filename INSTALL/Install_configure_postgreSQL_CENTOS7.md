@@ -19,7 +19,7 @@ sudo sudo yum install postgresql-server postgresql-contrib -y
 sudo postgresql-setup initdb
 ```
 
-**3. Replace the term ident from following lines**
+**3. Replace the term `ident` from following lines**
 in file `/var/lib/pgsql/data/pg_hba.conf` with `md5`
 
 **Before:**
@@ -72,10 +72,7 @@ Enter password for new role:  <Input password for database role haas>
 Enter it again: <Retype password for role haas>
 ```
 
-Confirm that the role with requisite privileges is created.
-
-
-**as postgres user**
+Confirm that the role with requisite privileges is created **as postgres user**:
 
 ```
 -bash-4.2$ psql -c '\dg'
