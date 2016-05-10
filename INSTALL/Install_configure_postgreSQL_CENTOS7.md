@@ -4,25 +4,25 @@ Centos - 7 server
 
 
 
-# Part 1: Install PostgreSQL server. Initialize the system. 
-Configure PostgreSQL to allow password authentication
+## Part 1: 
+Install PostgreSQL server. Initialize the system. Configure PostgreSQL to allow password authentication.
 
-## 1. Install the requisite packages on your server.
+**1. Install the requisite packages on your server.**
 
 ```
 sudo sudo yum install postgresql-server postgresql-contrib -y
 ```
 
-## 2. Initialize postgresql:
+**2. Initialize postgresql:**
 
 ```
 sudo postgresql-setup initdb
 ```
 
-## 3. Replace the term ident from following lines in 
-file `/var/lib/pgsql/data/pg_hba.conf` with `md5`
+**3. Replace the term ident from following lines**
+in file `/var/lib/pgsql/data/pg_hba.conf` with `md5`
 
-### Before:
+**Before:**
 
 ```
 # "krb5", "ident", "peer", "pam", "ldap", "radius" or "cert".  Note that
@@ -32,7 +32,7 @@ host    all             all             ::1/128                 ident
 #host    replication     postgres        ::1/128                 ident
 ```
 
-### After:
+**After:**
 
 ```
 # "krb5", "ident", "peer", "pam", "ldap", "radius" or "cert".  Note that
@@ -42,25 +42,24 @@ host    all             all             ::1/128                 md5
 #host    replication     postgres        ::1/128                 ident
 ```
 
-## 4. Start postgresql service
+**4. Start postgresql service**
 
 ```
 $ sudo systemctl start postgresql
 $ sudo systemctl enable postgresql
 ```
 
+##Part 2: 
+Setup system user and database role for HaaS.Create database `haas` owned by user `haas`.
 
-# Part 2: Setup system user and database role for HaaS. 
-Create database `haas` owned by user `haas`
-
-## 1. Create a system user haas:
+**5. Create a system user haas:**
 
 ```
 useradd haas -d /var/lib/test1 -m -r
 ```
 
-## 2. Create a database role named `haas` with priviledges to:
- `-r` create roles; 
+**6. Create a database role named `haas` with priviledges to:**
+ `-r` create roles
  `-d` create databases and 
  `-P` will prompt for the password of the new user. 
 This is necessary since we have configured postgreSQL to use password authentication.
@@ -68,7 +67,7 @@ This is necessary since we have configured postgreSQL to use password authentica
 ```
 sudo -i -u postgres
 
--bash-4.2$ createuser -s -r -d -P haas
+-bash-4.2$ createuser -r -d -P haas
 Enter password for new role:  <Input password for database role haas>
 Enter it again: <Retype password for role haas>
 ```
@@ -96,14 +95,15 @@ dropuser haas
 eg. There has to be a system user `haas` to access database role `haas`.
 
 
-## 3. Create database haas owned by database role haas:
+**7. Create database haas owned by database role haas:**
 
 ```
 sudo -i -u haas
 -bash-4.2$ createdb haas
 ```
 
-**confirm it created a database named haas that is owned by haas**
+confirm it created a database named `haas` and it is owned by `haas`.
+
 ```
  psql -c '\l'
                                   List of databases
@@ -125,4 +125,5 @@ Put following string in `haas.cfg` under section `[database]`
 ```
 uri = postgresql://haas:<clear text password >@localhost:5432/haas
 ```
-Continue with installation steps as described in Install.rst or Hacking.rst
+Continue with installation steps as described in `Install.rst` or `Hacking.rst`
+
