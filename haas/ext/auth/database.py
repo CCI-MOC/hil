@@ -53,6 +53,7 @@ user_projects = db.Table('user_projects',
 
 
 @rest_call('PUT', '/auth/basic/user/<user>', schema=Schema({
+    'user': basestring,
     'password': basestring,
     Optional('is_admin'): bool,
 }))
@@ -72,7 +73,7 @@ def user_create(user, password, is_admin=False):
     db.session.commit()
 
 
-@rest_call('DELETE', '/auth/basic/user/<user>')
+@rest_call('DELETE', '/auth/basic/user/<user>', Schema({'user': basestring}))
 def user_delete(user):
     """Delete user.
 
@@ -88,7 +89,10 @@ def user_delete(user):
     db.session.commit()
 
 
-@rest_call('POST', '/auth/basic/user/<user>/add_project')
+@rest_call('POST', '/auth/basic/user/<user>/add_project', Schema({
+    'user': basestring,
+    'project': basestring,
+}))
 def user_add_project(user, project):
     """Add a user to a project.
 
@@ -104,7 +108,10 @@ def user_add_project(user, project):
     db.session.commit()
 
 
-@rest_call('POST', '/auth/basic/user/<user>/remove_project')
+@rest_call('POST', '/auth/basic/user/<user>/remove_project', Schema({
+    'user': basestring,
+    'project': basestring,
+}))
 def user_remove_project(user, project):
     """Remove a user from a project.
 

@@ -34,7 +34,7 @@ from haas.errors import *
                             ################
 
 
-@rest_call('GET', '/projects')
+@rest_call('GET', '/projects', Schema({}))
 def list_projects():
     """List all projects.
 
@@ -47,7 +47,8 @@ def list_projects():
     projects = sorted([p.label for p in projects])
     return json.dumps(projects)
 
-@rest_call('PUT', '/project/<project>')
+
+@rest_call('PUT', '/project/<project>', Schema({'project': basestring}))
 def project_create(project):
     """Create a project.
 
@@ -60,7 +61,7 @@ def project_create(project):
     db.session.commit()
 
 
-@rest_call('DELETE', '/project/<project>')
+@rest_call('DELETE', '/project/<project>', Schema({'project': basestring}))
 def project_delete(project):
     """Delete project.
 
@@ -89,7 +90,9 @@ def project_delete(project):
     db.session.commit()
 
 
-@rest_call('POST', '/project/<project>/connect_node')
+@rest_call('POST', '/project/<project>/connect_node', Schema({
+    'project': basestring, 'node': basestring,
+}))
 def project_connect_node(project, node):
     """Add a node to a project.
 
@@ -106,7 +109,9 @@ def project_connect_node(project, node):
     db.session.commit()
 
 
-@rest_call('POST', '/project/<project>/detach_node')
+@rest_call('POST', '/project/<project>/detach_node', Schema({
+    'project': basestring, 'node': basestring,
+}))
 def project_detach_node(project, node):
     """Remove a node from a project.
 
@@ -139,10 +144,11 @@ def project_detach_node(project, node):
 
 
 @rest_call('PUT', '/node/<node>', schema=Schema({
-    'obm':{
-	'type': basestring,
-	Optional(object):object,
-	},
+    'node': basestring,
+    'obm': {
+        'type': basestring,
+        Optional(object): object,
+    },
 }))
 def node_register(node, **kwargs):
     """Create node.
@@ -162,7 +168,7 @@ def node_register(node, **kwargs):
     db.session.commit()
 
 
-@rest_call('POST', '/node/<node>/power_cycle')
+@rest_call('POST', '/node/<node>/power_cycle', Schema({'node': basestring}))
 def node_power_cycle(node):
     auth_backend = get_auth_backend()
     node = _must_find(model.Node, node)
@@ -173,7 +179,7 @@ def node_power_cycle(node):
     node.obm.power_cycle()
 
 
-@rest_call('POST', '/node/<node>/power_off')
+@rest_call('POST', '/node/<node>/power_off', Schema({'node': basestring}))
 def node_power_off(node):
     auth_backend = get_auth_backend()
     node = _must_find(model.Node, node)
@@ -184,7 +190,7 @@ def node_power_off(node):
     node.obm.power_off()
 
 
-@rest_call('DELETE', '/node/<node>')
+@rest_call('DELETE', '/node/<node>', Schema({'node': basestring}))
 def node_delete(node):
     """Delete node.
 
@@ -201,7 +207,9 @@ def node_delete(node):
     db.session.commit()
 
 
-@rest_call('PUT', '/node/<node>/nic/<nic>')
+@rest_call('PUT', '/node/<node>/nic/<nic>', Schema({
+    'node': basestring, 'nic': basestring, 'macaddr': basestring,
+}))
 def node_register_nic(node, nic, macaddr):
     """Register existence of nic attached to given node.
 
@@ -217,7 +225,9 @@ def node_register_nic(node, nic, macaddr):
     db.session.commit()
 
 
-@rest_call('DELETE', '/node/<node>/nic/<nic>')
+@rest_call('DELETE', '/node/<node>/nic/<nic>', Schema({
+    'node': basestring, 'nic': basestring,
+}))
 def node_delete_nic(node, nic):
     """Delete nic with given name from it's node.
 
@@ -230,6 +240,8 @@ def node_delete_nic(node, nic):
 
 
 @rest_call('POST', '/node/<node>/nic/<nic>/connect_network', schema=Schema({
+    'node'             : basestring,
+    'nic'              : basestring,
     'network'          : basestring,
     Optional('channel'): basestring,
 }))
@@ -296,7 +308,10 @@ def node_connect_network(node, nic, network, channel=None):
     db.session.commit()
     return '', 202
 
-@rest_call('POST', '/node/<node>/nic/<nic>/detach_network')
+
+@rest_call('POST', '/node/<node>/nic/<nic>/detach_network', Schema({
+    'node': basestring, 'nic': basestring, 'network': basestring,
+}))
 def node_detach_network(node, nic, network):
     """Detach network ``network`` from physical nic ``nic``.
 
@@ -333,7 +348,9 @@ def node_detach_network(node, nic, network):
                             ##################
 
 
-@rest_call('PUT', '/headnode/<headnode>')
+@rest_call('PUT', '/headnode/<headnode>', Schema({
+    'headnode': basestring, 'project': basestring, 'base_img': basestring,
+}))
 def headnode_create(headnode, project, base_img):
     """Create headnode.
 
@@ -362,7 +379,7 @@ def headnode_create(headnode, project, base_img):
     db.session.commit()
 
 
-@rest_call('DELETE', '/headnode/<headnode>')
+@rest_call('DELETE', '/headnode/<headnode>', Schema({'headnode': basestring}))
 def headnode_delete(headnode):
     """Delete headnode.
 
@@ -378,7 +395,9 @@ def headnode_delete(headnode):
     db.session.commit()
 
 
-@rest_call('POST', '/headnode/<headnode>/start')
+@rest_call('POST', '/headnode/<headnode>/start', Schema({
+    'headnode': basestring,
+}))
 def headnode_start(headnode):
     """Start the headnode.
 
@@ -395,7 +414,9 @@ def headnode_start(headnode):
     db.session.commit()
 
 
-@rest_call('POST', '/headnode/<headnode>/stop')
+@rest_call('POST', '/headnode/<headnode>/stop', Schema({
+    'headnode': basestring,
+}))
 def headnode_stop(headnode):
     """Stop the headnode.
 
@@ -408,7 +429,9 @@ def headnode_stop(headnode):
     headnode.stop()
 
 
-@rest_call('PUT', '/headnode/<headnode>/hnic/<hnic>')
+@rest_call('PUT', '/headnode/<headnode>/hnic/<hnic>', Schema({
+    'headnode': basestring, 'hnic': basestring,
+}))
 def headnode_create_hnic(headnode, hnic):
     """Create hnic attached to given headnode.
 
@@ -432,7 +455,9 @@ def headnode_create_hnic(headnode, hnic):
     db.session.commit()
 
 
-@rest_call('DELETE', '/headnode/<headnode>/hnic/<hnic>')
+@rest_call('DELETE', '/headnode/<headnode>/hnic/<hnic>', Schema({
+    'headnode': basestring, 'hnic': basestring,
+}))
 def headnode_delete_hnic(headnode, hnic):
     """Delete hnic on a given headnode.
 
@@ -452,7 +477,9 @@ def headnode_delete_hnic(headnode, hnic):
     db.session.commit()
 
 
-@rest_call('POST', '/headnode/<headnode>/hnic/<hnic>/connect_network')
+@rest_call('POST', '/headnode/<headnode>/hnic/<hnic>/connect_network', Schema({
+    'headnode': basestring, 'hnic': basestring, 'network': basestring,
+}))
 def headnode_connect_network(headnode, hnic, network):
     """Connect a headnode's hnic to a network.
 
@@ -486,7 +513,9 @@ def headnode_connect_network(headnode, hnic, network):
     db.session.commit()
 
 
-@rest_call('POST', '/headnode/<headnode>/hnic/<hnic>/detach_network')
+@rest_call('POST', '/headnode/<headnode>/hnic/<hnic>/detach_network', Schema({
+    'headnode': basestring, 'hnic': basestring,
+}))
 def headnode_detach_network(headnode, hnic):
     """Detach a heanode's nic from any network it's on.
 
@@ -506,7 +535,7 @@ def headnode_detach_network(headnode, hnic):
                             ################
 
 
-@rest_call('PUT', '/network/<network>')
+@rest_call('PUT', '/network/<network>', Schema({'network': basestring}))
 def network_create(network, creator, access, net_id):
     """Create a network.
 
@@ -562,7 +591,7 @@ def network_create(network, creator, access, net_id):
     db.session.commit()
 
 
-@rest_call('DELETE', '/network/<network>')
+@rest_call('DELETE', '/network/<network>', Schema({'network': basestring}))
 def network_delete(network):
     """Delete network.
 
@@ -593,7 +622,7 @@ def network_delete(network):
     db.session.commit()
 
 
-@rest_call('GET', '/network/<network>')
+@rest_call('GET', '/network/<network>', Schema({'network': basestring}))
 def show_network(network):
     """Show details of a network.
 
@@ -624,6 +653,7 @@ def show_network(network):
 
 
 @rest_call('PUT', '/switch/<switch>', schema=Schema({
+    'switch': basestring,
     'type': basestring,
     Optional(object): object,
 }))
@@ -643,7 +673,7 @@ def switch_register(switch, type, **kwargs):
     db.session.commit()
 
 
-@rest_call('DELETE', '/switch/<switch>')
+@rest_call('DELETE', '/switch/<switch>', Schema({'switch': basestring}))
 def switch_delete(switch):
     get_auth_backend().require_admin()
     switch = _must_find(model.Switch, switch)
@@ -656,7 +686,9 @@ def switch_delete(switch):
     db.session.commit()
 
 
-@rest_call('PUT', '/switch/<switch>/port/<path:port>')
+@rest_call('PUT', '/switch/<switch>/port/<path:port>', Schema({
+    'switch': basestring, 'port': basestring,
+}))
 def switch_register_port(switch, port):
     """Register a port on a switch.
 
@@ -671,7 +703,9 @@ def switch_register_port(switch, port):
     db.session.commit()
 
 
-@rest_call('DELETE', '/switch/<switch>/port/<path:port>')
+@rest_call('DELETE', '/switch/<switch>/port/<path:port>', Schema({
+    'switch': basestring, 'port': basestring,
+}))
 def switch_delete_port(switch, port):
     """Delete a port on a switch.
 
@@ -688,7 +722,12 @@ def switch_delete_port(switch, port):
     db.session.commit()
 
 
-@rest_call('POST', '/switch/<switch>/port/<path:port>/connect_nic')
+@rest_call('POST', '/switch/<switch>/port/<path:port>/connect_nic', Schema({
+    'switch': basestring,
+    'port'  : basestring,
+    'node'  : basestring,
+    'nic'   : basestring,
+}))
 def port_connect_nic(switch, port, node, nic):
     """Connect a port on a switch to a nic on a node.
 
@@ -715,7 +754,9 @@ def port_connect_nic(switch, port, node, nic):
     db.session.commit()
 
 
-@rest_call('POST', '/switch/<switch>/port/<path:port>/detach_nic')
+@rest_call('POST', '/switch/<switch>/port/<path:port>/detach_nic', Schema({
+    'switch': basestring, 'port': basestring,
+}))
 def port_detach_nic(switch, port):
     """Detach a port from the nic it's attached to
 
@@ -739,7 +780,7 @@ def port_detach_nic(switch, port):
     db.session.commit()
 
 
-@rest_call('GET', '/free_nodes')
+@rest_call('GET', '/free_nodes', Schema({}))
 def list_free_nodes():
     """List all nodes not in any project.
 
@@ -752,7 +793,7 @@ def list_free_nodes():
     return json.dumps(nodes)
 
 
-@rest_call('GET', '/project/<project>/nodes')
+@rest_call('GET', '/project/<project>/nodes', Schema({'project': basestring}))
 def list_project_nodes(project):
     """List all nodes belonging the given project.
 
@@ -767,7 +808,9 @@ def list_project_nodes(project):
     return json.dumps(nodes)
 
 
-@rest_call('GET', '/project/<project>/networks')
+@rest_call('GET', '/project/<project>/networks', Schema({
+    'project': basestring,
+}))
 def list_project_networks(project):
     """List all private networks the project can access.
 
@@ -781,7 +824,7 @@ def list_project_networks(project):
     return json.dumps(networks)
 
 
-@rest_call('GET', '/node/<nodename>')
+@rest_call('GET', '/node/<nodename>', Schema({'nodename': basestring}))
 def show_node(nodename):
     """Show the details of a node.
 
@@ -802,15 +845,15 @@ def show_node(nodename):
               "project": "project1",
               "nics": [{"label": "nic1", "macaddr": "01:23:45:67:89", "networks": {"vlan/native": "pxe", "vlan/235": "storage"}},
                        {"label": "nic2", "macaddr": "12:34:56:78:90", "networks":{"vlan/native": "public"}}]
-	      }'
+              }'
     """
 
     node = _must_find(model.Node, nodename)
     if node.project is not None:
         get_auth_backend().require_project_access(node.project)
     return json.dumps({
-	'name': node.label,
-	'project': None if node.project_id is None else node.project.label,
+        'name': node.label,
+        'project': None if node.project_id is None else node.project.label,
         'nics': [{'label': n.label,
                   'macaddr': n.mac_addr,
                   'networks': dict([(attachment.channel,
@@ -819,7 +862,10 @@ def show_node(nodename):
                   } for n in node.nics],
         }, sort_keys=True)
 
-@rest_call('GET', '/project/<project>/headnodes')
+
+@rest_call('GET', '/project/<project>/headnodes', Schema({
+    'project': basestring,
+}))
 def list_project_headnodes(project):
     """List all headnodes belonging the given project.
 
@@ -834,7 +880,9 @@ def list_project_headnodes(project):
     return json.dumps(headnodes)
 
 
-@rest_call('GET', '/headnode/<nodename>')
+@rest_call('GET', '/headnode/<nodename>', Schema({
+    'nodename': basestring,
+}))
 def show_headnode(nodename):
     """Show details of a headnode.
 
@@ -866,7 +914,7 @@ def show_headnode(nodename):
     }, sort_keys = True)
 
 
-@rest_call('GET', '/headnode_images/')
+@rest_call('GET', '/headnode_images/', Schema({}))
 def list_headnode_images():
     """Show headnode images listed in config file.
 
@@ -882,7 +930,7 @@ def list_headnode_images():
     # Console code #
     ################
 
-@rest_call('GET', '/node/<nodename>/console')
+@rest_call('GET', '/node/<nodename>/console', Schema({'nodename': basestring}))
 def show_console(nodename):
     """Show the contents of the console log."""
     node = _must_find(model.Node, nodename)
@@ -892,13 +940,17 @@ def show_console(nodename):
                             'does not exist.' % nodename)
     return log
 
-@rest_call('PUT', '/node/<nodename>/console')
+
+@rest_call('PUT', '/node/<nodename>/console', Schema({'nodename': basestring}))
 def start_console(nodename):
     """Start logging output from the console."""
     node = _must_find(model.Node, nodename)
     node.obm.start_console()
 
-@rest_call('DELETE', '/node/<nodename>/console')
+
+@rest_call('DELETE', '/node/<nodename>/console', Schema({
+    'nodename': basestring,
+}))
 def stop_console(nodename):
     """Stop logging output from the console and delete the log."""
     node = _must_find(model.Node, nodename)

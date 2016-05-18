@@ -121,7 +121,10 @@ class TestUrlArgs(HttpEquivalenceTest, HttpTest):
     def setUp(self):
         HttpTest.setUp(self)
 
-        @rest.rest_call('GET', '/func/<foo>/<bar>')
+        @rest.rest_call('GET', '/func/<foo>/<bar>', Schema({
+            'foo': basestring,
+            'bar': basestring,
+        }))
         def func(foo, bar):
             return json.dumps([foo, bar])
 
@@ -138,7 +141,10 @@ class TestBodyArgs(HttpEquivalenceTest, HttpTest):
     def setUp(self):
         HttpTest.setUp(self)
 
-        @rest.rest_call('POST', '/func/foo')
+        @rest.rest_call('POST', '/func/foo', Schema({
+            'bar': basestring,
+            'baz': basestring,
+        }))
         def foo(bar, baz):
             return json.dumps([bar, baz])
 
@@ -152,7 +158,7 @@ class TestBodyArgs(HttpEquivalenceTest, HttpTest):
 
 
 class TestRestCallSchema(HttpEquivalenceTest, HttpTest):
-    """Test that an alternate schema is used if one is provided to rest_call."""
+    """Test using non-trivial schema (i.e. not just strings)."""
 
     def setUp(self):
         HttpTest.setUp(self)
@@ -179,7 +185,7 @@ class TestEquiv_basic_APIError(HttpEquivalenceTest, HttpTest):
     def setUp(self):
         HttpTest.setUp(self)
 
-        @rest.rest_call('GET', '/some_error')
+        @rest.rest_call('GET', '/some_error', Schema({}))
         def some_error():
             self.api_call()
 
@@ -209,13 +215,13 @@ class TestNoneReturnValue(HttpTest):
     """Test returning None from API calls.
 
     Flask itself doesn't allow this, but we've been doing it for a long time
-    so our wrapper supports it. This test verifies that it ctually works.
+    so our wrapper supports it. This test verifies that it actually works.
     """
 
     def setUp(self):
         HttpTest.setUp(self)
 
-        @rest.rest_call('GET', '/nothing')
+        @rest.rest_call('GET', '/nothing', Schema({}))
         def api_call():
             return None
 
@@ -231,11 +237,17 @@ class TestValidationError(HttpTest):
     def setUp(self):
         HttpTest.setUp(self)
 
-        @rest.rest_call('POST', '/give-me-an-e')
+        @rest.rest_call('POST', '/give-me-an-e', Schema({
+            'foo': basestring,
+            'bar': basestring,
+        }))
         def api_call(foo, bar):
             pass
 
-        @rest.rest_call('PUT', '/mixed/args/<arg1>')
+        @rest.rest_call('PUT', '/mixed/args/<arg1>', Schema({
+            'arg1': basestring,
+            'arg2': basestring,
+        }))
         def mixed_args(arg1, arg2):
             return json.dumps([arg1, arg2])
 
@@ -306,7 +318,7 @@ class TestCallOnce(HttpTest):
         # the counter is equal to 1, indicating that the function was called
         # the correct number of times.
 
-        @rest.rest_call('POST', '/increment')
+        @rest.rest_call('POST', '/increment', Schema({}))
         def increment():
             """Increment a counter each time this function is called."""
             self.num_calls += 1
