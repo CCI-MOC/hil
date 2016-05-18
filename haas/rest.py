@@ -54,7 +54,8 @@ def rest_call(method, path, schema):
             flask's router (e.g. '/foo/<bar>/baz')
     * method - the HTTP method for the api call (e.g. POST, GET...)
     * schema - an instance of ``schema.Schema`` with which to
-            validate the arguments to the function. The schema should expect
+            validate the arguments to the function, whether specified in the
+            URL or as JSON in the request body. The schema should expect
             a dictionary, where the keys are the names of the arguments. If
             a function argument has a default value, it may be marked as
             optional in the schema.
