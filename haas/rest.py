@@ -159,6 +159,7 @@ def _rest_wrapper(f, schema):
     """Return a wrapper around `f` that does the following:
 
     * Validate the current request agains the schema.
+    * Invoke the authentication backend
     * Implement the exception handling described in the documentation to
       `rest_call`.
     * Convert `None` return values to empty bodies.
