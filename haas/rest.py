@@ -128,14 +128,18 @@ def _do_validation(schema, kwargs):
     `ValidationError`.
     """
 
+    if flask.request.data == '':
+        # No request body
+        final_kwargs = {}
+    else:
+        try:
+            final_kwargs = json.loads(flask.request.data)
+        except ValueError:
+            raise ValidationError("The request body is not valid JSON")
+
     validation_error = ValidationError(
         "The request body is not valid for "
         "this request.")
-
-    try:
-        final_kwargs = json.loads(flask.request.data)
-    except ValueError:
-        final_kwargs = {}
 
     for k in kwargs.keys():
         if k in final_kwargs:
