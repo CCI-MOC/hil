@@ -129,8 +129,8 @@ def _do_validation(schema, kwargs):
     """
 
     validation_error = ValidationError(
-        "The request body %r is not valid for "
-        "this request." % flask.request.data)
+        "The request body is not valid for "
+        "this request.")
 
     try:
         final_kwargs = json.loads(flask.request.data)
