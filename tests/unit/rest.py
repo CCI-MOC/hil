@@ -11,6 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Tests for haas.rest.
+
+This contains a somewhat awkward mix of unittest style classes and tests that
+use pytest fixtures and decorators. The latter are newer,and make it workable
+to use stuff like `parametrize`.
+"""
+
 from haas import rest, config
 
 from abc import ABCMeta, abstractmethod
@@ -33,9 +40,15 @@ def configure():
 
 
 class HttpTest(unittest.TestCase):
+    """class based version of client, for the older tests."""
 
     def setUp(self):
         self.client = rest.app.test_client()
+
+
+@pytest.fixture()
+def client():
+    return rest.app.test_client()
 
 
 class HttpEquivalenceTest(object):
@@ -196,21 +209,6 @@ class TestEquiv_basic_APIError(HttpEquivalenceTest, HttpTest):
         return self.client.get('/some_error')
 
 
-def _is_error(resp, errtype):
-    """Return True iff the Response `resp` represents an `errtype`.
-
-    `resp` should be a response returned by `request_handler`.
-    `errtype` should be a subclass of APIError.
-    """
-    try:
-        return json.loads(resp.get_data())['type'] == errtype.__name__
-    except:
-        # It's possible that this response isn't even an error, in which case
-        # the data may not parse as the above statement is expecting. Well,
-        # it's not an error, so:
-        return False
-
-
 class TestNoneReturnValue(HttpTest):
     """Test returning None from API calls.
 
@@ -231,74 +229,165 @@ class TestNoneReturnValue(HttpTest):
         assert resp.get_data() == ''
 
 
-class TestValidationError(HttpTest):
-    """basic tests for input validation."""
+@pytest.fixture()
+def validation_setup():
+    # There's a mix of PUT and POST in these; mixing it up may give us
+    # better coverage. The particulars of which calls get which methods are
+    # arbitrary.
 
-    def setUp(self):
-        HttpTest.setUp(self)
+    # We have four kinds of calls we want to validate here:
 
-        @rest.rest_call('POST', '/give-me-an-e', Schema({
-            'foo': basestring,
-            'bar': basestring,
-        }))
-        def api_call(foo, bar):
-            pass
+    # 1. No arguments in the URL or body (no_args)
+    @rest.rest_call('POST', '/no/args', Schema({}))
+    def no_args():
+        pass
 
-        @rest.rest_call('PUT', '/mixed/args/<arg1>', Schema({
-            'arg1': basestring,
-            'arg2': basestring,
-        }))
-        def mixed_args(arg1, arg2):
-            return json.dumps([arg1, arg2])
+    # 2. Argument in the URL and not in the body (url_args)
+    @rest.rest_call('POST', '/url/args/<arg1>/<arg2>', Schema({
+        'arg1': basestring,
+        'arg2': basestring,
+    }))
+    def url_args(arg1, arg2):
+        return json.dumps([arg1, arg2])
 
-        @rest.rest_call('PUT', '/custom-schema', schema=Schema({
-            "the_value": int,
-        }))
-        def custom_schema(the_value):
-            return repr(the_value)
+    # 3. Arguments in both the URL and body (mixed_args)
+    @rest.rest_call('PUT', '/mixed/args/<arg1>', Schema({
+        'arg1': basestring,
+        'arg2': basestring,
+    }))
+    def mixed_args(arg1, arg2):
+        return json.dumps([arg1, arg2])
 
-    def _do_request(self, data):
-        """Make a request to the endpoint with `data` in the body.
+    # 4. Arguments in body and not in the URL.
+    @rest.rest_call('POST', '/body/args', Schema({
+        'arg1': basestring,
+        'arg2': basestring,
+    }))
+    def body_args(arg1, arg2):
+        return json.dumps([arg1, arg2])
 
-        `data` should be a string -- the server will expect valid json, but
-        we want to write test cases with invalid input as well.
-        """
-        resp = self.client.post('/give-me-an-e', data=data)
-        return resp
+    # Let's also make sure we're testing something with a schema that isn't
+    # just basestring:
+    @rest.rest_call('PUT', '/non-string-schema', schema=Schema({
+        "the_value": int,
+    }))
+    def non_string_schema(the_value):
+        return json.dumps(the_value)
 
-    def test_ok(self):
-        assert not _is_error(self._do_request(json.dumps({'foo': 'alice',
-                                                          'bar': 'bob'})),
-                             rest.ValidationError)
 
-    def test_bad_json(self):
-        # Illegal JSON gets caught by flask itself, before we get to look at
-        # it. As such, the resulting error isn't an instance of APIError, so
-        # we can't use  `_is_error` here.
-        resp = self._do_request('xploit')
-        assert resp.status_code == 400
+def _do_request(client, method, path, data):
+    """Make a request to the endpoint with `data` in the body.
 
-    def test_missing_bar(self):
-        assert _is_error(self._do_request(json.dumps({'foo': 'hello'})),
-                         rest.ValidationError)
+    `client` is a flask test client
 
-    def test_extra_baz(self):
-        assert _is_error(self._do_request(json.dumps({'foo': 'alice',
-                                                      'bar': 'bob',
-                                                      'baz': 'eve'})),
-                         rest.ValidationError)
+    `method` is the request method
 
-    def test_mixed_args_ok(self):
-        """Test a call that has arguments in both the url and body."""
-        resp = self.client.put('/mixed/args/foo',
-                               data=json.dumps({'arg2': 'bar'}))
-        assert resp.status_code == 200
-        assert json.loads(resp.get_data()) == ['foo', 'bar']
+    `path` is the path of the request
 
-    def test_custom_schema(self):
-        assert _is_error(self.client.put('/custom-schema', data=json.dumps({
-            'the_value': 'Not an integer!',
-        })), rest.ValidationError)
+    `data` should be a string -- the server will expect valid json, but
+    we want to write test cases with invalid input as well.
+    """
+    client.post('/give-me-an-e', data=data)
+    # Annoyingly, the client doesn't give us a way to supply an arbitrary
+    # HTTP method, so we hack around it by using getattr to get the right
+    # function:
+    return getattr(client, method.lower())(path, data=data)
+
+
+@pytest.mark.parametrize('args', [
+    # Legal cases:
+    {'request': {'method': 'POST', 'path': '/no/args', 'data': ''},
+     'expected': {'status': 200, 'body_json': None}},
+
+    {'request': {'method': 'POST',
+                 'path': '/url/args/hello/goodbye',
+                 'data': ''},
+     'expected': {'status': 200,
+                  'body_json': ['hello', 'goodbye']}},
+
+    {'request': {'method': 'PUT',
+                 'path': '/mixed/args/hello',
+                 'data': json.dumps({'arg2': 'goodbye'})},
+     'expected': {'status': 200,
+                  'body_json': ['hello', 'goodbye']}},
+
+    {'request': {'method': 'POST',
+                 'path': '/body/args',
+                 'data': json.dumps({'arg1': 'hello',
+                                     'arg2': 'goodbye'})},
+     'expected': {'status': 200,
+                  'body_json': ['hello', 'goodbye']}},
+
+    {'request': {'method': 'PUT',
+                 'path': '/non-string-schema',
+                 'data': json.dumps({'the_value': 42})},
+     'expected': {'status': 200,
+                  'body_json': 42}},
+
+    # Illegal JSON in the body:
+    {'request': {'method': 'POST',
+                 'path': '/body/args',
+                 'data': 'xploit'},
+     'expected': {'status': 400,
+                  'body_json': None}},
+
+    # Missing arg2:
+    {'request': {'method': 'POST',
+                 'path': '/body/args',
+                 'data': json.dumps({'arg1': 'hello'})},
+     'expected': {'status': 400,
+                  'body_json': None}},
+    # Extra arg (arg3):
+    {'request': {'method': 'POST',
+                 'path': '/body/args',
+                 'data': json.dumps({'arg1': 'hello',
+                                     'arg2': 'goodbye',
+                                     'arg3': '????'})},
+     'expected': {'status': 400,
+                  'body_json': None}},
+
+    # Invalid arg types:
+    {'request': {'method': 'PUT',
+                 'path': '/mixed/args/hello',
+                 'data': json.dumps({'arg2': 3232})},
+     'expected': {'status': 400,
+                  'body_json': None}},
+
+    {'request': {'method': 'PUT',
+                 'path': '/non-string-schema',
+                 'data': json.dumps({'the_value': 'Not an integer!'})},
+     'expected': {'status': 400, 'body_json': None}},
+
+])
+def test_validation_status(client, validation_setup, args):
+    """Check that the request returns an expected response.
+
+    `client` and `validation_setup` come from the fixtures defined above.
+
+    `args` is a dictionary with two keys:
+
+        * `request`, a specification of the request
+        * `expected` a specification of the expected response.
+
+    `request` has three fields, `method`, `path`, and `data`, corresponding
+    to the arguments to `_do_request` by the same names.
+
+    `expected` has two fields:
+
+        * `status`, the expected status code.
+        * `body_json`, which is either a decoded JSON object or `None`.
+           If it is None, no requirements are imposed on the body of the
+           request. Otherwise, it must be equal to the decoded body of the
+           response.
+
+    """
+    # Annoyingly, the client doesn't give us a way to supply an arbitrary
+    # HTTP method, so we hack around it by using getattr to get the right
+    # function:
+    resp = _do_request(client, **args['request'])
+    assert resp.status_code == args['expected']['status']
+    if args['expected']['body_json'] is not None:
+        assert json.loads(resp.get_data()) == args['expected']['body_json']
 
 
 class TestCallOnce(HttpTest):
