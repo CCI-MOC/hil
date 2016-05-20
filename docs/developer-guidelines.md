@@ -40,9 +40,12 @@ Any function that is intended to be externally visible (ie - available through
 the REST API) will need to use the `@rest_call` decorator, [available in
 rest.py](../haas/rest.py). This tells the framework the base URL which triggers
 the function call and also specifies how the arguments should be verified.
+
 Please [see the documentation there](../haas/rest.py) for additional
 information on the specifics, as well as [api.py]( ../haas/api.py) for a number
-of examples.
+of examples. Of special note is that every externally-visible function must
+supply a `Schema` which explicitly specifies the method for verifying all URL
+and body arguments. In HaaS, all body arguments are required to be JSON.
 
 ## Often-used code
 In certain cases, one will encounter heavily repeated code that gets run once per API call such as this:
