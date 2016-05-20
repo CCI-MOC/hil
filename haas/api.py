@@ -535,7 +535,12 @@ def headnode_detach_network(headnode, hnic):
                             ################
 
 
-@rest_call('PUT', '/network/<network>', Schema({'network': basestring}))
+@rest_call('PUT', '/network/<network>', Schema({
+    'network': basestring,
+    'creator': basestring,
+    'access' : basestring,
+    'net_id' : basestring,
+}))
 def network_create(network, creator, access, net_id):
     """Create a network.
 
