@@ -27,12 +27,22 @@ If you're looking to code, there are a few ways to help:
 * IRL (In Real Life): The MOC group office is on the BU campus, at 3 Cummington Mall, Boston, MA room 451. Anyone interested in HaaS is welcome to drop in and work there.
 * Email: HaaS developers or anyone else wishing to stay up to date should subscribe to haas-dev-list@bu.edu by sending a plain text email to majordomo@bu.edu with "subscribe haas-dev-list" in the body.
 
-# Coding style
+# Coding style/conventions
 
 By default, HaaS (like many other python projects) uses
 [PEP8](https://www.python.org/dev/peps/pep-0008/) as its naming guide, and
 [PEP257](https://www.python.org/dev/peps/pep-0257/) for documentation.
 Departures are acceptable when called for, but should be discussed first.
+
+## REST API calls - @rest\_call
+
+Any function that is intended to be externally visible (ie - available through
+the REST API) will need to use the `@rest_call` decorator, [available in
+rest.py](../haas/rest.py). This tells the framework the base URL which triggers
+the function call and also specifies how the arguments should be verified.
+Please [see the documentation there](../haas/rest.py) for additional
+information on the specifics, as well as [api.py]( ../haas/api.py) for a number
+of examples.
 
 ## Often-used code
 In certain cases, one will encounter heavily repeated code that gets run once per API call such as this:
