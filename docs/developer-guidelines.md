@@ -36,10 +36,12 @@ Departures are acceptable when called for, but should be discussed first.
 
 ## REST API calls - @rest\_call
 
-Any function that is intended to be externally visible (ie - available through
-the REST API) will need to use the `@rest_call` decorator, [available in
-rest.py](../haas/rest.py). This tells the framework the base URL which triggers
-the function call and also specifies how the arguments should be verified.
+Any functionality that is intended to be externally visible (ie -
+available through the REST API) will need to be exposed by decorating a
+function with the `@rest_call` decorator, [available in
+rest.py](../haas/rest.py).  This tells the framework the URL path and
+HTTP method which should be mapped to that function, and also specifies
+how the arguments should be verified.
 
 Please [see the documentation there](../haas/rest.py) for additional
 information on the specifics, as well as [api.py]( ../haas/api.py) for a number
