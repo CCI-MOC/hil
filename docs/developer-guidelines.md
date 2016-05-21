@@ -126,7 +126,7 @@ the bug does not return.
 ## Pull Requests
 
 Once the checklist above has been met, issue a [pull request][pr] from your
-personal fork to the [main HaaS repo][repo]. 
+personal fork to the [main HaaS repo][repo].
 
 Labels are the way we communicate github pull request and issue status. They should be assigned in line with the *Suggestions* section
 of [this wiki
