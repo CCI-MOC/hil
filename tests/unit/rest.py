@@ -331,6 +331,15 @@ def _do_request(client, method, path, data):
      'expected': {'status': 400,
                   'body_json': None}},
 
+    # Empty body (for a function that expects body args). Note that this should
+    # hit the same exact code paths as the illegal JSON test, but it's
+    # conceptually different:
+    {'request': {'method': 'POST',
+                 'path': '/body/args',
+                 'data': ''},
+     'expected': {'status': 400,
+                  'body_json': None}},
+
     # Missing arg2:
     {'request': {'method': 'POST',
                  'path': '/body/args',
@@ -343,6 +352,19 @@ def _do_request(client, method, path, data):
                  'data': json.dumps({'arg1': 'hello',
                                      'arg2': 'goodbye',
                                      'arg3': '????'})},
+     'expected': {'status': 400,
+                  'body_json': None}},
+
+    # Same argument passed via URL and body. Note that from the client side
+    # this isn't semantically meaningful, since arguments in the URL don't have
+    # names; this is just testing the logic that parses these into python
+    # function arguments:
+    {'request': {'method': 'PUT',
+                 # The mixed_args function calls the 'hello' segment of it's
+                 # path "arg1":
+                 'path': '/mixed/args/hello',
+                 'data': json.dumps({'arg1': 'howdy',
+                                     'arg2': 'goodbye'})},
      'expected': {'status': 400,
                   'body_json': None}},
 
