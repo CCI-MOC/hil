@@ -331,6 +331,10 @@ def _do_request(client, method, path, data):
      'expected': {'status': 400,
                   'body_json': None}},
 
+    # Arguments in the body for a function that expects no arguments
+    {'request': {'method': 'POST', 'path': '/no/args', 'data': json.dumps({'arg1': 'foo'})},
+     'expected': {'status': 400, 'body_json': None}},
+
     # Empty body (for a function that expects body args). Note that this should
     # hit the same exact code paths as the illegal JSON test, but it's
     # conceptually different:
