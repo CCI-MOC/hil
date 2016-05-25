@@ -117,6 +117,23 @@ class TestBrocade(object):
             interface_type='TenGigabitEthernet'
         ).session()
 
+    @pytest.fixture()
+    def nic(self):
+        return model.Nic(
+            model.Node(
+                label='node-99',
+                obm=Ipmi(type="http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                         host="ipmihost",
+                         user="root",
+                         password="tapeworm")),
+            'ipmi',
+            '00:11:22:33:44:55')
+
+    @pytest.fixture
+    def network(self):
+        project = model.Project('anvil-nextgen')
+        return model.Network(project, project, True, '102', 'hammernet')
+
     def test_get_port_networks(self, switch):
         with requests_mock.mock() as mock:
             mock.get(switch._construct_url(INTERFACE1, suffix='trunk'),
@@ -152,20 +169,10 @@ class TestBrocade(object):
             response = switch._get_mode(INTERFACE1)
             assert response == 'trunk'
 
-    def test_apply_networking(self, switch):
-        # Note(knikolla): Create a Nic connected to the Switch
+    def test_apply_networking(self, switch, nic, network):
+        # Create a port on the switch and connect it to the nic
         port = model.Port(label=INTERFACE1, switch=switch)
-        nic = model.Nic(
-            model.Node(label='node-99',
-                       obm=Ipmi(type="http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                                host="ipmihost",
-                                user="root",
-                                password="tapeworm")),
-            'ipmi',
-            '00:11:22:33:44:55')
         nic.port = port
-        project = model.Project('anvil-nextgen')
-        network = model.Network(project, project, True, '102', 'hammernet')
 
         # Test action to set a network as native
         action_native = model.NetworkingAction(nic=nic,

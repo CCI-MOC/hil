@@ -8,7 +8,7 @@ Create Date: 2016-04-11 16:26:40.715332
 
 # revision identifiers, used by Alembic.
 revision = '5a6db7a7222d'
-down_revision = '6a8c19565060'
+down_revision = None
 branch_labels = ('haas.ext.switches.brocade',)
 
 from alembic import op
