@@ -19,80 +19,109 @@ from haas.ext.switches import brocade
 from haas import model
 from haas.ext.obm.ipmi import Ipmi
 
-MODE_RESPONSE_ACCESS = """
-<mode xmlns="urn:brocade.com:mgmt:brocade-interface" xmlns:y="http://brocade.com/ns/rest" y:self="/rest/config/running/interface/TenGigabitEthernet/%22101/0/10%22/switchport/mode">
-    <vlan-mode>access</vlan-mode>
-    <private-vlan y:self="/rest/config/running/interface/TenGigabitEthernet/%22101/0/10%22/switchport/mode/private-vlan">
-        <trunk y:self="/rest/config/running/interface/TenGigabitEthernet/%22101/0/10%22/switchport/mode/private-vlan/trunk"/>
-    </private-vlan>
-</mode>"""
+MODE_RESPONSE_ACCESS = (
+    '<mode xmlns="urn:brocade.com:mgmt:brocade-interface" '
+    'xmlns:y="http://brocade.com/ns/rest" '
+    'y:self="/rest/config/running/interface/TenGigabitEthernet'
+    '/%22101/0/10%22/switchport/mode">\n'
+    '  <vlan-mode>access</vlan-mode>\n'
+    '  <private-vlan '
+    'y:self="/rest/config/running/interface/TenGigabitEthernet'
+    '/%22101/0/10%22/switchport/mode/private-vlan">\n'
+    '    <trunk '
+    'y:self="/rest/config/running/interface/TenGigabitEthernet'
+    '/%22101/0/10%22/switchport/mode/private-vlan/trunk"/>\n'
+    '  </private-vlan>\n'
+    '</mode>'
+)
 
-MODE_RESPONSE_TRUNK = """
-<mode xmlns="urn:brocade.com:mgmt:brocade-interface" xmlns:y="http://brocade.com/ns/rest" y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/18%22/switchport/mode">
-    <vlan-mode>trunk</vlan-mode>
-    <private-vlan y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/18%22/switchport/mode/private-vlan">
-        <trunk y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/18%22/switchport/mode/private-vlan/trunk"/>
-    </private-vlan>
-</mode>"""
+MODE_RESPONSE_TRUNK = (
+    '<mode xmlns="urn:brocade.com:mgmt:brocade-interface" '
+    'xmlns:y="http://brocade.com/ns/rest" '
+    'y:self="/rest/config/running/interface/TenGigabitEthernet'
+    '/%22104/0/18%22/switchport/mode">\n'
+    '  <vlan-mode>trunk</vlan-mode>\n'
+    '  <private-vlan '
+    'y:self="/rest/config/running/interface/TenGigabitEthernet'
+    '/%22104/0/18%22/switchport/mode/private-vlan">\n'
+    '    <trunk '
+    'y:self="/rest/config/running/interface/TenGigabitEthernet'
+    '/%22104/0/18%22/switchport/mode/private-vlan/trunk"/>\n'
+    '  </private-vlan>\n'
+    '</mode>'
+)
 
-TRUNK_VLAN_RESPONSE = """
-<trunk xmlns="urn:brocade.com:mgmt:brocade-interface" xmlns:y="http://brocade.com/ns/rest" y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/18%22/switchport/trunk">
+TRUNK_VLAN_RESPONSE = (
+    '<trunk xmlns="urn:brocade.com:mgmt:brocade-interface" '
+    'xmlns:y="http://brocade.com/ns/rest" '
+    'y:self="/rest/config/running/interface/TenGigabitEthernet'
+    '/%22104/0/18%22/switchport/trunk">\n'
+    ' <allowed y:self="/rest/config/running/interface/TenGigabitEthernet'
+    '/%22104/0/18%22/switchport/trunk/allowed">\n'
+    '  <rspan-vlan y:self="/rest/config/running/interface/TenGigabitEthernet'
+    '/%22104/0/18%22/switchport/trunk/allowed/rspan-vlan"/>\n'
+    '  <vlan y:self="/rest/config/running/interface/TenGigabitEthernet'
+    '/%22104/0/18%22/switchport/trunk/allowed/vlan">\n'
+    '   <add>1,4001,4004,4025,4050</add>\n'
+    '  </vlan>\n'
+    ' </allowed>\n'
+    ' <tag y:self="/rest/config/running/interface/TenGigabitEthernet'
+    '/%22104/0/18%22/switchport/trunk/tag">\n'
+    ' <native-vlan>true</native-vlan>\n'
+    '</tag>\n'
+    '</trunk>'
+)
 
-  <allowed y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/18%22/switchport/trunk/allowed">
-    <rspan-vlan y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/18%22/switchport/trunk/allowed/rspan-vlan"/>
-    <vlan y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/18%22/switchport/trunk/allowed/vlan">
-      <add>1,4001,4004,4025,4050</add>
-    </vlan>
-  </allowed>
+ACCESS_VLAN_RESPONSE = (
+    '<access xmlns="urn:brocade.com:mgmt:brocade-interface" '
+    'xmlns:y="http://brocade.com/ns/rest" '
+    'y:self="/rest/config/running/interface/TenGigabitEthernet'
+    '/%22101/0/10%22/switchport/access">\n'
+    '  <vlan>10</vlan>\n'
+    '</access>'
+)
 
-  <tag y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/18%22/switchport/trunk/tag">
-    <native-vlan>true</native-vlan>
-  </tag>
+TRUNK_NATIVE_VLAN_RESPONSE_NO_VLANS = (
+    '<trunk xmlns="urn:brocade.com:mgmt:brocade-interface" '
+    'xmlns:y="http://brocade.com/ns/rest" '
+    'y:self="/rest/config/running/interface/TenGigabitEthernet'
+    '/%22104/0/10%22/switchport/trunk">\n'
+    ' <allowed y:self="/rest/config/running/interface/TenGigabitEthernet'
+    '/%22104/0/10%22/switchport/trunk/allowed">\n'
+    '  <rspan-vlan y:self="/rest/config/running/interface/TenGigabitEthernet'
+    '/%22104/0/10%22/switchport/trunk/allowed/rspan-vlan"/>\n'
+    '  <vlan y:self="/rest/config/running/interface/TenGigabitEthernet'
+    '/%22104/0/10%22/switchport/trunk/allowed/vlan"/>\n'
+    ' </allowed>\n'
+    ' <tag y:self="/rest/config/running/interface/TenGigabitEthernet'
+    '/%22104/0/10%22/switchport/trunk/tag">\n'
+    '  <native-vlan>true</native-vlan>\n'
+    '   </tag>\n'
+    '  <native-vlan>10</native-vlan>\n'
+    '</trunk>'
+)
 
-</trunk>
-"""
-
-ACCESS_VLAN_RESPONSE = """
-<access xmlns="urn:brocade.com:mgmt:brocade-interface" xmlns:y="http://brocade.com/ns/rest" y:self="/rest/config/running/interface/TenGigabitEthernet/%22101/0/10%22/switchport/access">
-    <vlan>10</vlan>
-</access>
-"""
-
-TRUNK_NATIVE_VLAN_RESPONSE_NO_VLANS = """
-<trunk xmlns="urn:brocade.com:mgmt:brocade-interface" xmlns:y="http://brocade.com/ns/rest" y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/10%22/switchport/trunk">
-
-  <allowed y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/10%22/switchport/trunk/allowed">
-    <rspan-vlan y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/10%22/switchport/trunk/allowed/rspan-vlan"/>
-    <vlan y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/10%22/switchport/trunk/allowed/vlan"/>
-  </allowed>
-
-  <tag y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/10%22/switchport/trunk/tag">
-    <native-vlan>true</native-vlan>
-  </tag>
-
-  <native-vlan>10</native-vlan>
-
-</trunk>
-"""
-
-TRUNK_NATIVE_VLAN_RESPONSE_WITH_VLANS = """
-<trunk xmlns="urn:brocade.com:mgmt:brocade-interface" xmlns:y="http://brocade.com/ns/rest" y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/10%22/switchport/trunk">
-
-  <allowed y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/10%22/switchport/trunk/allowed">
-    <rspan-vlan y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/10%22/switchport/trunk/allowed/rspan-vlan"/>
-    <vlan y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/10%22/switchport/trunk/allowed/vlan">
-      <add>4001,4025</add>
-    </vlan>
-  </allowed>
-
-  <tag y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/10%22/switchport/trunk/tag">
-    <native-vlan>true</native-vlan>
-  </tag>
-
-  <native-vlan>10</native-vlan>
-
-</trunk>
-"""
+TRUNK_NATIVE_VLAN_RESPONSE_WITH_VLANS = (
+    '<trunk xmlns="urn:brocade.com:mgmt:brocade-interface" '
+    'xmlns:y="http://brocade.com/ns/rest" '
+    'y:self="/rest/config/running/interface/TenGigabitEthernet'
+    '/%22104/0/10%22/switchport/trunk">\n'
+    ' <allowed y:self="/rest/config/running/interface/TenGigabitEthernet'
+    '/%22104/0/10%22/switchport/trunk/allowed">\n'
+    '  <rspan-vlan y:self="/rest/config/running/interface/TenGigabitEthernet'
+    '/%22104/0/10%22/switchport/trunk/allowed/rspan-vlan"/>\n'
+    '  <vlan y:self="/rest/config/running/interface/TenGigabitEthernet'
+    '/%22104/0/10%22/switchport/trunk/allowed/vlan">\n'
+    '   <add>4001,4025</add>\n'
+    '  </vlan>\n'
+    ' </allowed>\n'
+    ' <tag y:self="/rest/config/running/interface/TenGigabitEthernet'
+    '/%22104/0/10%22/switchport/trunk/tag">\n'
+    '  <native-vlan>true</native-vlan>\n'
+    ' </tag>\n'
+    ' <native-vlan>10</native-vlan>\n'
+    '</trunk>'
+)
 
 TRUNK_PAYLOAD = '<mode><vlan-mode>trunk</vlan-mode></mode>'
 
@@ -108,6 +137,27 @@ INTERFACE3 = '104/0/20'
 
 
 class TestBrocade(object):
+    """ Unit tests for the Brocade driver.
+
+    The tests use the requests_mock library to return prerecorded responses
+    from the switch (without any actual communication with the switch
+    happening during the tests), or check that the correct payload was sent
+    to the switch, at the right url.
+
+    Inside the `requests_mock.mock()` context, every call made with the requests
+    library will be directed to the mock object. We then register the urls
+    we want to mock, and what to return when they are requested. An exception
+    will be thrown if a request goes to a non-registered url.
+
+    Example below will return the PRERECORDER_RESPONSE string.
+    ```
+    with requests_mock.mock() as mock:
+        # Register the url and the text we want to return on a get
+        # request to it
+        mock.get(url, text=PRERECORDED_RESPONSE)
+        r = requests.get(url)
+    ```
+    """
     @pytest.fixture()
     def switch(self):
         return brocade.Brocade(
@@ -122,10 +172,11 @@ class TestBrocade(object):
         return model.Nic(
             model.Node(
                 label='node-99',
-                obm=Ipmi(type="http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                         host="ipmihost",
-                         user="root",
-                         password="tapeworm")),
+                obm=Ipmi(
+                    type="http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                    host="ipmihost",
+                    user="root",
+                    password="tapeworm")),
             'ipmi',
             '00:11:22:33:44:55')
 
@@ -196,7 +247,8 @@ class TestBrocade(object):
                                                       new_network=None,
                                                       channel='vlan/native')
         with requests_mock.mock() as mock:
-            url_native = switch._construct_url(INTERFACE1, suffix='trunk/native-vlan')
+            url_native = switch._construct_url(INTERFACE1,
+                                               suffix='trunk/native-vlan')
             mock.delete(url_native)
 
             switch.apply_networking(action_rm_native)
@@ -209,9 +261,11 @@ class TestBrocade(object):
                                          new_network=network,
                                          channel='vlan/102')
         with requests_mock.mock() as mock:
-            url_mode = switch._construct_url(INTERFACE1, suffix='mode')
+            url_mode = switch._construct_url(INTERFACE1,
+                                             suffix='mode')
             mock.put(url_mode)
-            url_trunk = switch._construct_url(INTERFACE1, suffix='trunk/allowed/vlan')
+            url_trunk = switch._construct_url(INTERFACE1,
+                                              suffix='trunk/allowed/vlan')
             mock.put(url_trunk)
 
             switch.apply_networking(action_vlan)
@@ -226,7 +280,8 @@ class TestBrocade(object):
                                                 new_network=None,
                                                 channel='vlan/102')
         with requests_mock.mock() as mock:
-            url_trunk = switch._construct_url(INTERFACE1, suffix='trunk/allowed/vlan')
+            url_trunk = switch._construct_url(INTERFACE1,
+                                              suffix='trunk/allowed/vlan')
             mock.put(url_trunk)
 
             switch.apply_networking(action_rm_vlan)
