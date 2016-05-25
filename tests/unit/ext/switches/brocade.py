@@ -19,109 +19,83 @@ from haas.ext.switches import brocade
 from haas import model
 from haas.ext.obm.ipmi import Ipmi
 
-MODE_RESPONSE_ACCESS = (
-    '<mode xmlns="urn:brocade.com:mgmt:brocade-interface" '
-    'xmlns:y="http://brocade.com/ns/rest" '
-    'y:self="/rest/config/running/interface/TenGigabitEthernet'
-    '/%22101/0/10%22/switchport/mode">\n'
-    '  <vlan-mode>access</vlan-mode>\n'
-    '  <private-vlan '
-    'y:self="/rest/config/running/interface/TenGigabitEthernet'
-    '/%22101/0/10%22/switchport/mode/private-vlan">\n'
-    '    <trunk '
-    'y:self="/rest/config/running/interface/TenGigabitEthernet'
-    '/%22101/0/10%22/switchport/mode/private-vlan/trunk"/>\n'
-    '  </private-vlan>\n'
-    '</mode>'
-)
+MODE_RESPONSE_ACCESS = """
+<mode xmlns="urn:brocade.com:mgmt:brocade-interface" xmlns:y="http://brocade.com/ns/rest"
+y:self="/rest/config/running/interface/TenGigabitEthernet/%22101/0/10%22/switchport/mode">
+  <vlan-mode>access</vlan-mode>
+  <private-vlan
+  y:self="/rest/config/running/interface/TenGigabitEthernet/%22101/0/10%22/switchport/mode/private-vlan">
+    <trunk
+    y:self="/rest/config/running/interface/TenGigabitEthernet/%22101/0/10%22/switchport/mode/private-vlan/trunk"/>
+  </private-vlan>
+</mode>
+"""
 
-MODE_RESPONSE_TRUNK = (
-    '<mode xmlns="urn:brocade.com:mgmt:brocade-interface" '
-    'xmlns:y="http://brocade.com/ns/rest" '
-    'y:self="/rest/config/running/interface/TenGigabitEthernet'
-    '/%22104/0/18%22/switchport/mode">\n'
-    '  <vlan-mode>trunk</vlan-mode>\n'
-    '  <private-vlan '
-    'y:self="/rest/config/running/interface/TenGigabitEthernet'
-    '/%22104/0/18%22/switchport/mode/private-vlan">\n'
-    '    <trunk '
-    'y:self="/rest/config/running/interface/TenGigabitEthernet'
-    '/%22104/0/18%22/switchport/mode/private-vlan/trunk"/>\n'
-    '  </private-vlan>\n'
-    '</mode>'
-)
+MODE_RESPONSE_TRUNK = """
+<mode xmlns="urn:brocade.com:mgmt:brocade-interface" xmlns:y="http://brocade.com/ns/rest"
+y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/18%22/switchport/mode">
+  <vlan-mode>trunk</vlan-mode>
+  <private-vlan y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/18%22/switchport/mode/private-vlan">
+    <trunk
+    y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/18%22/switchport/mode/private-vlan/trunk"/>
+  </private-vlan>
+</mode>
+"""
 
-TRUNK_VLAN_RESPONSE = (
-    '<trunk xmlns="urn:brocade.com:mgmt:brocade-interface" '
-    'xmlns:y="http://brocade.com/ns/rest" '
-    'y:self="/rest/config/running/interface/TenGigabitEthernet'
-    '/%22104/0/18%22/switchport/trunk">\n'
-    ' <allowed y:self="/rest/config/running/interface/TenGigabitEthernet'
-    '/%22104/0/18%22/switchport/trunk/allowed">\n'
-    '  <rspan-vlan y:self="/rest/config/running/interface/TenGigabitEthernet'
-    '/%22104/0/18%22/switchport/trunk/allowed/rspan-vlan"/>\n'
-    '  <vlan y:self="/rest/config/running/interface/TenGigabitEthernet'
-    '/%22104/0/18%22/switchport/trunk/allowed/vlan">\n'
-    '   <add>1,4001,4004,4025,4050</add>\n'
-    '  </vlan>\n'
-    ' </allowed>\n'
-    ' <tag y:self="/rest/config/running/interface/TenGigabitEthernet'
-    '/%22104/0/18%22/switchport/trunk/tag">\n'
-    ' <native-vlan>true</native-vlan>\n'
-    '</tag>\n'
-    '</trunk>'
-)
+TRUNK_VLAN_RESPONSE = """
+<trunk xmlns="urn:brocade.com:mgmt:brocade-interface" xmlns:y="http://brocade.com/ns/rest"
+y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/18%22/switchport/trunk">
+  <allowed y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/18%22/switchport/trunk/allowed">
+    <rspan-vlan
+    y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/18%22/switchport/trunk/allowed/rspan-vlan"/>
+    <vlan y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/18%22/switchport/trunk/allowed/vlan">
+      <add>1,4001,4004,4025,4050</add>
+    </vlan>
+  </allowed>
+  <tag y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/18%22/switchport/trunk/tag">
+    <native-vlan>true</native-vlan>
+  </tag>
+</trunk>
+"""
 
-ACCESS_VLAN_RESPONSE = (
-    '<access xmlns="urn:brocade.com:mgmt:brocade-interface" '
-    'xmlns:y="http://brocade.com/ns/rest" '
-    'y:self="/rest/config/running/interface/TenGigabitEthernet'
-    '/%22101/0/10%22/switchport/access">\n'
-    '  <vlan>10</vlan>\n'
-    '</access>'
-)
+ACCESS_VLAN_RESPONSE = """
+<access xmlns="urn:brocade.com:mgmt:brocade-interface" xmlns:y="http://brocade.com/ns/rest"
+y:self="/rest/config/running/interface/TenGigabitEthernet/%22101/0/10%22/switchport/access">
+  <vlan>10</vlan>
+</access>
+"""
 
-TRUNK_NATIVE_VLAN_RESPONSE_NO_VLANS = (
-    '<trunk xmlns="urn:brocade.com:mgmt:brocade-interface" '
-    'xmlns:y="http://brocade.com/ns/rest" '
-    'y:self="/rest/config/running/interface/TenGigabitEthernet'
-    '/%22104/0/10%22/switchport/trunk">\n'
-    ' <allowed y:self="/rest/config/running/interface/TenGigabitEthernet'
-    '/%22104/0/10%22/switchport/trunk/allowed">\n'
-    '  <rspan-vlan y:self="/rest/config/running/interface/TenGigabitEthernet'
-    '/%22104/0/10%22/switchport/trunk/allowed/rspan-vlan"/>\n'
-    '  <vlan y:self="/rest/config/running/interface/TenGigabitEthernet'
-    '/%22104/0/10%22/switchport/trunk/allowed/vlan"/>\n'
-    ' </allowed>\n'
-    ' <tag y:self="/rest/config/running/interface/TenGigabitEthernet'
-    '/%22104/0/10%22/switchport/trunk/tag">\n'
-    '  <native-vlan>true</native-vlan>\n'
-    '   </tag>\n'
-    '  <native-vlan>10</native-vlan>\n'
-    '</trunk>'
-)
+TRUNK_NATIVE_VLAN_RESPONSE_NO_VLANS = """
+<trunk xmlns="urn:brocade.com:mgmt:brocade-interface" xmlns:y="http://brocade.com/ns/rest"
+y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/10%22/switchport/trunk">
+  <allowed y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/10%22/switchport/trunk/allowed">
+    <rspan-vlan
+    y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/10%22/switchport/trunk/allowed/rspan-vlan"/>
+    <vlan y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/10%22/switchport/trunk/allowed/vlan"/>
+  </allowed>
+  <tag y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/10%22/switchport/trunk/tag">
+    <native-vlan>true</native-vlan>
+  </tag>
+  <native-vlan>10</native-vlan>
+</trunk>
+"""
 
-TRUNK_NATIVE_VLAN_RESPONSE_WITH_VLANS = (
-    '<trunk xmlns="urn:brocade.com:mgmt:brocade-interface" '
-    'xmlns:y="http://brocade.com/ns/rest" '
-    'y:self="/rest/config/running/interface/TenGigabitEthernet'
-    '/%22104/0/10%22/switchport/trunk">\n'
-    ' <allowed y:self="/rest/config/running/interface/TenGigabitEthernet'
-    '/%22104/0/10%22/switchport/trunk/allowed">\n'
-    '  <rspan-vlan y:self="/rest/config/running/interface/TenGigabitEthernet'
-    '/%22104/0/10%22/switchport/trunk/allowed/rspan-vlan"/>\n'
-    '  <vlan y:self="/rest/config/running/interface/TenGigabitEthernet'
-    '/%22104/0/10%22/switchport/trunk/allowed/vlan">\n'
-    '   <add>4001,4025</add>\n'
-    '  </vlan>\n'
-    ' </allowed>\n'
-    ' <tag y:self="/rest/config/running/interface/TenGigabitEthernet'
-    '/%22104/0/10%22/switchport/trunk/tag">\n'
-    '  <native-vlan>true</native-vlan>\n'
-    ' </tag>\n'
-    ' <native-vlan>10</native-vlan>\n'
-    '</trunk>'
-)
+TRUNK_NATIVE_VLAN_RESPONSE_WITH_VLANS = """
+<trunk xmlns="urn:brocade.com:mgmt:brocade-interface" xmlns:y="http://brocade.com/ns/rest"
+y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/10%22/switchport/trunk">
+  <allowed y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/10%22/switchport/trunk/allowed">
+    <rspan-vlan
+    y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/10%22/switchport/trunk/allowed/rspan-vlan"/>
+    <vlan y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/10%22/switchport/trunk/allowed/vlan">
+      <add>4001,4025</add>
+    </vlan>
+  </allowed>
+  <tag y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/10%22/switchport/trunk/tag">
+    <native-vlan>true</native-vlan>
+  </tag>
+  <native-vlan>10</native-vlan>
+</trunk>
+"""
 
 TRUNK_PAYLOAD = '<mode><vlan-mode>trunk</vlan-mode></mode>'
 
