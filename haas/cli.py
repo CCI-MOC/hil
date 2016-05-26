@@ -401,6 +401,15 @@ def switch_register(switch, subtype, *args):
             sys.stderr.write('ERROR: subtype '+subtype+' requires exactly 3 arguments\n')
             sys.stderr.write('<hostname> <username> <password>\n')
             return
+    elif subtype == "brocade":
+        if len(args) == 4:
+            switchinfo = { "type": switch_api+subtype, "hostname": args[0],
+                           "username": args[1], "password": args[2],
+                           "interface_type": args[3] }
+        else:
+            sys.stderr.write('ERROR: subtype '+ subtype+' requires exactly 4 arguments\n')
+            sys.stderr.write('<hostname> <username> <password> <interface_type>\n')
+            return
     else:
         sys.stderr.write('ERROR: Invalid subtype supplied\n')
         return
