@@ -74,4 +74,6 @@ setup(name='haas',
                         'pytest>=2.6.2,<3.0',
                         'pytest-cov==1.8.0',
                         'pytest-xdist',
+                        'requests_mock',
+                        'lxml'
                         ])
