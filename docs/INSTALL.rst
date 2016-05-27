@@ -1,6 +1,6 @@
 This document describes the installation and setup of HaaS on CentOS 7.0.
 HaaS should work on other distros, but is not well tested or supported.
-For development environments, see ``HACKING.rst``.
+For development environments, see ``INSTALL-devel.rst``.
 
 The HaaS Service node
 =====================
@@ -45,19 +45,41 @@ to
 SELINUX=permissive
 ```
 
+User need to choose appropriate values for their environment:
+-------------------------------------------------------------
+
+For simplicity we have provided default values:
+Copy the following lines in file ``haas_env`` 
+
+        HAAS_USER=haas
+        HAAS_DB_ROLE=haas
+        HAAS_DB_PASSWORD=secret
+        HAAS_ADMIN=haas
+        HAAS_ADMIN_PASSWORD=secret
+        HAAS_HOME_DIR=/var/lib/haas
+
+
+
+Before starting this procedure do::
+        
+        source haas_env
+
+
 Setting up system user for HaaS:
 --------------------------------
 
-First create a system user ``haas`` with::
+First create a system user ``${HAAS_USER}`` with::
 
-  sudo useradd haas -d /var/lib/haas -m -r
+  sudo useradd ${HAAS_USER} -d /var/lib/haas -m -r
 
 
-The HaaS software itself can then be installed by running::
-
+The HaaS software itself can then be installed as root by running::
+    
+    sudo su -
+    cd /root
     git clone https://github.com/CCI-MOC/haas
-        cd haas
-            sudo python setup.py install
+    cd haas
+    sudo python setup.py install
 
 
 haas.cfg
@@ -77,26 +99,19 @@ setups, see ``docs/network-drivers.md``.
 Logging level and directory can be set in the ``[general]`` section. For more
 information view ``docs/logging.md``.
 
-The file should be placed at ``/etc/haas.cfg``; The ``haas.wsgi``
-script, described below, requires this. Awkwardly, the ``haas``
-command line tool expects the file to be present in its current
-working directory. This will be fixed in the next release, but for
-now, put the file in ``/etc`` and create a symlink to it in the
-HaaS user's home directory::
 
-  sudo ln -s /etc/haas.cfg /var/lib/haas/
+``haas.cfg`` file contains sensitive administrative information and should not be exposed to clients or 
+end_users. Therefore, after placing the file at ``/etc/haas.cfg`` its 
+permissions should be set to read-only and ownership set to ``${HAAS_USER}``
+From source directory of haas as user root do the following::
 
-It should be noted that HaaS end users will also require a ``haas.cfg`` file
-in their local directory in order to communicate with the HaaS server.
-However, creating another symlink to the ``/etc/haas.cfg`` exposes sensitive
-administrative information to users, such as usernames and passwords. To
-avoid this, users should have their own copy of ``haas.cfg`` that is stripped
-of all sections except for the ``[client]`` section.  Additionally, the
-``/etc/haas.cfg`` should have its permissions set to read-only and ownership
-set to the ``haas``::
-
-  sudo chown haas:haas /etc/haas.cfg
-  sudo chmod 400 /etc/haas.cfg
+    (from /root/haas)
+    cp examples/haas.cfg /etc/haas.cfg
+    chown ${HAAS_USER}:${HAAS_USER} haas.cfg
+    chmod 400 haas.cfg
+    (run following command as ${HAAS_USER} from ${HAAS_HOME_DIR}
+    su - ${HAAS_USER}
+    ln -s /etc/haas.cfg .
 
 Authentication and Authorization
 --------------------------------
@@ -107,6 +122,12 @@ usernames and passwords stored in the haas database. The other is a "null"
 backend, which does no authentication or authorization checks. This can be
 useful for testing and experimentation but *should not* be used in production.
 You must enable exactly one auth backend.
+
+In productions system where non-null backend is active, end_users will have to include
+a username and password as additional parameters in ``client_env`` file to be able to 
+communicate with the haas server. This is user/password should be registered with the 
+haas auth backend using haas.
+
 
 Database Backend
 ^^^^^^^^^^^^^^^^
@@ -129,13 +150,13 @@ Setting Up HaaS Database
 The only DBMS currently supported for production use is PostgreSQL. (SQLite is
 supported for development purposes *only*).
 There are many ways of setting up postgreSQL server. 
-`Install_configure_postgreSQL_CENTOS7.md <../Install_configure_postgreSQL_CENTOS7.md>`_
+`Install_configure_postgreSQL_CENTOS7.md <Install_configure_postgreSQL_CENTOS7.md>`_
 provides one way to accomplish this. 
 
 To create the database tables, first make sure ``haas.cfg`` is set up the way
 you need, including any extensions you plan to use, then::
 
-    sudo -i -u haas
+    sudo -i -u ${HAAS_USER}
     haas-admin db create
 
 If the authorization backend activated in ``haas.cfg`` is  ``haas.ext.auth.database =``
@@ -143,8 +164,8 @@ then you will need to add an initial user with administrative privileges to the
 database in order to bootstrap the system. 
 You can do this by running the following command (as user ``haas``)::
 
-  sudo -i -u haas
-  haas create_admin_user <username> <password>
+  sudo -i -u ${HAAS_USER}
+  haas create_admin_user ${HAAS_ADMIN_USER} ${HAAS_ADMIN_PASSWORD
 
 You can then create additional users via the HTTP API. You may want to
 subsequently delete the initial user; this can also be done via the API.
@@ -177,6 +198,8 @@ be pre-allocated again on each boot. For now, the recomended approach is to add:
   (cd /etc && create_bridges)
 
 to the end of ``/etc/rc.local``.
+
+You can also run the this command manually as root user to create the bridges.
 
 HaaS must additionally have IP connectivity to the switch's administration
 console.  Right now the only mechanism for connecting to the switch is via
@@ -407,7 +430,11 @@ To make this happen on boot, add the following to ``/etc/rc.local``::
 HaaS Client:
 ------------
 
-If you created a admin user for haas as a part of `Authentication and Authorization` step, 
+If your authentication backend is null, you only need to have the ``HAAS_ENDPOINT`` defined
+in the ``client_env``. In productions system where non-null backend is active, 
+end_users will have to include a username and password as additional parameters in ``client_env`` 
+file to be able to communicate with the haas server. 
+If you created a admin user for haas as a part of `Setting Up HaaS Database` step, 
 you will have to pass those credentials to HaaS to be able to access, change state of HaaS.
 Create a file ``client_env`` with following entries::
 
