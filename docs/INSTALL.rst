@@ -52,10 +52,15 @@ For simplicity we have provided default values:
 Copy the following lines in file ``haas_env`` 
 
         HAAS_USER=haas
+
         HAAS_DB_ROLE=haas
+        
         HAAS_DB_PASSWORD=secret
+        
         HAAS_ADMIN=haas
+        
         HAAS_ADMIN_PASSWORD=secret
+        
         HAAS_HOME_DIR=/var/lib/haas
 
 

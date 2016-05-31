@@ -149,9 +149,9 @@ typical default postgres setup, the right value is ``localhost``).
 
 Continue with installation steps:
 
-[continue with production install](production/INSTALL.rst)
+[continue with production install](INSTALL.rst)
 or 
-[continue with development install](development/HACKING.rst)
+[continue with development install](INSTALL-devel.rst)
 
 
 
