@@ -1,6 +1,6 @@
 The first time you start working in the repository, set up a clean test
 environment (Before you start make sure that you have setup a database
-to be used by for HaaS. HaaS supports SQLIte and PostgreSQL databases.
+to be used by for HaaS. HaaS supports SQLite and PostgreSQL databases.
 You should setup either of the two before you start further. Details to
 setup a database can be found in INSTALL.rst)::
 
@@ -38,10 +38,10 @@ you may need to run::
 
 Setting up the Database:
 ========================
-By default development environment uses sqlite as a database backend.
+By default development environment uses SQLite as a database backend.
 If you choose to use it, you can skip this section. 
 
-If you wish to use postgresql instead, you may get an error 'psycopg2 package not found' 
+If you wish to use postgreSQL instead, you may get an error 'psycopg2 package not found' 
 when you do 'haas-admin db create' in the next step. You may need to install 
 following package on your system 
 
