@@ -15,6 +15,10 @@ environment::
 
   pip install -e .
 
+
+For older systems:
+==================
+
 On systems with older versions of ``pip``, such as Debian Wheezy and Ubuntu
 12.04, this install will fail with the following error::
 
@@ -31,8 +35,14 @@ you may need to run::
 
   pip install importlib
 
-You may get an error 'psycopg2 package not found' when you do 'haas-admin db create'
-in the next step if you are using PostgreSQL database. You may need to install
+
+Setting up the Database:
+========================
+By default development environment uses sqlite as a database backend.
+If you choose to use it, you can skip this section. 
+
+If you wish to use postgresql instead, you may get an error 'psycopg2 package not found' 
+when you do 'haas-admin db create' in the next step. You may need to install 
 following package on your system 
 
 if its Centos::  
