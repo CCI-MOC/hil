@@ -687,7 +687,7 @@ def switch_delete_port(switch, port):
     db.session.delete(port)
     db.session.commit()
 
-@rest_call('GET', '/switches')
+@rest_call('GET', '/switches', Schema({}))
 def list_switches():
     """List all switches.
 
