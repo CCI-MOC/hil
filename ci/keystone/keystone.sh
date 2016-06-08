@@ -64,6 +64,17 @@ case "$1" in
     source ../keystonerc # for $OS_PASSWORD
     ADMIN_PASSWORD=s3cr3t ./tools/sample_data.sh
 
+    # In addition to the sample data from the keystone project's script above,
+    # we add an extra project and user for use in the tests:
+    openstack project create non-haas-project
+    openstack user create \
+      non-haas-user \
+      --password secret
+    openstack role add \
+      --project non-haas-project \
+      --user non-haas-user \
+      service
+
     # stop the server:
     kill $pid
     wait
