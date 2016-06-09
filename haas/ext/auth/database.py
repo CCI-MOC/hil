@@ -5,11 +5,14 @@ Includes API calls for managing users.
 from haas import api, model, auth
 from haas.model import db
 from haas.auth import get_auth_backend
-from haas.rest import rest_call, local
+from haas.rest import rest_call, local, ContextLogger
 from haas.errors import *
 from passlib.hash import sha512_crypt
 from schema import Schema, Optional
 import flask
+import logging
+
+logger = ContextLogger(logging.getLogger(__name__), {})
 
 
 class User(db.Model):
@@ -140,15 +143,11 @@ class DatabaseAuthBackend(auth.AuthBackend):
         user = api._must_find(User, authorization.username)
         if user.verify_password(authorization.password):
             local.auth = user
+            logger.info("Successful authentication for user %r" % user.label)
             return True
         else:
+            logger.info("Failed authentication for user %r" % user.label)
             return False
-
-    def get_user(self):
-        if hasattr(local, 'auth') and local.auth:
-            return local.auth.label
-        else:
-            return None
 
     def _have_admin(self):
         user = local.auth

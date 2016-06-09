@@ -71,11 +71,11 @@ def configure_logging():
     if cfg.has_option('general', 'log_dir'):
         log_dir = cfg.get('general', 'log_dir')
 
-        # API logging
-        api_log_file = os.path.join(log_dir, 'api.log')
-        api_logger = logging.getLogger('haas.rest')
-        api_logger.addHandler(logging.handlers.TimedRotatingFileHandler(
-                api_log_file, when='D', interval=1))
+        # logging
+        log_file = os.path.join(log_dir, 'haas.log')
+        logger = logging.getLogger('haas')
+        logger.addHandler(logging.handlers.TimedRotatingFileHandler(
+            log_file, when='D', interval=1))
 
 
 def load_extensions():
