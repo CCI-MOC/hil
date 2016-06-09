@@ -42,14 +42,6 @@ class AuthBackend(object):
         """
 
     @abstractmethod
-    def get_user(self):
-        """Return a string with the currently authenticated user.
-
-        Return String with username of the currently authenticated user,
-        or None if no user is authenticated.
-        """
-
-    @abstractmethod
     def _have_admin(self):
         """Check if the request is authorized to act as an administrator.
 

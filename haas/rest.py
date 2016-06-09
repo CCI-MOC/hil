@@ -23,18 +23,76 @@ import logging
 import json
 
 import flask
+from flask import _app_ctx_stack as ctx_stack
 
 from haas.flaskapp import app
 from haas.errors import APIError, ServerError, AuthorizationError
 from haas.config import cfg
 
 from schema import SchemaError
+from uuid import uuid4
 
 from haas import auth
 
 local = flask.g
 
-logger = logging.getLogger(__name__)
+
+class _RequestInfo(object):
+    """A Flask extension that stores a few per request values.
+
+    We use this in place of local because it allows the values to
+    be generated dynamically, so
+
+    * We don't need to do any extra work to make sure they're initialized
+      in an app context.
+    * We don't need to worry about dependency ordering (beyond making sure
+      there are no cycles).
+
+    """
+    # For a description of how writing flask extensions works in general, see:
+    #
+    #     http://flask.pocoo.org/docs/0.11/extensiondev/
+    #
+    # Note that that document describes some compatability tricks for older
+    # versions of flask; we don't bother with these.
+
+    def __init__(self, app=None):
+        self.app = app
+        if app is not None:
+            self.init_app(app)
+
+    def init_app(self, app):
+        # We don't actually need to do anything here yet.
+        pass
+
+    @property
+    def uuid(self):
+        """A UUID identifying the request context."""
+        ctx = ctx_stack.top
+        if ctx is not None:
+            if not hasattr(ctx, 'request_info_uuid'):
+                ctx.request_info_uuid = uuid4()
+            return ctx.request_info_uuid
+
+request_info = _RequestInfo(app)
+
+
+class ContextLogger(logging.LoggerAdapter):
+    """Log adapter that adds context information to an underlying logger.
+
+    If the ContextLogger is invoked from within a request context, the
+    request context's uuid (from `request_info.uuid`) will be included in
+    the output. Otherwise, the output will mention that it was invoked
+    outside a request context.
+    """
+
+    def process(self, msg, kwargs):
+        if request_info.uuid is None:
+            return 'Outside request context: ' + msg, kwargs
+        return 'In request context %s: %s' % (request_info.uuid, msg), kwargs
+
+
+logger = ContextLogger(logging.getLogger(__name__), {})
 
 
 class ValidationError(APIError):
@@ -176,9 +234,8 @@ def _rest_wrapper(f, schema):
         kwargs = _do_validation(schema, kwargs)
 
         init_auth()
-        username = auth.get_auth_backend().get_user() or '(guest)'
-        logger.info('%s - API call: %s(%s)' %
-                    (username, f.__name__, _format_arglist(**kwargs)))
+        logger.info('API call: %s(%s)' %
+                    (f.__name__, _format_arglist(**kwargs)))
 
         ret = f(**kwargs)
         if ret is None:
