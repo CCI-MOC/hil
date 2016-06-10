@@ -1,12 +1,8 @@
 #!/usr/bin/env bash
 
-# Create a new virtualenv with the system 2.7 python
-# virtualenv -p /usr/bin/python2.7 --system-site-packages env
-# source env/bin/activate
-
 # Setup configuration
 cp ci/testsuite.cfg.$DB testsuite.cfg
-sudo cp ci/haas.cfg.$DB /etc/haas.cfg
+sudo cp ci/haas.cfg.apache.$DB /etc/haas.cfg
 sudo chown travis:travis /etc/haas.cfg
 
 # Database Setup
@@ -15,9 +11,6 @@ if [ $DB = postgres ]; then
     psql --version
     psql -c 'CREATE DATABASE haas_tests;' -U postgres
     psql -c 'CREATE DATABASE haas;' -U postgres
-elif [ $DB = sqlite ]; then
-    # Workaround to create an empty sqlite db file
-    sqlite3 /home/travis/haas.db ".databases"
 fi
 
 # Install HaaS

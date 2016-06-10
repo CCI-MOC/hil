@@ -4,7 +4,6 @@ export HAAS_USERNAME=admin
 export HAAS_PASSWORD=12345
 
 # Initial Setup
-# source env/bin/activate
 cd /etc
 haas-admin db create
 haas create_admin_user $HAAS_USERNAME $HAAS_PASSWORD

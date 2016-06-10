@@ -8,6 +8,4 @@
 #     extra_flags='-n auto'
 # fi
 
-# source env/bin/activate
-
 py.test $extra_flags tests/unit tests/stress.py
