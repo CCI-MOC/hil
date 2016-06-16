@@ -20,6 +20,7 @@ uri = postgresql://postgres@localhost/haas
 dry_run=True
 
 [extensions]
+haas.ext.obm.mock =
 haas.ext.switches.mock =
 haas.ext.auth.database =
 
