@@ -455,6 +455,11 @@ def port_detach_nic(switch, port):
     do_post(url)
 
 @cmd
+def list_nodes():
+    """List all nodes"""
+    url = object_url('node')
+    do_get(url)
+@cmd
 def list_free_nodes():
     """List all free nodes"""
     url = object_url('free_nodes')
