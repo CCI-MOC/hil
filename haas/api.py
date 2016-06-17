@@ -796,15 +796,19 @@ def port_detach_nic(switch, port):
     port.nic = None
     db.session.commit()
 
-@rest_call('GET', '/node', Schema({}))
-def list_nodes():
-    """List all nodes
+@rest_call('GET', '/node/<is_free>', Schema({'is_free' : basestring}))
+def list_nodes(is_free):
+    """List all nodes or all free nodes
 
     Returns a JSON array of strings representing a list of nodes.
     
     Example:  '["node1", "node2", "node3"]'
     """
-    nodes = model.Node.query.all()
+    if is_free is "free": 
+        nodes = model.Node.query.filter_by(project_id=None).all()
+    else:     
+        nodes = model.Node.query.all()
+    
     nodes = sorted([n.label for n in nodes])
     return json.dumps(nodes)
 
