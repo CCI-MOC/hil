@@ -1,18 +1,49 @@
+Dependencies: 
+=============
+There are a few things that HaaS expects the operating system to have::
+
+  yum install bridge-utils
+  yum install gcc
+  yum install httpd
+  yum install ipmitool
+  yum install libvirt
+  yum install libxml2-devel
+  yum install libxslt-devel 
+  yum install mod_wsgi
+  yum install net-tools
+  yum install python-pip
+  yum install python-psycopg2
+  yum install python-virtinst
+  yum install python-virtualenv
+  yum install qemu-kvm
+  yum install telnet
+  yum install vconfig
+  yum install virt-install
+
+
+HaaS also expects there to be a database.  Currently, HaaS supports SQLite and PostgreSQL.  Details to setup a database can be found in `INSTALL.rst <INSTALL.rst>`_
+
+Getting Started:
+================
+First you will need to fork and clone the HaaS repo into your dev VM.::
+
+  git clone https://github.com/**username**/haas.git
+  cd haas
+
+
 The first time you start working in the repository, set up a clean test
-environment (Before you start make sure that you have setup a database
-to be used by for HaaS. HaaS supports SQLite and PostgreSQL databases.
-You should setup either of the two before you start further. Details to
-setup a database can be found in INSTALL.rst)::
+environment::
 
   virtualenv .venv
 
-Next, each time you start working, enter the environment::
+Enter the environment (do this each time start)::
 
   source .venv/bin/activate
 
 Then, proceed with installing the HaaS and its dependencies into the virtual
 environment::
 
+  sudo python setup.py install
   pip install -e .
 
 
@@ -38,18 +69,18 @@ you may need to run::
 
 Setting up the Database:
 ========================
-By default development environment uses SQLite as a database backend.
-If you choose to use it, you can skip this section. 
+By default dev environment uses SQLite as a database, so if you're using it you can skip this section.
 
-If you wish to use postgreSQL instead, you may get an error 'psycopg2 package not found' 
-when you do 'haas-admin db create' in the next step. You may need to install 
+If you wish to use postgreSQL instead, you may get an error ``psycopg2 package not found``.
+  
+When you do ``haas-admin db create`` in the next step, you may need to install 
 following package on your system 
 
-if its Centos::  
+CentOS::  
 
   yum install postgresql-devel
 
-if its Ubuntu::
+Ubuntu::
   
   sudo apt-get install libpq-dev
 
@@ -57,8 +88,7 @@ before installing ``psycopg2`` in the virtualenv for HaaS::
 
   pip install psycopg2
 
-After this follow instructions provided in
-`Install_configure_postgreSQL_CENTOS7.md <Install_configure_postgreSQL_CENTOS7.md>`_
+After this follow instructions provided in `Install_configure_postgreSQL_CENTOS7.md <Install_configure_postgreSQL_CENTOS7.md>`_
 
 Configuring HaaS
 ================
@@ -75,9 +105,19 @@ server without requiring physical hardware. To suppress actual node and headnode
 operations, set ``dry_run = True`` in the ``[devel]`` section. For suppressing
 actual network switch operations, use the ``mock`` switch driver.
 
-Next initialize the database with the required tables, with ``haas-admin db create``.
-Run the server with ``haas serve`` and ``haas serve_networks`` in separate
-terminals.  Finally, ``haas help`` lists the various API commands one can use.
+Next initialize the database with the required tables::
+
+  haas-admin db create
+  
+Run the server with 
+
+  haas serve 
+  
+and in a separate window terminal
+
+  haas serve_networks
+  
+Finally, ``haas help`` lists the various API commands one can use.
 Here is an example session, testing ``headnode_delete_hnic``::
 
   haas project_create proj
