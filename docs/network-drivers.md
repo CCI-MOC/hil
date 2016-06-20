@@ -140,6 +140,36 @@ Like the powerconnect driver, the Nexus driver accepts port names of the
 same format accepted by the underlying switch, in this case (e.g.)
 ``ethernet 1/42``. The same concerns about validation apply.
 
+## Brocade driver                                                                                          
+                                                                                                           
+### switch_register                                                                                        
+                                                                                                           
+The ``type`` field for the Brocade NOS driver has the value:
+
+    http://schema.massopencloud.org/haas/v0/switches/brocade
+
+In addition to ``type``, the brocade driver requires three additional fields
+``hostname``, ``username``, ``password``, and ``interface_type``.
+``interface_type`` refers to the type and speed of the ports on the switch,
+ex. "TenGigabitEthernet", "FortyGigabitEthernet". If you have multiple types
+of ports on the same switch, register the switch multiple times with different
+parameters for ``interface_type``.
+
+The body of the api call request will look like:
+
+    {
+        "type": "http://schema.massopencloud.org/haas/v0/switches/brocade",
+        "username": "MyUser",
+        "password": "secret",
+        "hostname": "mybrocade.example.com",
+        "interface_type": "TenGigabitEthernet"
+    }
+
+### switch_register_port
+
+The brocade driver accepts interface names the same way they would be accepted
+in the console of the switch, ex. ``101/0/10``.
+
 ## Using multiple switches
 
 Networks managed by HaaS may span multiple switches. No special configuration

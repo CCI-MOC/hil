@@ -65,8 +65,8 @@ Configuring HaaS
 
 Now the ``haas`` executable should be in your path.  First, create a
 configuration file ``haas.cfg``. There are two examples for you to work from,
-``examples/haas.cfg.dev-example``, which is oriented towards development, and
-``examples/haas.cfg.example`` which is more production oriented.  These config
+``examples/haas.cfg.dev-no-hardware``, which is oriented towards development, and
+``examples/haas.cfg`` which is more production oriented.  These config
 files are well commented; read them carefully.
 
 HaaS can be configured to not perform state-changing operations on nodes,

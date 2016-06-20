@@ -20,28 +20,86 @@ The main things of interest in this module are:
     * The variable `local`, which is an alias for `flask.g`
 """
 import logging
-import inspect
+import json
 
 import flask
+from flask import _app_ctx_stack as ctx_stack
 
 from haas.flaskapp import app
 from haas.errors import APIError, ServerError, AuthorizationError
 from haas.config import cfg
 
-from schema import Schema, SchemaError
+from schema import SchemaError
+from uuid import uuid4
 
 from haas import auth
 
 local = flask.g
 
-logger = logging.getLogger(__name__)
+
+class _RequestInfo(object):
+    """A Flask extension that stores a few per request values.
+
+    We use this in place of local because it allows the values to
+    be generated dynamically, so
+
+    * We don't need to do any extra work to make sure they're initialized
+      in an app context.
+    * We don't need to worry about dependency ordering (beyond making sure
+      there are no cycles).
+
+    """
+    # For a description of how writing flask extensions works in general, see:
+    #
+    #     http://flask.pocoo.org/docs/0.11/extensiondev/
+    #
+    # Note that that document describes some compatability tricks for older
+    # versions of flask; we don't bother with these.
+
+    def __init__(self, app=None):
+        self.app = app
+        if app is not None:
+            self.init_app(app)
+
+    def init_app(self, app):
+        # We don't actually need to do anything here yet.
+        pass
+
+    @property
+    def uuid(self):
+        """A UUID identifying the request context."""
+        ctx = ctx_stack.top
+        if ctx is not None:
+            if not hasattr(ctx, 'request_info_uuid'):
+                ctx.request_info_uuid = uuid4()
+            return ctx.request_info_uuid
+
+request_info = _RequestInfo(app)
+
+
+class ContextLogger(logging.LoggerAdapter):
+    """Log adapter that adds context information to an underlying logger.
+
+    If the ContextLogger is invoked from within a request context, the
+    request context's uuid (from `request_info.uuid`) will be included in
+    the output. Otherwise, the output will mention that it was invoked
+    outside a request context.
+    """
+
+    def process(self, msg, kwargs):
+        if request_info.uuid is None:
+            return 'Outside request context: ' + msg, kwargs
+        return 'In request context %s: %s' % (request_info.uuid, msg), kwargs
+
+
+logger = ContextLogger(logging.getLogger(__name__), {})
 
 
 class ValidationError(APIError):
     """An exception indicating that the body of the request was invalid."""
 
 
-def rest_call(method, path, schema=None):
+def rest_call(method, path, schema):
     """A decorator which registers an http mapping to a python api call.
 
     `rest_call` makes no modifications to the function itself, though the
@@ -53,23 +111,23 @@ def rest_call(method, path, schema=None):
     * path - the url-path to map the function to. The format is the same as for
             flask's router (e.g. '/foo/<bar>/baz')
     * method - the HTTP method for the api call (e.g. POST, GET...)
-    * schema (optional) - an instance of ``schema.Schema`` with which to
-            validate the body of the request. It should assume its argument is
-            a JSON object, represented as a python ``dict``.
+    * schema - an instance of ``schema.Schema`` with which to
+            validate the arguments to the function, whether specified in the
+            URL or as JSON in the request body. The schema should expect
+            a dictionary, where the keys are the names of the arguments. If
+            a function argument has a default value, it may be marked as
+            optional in the schema.
 
-            If this is omitted, ``moc-rest`` will generate a schema which
-            verifies that all of the expected arguments exist and are strings
-            (see below).
-
-            ``schema`` MUST ensure that none of the arguments in ``path`` are
-            also found in the body of the request.
-
-    Any parameters to the function not designated in the url will be pulled
-    from a json object in the body of the requests.
+            Any arguments not found in the path will be assumed to be keys in
+            a JSON object in the body of the request. It is an error for an
+            argument to appear in both the request body and the path; such
+            requests will be rejected prior to invoking the schema.
 
     For example, given::
 
-        @rest_call('POST', '/some-url/<bar>/<baz>')
+        @rest_call('POST', '/some-url/<bar>/<baz>', Schema({
+            'bar': basestring, 'baz': basestring,  'quux': basestring
+        }))
         def foo(bar, baz, quux):
             pass
 
@@ -106,31 +164,12 @@ def rest_call(method, path, schema=None):
           whose second is an integer (the status code).
     """
     def register(f):
-        if schema is None:
-            _schema = _make_schema_for(f)
-        else:
-            _schema = schema
         app.add_url_rule(path,
                          f.__name__,
-                         _rest_wrapper(f, _schema),
+                         _rest_wrapper(f, schema),
                          methods=[method])
         return f
     return register
-
-
-def _make_schema_for(func):
-    """Build a default schema for the api function `func`.
-
-    `_make_schema_for` will build a schema to validate the arguments to an
-    API call, which will expect each argument to be a string. Any arguments
-    not found in the url will be pulled from a JSON object in the body of a
-    request.
-
-    If all of the arguments to `func` are accounted for by `path`,
-    `_make_schema_for` will return `None` instead.
-    """
-    argnames, _, _, _ = inspect.getargspec(func)
-    return Schema(dict((name, basestring) for name in argnames))
 
 
 def _do_validation(schema, kwargs):
@@ -141,49 +180,33 @@ def _do_validation(schema, kwargs):
     `kwargs` should be the arguments to the API call pulled from the URL.
 
     If the schema validates, this will return a dictionary of *all* of the
-    arguments to the function, both from the URL and the body. The argument
-    `kwargs` may be distructively updated.
+    arguments to the function, both from the URL and the body.
 
     If the schema does not validate, this will raise an instance of
     `ValidationError`.
     """
 
-    def _validates(value):
-        """Return True if `schema` validates `value`, False otherwise.
-
-        The schema library's `validate` method raises an exception, which is
-        nice for short-circuting when just doing a simple check, but a bit
-        awkward in more complex cases like the below.
-        """
+    if flask.request.data == '':
+        # No request body
+        final_kwargs = {}
+    else:
         try:
-            schema.validate(value)
-        except SchemaError:
-            return False
-        return True
-
-    if schema is None or _validates(kwargs):
-        return kwargs
-
-    # One innocuous reason validation can fail is simply that we
-    # need parameters from the body (in json). Let's get those and
-    # try again.
-    #
-    # Without `force=True`, this will fail unless the
-    # "Content-Type" header is set to "application/json". We'll be
-    # a little more lienient here; we can discuss whether we want
-    # to tighten this up later, but this makes mucking around with
-    # curl less annoying, and is consistent with pre-flask
-    # behavior.
-    body = flask.request.get_json(force=True)
+            final_kwargs = json.loads(flask.request.data)
+        except ValueError:
+            raise ValidationError("The request body is not valid JSON")
 
     validation_error = ValidationError(
-        "The request body %r is not valid for "
-        "this request." % body)
-    for k in body.keys():
-        if k in kwargs:
-            raise validation_error  # Duplicate key in body + url
-        kwargs[k] = body[k]
-    if not _validates(kwargs):
+        "The request body is not valid for "
+        "this request.")
+
+    for k in kwargs.keys():
+        if k in final_kwargs:
+            raise validation_error
+        final_kwargs[k] = kwargs[k]
+
+    try:
+        return schema.validate(final_kwargs)
+    except SchemaError:
         # It would be nice to return a more helpful error message
         # here, but it's a little awkward to extract one from the
         # schema library. You can easily get something like:
@@ -193,13 +216,13 @@ def _do_validation(schema, kwargs):
         # which, while fairly clear and helpful, is obviously
         # talking about python types, which is gross.
         raise validation_error
-    return kwargs
 
 
 def _rest_wrapper(f, schema):
     """Return a wrapper around `f` that does the following:
 
     * Validate the current request agains the schema.
+    * Invoke the authentication backend
     * Implement the exception handling described in the documentation to
       `rest_call`.
     * Convert `None` return values to empty bodies.
@@ -211,9 +234,8 @@ def _rest_wrapper(f, schema):
         kwargs = _do_validation(schema, kwargs)
 
         init_auth()
-        username = auth.get_auth_backend().get_user() or '(guest)'
-        logger.info('%s - API call: %s(%s)' %
-                    (username, f.__name__, _format_arglist(**kwargs)))
+        logger.info('API call: %s(%s)' %
+                    (f.__name__, _format_arglist(**kwargs)))
 
         ret = f(**kwargs)
         if ret is None:

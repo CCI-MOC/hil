@@ -5,11 +5,14 @@ Includes API calls for managing users.
 from haas import api, model, auth
 from haas.model import db
 from haas.auth import get_auth_backend
-from haas.rest import rest_call, local
+from haas.rest import rest_call, local, ContextLogger
 from haas.errors import *
 from passlib.hash import sha512_crypt
 from schema import Schema, Optional
 import flask
+import logging
+
+logger = ContextLogger(logging.getLogger(__name__), {})
 
 
 class User(db.Model):
@@ -53,6 +56,7 @@ user_projects = db.Table('user_projects',
 
 
 @rest_call('PUT', '/auth/basic/user/<user>', schema=Schema({
+    'user': basestring,
     'password': basestring,
     Optional('is_admin'): bool,
 }))
@@ -72,7 +76,7 @@ def user_create(user, password, is_admin=False):
     db.session.commit()
 
 
-@rest_call('DELETE', '/auth/basic/user/<user>')
+@rest_call('DELETE', '/auth/basic/user/<user>', Schema({'user': basestring}))
 def user_delete(user):
     """Delete user.
 
@@ -88,7 +92,10 @@ def user_delete(user):
     db.session.commit()
 
 
-@rest_call('POST', '/auth/basic/user/<user>/add_project')
+@rest_call('POST', '/auth/basic/user/<user>/add_project', Schema({
+    'user': basestring,
+    'project': basestring,
+}))
 def user_add_project(user, project):
     """Add a user to a project.
 
@@ -104,7 +111,10 @@ def user_add_project(user, project):
     db.session.commit()
 
 
-@rest_call('POST', '/auth/basic/user/<user>/remove_project')
+@rest_call('POST', '/auth/basic/user/<user>/remove_project', Schema({
+    'user': basestring,
+    'project': basestring,
+}))
 def user_remove_project(user, project):
     """Remove a user from a project.
 
@@ -133,15 +143,11 @@ class DatabaseAuthBackend(auth.AuthBackend):
         user = api._must_find(User, authorization.username)
         if user.verify_password(authorization.password):
             local.auth = user
+            logger.info("Successful authentication for user %r" % user.label)
             return True
         else:
+            logger.info("Failed authentication for user %r" % user.label)
             return False
-
-    def get_user(self):
-        if hasattr(local, 'auth') and local.auth:
-            return local.auth.label
-        else:
-            return None
 
     def _have_admin(self):
         user = local.auth

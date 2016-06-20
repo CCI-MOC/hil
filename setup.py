@@ -61,17 +61,37 @@ setup(name='haas',
           'haas.ext.switches': ['migrations/*/*.py'],
       },
       zip_safe=False,  # migrations folder needs to be extracted to work.
+
+      # A note on version constraints: most python packages follow some version
+      # of [semver][1], and the [python packaging guide][2] recommends this. We
+      # assume this scheme unless a package indicates something else.
+      #
+      # The pocoo.org packages (Werkzeug, Flask...) seem to follow the
+      # patch-level release semantics for their 0.x releases, even though the
+      # semver spec doesn't require it.
+      #
+      # Our general policy is this: if we can use the semver semantics to
+      # derive compatibility information, we specify a minimum version that
+      # we've tested against, with an upper bound that guarantees backwards
+      # compatibility according to semver. If we can't (either because the
+      # package doesn't follow semver, or is 0.x and thus has no
+      # compatibility guarantees), we pin the exact version.
+      #
+      # [1]: http://semver.org
+      # [2]: https://packaging.python.org/en/latest/distributing/#choosing-a-versioning-scheme
       install_requires=['Flask-SQLAlchemy>=2.1,<3.0',
                         'Flask-Migrate>=1.8,<2.0',
                         'Flask-Script>=2.0.5,<3.0',
                         'Werkzeug>=0.9.4,<0.10',
                         'Flask>=0.10.1,<0.11',
                         'schema==0.3.1',
-                        'importlib==1.0.3',
-                        'passlib==1.6.2',
-                        'pexpect==3.3',
-                        'requests==2.4.1',
+                        'importlib>=1.0.3,<2.0',
+                        'passlib>=1.6.2,<2.0',
+                        'pexpect>=3.3,<4.0',
+                        'requests>=2.4.1,<3.0',
                         'pytest>=2.6.2,<3.0',
-                        'pytest-cov==1.8.0',
-                        'pytest-xdist',
+                        'pytest-cov>=1.8.0,<2.0',
+                        'pytest-xdist>=1.14,<2.0',
+                        'requests_mock>=1.0.0,<2.0',
+                        'lxml>=3.6.0,<4.0',
                         ])

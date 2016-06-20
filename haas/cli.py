@@ -401,6 +401,17 @@ def switch_register(switch, subtype, *args):
             sys.stderr.write('ERROR: subtype '+subtype+' requires exactly 3 arguments\n')
             sys.stderr.write('<hostname> <username> <password>\n')
             return
+    elif subtype == "brocade":
+        if len(args) == 4:
+            switchinfo = { "type": switch_api+subtype, "hostname": args[0],
+                           "username": args[1], "password": args[2],
+                           "interface_type": args[3] }
+        else:
+            sys.stderr.write('ERROR: subtype '+ subtype+' requires exactly 4 arguments\n')
+            sys.stderr.write('<hostname> <username> <password> <interface_type>\n')
+            sys.stderr.write('NOTE: interface_type refers to the speed of the switchports\n')
+            sys.stderr.write('ex. TenGigabitEthernet, FortyGigabitEthernet, etc.\n')
+            return
     else:
         sys.stderr.write('ERROR: Invalid subtype supplied\n')
         return
@@ -413,6 +424,11 @@ def switch_delete(switch):
     url = object_url('switch', switch)
     do_delete(url)
 
+@cmd
+def list_switches():
+    """List all switches"""
+    url = object_url('switches')
+    do_get(url)
 
 @cmd
 def port_register(switch, port):
