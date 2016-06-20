@@ -726,6 +726,18 @@ def switch_delete_port(switch, port):
     db.session.delete(port)
     db.session.commit()
 
+@rest_call('GET', '/switches', Schema({}))
+def list_switches():
+    """List all switches.
+
+    Returns a JSON array of strings representing a list of switches.
+
+    Example:  '["cisco3", "brocade1", "mock2"]'
+    """
+    get_auth_backend().require_admin()
+    switches = model.Switch.query.all()
+    snames = sorted([s.label for s in switches])
+    return json.dumps(snames)
 
 @rest_call('POST', '/switch/<switch>/port/<path:port>/connect_nic', Schema({
     'switch': basestring,

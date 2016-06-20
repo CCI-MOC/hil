@@ -214,6 +214,7 @@ class Brocade(Switch):
             vlan: vlan to set as the native vlan
         """
         self._set_mode(interface, 'trunk')
+        self._disable_native_tag(interface)
         url = self._construct_url(interface, suffix='trunk')
         payload = '<trunk><native-vlan>%s</native-vlan></trunk>' % vlan
         requests.put(url, data=payload, auth=self._auth)
@@ -226,6 +227,17 @@ class Brocade(Switch):
         """
         url = self._construct_url(interface, suffix='trunk/native-vlan')
         requests.delete(url, auth=self._auth)
+
+    def _disable_native_tag(self, interface):
+        """ Disable tagging of the native vlan
+
+        Args:
+            interface: interface to disable the native vlan tagging of
+
+        """
+        url = self._construct_url(interface, suffix='trunk/tag/native-vlan')
+        response = requests.delete(url, auth=self._auth)
+
 
     def _construct_url(self, interface, suffix=None):
         """ Construct the API url for a specific interface appending suffix.
