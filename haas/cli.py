@@ -26,6 +26,21 @@ import schema
 
 from functools import wraps
 
+## Hook to the client library
+from haas.client.auth import *
+from haas.client.client import Client
+
+
+ep = "http://127.0.0.1:5000" or os.environ.get('HAAS_ENDPOINT')
+username = "jil" or os.environ.get('HAAS_USERNAME')
+password = "tumbling" or os.environ.get('HAAS_PASSWORD')
+
+
+auth = auth_db(username, password)
+
+C = Client(ep, auth) #Initializing client library
+
+
 command_dict = {}
 usage_dict = {}
 MIN_PORT_NUMBER = 1
@@ -454,11 +469,13 @@ def port_detach_nic(switch, port):
     url = object_url('switch', switch, 'port', port, 'detach_nic')
     do_post(url)
 
-@cmd
+#@cmd
 def list_free_nodes():
     """List all free nodes"""
-    url = object_url('free_nodes')
-    do_get(url)
+    q = C.node.free_list
+    sys.stdout.write(q) 
+#    url = object_url('free_nodes')
+#    do_get(url)
 
 @cmd
 def list_project_nodes(project):
