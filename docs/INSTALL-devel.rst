@@ -2,26 +2,12 @@ Dependencies:
 =============
 There are a few things that HaaS expects the operating system to have::
 
-  yum install bridge-utils
-  yum install gcc
-  yum install httpd
-  yum install ipmitool
-  yum install libvirt
-  yum install libxml2-devel
-  yum install libxslt-devel 
-  yum install mod_wsgi
-  yum install net-tools
-  yum install python-pip
-  yum install python-psycopg2
-  yum install python-virtinst
-  yum install python-virtualenv
-  yum install qemu-kvm
-  yum install telnet
-  yum install vconfig
-  yum install virt-install
+  yum install bridge-utils  gcc  httpd  ipmitool libvirt libxml2-devel  libxslt-devel  mod_wsgi \
+  net-tools python-pip python-psycopg2 python-virtinst python-virtualenv qemu-kvm telnet vconfig virt-install
 
 
-HaaS also expects there to be a database.  Currently, HaaS supports SQLite and PostgreSQL.  Details to setup a database can be found in `INSTALL.rst <INSTALL.rst>`_
+HaaS also expects there to be a database.  Currently, HaaS supports SQLite and PostgreSQL.  For instruction to set up a database see section ''Setting up the Database''
+
 
 Getting Started:
 ================
@@ -36,7 +22,7 @@ environment::
 
   virtualenv .venv
 
-Enter the environment (do this each time start)::
+Enter the environment (do this every time you start working with HaaS dev environment)::
 
   source .venv/bin/activate
 
@@ -99,19 +85,32 @@ configuration file ``haas.cfg``. There are two examples for you to work from,
 ``examples/haas.cfg`` which is more production oriented.  These config
 files are well commented; read them carefully.
 
-HaaS can be configured to not perform state-changing operations on nodes,
+HaaS can be configured using ``haas.cfg`` to not perform state-changing operations on nodes,
 headnodes and networks, allowing developers to run and test parts of a haas
 server without requiring physical hardware. To suppress actual node and headnode
-operations, set ``dry_run = True`` in the ``[devel]`` section. For suppressing
-actual network switch operations, use the ``mock`` switch driver.
+operations, set ``dry_run = True`` in the ``[devel]`` section. 
+
+Most customization require including directives under section ``[extensions]``
+
+For suppressing actual network switch operations, use the ``mock`` switch driver :: 
+  haas.ext.switches.mock =
+
+You can choose to disable authentication mechanism by setting::
+  haas.ext.auth.null =
+
+To enable authentication mechanism, set appropriate authentication backend.
+Authentication directives are mutually exclusive. To choose database as an 
+authentication backend::
+  haas.ext.auth.database =
+
 
 Next initialize the database with the required tables::
 
   haas-admin db create
   
-Run the server with 
+Run the server with the port number as defined in ``haas.cfg``
 
-  haas serve 
+  haas serve <port no> 
   
 and in a separate window terminal
 
