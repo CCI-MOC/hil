@@ -804,7 +804,7 @@ def list_nodes(is_free):
     
     Example:  '["node1", "node2", "node3"]'
     """
-    if is_free is "free": 
+    if is_free == "free": 
         nodes = model.Node.query.filter_by(project_id=None).all()
     else:     
         nodes = model.Node.query.all()
