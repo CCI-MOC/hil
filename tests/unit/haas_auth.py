@@ -44,7 +44,7 @@ pytestmark = pytest.mark.usefixtures('configure',
 def test_require_auth():
     """require_authenticate=True should deny calls with "no special access."
 
-    This is the default setting. We use list_free_nodes as an example here.
+    This is the default setting. We use list_nodes free as an example here.
     """
     auth_backend = get_auth_backend()
     auth_backend.set_auth_success(False)

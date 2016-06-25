@@ -329,11 +329,12 @@ Authorization requirements:
 
 * Access to the project to which `<node>` is assigned (if any) or administrative access.
 
-### list_free_nodes
+### list_nodes
 
-`GET /free_nodes`
+`GET /nodes/<is_free>`
 
-Return a list of free/available nodes.
+Return a list of all nodes or free/available nodes. The value of `is_free` 
+can be `all` to return all nodes or `free` to return free/available nodes.
 
 Response body:
 
