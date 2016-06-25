@@ -49,5 +49,5 @@ def test_require_auth():
     auth_backend = get_auth_backend()
     auth_backend.set_auth_success(False)
     client = app.test_client()
-    resp = client.get('/free_nodes')
+    resp = client.get('/node/free')
     assert resp.status_code == 401
