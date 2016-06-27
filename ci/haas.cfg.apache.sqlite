@@ -3,7 +3,7 @@
 log_level = debug
 
 [auth]
-require_authentication = False
+require_authentication = True
 
 [headnode]
 trunk_nic = eth0
