@@ -93,7 +93,7 @@ one exception is NICs, where the label is unique only on a per-node basis.
 
     # Query interface
 
-    list_node                  <is_free>
+    list_nodes                 <is_free>
     list_project_nodes         <project>
     list_project_networks      <project>
     list_project_headnodes     <project>
