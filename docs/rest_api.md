@@ -331,7 +331,7 @@ Authorization requirements:
 
 ### list_nodes
 
-`GET /nodes/<is_free>`
+`GET /node/<is_free>`
 
 Return a list of all nodes or free/available nodes. The value of `is_free` 
 can be `all` to return all nodes or `free` to return free/available nodes.
