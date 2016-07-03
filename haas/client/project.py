@@ -15,19 +15,12 @@ class Project(ClientBase):
             elif q.status_code == 401:
                 raise AuthenticationError("Make sure credentials match chosen authentication backend.")
 
-        def _for_project(self, project_name):
-            """ Lists all nodes allocated to a given <project> """
-
-            self.project_name = project_name
-            project_root = "/project/"+self.project_name
-            return project_root
-
         def nodes_in(self, project_name):
             """ Lists nodes allocated to project <project_name> """
             self.project_name = project_name
-            base_url = self. _for_project(self.project_name)
-            node_list = base_url+"/nodes"
-            url = self.object_url(node_list)
+            l = [ 'project', self.project_name, 'nodes' ]
+            custom_url = "/"+"/".join(l)
+            url = self.object_url(custom_url)
             q = requests.get(url, headers={"Authorization": "Basic %s" % self.auth})
             if q.ok:
                 return q.json()
@@ -40,9 +33,9 @@ class Project(ClientBase):
         def networks_in(self, project_name):
             """ Lists nodes allocated to project <project_name> """
             self.project_name = project_name
-            base_url = self. _for_project(self.project_name)
-            node_list = base_url+"/networks"
-            url = self.object_url(node_list)
+            l = [ 'project', self.project_name, 'nodes' ]
+            custom_url = "/"+"/".join(l)
+            url = self.object_url(custom_url)
             q = requests.get(url, headers={"Authorization": "Basic %s" % self.auth})
             if q.ok:
                 return q.json()

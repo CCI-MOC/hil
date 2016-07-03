@@ -210,8 +210,8 @@ def user_delete(username):
 @cmd
 def list_projects():
     """List all projects"""
-    url = object_url('projects')
-    do_get(url)
+    q = C.project.list()
+    sys.stdout.write('%s Projects :    ' %len(q) + " ".join(q) + '\n')
 
 @cmd
 def user_add_project(user, project):
@@ -442,8 +442,10 @@ def switch_delete(switch):
 @cmd
 def list_switches():
     """List all switches"""
-    url = object_url('switches')
-    do_get(url)
+    q = C.switch.list()
+    sys.stdout.write('%s switches :    ' %len(q) + " ".join(q) + '\n')
+#    url = object_url('switches')
+#    do_get(url)
 
 @cmd
 def port_register(switch, port):
@@ -469,19 +471,21 @@ def port_detach_nic(switch, port):
     url = object_url('switch', switch, 'port', port, 'detach_nic')
     do_post(url)
 
-#@cmd
+@cmd
 def list_free_nodes():
     """List all free nodes"""
-    q = C.node.free_list
-    sys.stdout.write(q) 
-#    url = object_url('free_nodes')
-#    do_get(url)
+    q = C.node.free_list()
+    sys.stdout.write('%s Nodes available in free pool:    ' %len(q) + " ".join(q) + '\n')
 
 @cmd
 def list_project_nodes(project):
     """List all nodes attached to a <project>"""
-    url = object_url('project', project, 'nodes')
-    do_get(url)
+    q = C.project.nodes_in(project)
+    sys.stdout.write('Nodes allocated to %s:    ' %project + " ".join(q) + '\n')
+#    print q
+
+#    url = object_url('project', project, 'nodes')
+#    do_get(url)
 
 @cmd
 def list_project_networks(project):
