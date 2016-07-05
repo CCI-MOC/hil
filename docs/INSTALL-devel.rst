@@ -6,7 +6,157 @@ There are a few things that HaaS expects the operating system to have::
   net-tools python-pip python-psycopg2 python-virtinst python-virtualenv qemu-kvm telnet vconfig virt-install
 
 
-HaaS also expects there to be a database.  Currently, HaaS supports SQLite and PostgreSQL.  For instruction to set up a database see section ''Setting up the Database''
+HaaS also expects there to be a database.  Currently, HaaS supports SQLite and PostgreSQL.  
+If you choose to use PostgreSQL database it is recommended to create a new system user 
+with a separate home directory. This user will be configured to control the haas database.
+The development environment will be created in its home directory.
+
+Setting PostgreSQL for development environment:
+================================================
+
+If you choose to use sqlite database, skip this section and go to `Getting Started`
+
+For setting up PostgreSQL, you will have to install the requisite packages on your system.
+Make sure your account can `sudo` to execute the following commands.
+
+Part 1: Install PostgreSQL server. 
+----------------------------------
+
+Initialize the system. Configure PostgreSQL to allow password authentication.
+
+Install the requisite packages on your server::
+
+  sudo yum install postgresql-server postgresql-contrib -y
+
+
+Initialize postgresql::
+
+  sudo postgresql-setup initdb
+
+
+Replace the term `ident` from following lines in file 
+`/var/lib/pgsql/data/pg_hba.conf` with `md5`.
+
+Before::
+
+  # "krb5", "ident", "peer", "pam", "ldap", "radius" or "cert".  Note that
+  host    all             all             127.0.0.1/32            ident
+  host    all             all             ::1/128                 ident
+  #host    replication     postgres        127.0.0.1/32            ident
+  #host    replication     postgres        ::1/128                 ident
+
+After::
+
+  # "krb5", "ident", "peer", "pam", "ldap", "radius" or "cert".  Note that
+  host    all             all             127.0.0.1/32            md5
+  host    all             all             ::1/128                 md5
+  #host    replication     postgres        127.0.0.1/32            ident
+  #host    replication     postgres        ::1/128                 ident
+
+
+Start postgresql service::
+
+  $ sudo systemctl start postgresql
+  $ sudo systemctl enable postgresql
+
+
+Part 2: Create a database and database role.
+============================================
+
+Setting up development environment with PostgreSQL backend becomes 
+easy with a dedicated user controlling the database as well as the 
+development environment.
+
+Let that username be `haas_dev`.
+For simplicity we will use the same name for database and database role.
+
+Create a new user on your system::
+  
+  useradd -m -d /home/haas_dev -s /bin/bash -c "for HaaS development" haas_dev
+
+This will create a `haas_dev` user with following attributes::
+  
+  haas_dev:x:1002:1002:for HaaS development:/home/haas_dev:/bin/bash
+
+exact uid/gid may vary depending on your system. 
+
+Switch to the `haas_dev` user::
+  sudo su - haas_dev
+
+Setup database and role to control it.
+=============================================
+
+Create database named `haas_dev` owned by user also named as `haas_dev`.
+1. Create a database role named `haas_dev` with priviledges to:**
+ `-r` create roles
+ `-d` create databases and
+ `-P` will prompt for the password of the new user.
+   This is necessary since we have configured postgreSQL to use password authentication::
+
+   sudo -i -u postgres
+   -bash-4.2$ createuser -r -d -P haas_dev
+   Enter password for new role:  <Input password for database role haas>
+   Enter it again: <Retype password for role haas>
+
+
+Confirm that the role with requisite privileges is created as `postgres` user::
+
+  -bash-4.2$ psql -c '\dg'
+                             List of roles
+   Role name |                   Attributes                   | Member of
+  -----------+------------------------------------------------+-----------
+   haas_dev      | Create role, Create DB                         | {}
+   postgres  | Superuser, Create role, Create DB, Replication | {}
+
+
+for some reason if you wish to delete the user. do the following **as postgres user**:
+
+  dropuser haas
+
+**Note**: Make sure that the database role you create corresponds to an existing system user.
+eg. There has to be a system user `haas` to access database named `haas` as database role named `haas`.
+
+
+Create database `haas_dev` owned by database role `haas_dev`::
+
+  sudo -i -u haas_dev
+  -bash-4.2$ createdb haas
+
+Confirm it created a database named `haas_dev` and it is owned by `haas_dev`::
+
+```
+ psql -c '\l'
+                                  List of databases
+    Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges
+ -----------+----------+----------+-------------+-------------+-----------------------
+  haas_dev  | haas_dev | UTF8     | en_US.UTF-8 | en_US.UTF-8 |
+  postgres  | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |
+  template0 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
+            |          |          |             |             | postgres=CTc/postgres
+  template1 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
+            |          |          |             |             | postgres=CTc/postgres
+```
+
+Finally:
+========
+
+If you have followed all steps so far.
+Put following string in `haas.cfg` under section `[database]`
+
+```
+uri = postgresql://haas_dev:<clear text password >@localhost:5432/haas_dev
+```
+
+It follows the format: `postgresql://<user>:<password>@<address>/<dbname>`
+where ``<user>`` is the name of the postgres user you created, ``<password>`` is
+its password, ``<dbname>`` is the name of the database you created, and
+``<address>`` is the address which haas should use to connect to postgres (In a
+typical default postgres setup, the right value is ``localhost``).
+
+
+Continue with installation steps in the next section.
+
+
 
 
 Getting Started:
@@ -74,7 +224,6 @@ before installing ``psycopg2`` in the virtualenv for HaaS::
 
   pip install psycopg2
 
-After this follow instructions provided in `Install_configure_postgreSQL_CENTOS7.md <Install_configure_postgreSQL_CENTOS7.md>`_
 
 Configuring HaaS
 ================
