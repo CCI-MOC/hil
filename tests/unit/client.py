@@ -53,10 +53,6 @@ def configure():
     config_testsuite()
     config_merge({
         'extensions': {
-            'haas.ext.auth.mock'  : '',
-# This extension is enabled by default in the tests, so we need to
-# disable it explicitly:
-            'haas.ext.auth.null': None,
             'haas.ext.switches.mock': '',
             'haas.ext.obm.ipmi': '',
             'haas.ext.obm.mock': '',
@@ -88,42 +84,31 @@ def test_auth_db():
     assert auth.decode('base64', 'strict') == (":").join([username, password])
 
 
-def test_init_error():
-    try:
-        x = ClientBase()
-    except LookupError:
-        assert True
+class Test_ClientBase:
+    """ When the username, password is not defined
+    It should raise a LookupError
+    """
+
+    def test_init_error(self):
+        try:
+            x = ClientBase()
+        except LookupError:
+            assert True
+
+    def test_correct_init(self):
+        x = ClientBase(ep, 'some_base64_string')
+        assert x.endpoint == "http://127.0.0.1" 
+        assert x.auth == "some_base64_string"
+
+    def test_object_url(self):
+        x = ClientBase(ep, 'some_base64_string')
+        y = x.object_url('abc', '123', 'xy23z')
+        assert y == 'http://127.0.0.1/abc/123/xy23z' 
 
 
-def test_correct_init():
-    x = ClientBase(ep, 'some_base64_string')
-    assert x.endpoint == "http://127.0.0.1"
-    assert x.auth == "some_base64_string"
-
-def test_object_url():
-    x = ClientBase(ep, 'some_base64_string')
-    y = x.object_url('abc', '123', 'xy23z')
-    assert y == 'http://127.0.0.1/abc/123/xy23z'
 
 
 
-#class TestNodeOperations:
-#    """Tests for the haas.client.node.* operations. """
-#
-#    def test_list_free_nodes(self):
-#        api.node_register('master-control-program', obm={
-#            "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-#            "host": "ipmihost",
-#            "user": "root",
-#            "password": "tapeworm"})
-#        api.node_register('robocop', obm={
-#            "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-#            "host": "ipmihost",
-#            "user": "root",
-#            "password": "tapeworm"})
-#        api.node_register('data', obm={
-#            "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-#            "host": "ipmihost",
-#            "user": "root",
-#            "password": "tapeworm"})
+
+
 
