@@ -490,20 +490,27 @@ def list_project_nodes(project):
 @cmd
 def list_project_networks(project):
     """List all networks attached to a <project>"""
-    url = object_url('project', project, 'networks')
-    do_get(url)
+    q = C.project.networks_in(project)
+    sys.stdout.write("Networks allocated to {}\t:   {}\n".format(project, " ".join(q)))
+#    url = object_url('project', project, 'networks')
+#    do_get(url)
 
 @cmd
 def show_network(network):
     """Display information about <network>"""
-    url = object_url('network', network)
-    do_get(url)
+    q = C.project.networks_in(project)
+    sys.stdout.write("Networks allocated to {}\t:   {}\n".format(project, " ".join(q)))
+#    url = object_url('network', network)
+#    do_get(url)
 
 @cmd
 def show_node(node):
-    """Display information about a <node>"""
-    url = object_url('node', node)
-    do_get(url)
+    """Display information about a <node>
+    FIXME: Recursion should be implemented to the output.
+    """
+    q = C.node.show_node(node)
+    for item in q.items():
+        sys.stdout.write("{}\t  :  {}\n".format(item[0], item[1]))
 
 @cmd
 def list_project_headnodes(project):

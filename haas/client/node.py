@@ -19,9 +19,7 @@ class Node(ClientBase):
         """ Shows attributes of a given node """
 
         self.node_name = node_name
-        l = ['node', node_name ]
-        custom_url = "/"+"/".join(l)
-        url = self.object_url(custom_url)
+        url = self.object_url('node', node_name)
         q = requests.get(url, headers={"Authorization": "Basic %s" %self.auth})
         return q.json()
 

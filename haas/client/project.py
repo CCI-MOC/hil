@@ -18,9 +18,7 @@ class Project(ClientBase):
         def nodes_in(self, project_name):
             """ Lists nodes allocated to project <project_name> """
             self.project_name = project_name
-            l = [ 'project', self.project_name, 'nodes' ]
-            custom_url = "/"+"/".join(l)
-            url = self.object_url(custom_url)
+            url = self.object_url('project', self.project_name, 'nodes')
             q = requests.get(url, headers={"Authorization": "Basic %s" % self.auth})
             if q.ok:
                 return q.json()
@@ -33,9 +31,7 @@ class Project(ClientBase):
         def networks_in(self, project_name):
             """ Lists nodes allocated to project <project_name> """
             self.project_name = project_name
-            l = [ 'project', self.project_name, 'nodes' ]
-            custom_url = "/"+"/".join(l)
-            url = self.object_url(custom_url)
+            url = self.object_url('project', self.project_name, 'networks')
             q = requests.get(url, headers={"Authorization": "Basic %s" % self.auth})
             if q.ok:
                 return q.json()
