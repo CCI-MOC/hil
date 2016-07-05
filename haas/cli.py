@@ -476,9 +476,15 @@ def port_detach_nic(switch, port):
     do_post(url)
 
 @cmd
-def list_free_nodes():
-    """List all free nodes"""
-    url = object_url('free_nodes')
+def list_nodes(is_free):
+    """List all nodes or all free nodes
+    
+    <is_free> may be either "all" or "free", and determines whether
+        to list all nodes or all free nodes.
+    """
+    if is_free not in ('all', 'free'):
+        raise TypeError("is_free must be either 'all' or 'free'")     
+    url = object_url('node', is_free)
     do_get(url)
 
 @cmd
