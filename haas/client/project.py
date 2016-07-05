@@ -41,5 +41,3 @@ class Project(ClientBase):
                 raise NotFoundError("Project %s does not exist." % self.project_name)
 
 
-            
-
