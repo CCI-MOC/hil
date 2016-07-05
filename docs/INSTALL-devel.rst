@@ -34,8 +34,8 @@ Initialize postgresql::
   sudo postgresql-setup initdb
 
 
-Replace the term `ident` from following lines in file 
-`/var/lib/pgsql/data/pg_hba.conf` with `md5`.
+Replace the term **ident** from following lines in file 
+**/var/lib/pgsql/data/pg_hba.conf** with **md5**.
 
 Before::
 
@@ -88,11 +88,14 @@ Setup database and role to control it.
 =============================================
 
 Create database named `haas_dev` owned by user also named as `haas_dev`.
-1. Create a database role named `haas_dev` with priviledges to:**
- `-r` create roles
- `-d` create databases and
- `-P` will prompt for the password of the new user.
-   This is necessary since we have configured postgreSQL to use password authentication::
+
+1. Create a database role named `haas_dev` with priviledges to::
+ 
+   -r create roles
+   -d create databases and
+   -P will prompt for the password of the new user.
+   
+This is necessary since we have configured postgreSQL to use password authentication::
 
    sudo -i -u postgres
    -bash-4.2$ createuser -r -d -P haas_dev
