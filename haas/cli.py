@@ -499,10 +499,20 @@ def list_nodes(is_free):
     <is_free> may be either "all" or "free", and determines whether
         to list all nodes or all free nodes.
     """
-    if is_free not in ('all', 'free'):
-        raise TypeError("is_free must be either 'all' or 'free'")
-    url = object_url('node', is_free)
-    do_get(url)
+    q = C.node.list(is_free)
+    if is_free == 'all':
+        sys.stdout.write('All nodes {}\t:    {}\n'.format(len(q), " ".join(q)))
+    elif is_free == 'free':
+        sys.stdout.write('Free nodes {}\t:    {}\n'.format(len(q), " ".join(q)))
+    else:
+        sys.stdout.write('Error: {} is an invalid argument\n'.format(is_free))
+
+
+
+#    if is_free not in ('all', 'free'):
+#        raise TypeError("is_free must be either 'all' or 'free'")
+#    url = object_url('node', is_free)
+#    do_get(url)
 
 @cmd
 def list_project_nodes(project):
