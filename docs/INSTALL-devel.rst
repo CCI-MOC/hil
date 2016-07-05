@@ -2,7 +2,7 @@ Dependencies:
 =============
 There are a few things that HaaS expects the operating system to have::
 
-  yum install bridge-utils  gcc  httpd  ipmitool libvirt libxml2-devel  libxslt-devel  mod_wsgi \
+  yum install epel-release bridge-utils  gcc  httpd  ipmitool libvirt libxml2-devel  libxslt-devel  mod_wsgi \
   net-tools python-pip python-psycopg2 python-virtinst python-virtualenv qemu-kvm telnet vconfig virt-install
 
 
@@ -81,6 +81,7 @@ This will create a `haas_dev` user with following attributes::
 exact uid/gid may vary depending on your system. 
 
 Switch to the `haas_dev` user::
+
   sudo su - haas_dev
 
 Setup database and role to control it.
@@ -99,7 +100,7 @@ Create database named `haas_dev` owned by user also named as `haas_dev`.
    Enter it again: <Retype password for role haas>
 
 
-Confirm that the role with requisite privileges is created as `postgres` user::
+Confirm that the role with requisite privileges is created **as postgres user**::
 
   -bash-4.2$ psql -c '\dg'
                              List of roles
@@ -109,7 +110,7 @@ Confirm that the role with requisite privileges is created as `postgres` user::
    postgres  | Superuser, Create role, Create DB, Replication | {}
 
 
-for some reason if you wish to delete the user. do the following **as postgres user**:
+for some reason if you wish to delete the user. do the following **as postgres user**::
 
   dropuser haas
 
@@ -124,28 +125,27 @@ Create database `haas_dev` owned by database role `haas_dev`::
 
 Confirm it created a database named `haas_dev` and it is owned by `haas_dev`::
 
-```
- psql -c '\l'
+
+  psql -c '\l'
                                   List of databases
     Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges
- -----------+----------+----------+-------------+-------------+-----------------------
-  haas_dev  | haas_dev | UTF8     | en_US.UTF-8 | en_US.UTF-8 |
-  postgres  | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |
-  template0 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
-            |          |          |             |             | postgres=CTc/postgres
-  template1 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
-            |          |          |             |             | postgres=CTc/postgres
-```
+  -----------+----------+----------+-------------+-------------+-----------------------
+   haas_dev  | haas_dev | UTF8     | en_US.UTF-8 | en_US.UTF-8 |
+   postgres  | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |
+   template0 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
+             |          |          |             |             | postgres=CTc/postgres
+   template1 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
+             |          |          |             |             | postgres=CTc/postgres
+
 
 Finally:
 ========
 
 If you have followed all steps so far.
-Put following string in `haas.cfg` under section `[database]`
+Put following string in **haas.cfg** under section **[database]**::
 
-```
-uri = postgresql://haas_dev:<clear text password >@localhost:5432/haas_dev
-```
+  uri = postgresql://haas_dev:<clear text password >@localhost:5432/haas_dev
+
 
 It follows the format: `postgresql://<user>:<password>@<address>/<dbname>`
 where ``<user>`` is the name of the postgres user you created, ``<password>`` is
