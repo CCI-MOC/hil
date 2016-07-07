@@ -283,6 +283,9 @@ def node_connect_network(node, nic, network, channel=None):
 
     allocator = get_network_allocator()
 
+    if nic.port is None:
+        raise NotFoundError("No port is connected to this nic.")
+
     if nic.current_action:
         raise BlockedError("A networking operation is already active on the nic.")
 
