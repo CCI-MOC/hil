@@ -204,7 +204,7 @@ def node_power_cycle(node):
 @rest_call('POST', '/node/<node>/power_off')
 def node_power_off(node):
     db = model.Session()
-    node = _must_find(db, model.Node, node)
+    node = _must_find(model.Node, node)
     node.power_off()
 
 
