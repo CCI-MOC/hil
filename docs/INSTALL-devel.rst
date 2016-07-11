@@ -1,12 +1,15 @@
+Following guide covers setting up a developement environmnet for HAAS
+on a CentOS/RHEL based system.
+
 Dependencies: 
 =============
 There are a few things that HaaS expects the operating system to have::
 
-  yum install epel-release bridge-utils  gcc  httpd  ipmitool libvirt libxml2-devel  libxslt-devel  mod_wsgi \
-  net-tools python-pip python-psycopg2 python-virtinst python-virtualenv qemu-kvm telnet vconfig virt-install
+  yum install epel-release bridge-utils  gcc  httpd  ipmitool libvirt \
+  libxml2-devel  libxslt-devel  mod_wsgi net-tools python-pip python-psycopg2 \
+  python-virtinst python-virtualenv qemu-kvm telnet vconfig virt-install
 
-
-HaaS also expects there to be a database.  Currently, HaaS supports SQLite and PostgreSQL.  
+HaaS requires a database server and currently supports only SQLite and PostgreSQL.
 If you choose to use PostgreSQL database it is recommended to create a new system user 
 with a separate home directory. This user will be configured to control the haas database.
 The development environment will be created in its home directory.
@@ -14,7 +17,7 @@ The development environment will be created in its home directory.
 Setting PostgreSQL for development environment:
 ================================================
 
-If you choose to use sqlite database, skip this section and go to `Getting Started`
+If you choose to use sqlite database, skip this section and go to `Getting Started with HAAS Installation`_.
 
 For setting up PostgreSQL, you will have to install the requisite packages on your system.
 Make sure your account can `sudo` to execute the following commands.
@@ -61,7 +64,7 @@ Start postgresql service::
 
 
 Part 2: Create a database and database role.
-============================================
+--------------------------------------------
 
 Setting up development environment with PostgreSQL backend becomes 
 easy with a dedicated user controlling the database as well as the 
@@ -113,7 +116,7 @@ Confirm that the role with requisite privileges is created **as postgres user**:
    postgres  | Superuser, Create role, Create DB, Replication | {}
 
 
-for some reason if you wish to delete the user. do the following **as postgres user**::
+If you wish to delete the user. do the following **as postgres user**::
 
   dropuser haas
 
@@ -141,11 +144,11 @@ Confirm it created a database named `haas_dev` and it is owned by `haas_dev`::
              |          |          |             |             | postgres=CTc/postgres
 
 
-Finally:
-========
+Making HAAS aware of this setup
+===============================
 
 If you have followed all steps so far.
-Put following string in **haas.cfg** under section **[database]**::
+put following string in **haas.cfg** under section **[database]**::
 
   uri = postgresql://haas_dev:<clear text password >@localhost:5432/haas_dev
 
@@ -156,14 +159,16 @@ its password, ``<dbname>`` is the name of the database you created, and
 ``<address>`` is the address which haas should use to connect to postgres (In a
 typical default postgres setup, the right value is ``localhost``).
 
-
-Continue with installation steps in the next section.
-
+(Configuring other sections of **haas.cfg** is explained in section `Configuring HaaS`_.)  
 
 
+:Continue with installation steps in the next section.
 
-Getting Started:
-================
+
+
+
+Getting Started with HAAS Installation
+======================================
 First you will need to fork and clone the HaaS repo into your dev VM.::
 
   git clone https://github.com/**username**/haas.git
@@ -241,6 +246,7 @@ HaaS can be configured using ``haas.cfg`` to not perform state-changing operatio
 headnodes and networks, allowing developers to run and test parts of a haas
 server without requiring physical hardware. To suppress actual node and headnode
 operations, set ``dry_run = True`` in the ``[devel]`` section. 
+
 
 Most customization require including directives under section ``[extensions]``
 
