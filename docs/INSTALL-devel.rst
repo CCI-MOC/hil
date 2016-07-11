@@ -1,4 +1,4 @@
-Following guide covers setting up a developement environmnet for HAAS
+Following guide covers setting up a developement environment for HAAS
 on a CentOS/RHEL based system.
 
 Dependencies: 
