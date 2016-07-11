@@ -284,7 +284,7 @@ def node_connect_network(node, nic, network, channel=None):
     allocator = get_network_allocator()
 
     if nic.port is None:
-        raise NotFoundError("No port is connected to this nic.")
+        raise NotFoundError("No port is connected to given nic.")
 
     if nic.current_action:
         raise BlockedError("A networking operation is already active on the nic.")
@@ -804,14 +804,14 @@ def list_nodes(is_free):
     """List all nodes or all free nodes
 
     Returns a JSON array of strings representing a list of nodes.
-    
+
     Example:  '["node1", "node2", "node3"]'
     """
-    if is_free == "free": 
+    if is_free == "free":
         nodes = model.Node.query.filter_by(project_id=None).all()
-    else:     
+    else:
         nodes = model.Node.query.all()
-    
+
     nodes = sorted([n.label for n in nodes])
     return json.dumps(nodes)
 
