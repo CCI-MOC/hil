@@ -450,7 +450,7 @@ Create a file ``client_env`` with following entries::
 To get started with HaaS from your home dir do the following::
 
     source client_env
-    haas list_free_nodes
+    haas list_nodes all
 
 If you get an empty list ``[]`` as output then congratulations !! 
 At this point, you should have a functional HaaS service running!
