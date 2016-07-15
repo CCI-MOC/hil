@@ -587,6 +587,7 @@ def main():
     if len(sys.argv) < 2 or sys.argv[1] not in command_dict:
         # Display usage for all commands
         help()
+        sys.exit(1)
     else:
         setup_http_client()
         command_dict[sys.argv[1]](*sys.argv[2:])
