@@ -23,6 +23,7 @@ import requests
 import sys
 import urllib
 import schema
+import abc
 
 from functools import wraps
 
@@ -31,7 +32,54 @@ usage_dict = {}
 MIN_PORT_NUMBER = 1
 MAX_PORT_NUMBER = 2**16 - 1
 
+
+class HTTPClient(object):
+    """An HTTP client.
+
+    Makes HTTP requests on behalf of the HaaS CLI. Responsible for adding
+    authentication information to the request.
+    """
+
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
+    def request(method, url, data=None):
+        """Make an HTTP request
+
+        Makes an HTTP request on URL `url` with method `method` and request
+        body `data` (if supplied). May add authentication or other
+        backend-specific information to the request.
+
+        Parameters
+        ----------
+
+        method : str
+            The HTTP method to use, e.g. 'GET', 'PUT', 'POST'...
+        url : str
+            The URL to act on
+        data : str, optional
+            The body of the request
+
+        Returns
+        -------
+
+        requests.Response
+            The HTTP response
+        """
+
+
+class RequestsHTTPClient(requests.Session, HTTPClient):
+    """An HTTPClient which uses the requests library.
+
+    Note that this doesn't do anything over `requests.Session`; that
+    class already implements the required interface. We declare it only
+    for clarity.
+    """
+
+
+# An instance of HTTPClient, which will be used to make the request.
 http_client = None
+
 
 def cmd(f):
     """A decorator for CLI commands.
@@ -62,29 +110,28 @@ def cmd(f):
 
 
 def setup_http_client():
-    """Configure default settings for HTTP requests.
+    """Set `http_client` to a valid instance of `HTTPClient`
 
-    So far this is just auth; we detect which authentication options are
-    availabe and set the global variable `http_client` to an object which
-    implements an interface similar to the requests library. In particular,
-    it will implement the `request` method.
+    Sets http_client to an object which makes HTTP requests with
+    authentication. It chooses an authentication backend as follows:
 
-    It will try these options in order:
+    1. If the environment variables HAAS_USERNAME and HAAS_PASSWORD
+       are defined, it will use HTTP basic auth, with the corresponding
+       user name and password.
+    2. Oterwise, do not supply authentication information.
 
-        * Basic auth (username & password) via the HAAS_USERNAME and
-          HAAS_PASSWORD environment variables.
-        * No authentication.
+    This may be extended with other backends in the future.
     """
     global http_client
     # First try basic auth:
     basic_username = os.getenv('HAAS_USERNAME')
     basic_password = os.getenv('HAAS_PASSWORD')
     if basic_username is not None and basic_password is not None:
-        http_client = requests.Session()
+        http_client = RequestsHTTPClient()
         http_client.auth = (basic_username, basic_password)
         return
     # Fall back to no authentication:
-    http_client = requests.Session()
+    http_client = RequestsHTTPClient()
 
 
 
