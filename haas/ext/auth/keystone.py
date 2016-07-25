@@ -1,3 +1,7 @@
+"""Keystone authentication backend.
+
+This is a thin wrapper around the `keystonemiddleware` library.
+"""
 from keystonemiddleware.auth_token import filter_factory
 from flask import request
 from haas.flaskapp import app
