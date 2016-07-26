@@ -106,7 +106,7 @@ information view ``docs/logging.md``.
 
 
 ``haas.cfg`` file contains sensitive administrative information and should not be exposed to clients or 
-end_users. Therefore, after placing the file at ``/etc/haas.cfg`` its 
+end users. Therefore, after placing the file at ``/etc/haas.cfg`` its 
 permissions should be set to read-only and ownership set to ``${HAAS_USER}``
 From source directory of haas as user root do the following::
 
@@ -128,7 +128,7 @@ backend, which does no authentication or authorization checks. This can be
 useful for testing and experimentation but *should not* be used in production.
 You must enable exactly one auth backend.
 
-In productions system where non-null backend is active, end_users will have to include
+In productions system where non-null backend is active, end users will have to include
 a username and password as additional parameters in ``client_env`` file to be able to 
 communicate with the haas server. This is user/password should be registered with the 
 haas auth backend using haas.
@@ -154,8 +154,8 @@ Setting Up HaaS Database
 
 The only DBMS currently supported for production use is PostgreSQL. (SQLite is
 supported for development purposes *only*).
-There are many ways of setting up postgreSQL server. 
-`Install_configure_postgreSQL_CENTOS7.md <Install_configure_postgreSQL_CENTOS7.md>`_
+There are many ways of setting up PostgreSQL server. 
+`Install_configure_PostgreSQL_CENTOS7.md <Install_configure_PostgreSQL_CENTOS7.md>`_
 provides one way to accomplish this. 
 
 To create the database tables, first make sure ``haas.cfg`` is set up the way
@@ -437,7 +437,7 @@ HaaS Client:
 
 If your authentication backend is null, you only need to have the ``HAAS_ENDPOINT`` defined
 in the ``client_env``. In productions system where non-null backend is active, 
-end_users will have to include a username and password as additional parameters in ``client_env`` 
+end users will have to include a username and password as additional parameters in ``client_env`` 
 file to be able to communicate with the haas server. 
 If you created a admin user for haas as a part of `Setting Up HaaS Database` step, 
 you will have to pass those credentials to HaaS to be able to access, change state of HaaS.

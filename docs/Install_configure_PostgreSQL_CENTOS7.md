@@ -1,5 +1,5 @@
 
-Following steps will let you install, configure postgreSQL server and create a
+Following steps will let you install, configure PostgreSQL server and create a
 `haas` database for development or production version of HaaS on a 
 Centos - 7 server.
 
@@ -7,7 +7,7 @@ For simplicity of configuration and ease of maintenance we will use
 single name `haas` for creating a system user, database role and database name.
 This is merely a guideline for users new to database setup and administration.
 Experienced users are free to choose any other method that suits their need.
-The end goal is to have a way to have a working postgreSQL backend for `haas`
+The end goal is to have a way to have a working PostgreSQL backend for `haas`
 
 ## Part 1: Install PostgreSQL server. 
 
@@ -80,7 +80,7 @@ useradd haas -d /var/lib/haas -m -r
  `-r` create roles
  `-d` create databases and 
  `-P` will prompt for the password of the new user. 
-This is necessary since we have configured postgreSQL to use password authentication.
+This is necessary since we have configured PostgreSQL to use password authentication.
 
 ```
 sudo -i -u postgres

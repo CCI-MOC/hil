@@ -98,7 +98,7 @@ Create database named `haas_dev` owned by user also named as `haas_dev`.
    -d create databases and
    -P will prompt for the password of the new user.
    
-This is necessary since we have configured postgreSQL to use password authentication::
+This is necessary since we have configured PostgreSQL to use password authentication::
 
    sudo -i -u postgres
    -bash-4.2$ createuser -r -d -P haas_dev
@@ -197,7 +197,7 @@ Setting up the Database:
 ========================
 By default dev environment uses SQLite as a database, so if you're using it you can skip this section.
 
-If you wish to use postgreSQL instead, you may get an error ``psycopg2 package not found``.
+If you wish to use PostgreSQL instead, you may get an error ``psycopg2 package not found``.
   
 When you do ``haas-admin db create`` in the next step, you may need to install 
 following package on your system 
@@ -230,10 +230,10 @@ server without requiring physical hardware. To suppress actual node and headnode
 operations, set ``dry_run = True`` in the ``[devel]`` section. 
 
 
-If using postgreSQL as a database backend
+If using PostgreSQL as a database backend
 =========================================
 
-If you choose to use postgreSQL and did the necessary steps as described above,
+If you choose to use PostgreSQL and did the necessary steps as described above,
 put following string in **haas.cfg** under section **[database]**::
 
   uri = postgresql://haas_dev:<clear text password >@localhost:5432/haas_dev
@@ -282,7 +282,7 @@ Here is an example session, testing ``headnode_delete_hnic``::
 
 Additionally, before each commit, run the automated test suite with ``py.test
 tests/unit``. If at all possible, run the deployment tests as well (``py.test
-tests/deployment``), but this requires access to a sepcialized setup, so if the
+tests/deployment``), but this requires access to a specialized setup, so if the
 patch is sufficiently unintrusive it may be acceptable to skip this step.
 
 `testing.md <testing.md>`_ contains more information about testing HaaS.
