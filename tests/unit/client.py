@@ -29,7 +29,7 @@ from requests.exceptions import ConnectionError
 #from haas.client_lib.client_lib import hilClientLib
 ## Hook to the client library
 from haas.client.base import ClientBase
-from haas.client.auth import *
+from haas.client.auth import auth_db
 from haas.client.client import Client
 
 
@@ -53,6 +53,10 @@ def configure():
     config_testsuite()
     config_merge({
         'extensions': {
+# This extension is enabled by default in the tests, so we need to
+# disable it explicitly:
+            'haas.ext.auth.null': None,
+#            'haas.ext.auth.mock': '',
             'haas.ext.switches.mock': '',
             'haas.ext.obm.ipmi': '',
             'haas.ext.obm.mock': '',
@@ -104,6 +108,32 @@ class Test_ClientBase:
         x = ClientBase(ep, 'some_base64_string')
         y = x.object_url('abc', '123', 'xy23z')
         assert y == 'http://127.0.0.1/abc/123/xy23z' 
+
+
+class Test_queryProject:
+    """ Will test the query call list_projects."""
+
+    def test_list_projects(self):
+        api.project_create('proj1')
+        api.project_create('proj2')
+        api.project_create('proj3')
+        assert C.project.list() == "3 Projects :    proj1 proj2 proj3"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
