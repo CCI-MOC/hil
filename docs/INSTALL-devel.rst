@@ -1,4 +1,4 @@
-Following guide covers setting up a developement environment for HAAS
+Following guide covers setting up a developement environment for HaaS
 on a CentOS/RHEL based system.
 
 Dependencies: 
@@ -17,7 +17,7 @@ The development environment will be created in its home directory.
 Setting PostgreSQL for development environment:
 ================================================
 
-If you choose to use sqlite database, skip this section and go to `Getting Started with HAAS Installation`_.
+If you choose to use sqlite database, skip this section and go to `Getting Started with HaaS Installation`_.
 
 For setting up PostgreSQL, you will have to install the requisite packages on your system.
 Make sure your account can `sudo` to execute the following commands.
@@ -63,8 +63,8 @@ Start postgresql service::
   $ sudo systemctl enable postgresql
 
 
-Part 2: Create a database and database role.
---------------------------------------------
+Part 2: Create a system user, database and database role.
+---------------------------------------------------------
 
 Setting up development environment with PostgreSQL backend becomes 
 easy with a dedicated user controlling the database as well as the 
@@ -144,30 +144,12 @@ Confirm it created a database named `haas_dev` and it is owned by `haas_dev`::
              |          |          |             |             | postgres=CTc/postgres
 
 
-Making HAAS aware of this setup
-===============================
-
-If you have followed all steps so far.
-put following string in **haas.cfg** under section **[database]**::
-
-  uri = postgresql://haas_dev:<clear text password >@localhost:5432/haas_dev
+switch to user `haas_dev`.
+All subsequent installation steps assumes you are in the 
+home directory of `haas_dev` 
 
 
-It follows the format: `postgresql://<user>:<password>@<address>/<dbname>`
-where ``<user>`` is the name of the postgres user you created, ``<password>`` is
-its password, ``<dbname>`` is the name of the database you created, and
-``<address>`` is the address which haas should use to connect to postgres (In a
-typical default postgres setup, the right value is ``localhost``).
-
-(Configuring other sections of **haas.cfg** is explained in section `Configuring HaaS`_.)  
-
-
-:Continue with installation steps in the next section.
-
-
-
-
-Getting Started with HAAS Installation
+Getting Started with HaaS Installation
 ======================================
 First you will need to fork and clone the HaaS repo into your dev VM.::
 
@@ -246,6 +228,22 @@ HaaS can be configured using ``haas.cfg`` to not perform state-changing operatio
 headnodes and networks, allowing developers to run and test parts of a haas
 server without requiring physical hardware. To suppress actual node and headnode
 operations, set ``dry_run = True`` in the ``[devel]`` section. 
+
+
+If using postgreSQL as a database backend
+=========================================
+
+If you choose to use postgreSQL and did the necessary steps as described above,
+put following string in **haas.cfg** under section **[database]**::
+
+  uri = postgresql://haas_dev:<clear text password >@localhost:5432/haas_dev
+
+
+It follows the format: `postgresql://<user>:<password>@<address>/<dbname>`
+where ``<user>`` is the name of the postgres user you created, ``<password>`` is
+its password, ``<dbname>`` is the name of the database you created, and
+``<address>`` is the address which haas should use to connect to postgres (In a
+typical default postgres setup, the right value is ``localhost``).
 
 
 Most customization require including directives under section ``[extensions]``
