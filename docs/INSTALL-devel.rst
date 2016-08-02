@@ -197,10 +197,9 @@ Setting up the Database:
 ========================
 By default dev environment uses SQLite as a database, so if you're using it you can skip this section.
 
-If you wish to use PostgreSQL instead, you may get an error ``psycopg2 package not found``.
-  
-When you do ``haas-admin db create`` in the next step, you may need to install 
-following package on your system 
+If you wish to use PostgreSQL instead, you may get an error ``psycopg2 package not found``,
+when you do ``haas-admin db create`` in the next step.
+To avoid that problem, you may need to install following package on your system 
 
 CentOS::  
 
