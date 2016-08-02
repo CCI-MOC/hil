@@ -101,14 +101,14 @@ Create database named `haas_dev` owned by user also named as `haas_dev`.
 This is necessary since we have configured PostgreSQL to use password authentication::
 
    sudo -i -u postgres
-   -bash-4.2$ createuser -r -d -P haas_dev
+   $ createuser -r -d -P haas_dev
    Enter password for new role:  <Input password for database role haas>
    Enter it again: <Retype password for role haas>
 
 
 Confirm that the role with requisite privileges is created **as postgres user**::
 
-  -bash-4.2$ psql -c '\dg'
+  $ psql -c '\dg'
                              List of roles
    Role name |                   Attributes                   | Member of
   -----------+------------------------------------------------+-----------
@@ -118,7 +118,7 @@ Confirm that the role with requisite privileges is created **as postgres user**:
 
 If you wish to delete the user. do the following **as postgres user**::
 
-  dropuser haas
+  dropuser haas_dev
 
 **Note**: Make sure that the database role you create corresponds to an existing system user.
 eg. There has to be a system user `haas` to access database named `haas` as database role named `haas`.
@@ -127,12 +127,12 @@ eg. There has to be a system user `haas` to access database named `haas` as data
 Create database `haas_dev` owned by database role `haas_dev`::
 
   sudo -i -u haas_dev
-  -bash-4.2$ createdb haas
+  $ createdb haas
 
 Confirm it created a database named `haas_dev` and it is owned by `haas_dev`::
 
 
-  psql -c '\l'
+  $ psql -c '\l'
                                   List of databases
     Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges
   -----------+----------+----------+-------------+-------------+-----------------------
@@ -153,8 +153,8 @@ Getting Started with HaaS Installation
 ======================================
 First you will need to fork and clone the HaaS repo into your dev VM.::
 
-  git clone https://github.com/**username**/haas.git
-  cd haas
+  git clone https://github.com/**username**/hil
+  cd hil
 
 
 The first time you start working in the repository, set up a clean test
@@ -195,7 +195,7 @@ you may need to run::
 
 Setting up the Database:
 ========================
-By default dev environment uses SQLite as a database, so if you're using it you can skip this section.
+The default dev environment uses SQLite as a database, so if you're using it you can skip this section.
 
 If you wish to use PostgreSQL instead, you may get an error ``psycopg2 package not found``.
   
@@ -204,7 +204,7 @@ following package on your system
 
 CentOS::  
 
-  yum install postgresql-devel
+  sudo yum install postgresql-devel
 
 Ubuntu::
   
@@ -236,7 +236,7 @@ If using PostgreSQL as a database backend
 If you choose to use PostgreSQL and did the necessary steps as described above,
 put following string in **haas.cfg** under section **[database]**::
 
-  uri = postgresql://haas_dev:<clear text password >@localhost:5432/haas_dev
+  uri = postgresql://haas_dev:<clear text password>@localhost:5432/haas_dev
 
 
 It follows the format: `postgresql://<user>:<password>@<address>/<dbname>`
@@ -245,8 +245,8 @@ its password, ``<dbname>`` is the name of the database you created, and
 ``<address>`` is the address which haas should use to connect to postgres (In a
 typical default postgres setup, the right value is ``localhost``).
 
-
-Most customization require including directives under section ``[extensions]``
+Most customizations require including extension names within the ``[extensions]``
+section.
 
 For suppressing actual network switch operations, use the ``mock`` switch driver :: 
   haas.ext.switches.mock =
@@ -254,9 +254,10 @@ For suppressing actual network switch operations, use the ``mock`` switch driver
 You can choose to disable authentication mechanism by setting::
   haas.ext.auth.null =
 
-To enable authentication mechanism, set appropriate authentication backend.
-Authentication directives are mutually exclusive. To choose database as an 
-authentication backend::
+To enable an authentication mechanism, set appropriate authentication backend.
+Authentication directives are mutually exclusive. To choose database (which
+stores users/passwords in the DB) as an authentication backend::
+
   haas.ext.auth.database =
 
 
