@@ -264,11 +264,11 @@ Next initialize the database with the required tables::
 
   haas-admin db create
   
-Run the server with the port number as defined in ``haas.cfg``
+Run the server with the port number as defined in ``haas.cfg``::
 
   haas serve <port no> 
   
-and in a separate window terminal
+and in a separate window terminal::
 
   haas serve_networks
   

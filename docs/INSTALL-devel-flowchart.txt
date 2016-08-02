@@ -43,7 +43,7 @@
 		 #
 		 #	
 	---------------------	
-	| Start HaaS Server |
+	| Start HaaS Servers |
 	---------------------
 	   	 #
 		 #
