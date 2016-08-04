@@ -20,6 +20,9 @@ The HaaS command line interface will look for the same `OS_*`
 environment variables used by the Openstack command line tools; these
 may be set by a user to authenticate when using the CLI.
 
+A script to set these variables correctly can be downloaded from the
+Openstack web dashboard via "Access & Security."
+
 # Configuration
 
 As with any other extension, you must load the extension in `haas.cfg`:
