@@ -5,6 +5,21 @@ configuration and usage in detail.
 NOTE: The HaaS command line interface only supports the keystone v3 API.
 The server supports anything supported by [keystonemiddleware][1].
 
+# Usage
+
+Once HaaS has been configured to work with Keystone, an administrator
+must manually add Openstack projects to HaaS before they can access the
+HaaS API. The HaaS project names must correspond to the Openstack UUIDs.
+For example, an administrator may execute the command:
+
+    haas project_create 00de7c85e594473db7461cdf7367166a
+
+To grant the Openstack project with that UUID access to HaaS.
+
+The HaaS command line interface will look for the same `OS_*`
+environment variables used by the Openstack command line tools; these
+may be set by a user to authenticate when using the CLI.
+
 # Configuration
 
 As with any other extension, you must load the extension in `haas.cfg`:
@@ -24,20 +39,5 @@ Configuring HaaS to talk to Keystone deviates in the following ways:
 * The options that the Keystone documentation puts in the section
   `[keystone_authtoken]` should instead be placed in the extension's
   section in `haas.cfg`, i.e. `[haas.ext.auth.keystone]`.
-
-# Usage
-
-Once HaaS has been configured to work with Keystone, an administrator
-must manually add Openstack projects to HaaS before they can access the
-HaaS API. The HaaS project names must correspond to the Openstack UUIDs.
-For example, an administrator may execute the command:
-
-    haas project_create 00de7c85e594473db7461cdf7367166a
-
-To grant the Openstack project with that UUID access to HaaS.
-
-The HaaS command line interface will look for the same `OS_*`
-environment variables used by the Openstack command line tools; these
-may be set by a user to authenticate when using the CLI.
 
 [1]: http://docs.openstack.org/developer/keystonemiddleware/
