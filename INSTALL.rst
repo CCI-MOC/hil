@@ -304,17 +304,17 @@ within the directory containing the server's ``haas.cfg``::
 You can then create additional users via the HTTP API. You may want to
 subsequently delete the initial user; this can also be done via the API.
 
+Keystone Backend
+^^^^^^^^^^^^^^^^
+
+See `The document describing this extension in detail. <docs/keystone-auth.md>`_
+
 Null Backend
 ^^^^^^^^^^^^
 
 To enable the null backend, make sure **[extensions]** contains::
 
   haas.ext.auth.null =
-
-Keystone Backend
-^^^^^^^^^^^^^^^^
-
-See `The document describing this extension in detail. <docs/keystone-auth.md>`_
 
 Running the Server under Apache
 -------------------------------
