@@ -182,9 +182,9 @@ def setup_http_client():
         os_auth_url = os.getenv('OS_AUTH_URL')
         os_password = os.getenv('OS_PASSWORD')
         os_username = os.getenv('OS_USERNAME')
-        os_user_domain_id = os.getenv('OS_USER_DOMAIN_ID') or 'Default'
+        os_user_domain_id = os.getenv('OS_USER_DOMAIN_ID') or 'default'
         os_project_name = os.getenv('OS_PROJECT_NAME')
-        os_project_domain_id = os.getenv('OS_PROJECT_DOMAIN_ID') or 'Default'
+        os_project_domain_id = os.getenv('OS_PROJECT_DOMAIN_ID') or 'default'
         if None in (os_auth_url, os_username, os_password, os_project_name):
             # XXX: This error kinda makes sense, but I (zenhack) am somewhat
             # dissatisfied.
