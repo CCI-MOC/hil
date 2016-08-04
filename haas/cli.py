@@ -186,9 +186,7 @@ def setup_http_client():
         os_project_name = os.getenv('OS_PROJECT_NAME')
         os_project_domain_id = os.getenv('OS_PROJECT_DOMAIN_ID') or 'default'
         if None in (os_auth_url, os_username, os_password, os_project_name):
-            # XXX: This error kinda makes sense, but I (zenhack) am somewhat
-            # dissatisfied.
-            raise KeyError
+            raise KeyError("Required openstack environment variable not set.")
         auth = v3.Password(auth_url=os_auth_url,
                            username=os_username,
                            password=os_password,
