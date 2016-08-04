@@ -1,6 +1,9 @@
 An authentication backend for Openstack's Keystone is maintained in this
 source tree as `haas.ext.auth.keystone`. This document describes its
-usage.
+configuration and usage in detail.
+
+NOTE: The HaaS command line interface only supports the keystone v3 API.
+The server supports anything supported by [keystonemiddleware][1].
 
 # Configuration
 
@@ -36,3 +39,5 @@ To grant the Openstack project with that UUID access to HaaS.
 The HaaS command line interface will look for the same `OS_*`
 environment variables used by the Openstack command line tools; these
 may be set by a user to authenticate when using the CLI.
+
+[1]: http://docs.openstack.org/developer/keystonemiddleware/
