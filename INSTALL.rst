@@ -286,8 +286,8 @@ It is also possible for third parties to supply authentication backends as
 extensions. If you wish to use such an extension, refer to the documentation
 for that extension.
 
-Database Backend
-^^^^^^^^^^^^^^^^
+Database Backend (haas.ext.auth.database)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To enable the database backend, make sure the **[extensions]** section of
 ``haas.cfg`` contains::
@@ -304,13 +304,13 @@ within the directory containing the server's ``haas.cfg``::
 You can then create additional users via the HTTP API. You may want to
 subsequently delete the initial user; this can also be done via the API.
 
-Keystone Backend
-^^^^^^^^^^^^^^^^
+Keystone Backend (haas.ext.auth.keystone)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 See `The document describing this extension in detail. <docs/keystone-auth.md>`_
 
-Null Backend
-^^^^^^^^^^^^
+Null Backend (haas.ext.auth.null)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To enable the null backend, make sure **[extensions]** contains::
 
