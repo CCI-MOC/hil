@@ -1,6 +1,6 @@
 
-Following steps will let you install, configure PostgreSQL server and create a
-`haas` database for development or production version of HaaS on a 
+The following steps will let you install, configure PostgreSQL server and
+create a `haas` database for development or production version of HaaS on a
 Centos - 7 server.
 
 For simplicity of configuration and ease of maintenance we will use 
@@ -68,12 +68,12 @@ step.
 If you are setting up database for [development purpose](development/HACKING.rst)
 you will need to create a system user to manage `HaaS` database as follows.
 
-**format:** `useradd <username> -d <path-to-home-dir> -m -r `
+**format:** `useradd <username> --system -d <path-to-home-dir> -m -r `
 
 In this case both system username and home directory will be named `haas`
 
 ```
-useradd haas -d /var/lib/haas -m -r
+useradd haas --system -d /var/lib/haas -m -r
 ```
 
 **6. Create a database role named `haas` with priviledges to:**
@@ -83,9 +83,7 @@ useradd haas -d /var/lib/haas -m -r
 This is necessary since we have configured PostgreSQL to use password authentication.
 
 ```
-sudo -i -u postgres
-
--bash-4.2$ createuser -r -d -P haas
+$ sudo -u postgres createuser -r -d -P haas
 Enter password for new role:  <Input password for database role haas>
 Enter it again: <Retype password for role haas>
 ```
@@ -93,7 +91,7 @@ Enter it again: <Retype password for role haas>
 Confirm that the role with requisite privileges is created **as postgres user**:
 
 ```
--bash-4.2$ psql -c '\dg'
+$ psql -c '\dg'
                              List of roles
  Role name |                   Attributes                   | Member of 
 -----------+------------------------------------------------+-----------
@@ -101,10 +99,10 @@ Confirm that the role with requisite privileges is created **as postgres user**:
  postgres  | Superuser, Create role, Create DB, Replication | {}
 ```
 
-for some reason if you wish to delete the user. do the following **as postgres user**:
+If you wish to delete the user, do the following:
 
 ```
-dropuser haas
+$ sudo -u postgres dropuser haas
 ```
 **Note**: Make sure that the database role you create corresponds to an existing system user. 
 eg. There has to be a system user `haas` to access database named `haas` as database role named `haas`.
@@ -113,14 +111,13 @@ eg. There has to be a system user `haas` to access database named `haas` as data
 **7. Create database haas owned by database role haas:**
 
 ```
-sudo -i -u haas
--bash-4.2$ createdb haas
+sudo -u haas createdb haas
 ```
 
 confirm it created a database named `haas` and it is owned by `haas`.
 
 ```
- psql -c '\l'
+$ psql -c '\l'
                                   List of databases
    Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges   
 -----------+----------+----------+-------------+-------------+-----------------------
@@ -152,6 +149,3 @@ Continue with installation steps:
 [continue with production install](INSTALL.rst)
 or 
 [continue with development install](INSTALL-devel.rst)
-
-
-

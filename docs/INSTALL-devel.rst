@@ -199,7 +199,7 @@ The default dev environment uses SQLite as a database, so if you're using it you
 
 If you wish to use PostgreSQL instead, you may get an error ``psycopg2 package not found``,
 when you do ``haas-admin db create`` in the next step.
-To avoid that problem, you may need to install following package on your system 
+To avoid that problem, you may need to install some packages based on your system type:
 
 CentOS::  
 
@@ -209,7 +209,8 @@ Ubuntu::
   
   sudo apt-get install libpq-dev
 
-before installing ``psycopg2`` in the virtualenv for HaaS::
+After these packages have been installed, you'll then need the python postgres
+driver in your HaaS virtualenv::
 
   pip install psycopg2
 
@@ -217,16 +218,17 @@ before installing ``psycopg2`` in the virtualenv for HaaS::
 Configuring HaaS
 ================
 
-Now the ``haas`` executable should be in your path.  First, create a
+Now the ``haas`` executable should be in your path. First, create a
 configuration file ``haas.cfg``. There are two examples for you to work from,
-``examples/haas.cfg.dev-no-hardware``, which is oriented towards development, and
-``examples/haas.cfg`` which is more production oriented.  These config
-files are well commented; read them carefully.
+``examples/haas.cfg.dev-no-hardware``, which is oriented towards development,
+and ``examples/haas.cfg`` which is more production oriented. These config files
+are well commented; read them carefully.
 
-HaaS can be configured using ``haas.cfg`` to not perform state-changing operations on nodes,
-headnodes and networks, allowing developers to run and test parts of a haas
-server without requiring physical hardware. To suppress actual node and headnode
-operations, set ``dry_run = True`` in the ``[devel]`` section. 
+HaaS can be configured using ``haas.cfg`` to not perform state-changing
+operations on nodes, headnodes and networks, allowing developers to run and
+test parts of a haas server without requiring physical hardware. To suppress
+actual node and headnode operations, set ``dry_run = True`` in the ``[devel]``
+section. 
 
 
 If using PostgreSQL as a database backend
@@ -244,18 +246,32 @@ its password, ``<dbname>`` is the name of the database you created, and
 ``<address>`` is the address which haas should use to connect to postgres (In a
 typical default postgres setup, the right value is ``localhost``).
 
+Setting up extensions
+=====================
+
 Most customizations require including extension names within the ``[extensions]``
 section.
 
 For suppressing actual network switch operations, use the ``mock`` switch driver :: 
   haas.ext.switches.mock =
 
-You can choose to disable authentication mechanism by setting::
+To suppress actual IPMI calls made to nodes on account of node_power_cycle
+requests, enable the ``mock`` OBM driver with ::
+
+  haas.ext.obm.mock =
+
+You can choose to disable authentication mechanism by enabling the ``null``
+auth driver ::
+
   haas.ext.auth.null =
 
-To enable an authentication mechanism, set appropriate authentication backend.
-Authentication directives are mutually exclusive. To choose database (which
-stores users/passwords in the DB) as an authentication backend::
+Database auth
+^^^^^^^^^^^^^
+
+To enable an authentication mechanism, an appropriate authentication backend
+will need to be selected and enabled. Note that auth backends are mutually
+exclusive. For the database method (which stores users/passwords in the DB),
+add ::
 
   haas.ext.auth.database =
 
@@ -264,6 +280,9 @@ Next initialize the database with the required tables::
 
   haas-admin db create
   
+Start the server
+================
+
 Run the server with the port number as defined in ``haas.cfg``::
 
   haas serve <port no> 
@@ -279,6 +298,9 @@ Here is an example session, testing ``headnode_delete_hnic``::
   haas headnode_create hn proj
   haas headnode_create_hnic hn hn-eth0
   haas headnode_delete_hnic hn hn-eth0
+
+Testing
+-------
 
 Additionally, before each commit, run the automated test suite with ``py.test
 tests/unit``. If at all possible, run the deployment tests as well (``py.test
