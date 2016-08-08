@@ -72,13 +72,13 @@ class Test_ClientBase:
 
     def test_correct_init(self):
         x = ClientBase(ep, 'some_base64_string')
-        assert x.endpoint == "http://127.0.0.1:8888" 
+        assert x.endpoint == "http://127.0.0.1:8888"
         assert x.auth == "some_base64_string"
 
     def test_object_url(self):
         x = ClientBase(ep, 'some_base64_string')
         y = x.object_url('abc', '123', 'xy23z')
-        assert y == 'http://127.0.0.1:8888/abc/123/xy23z' 
+        assert y == 'http://127.0.0.1:8888/abc/123/xy23z'
 
 #For testing the client library we need a running HIL server, with dummy
 #objects populated. Following classes accomplish that end. 
@@ -244,10 +244,11 @@ def create_setup(request):
     dir_names = make_config()
     initialize_db()
     proc = run_server(['haas', 'serve', '8888' ])
+    import time
+    time.sleep(0.5)
     populate_server()
 
     def fin():
-        print "stopping the server, cleaning the files "
         proc.terminate()
         cleanup(dir_names)
     request.addfinalizer(fin)
