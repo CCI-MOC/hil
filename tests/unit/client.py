@@ -134,7 +134,7 @@ def make_config():
 
 def cleanup((tmpdir, cwd)):
     """ Cleanup crew, when all tests are done.
-    It will shutdown the haas server, 
+    It will shutdown the haas server,
     delete any files and folders created for the tests.
     """
 
@@ -245,7 +245,7 @@ def create_setup(request):
     initialize_db()
     proc = run_server(['haas', 'serve', '8888' ])
     import time
-    time.sleep(0.5)
+    time.sleep(1)
     populate_server()
 
     def fin():
