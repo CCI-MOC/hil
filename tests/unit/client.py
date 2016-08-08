@@ -42,7 +42,7 @@ MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/v0/switches/mock'
 OBM_TYPE_MOCK = 'http://schema.massopencloud.org/haas/v0/obm/mock'
 OBM_TYPE_IPMI = 'http://schema.massopencloud.org/haas/v0/obm/ipmi'
 
-ep = "http://127.0.0.1" or os.environ.get('HAAS_ENDPOINT')
+ep = "http://127.0.0.1:8888" or os.environ.get('HAAS_ENDPOINT')
 username = "hil_user" or os.environ.get('HAAS_USERNAME')
 password = "hil_pass1234" or os.environ.get('HAAS_PASSWORD')
 
@@ -52,6 +52,7 @@ auth = auth_db(username, password)
 C = Client(ep, auth) #Initializing client library
 
 
+## Following tests check if the client library is initialized correctly
 
 def test_auth_db():
     auth = auth_db(username, password)
@@ -71,13 +72,13 @@ class Test_ClientBase:
 
     def test_correct_init(self):
         x = ClientBase(ep, 'some_base64_string')
-        assert x.endpoint == "http://127.0.0.1" 
+        assert x.endpoint == "http://127.0.0.1:8888" 
         assert x.auth == "some_base64_string"
 
     def test_object_url(self):
         x = ClientBase(ep, 'some_base64_string')
         y = x.object_url('abc', '123', 'xy23z')
-        assert y == 'http://127.0.0.1/abc/123/xy23z' 
+        assert y == 'http://127.0.0.1:8888/abc/123/xy23z' 
 
 #For testing the client library we need a running HIL server, with dummy
 #objects populated. Following classes accomplish that end. 
@@ -89,15 +90,17 @@ class Test_ClientBase:
 #       5. tears down the setup in a clean fashion.
 
 
-@pytest.fixture(autouse=True)
+#pytest.fixture(scope="module")
+
 def make_config():
+    """ This function creates haas.cfg with desired options
+    and writes to a temporary directory.
+    It returns a tuple where (tmpdir, cwd) = ('location of haas.cfg', 'pwdd')
+    """
     tmpdir = tempfile.mkdtemp()
     cwd = os.getcwd()
     os.chdir(tmpdir)
     with open('haas.cfg', 'w') as f:
-        # We need to make sure the database ends up in the tmpdir directory,
-        # and Flask-SQLAlchemy doesn't seem to want to do relative paths, so
-        # we can't just do a big string literal.
         config = '\n'.join([
             '[general]'
             'log_level = debug',
@@ -128,17 +131,22 @@ def make_config():
         f.write(config)
         return (tmpdir, cwd)
 
+
 def cleanup((tmpdir, cwd)):
+    """ Cleanup crew, when all tests are done.
+    It will shutdown the haas server, 
+    delete any files and folders created for the tests.
+    """
 
     os.remove('haas.cfg')
     os.remove('haas.db')
     os.chdir(cwd)
     os.rmdir(tmpdir)
 
-#request.addfinalizer(cleanup)
 
 
-def db_create():
+def initialize_db():
+    """ Creates an  database as defined in haas.cfg."""
     check_call(['haas-admin', 'db', 'create'])
 
 
@@ -152,13 +160,13 @@ def run_server(cmd):
     proc = Popen(cmd)
     return proc
 
-def populate_objects():
+def populate_server():
     """
     Once the server is started, this function will populate some mock objects
     to faciliate testing of the client library
     """
 
-    ## Adding nodes
+    ## Adding nodes, node-01 - node-06
     url_node = 'http://127.0.0.1:8888/node/'
     api_nodename='http://schema.massopencloud.org/haas/v0/obm/'
 
@@ -189,11 +197,11 @@ def populate_objects():
     requests.put(url_node+'node-05', data=json.dumps({"obm":obminfo5}))
     requests.put(url_node+'node-06', data=json.dumps({"obm":obminfo6}))
 
-    ## Adding Projects
+    ## Adding Projects proj-01 - proj-03
     for i in [ "proj-01", "proj-02", "proj-03" ]:
         requests.put('http://127.0.0.1:8888/project/'+i)
 
-    ## Adding switches
+    ## Adding switches one for each driver
     url='http://127.0.0.1:8888/switch/'
     api_name='http://schema.massopencloud.org/haas/v0/switches/'
 
@@ -212,7 +220,7 @@ def populate_objects():
     requests.put(url+'mock-01', data=json.dumps(mock_param))
     requests.put(url+'brocade-01', data=json.dumps(brocade_param))
 
-    ## Adding nodes to projects
+    ## Allocating nodes to projects
     url_project = 'http://127.0.0.1:8888/project/'
     # Adding nodes 1 to proj-01
     requests.post( url_project+'proj-01'+'/connect_node', data=json.dumps({'node':'node-01'}))
@@ -223,23 +231,70 @@ def populate_objects():
     requests.post( url_project+'proj-03'+'/connect_node', data=json.dumps({'node':'node-03'}))
     requests.post( url_project+'proj-03'+'/connect_node', data=json.dumps({'node':'node-05'}))
 
-    ## Adding networks to projects
+    ## Assigning networks to projects
     url_network='http://127.0.0.1:8888/network/'
     for i in [ 'net-01', 'net-02', 'net-03' ]:
         requests.put(url_network+i, data=json.dumps({"creator":"proj-01",
             "access": "proj-01", "net_id": ""}))
 
 
-#tmpdir = make_config()
-#db_create()
-#proc = run_server(['haas', 'serve', '8888' ])
+        # -- SETUP -- #
+@pytest.fixture(scope="session")
+def create_setup(request):
+    dir_names = make_config()
+    initialize_db()
+    proc = run_server(['haas', 'serve', '8888' ])
+    populate_server()
 
-#cleanup(tmpdir)
+    def fin():
+        print "stopping the server, cleaning the files "
+        proc.terminate()
+        cleanup(dir_names)
+    request.addfinalizer(fin)
 
 
 
 
 
+@pytest.mark.usefixtures("create_setup")
+class Test_Node:
+    """ Tests Node related client calls. """
+
+    def test_list_nodes_free(self):
+        result = C.node.list('free')
+        assert result == [u'node-06']
+
+    def test_list_nodes_all(self):
+        result = C.node.list('all')
+        assert result == [u'node-01', u'node-02', u'node-03', u'node-04',
+                            u'node-05', u'node-06']
 
 
+@pytest.mark.usefixtures("create_setup")
+class Test_project:
+    """ Tests project related client calls."""
+
+    def test_list_projects(self):
+        result = C.project.list()
+        assert result == [u'proj-01', u'proj-02', u'proj-03']
+
+    def test_list_nodes_inproject(self):
+        result01 = C.project.nodes_in('proj-01')
+        result02 = C.project.nodes_in('proj-02')
+        assert result01 == [u'node-01']
+        assert result02 == [u'node-02', u'node-04']
+
+    def test_list_networks_inproject(self):
+        result = C.project.networks_in('proj-01')
+        assert result == [u'net-01', u'net-02', u'net-03']
+
+@pytest.mark.usefixtures("create_setup")
+class Test_switch:
+    """ Tests switch related client calls."""
+
+    def test_list_switches(self):
+        result = C.switch.list()
+        assert result == [u'brocade-01', u'dell-01', u'mock-01', u'nexus-01']
+
+## End of tests ##
 
