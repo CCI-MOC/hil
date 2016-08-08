@@ -2,4 +2,4 @@
 set -ex
 pip install keystonemiddleware
 pip install python-keystoneclient
-./ci/keystone/keystone.sh setup
+keystone_commit=stable/mitaka ./ci/keystone/keystone.sh setup
