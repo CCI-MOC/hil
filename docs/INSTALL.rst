@@ -75,7 +75,7 @@ Setting up system user for HaaS:
 
 First create a system user ``${HAAS_USER}`` with::
 
-  sudo useradd ${HAAS_USER} -d /var/lib/haas -m -r
+  sudo useradd --system ${HAAS_USER} -d /var/lib/haas -m -r
 
 
 The HaaS software itself can then be installed as root by running::
@@ -161,16 +161,14 @@ provides one way to accomplish this.
 To create the database tables, first make sure ``haas.cfg`` is set up the way
 you need, including any extensions you plan to use, then::
 
-    sudo -i -u ${HAAS_USER}
-    haas-admin db create
+    sudo -i -u ${HAAS_USER}; haas-admin db create
 
 If the authorization backend activated in ``haas.cfg`` is  ``haas.ext.auth.database =``
 then you will need to add an initial user with administrative privileges to the 
 database in order to bootstrap the system. 
 You can do this by running the following command (as user ``haas``)::
 
-  sudo -i -u ${HAAS_USER}
-  haas create_admin_user ${HAAS_ADMIN_USER} ${HAAS_ADMIN_PASSWORD
+  sudo -i -u ${HAAS_USER}; haas create_admin_user ${HAAS_ADMIN_USER} ${HAAS_ADMIN_PASSWORD
 
 You can then create additional users via the HTTP API. You may want to
 subsequently delete the initial user; this can also be done via the API.

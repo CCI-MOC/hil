@@ -75,7 +75,7 @@ For simplicity we will use the same name for database and database role.
 
 Create a new user on your system::
   
-  useradd -m -d /home/haas_dev -s /bin/bash -c "for HaaS development" haas_dev
+  useradd --system -m -d /home/haas_dev -s /bin/bash -c "for HaaS development" haas_dev
 
 This will create a `haas_dev` user with following attributes::
   
@@ -85,7 +85,7 @@ exact uid/gid may vary depending on your system.
 
 Switch to the `haas_dev` user::
 
-  sudo su - haas_dev
+  sudo -u haas_dev -i
 
 Setup database and role to control it.
 =============================================
