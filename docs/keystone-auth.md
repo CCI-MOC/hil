@@ -16,6 +16,10 @@ For example, an administrator may execute the command:
 
 To grant the Openstack project with that UUID access to HaaS.
 
+Note that the plugin recognizes any user with an `admin` role on any
+project as a HaaS administrator, similar to the default policy for core
+Openstack projects.
+
 The HaaS command line interface will look for the same `OS_*`
 environment variables used by the Openstack command line tools; these
 may be set by a user to authenticate when using the CLI.
