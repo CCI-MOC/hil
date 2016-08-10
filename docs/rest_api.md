@@ -799,7 +799,6 @@ Authorization requirements:
 Possible errors:
 
 * 404, if no port is connected to the given nic.
-
 * 409, if the nic or port is already attached to something.
 
 ### port_detach_nic
