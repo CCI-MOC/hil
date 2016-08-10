@@ -32,7 +32,7 @@ from haas.client.auth import *
 from haas.client.client import Client
 
 
-ep = "http://127.0.0.1:5000" or os.environ.get('HAAS_ENDPOINT')
+ep = os.environ.get('HAAS_ENDPOINT') or "http://127.0.0.1:5000"
 username = "jil" or os.environ.get('HAAS_USERNAME')
 password = "tumbling" or os.environ.get('HAAS_PASSWORD')
 
