@@ -796,7 +796,7 @@ def port_detach_nic(switch, port):
     port.nic = None
     db.session.commit()
 
-@rest_call('GET', '/node/<is_free>', Schema({'is_free' : basestring}))
+@rest_call('GET', '/nodes/<is_free>', Schema({'is_free' : basestring}))
 def list_nodes(is_free):
     """List all nodes or all free nodes
 
