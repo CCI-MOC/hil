@@ -366,6 +366,24 @@ Authorization requirements:
 
 * Access to `<project>` or administrative access
 
+### list_project_networks
+
+`GET /project/<project>/networks`
+
+List all networks belonging to the given project
+
+Response body:
+
+    [
+        "network-1",
+        "network-2",
+        ...
+    ]
+
+Authorization requirements:
+
+* Access to `<project>` or administrative access
+
 ### show_node
 
 `GET /node/<node>`
