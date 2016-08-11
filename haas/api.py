@@ -841,6 +841,7 @@ def list_project_networks(project):
     Example:  '["net1", "net2", "net3"]'
     """
     project = _must_find(model.Project, project)
+    get_auth_backend().require_project_access(project)
     networks = project.networks_access
     networks = sorted([n.label for n in networks])
     return json.dumps(networks)
