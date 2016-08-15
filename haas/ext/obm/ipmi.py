@@ -17,6 +17,7 @@
 from sqlalchemy import Column, String, Integer, ForeignKey
 import schema
 import subprocess
+import logging
 
 from haas.model import db, Obm
 from haas.errors import OBMError
