@@ -1,6 +1,7 @@
 """Authentication and authorization."""
 
 from haas.errors import AuthorizationError
+from haas import model
 from abc import ABCMeta, abstractmethod
 
 import sys
@@ -77,6 +78,9 @@ class AuthBackend(object):
 
         Note that have_admin implies have_project_acccess.
         """
+
+        assert isinstance(project, model.Project)
+
         return self._have_admin() or self._have_project_access(project)
 
     def require_admin(self):
