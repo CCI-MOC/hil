@@ -110,7 +110,9 @@ def rest_call(method, path, schema):
 
     * path - the url-path to map the function to. The format is the same as for
             flask's router (e.g. '/foo/<bar>/baz')
-    * method - the HTTP method for the api call (e.g. POST, GET...)
+    * method - the HTTP method for the api call (e.g. POST, GET...).
+               Can also pass a list of methods to support multiple (used in
+               testing)
     * schema - an instance of ``schema.Schema`` with which to
             validate the arguments to the function, whether specified in the
             URL or as JSON in the request body. The schema should expect
@@ -122,6 +124,10 @@ def rest_call(method, path, schema):
             a JSON object in the body of the request. It is an error for an
             argument to appear in both the request body and the path; such
             requests will be rejected prior to invoking the schema.
+
+            Because GET query parameters have no type, ensure that any GET
+            arguments of non-string type implement Schema's "Use" to perform
+            type validation and conversion.
 
     For example, given::
 
@@ -164,10 +170,13 @@ def rest_call(method, path, schema):
           whose second is an integer (the status code).
     """
     def register(f):
+
+        methods = method if isinstance(method, list) else [method]
+
         app.add_url_rule(path,
                          f.__name__,
                          _rest_wrapper(f, schema),
-                         methods=[method])
+                         methods=methods)
         return f
     return register
 
@@ -186,18 +195,35 @@ def _do_validation(schema, kwargs):
     `ValidationError`.
     """
 
-    if flask.request.data == '':
-        # No request body
-        final_kwargs = {}
+    final_kwargs = {}
+
+    if flask.request.method == "GET":
+        # GET requests can use URL and query parameter arguments
+        if flask.request.data != '':
+            raise ValidationError("GET request made with a non-empty request"
+                                  " body")
+
+        for key,value in flask.request.args.iteritems():
+            if final_kwargs.has_key(key):
+                raise ValidationError("Parameter specified more than once")
+            elif value is None or value == '':
+                # TODO: if we want to take flags (ie - an option that has no
+                # value), change this check and add logic in the next else to
+                # take care of that. We'll also need to pick a standard value
+                # to represent a flag (like 'True', 'None' or '').
+                raise ValidationError("Empty parameter specified")
+            else:
+                final_kwargs[key] = value
     else:
-        try:
-            final_kwargs = json.loads(flask.request.data)
-        except ValueError:
-            raise ValidationError("The request body is not valid JSON")
+        # Methods other than GET use URL and body arguments
+        if flask.request.data != '':
+            try:
+                final_kwargs = json.loads(flask.request.data)
+            except ValueError:
+                raise ValidationError("The request body is not valid JSON")
 
     validation_error = ValidationError(
-        "The request body is not valid for "
-        "this request.")
+            "Request arguments are not valid for this request")
 
     for k in kwargs.keys():
         if k in final_kwargs:
