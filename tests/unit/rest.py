@@ -231,9 +231,9 @@ class TestNoneReturnValue(HttpTest):
 
 @pytest.fixture()
 def validation_setup():
-    # There's a mix of PUT and POST in these; mixing it up may give us
-    # better coverage. The particulars of which calls get which methods are
-    # arbitrary.
+    # There's a mix of GET, PUT and POST in these; mixing it up may give us
+    # better coverage. The particulars of which PUT and POST calls get which
+    # methods are arbitrary, though GET calls have some specificity.
 
     # We have four kinds of calls we want to validate here:
 
@@ -264,6 +264,14 @@ def validation_setup():
         'arg2': basestring,
     }))
     def just_args(arg1, arg2):
+        return json.dumps([arg1, arg2])
+
+    # 5. One optional argument.
+    @rest.rest_call(['GET', 'POST'], '/one/optional', Schema({
+        'arg1': basestring,
+        Optional('arg2'): Use(int),
+    }))
+    def one_optional(arg1, arg2=-42):
         return json.dumps([arg1, arg2])
 
     # Let's also make sure we're testing something with a schema that isn't
@@ -365,6 +373,25 @@ def _do_request(client, method, path, data={}, query={}):
                                      'arg2': 'goodbye'})},
      'expected': {'status': 200,
                   'body_json': ['hello', 'goodbye']}},
+
+    {'request': {'method': 'GET',
+                 'path': '/one/optional',
+                 'query': {'arg1': 'foo',
+                                     'arg2': 'bar'}},
+     'expected': {'status': 400,
+                  'body_json': None}},
+
+    {'request': {'method': 'GET',
+                 'path': '/one/optional',
+                 'query': {'arg1': 'foo',
+                           'arg2': '123'}},
+     'expected': {'status': 200,
+                  'body_json': ['foo', 123]}},
+    {'request': {'method': 'GET',
+                 'path': '/one/optional',
+                 'query': {'arg1': 'foo'}},
+     'expected': {'status': 200,
+                  'body_json': ['foo', -42]}},
 
     {'request': {'method': 'GET',
                  'path': '/non-string-schema',
