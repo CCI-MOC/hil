@@ -19,9 +19,8 @@ addons:
       - libapache2-mod-wsgi
 
 branches:
-  only:
-    - master
-    - dogfood
+  except:
+    - none
 
 env:
   - DB=sqlite
