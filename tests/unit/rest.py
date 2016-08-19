@@ -24,7 +24,7 @@ from abc import ABCMeta, abstractmethod
 import unittest
 import json
 
-from schema import Schema, Optional
+from schema import Schema, Optional, Use
 
 # We don't directly use this, but unless we import it, the coverage tool
 # complains and doesn't give us a report.
@@ -238,12 +238,12 @@ def validation_setup():
     # We have four kinds of calls we want to validate here:
 
     # 1. No arguments in the URL or body (no_args)
-    @rest.rest_call('POST', '/no/args', Schema({}))
+    @rest.rest_call(['GET','POST'], '/no/args', Schema({}))
     def no_args():
         pass
 
     # 2. Argument in the URL and not in the body (url_args)
-    @rest.rest_call('POST', '/url/args/<arg1>/<arg2>', Schema({
+    @rest.rest_call(['GET','POST'], '/url/args/<arg1>/<arg2>', Schema({
         'arg1': basestring,
         'arg2': basestring,
     }))
@@ -251,31 +251,30 @@ def validation_setup():
         return json.dumps([arg1, arg2])
 
     # 3. Arguments in both the URL and body (mixed_args)
-    @rest.rest_call('PUT', '/mixed/args/<arg1>', Schema({
+    @rest.rest_call(['GET','PUT'], '/mixed/args/<arg1>', Schema({
         'arg1': basestring,
         'arg2': basestring,
     }))
     def mixed_args(arg1, arg2):
         return json.dumps([arg1, arg2])
 
-    # 4. Arguments in body and not in the URL.
-    @rest.rest_call('POST', '/body/args', Schema({
+    # 4. Arguments in body (query parameters for GET) and not in the URL.
+    @rest.rest_call(['GET','POST'], '/just/args', Schema({
         'arg1': basestring,
         'arg2': basestring,
     }))
-    def body_args(arg1, arg2):
+    def just_args(arg1, arg2):
         return json.dumps([arg1, arg2])
 
     # Let's also make sure we're testing something with a schema that isn't
     # just basestring:
-    @rest.rest_call('PUT', '/non-string-schema', schema=Schema({
-        "the_value": int,
-    }))
+    @rest.rest_call(['GET','PUT'], '/non-string-schema',
+                    schema=Schema({"the_value": Use(int)}))
     def non_string_schema(the_value):
         return json.dumps(the_value)
 
 
-def _do_request(client, method, path, data):
+def _do_request(client, method, path, data={}, query={}):
     """Make a request to the endpoint with `data` in the body.
 
     `client` is a flask test client
@@ -287,15 +286,15 @@ def _do_request(client, method, path, data):
     `data` should be a string -- the server will expect valid json, but
     we want to write test cases with invalid input as well.
     """
-    client.post('/give-me-an-e', data=data)
-    # Annoyingly, the client doesn't give us a way to supply an arbitrary
-    # HTTP method, so we hack around it by using getattr to get the right
-    # function:
-    return getattr(client, method.lower())(path, data=data)
+    if method == "GET":
+        return client.get(path, query_string=query, data=data)
+    else:
+        return client.open(method=method, path=path, data=data)
 
 
 @pytest.mark.parametrize('args', [
-    # Legal cases:
+    {'request': {'method': 'GET', 'path': '/no/args'},
+     'expected': {'status': 200, 'body_json': None}},
     {'request': {'method': 'POST', 'path': '/no/args', 'data': ''},
      'expected': {'status': 200, 'body_json': None}},
 
@@ -304,20 +303,74 @@ def _do_request(client, method, path, data):
                  'data': ''},
      'expected': {'status': 200,
                   'body_json': ['hello', 'goodbye']}},
+    {'request': {'method': 'GET',
+                 'path': '/url/args/hello/goodbye'
+                 },
+     'expected': {'status': 200,
+                  'body_json': ['hello', 'goodbye']}},
+    # Should fail because arg is expected in URL
+    {'request': {'method': 'GET',
+                 'path': '/url/args/hello/',
+                 'query': {'arg2': "goodbye"}
+                 },
+     'expected': {'status': 404,
+                  'body_json': None}},
 
     {'request': {'method': 'PUT',
                  'path': '/mixed/args/hello',
                  'data': json.dumps({'arg2': 'goodbye'})},
      'expected': {'status': 200,
                   'body_json': ['hello', 'goodbye']}},
+    {'request': {'method': 'GET',
+                 'path': '/mixed/args/hello',
+                 'query': {'arg2': 'goodbye'}},
+     'expected': {'status': 200,
+                  'body_json': ['hello', 'goodbye']}},
+    # Should fail because GET doesn't take body args
+    {'request': {'method': 'GET',
+                 'path': '/mixed/args/hello',
+                 'query': {'arg2': 'goodbye'},
+                 'data': json.dumps({'arg2': 'goodbye'})},
+     'expected': {'status': 400,
+                 'body_json': None}},
+    {'request': {'method': 'GET',
+                 'path': '/mixed/args/hello',
+                 'data': json.dumps({'arg2': 'goodbye'})},
+     'expected': {'status': 400,
+                 'body_json': None}},
+
+    {'request': {'method': 'GET',
+                 'path': '/just/args',
+                 'query': {'arg1': 'hello',
+                                     'arg2': 'goodbye'}},
+     'expected': {'status': 200,
+                  'body_json': ['hello', 'goodbye']}},
+    # Should fail because GET doesn't take body args
+    {'request': {'method': 'GET',
+                 'path': '/just/args',
+                 'data': json.dumps({'arg1': 'hello',
+                                     'arg2': 'goodbye'})},
+     'expected': {'status': 400,
+                  'body_json': None}},
+    {'request': {'method': 'GET',
+                 'path': '/just/args',
+                 'query': {'arg1': '',
+                                     'arg2': 'goodbye'}},
+     'expected': {'status': 400,
+                  'body_json': None}},
 
     {'request': {'method': 'POST',
-                 'path': '/body/args',
+                 'path': '/just/args',
                  'data': json.dumps({'arg1': 'hello',
                                      'arg2': 'goodbye'})},
      'expected': {'status': 200,
                   'body_json': ['hello', 'goodbye']}},
 
+    {'request': {'method': 'GET',
+                 'path': '/non-string-schema',
+                 'query': {'the_value': 42}},
+     'expected': {'status': 200,
+                  'body_json': 42}},
     {'request': {'method': 'PUT',
                  'path': '/non-string-schema',
                  'data': json.dumps({'the_value': 42})},
@@ -326,7 +379,7 @@ def _do_request(client, method, path, data):
 
     # Illegal JSON in the body:
     {'request': {'method': 'POST',
-                 'path': '/body/args',
+                 'path': '/just/args',
                  'data': 'xploit'},
      'expected': {'status': 400,
                   'body_json': None}},
@@ -334,25 +387,27 @@ def _do_request(client, method, path, data):
     # Arguments in the body for a function that expects no arguments
     {'request': {'method': 'POST', 'path': '/no/args', 'data': json.dumps({'arg1': 'foo'})},
      'expected': {'status': 400, 'body_json': None}},
+    {'request': {'method': 'GET', 'path': '/no/args', 'data': json.dumps({'arg1': 'foo'})},
+     'expected': {'status': 400, 'body_json': None}},
 
     # Empty body (for a function that expects body args). Note that this should
     # hit the same exact code paths as the illegal JSON test, but it's
     # conceptually different:
     {'request': {'method': 'POST',
-                 'path': '/body/args',
+                 'path': '/just/args',
                  'data': ''},
      'expected': {'status': 400,
                   'body_json': None}},
 
     # Missing arg2:
     {'request': {'method': 'POST',
-                 'path': '/body/args',
+                 'path': '/just/args',
                  'data': json.dumps({'arg1': 'hello'})},
      'expected': {'status': 400,
                   'body_json': None}},
     # Extra arg (arg3):
     {'request': {'method': 'POST',
-                 'path': '/body/args',
+                 'path': '/just/args',
                  'data': json.dumps({'arg1': 'hello',
                                      'arg2': 'goodbye',
                                      'arg3': '????'})},
@@ -411,10 +466,12 @@ def test_validation_status(client, validation_setup, args):
     # HTTP method, so we hack around it by using getattr to get the right
     # function:
     resp = _do_request(client, **args['request'])
-    assert resp.status_code == args['expected']['status']
-    if args['expected']['body_json'] is not None:
-        assert json.loads(resp.get_data()) == args['expected']['body_json']
+    assert resp.status_code == args['expected']['status'],\
+                               (args,resp.get_data())
 
+    if args['expected']['body_json'] is not None:
+        assert json.loads(resp.get_data()) == args['expected']['body_json'],\
+               (args,resp.get_data())
 
 class TestCallOnce(HttpTest):
     """Verify that the request handler invokes the API *exactly* once.
