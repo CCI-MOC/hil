@@ -129,6 +129,11 @@ def server_init():
 
 @pytest.fixture
 def keystone_projects(keystone_project_uuids):
+    """Add each of the projects to the HaaS database.
+
+    keystone_project_uuids is the return value from the fixture of the same
+    name.
+    """
     with app.test_request_context():
         for name in ('admin', 'service'):
             model.db.session.add(model.Project(keystone_project_uuids[name]))
@@ -201,7 +206,6 @@ pytestmark = pytest.mark.usefixtures('configure',
                                      'keystone_session',
                                      'keystone_client',
                                      'keystone_project_uuids',
-                                     'keystone_projects',
                                      'extra_apis',
                                      'server_init',
                                      'launch_server')
@@ -226,7 +230,7 @@ def _do_get(sess, path):
 
 
 @pytest.mark.parametrize('user_info', user_db)
-def test_admin_call(user_info):
+def test_admin_call(keystone_projects, user_info):
     sess = _get_keystone_session(username=user_info['name'],
                                  password=user_info['password'],
                                  project_name=user_info['project_name'])
@@ -244,7 +248,7 @@ def test_admin_call(user_info):
 @pytest.mark.parametrize('caller_info,project_name', [
     (user, project) for user in user_db for project in project_db
 ])
-def test_project_call(caller_info, project_name):
+def test_project_call(keystone_projects, caller_info, project_name):
     sess = _get_keystone_session(username=caller_info['name'],
                                  password=caller_info['password'],
                                  project_name=caller_info['project_name'])
@@ -262,7 +266,7 @@ def test_project_call(caller_info, project_name):
 
 
 @pytest.mark.parametrize('caller_info', user_db)
-def test_anyone_call_authenticated(caller_info):
+def test_anyone_call_authenticated(keystone_projects, caller_info):
     sess = _get_keystone_session(username=caller_info['name'],
                                  password=caller_info['password'],
                                  project_name=caller_info['project_name'])
@@ -273,7 +277,7 @@ def test_anyone_call_authenticated(caller_info):
     )
 
 
-def test_anyone_call_unknown_project():
+def test_anyone_call_unknown_project(keystone_projects):
     # Calls to the API with no special authorization requirements should fail
     # if the user is not authenticated for a project in the database. This is
     # true even if the project exists in keystone; it must be added to the
@@ -288,4 +292,17 @@ def test_anyone_call_unknown_project():
     assert 400 <= resp.status_code < 500, (
         "Status code for call with no special authorization requirements "
         "should still fail if the keystone project is not in the HaaS db!"
+    )
+
+
+def test_unregistered_admin():
+    # Admin-only calls should still work when invoked by anopenstack admin,
+    # even when that admin's project does not exist in the database.
+    sess = _get_keystone_session(username='admin',
+                                 password='s3cr3t',
+                                 project_name='admin')
+    resp = _do_get(sess, 'admin-only')
+    assert 200 <= resp.status_code < 300, (
+        "Status code for admin-only call by non-registered admin project "
+        "should still succeed."
     )
