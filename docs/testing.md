@@ -15,18 +15,18 @@ the problem scenario so that we can ensure the bug doesn't return!
 
 # Configuration
 
-By installing HaaS and its dependencies in the virtual environment (done 
-via: `pip install -e .` in the root directory), you will automatically 
-receive a recent version of pytest and be ready to test the code. Using 
-pip's `-e` option installs the haas in editable mode, which has the 
+By installing HaaS and its dependencies in the virtual environment (done
+via: `pip install -e .` in the root directory), you will automatically
+receive a recent version of pytest and be ready to test the code. Using
+pip's `-e` option installs the haas in editable mode, which has the
 advantage that one need not reinstall every time a file is changed!
 
 Most of the tests use a common set of default configuration options, as
-seen in `testsuite.cfg.default`. If you wish to override these 
+seen in `testsuite.cfg.default`. If you wish to override these
 parameters, you may copy it to `testsuite.cfg` and edit. In the future,
-this will allow developers to do things like test against different 
-DBMSes (for the moment some changes are needed to the test suite to 
-actually support this). For now, it's mostly interesting when running 
+this will allow developers to do things like test against different
+DBMSes (for the moment some changes are needed to the test suite to
+actually support this). For now, it's mostly interesting when running
 the deployment tests (see below).
 
 # Running
@@ -56,39 +56,55 @@ More information is available on the projects [PyPI page][2].
 # Test structure
 
 Tests are kept in the `tests` directory, which is further organized into
-2 subdirectories: `unit` and `deployment`.
+a few subdirectories:
+
+* `unit`
+* `integration`
+* `deployment`
 
 For each file in the haas code, there should be a file with the same name in
-the unit directory. Within those files, classes (class names **must** 
-begin with "Test") can be used to organize tests into functional areas.  
-Function names must also begin with "test". See tests/unit/api.py for 
+the unit directory. Within those files, classes (class names **must**
+begin with "Test") can be used to organize tests into functional areas.
+Function names must also begin with "test". See tests/unit/api.py for
 examples.
+
+There also may be a few files loose in the `tests` directory that do not
+clearly fit into one of the above categories.
+
+# Integration tests
+
+The `tests/integration` directory contains tests that require
+substantial setup of external software, or special configuration. These
+tend to be expensive in terms of time. These are run automatically by
+our travis-ci configuration.
 
 # Deployment tests
 
-The deployment tests (`tests/deployment`) are a set of unit tests which 
-are most useful when executed in an environment with real hardware and a 
-libvirtd instance available. To run the deployment tests, you must do 
-the following:
+The deployment tests (`tests/deployment`) are a set of unit tests which
+are most useful when executed in an environment with real hardware and a
+libvirtd instance available. As such, these are *not* run by our
+travis-ci configuration. They should be run before merging any patch
+relating to specific hardware support, or interacting with headnodes. To
+run the deployment tests, you must do the following:
 
-* Write a `testsuite.cfg` reflecting your environment. Copy 
-  `testsuite.cfg.default` and edit. In particular, you will need to load 
+* Write a `testsuite.cfg` reflecting your environment. Copy
+  `testsuite.cfg.default` and edit. In particular, you will need to load
   the extensions for your switch drivers and the corresponding network
   allocator (see `drivers.md`), and specify extension-specific options.
 * Write a `site-layout.json` describing the layout of your environment.
-  The file `site-layout.json.example` provides an example. Here is a 
+  The file `site-layout.json.example` provides an example. Here is a
   full description of the file format:
 
-`site-layout.json` must contain a single json object, with two fields: 
+`site-layout.json` must contain a single json object, with two fields:
 `"switches"` and `"nodes"`.
 
-`"switches"` must be a list of json objects, each of which describes a 
-switch in your environment, and must have the same fields as required in 
-the body of  the `switch_register` API call (see `rest_api.md`), plus a 
-`"switch"` field, which supplies the name of the switch (normally 
+`"switches"` must be a list of json objects, each of which describes a
+switch in your environment, and must have the same fields as required in
+the body of  the `switch_register` API call (see `rest_api.md`), plus a
+`"switch"` field, which supplies the name of the switch (normally
 specified in the URL).
 
-`"nodes"` must be a list of json objects, each of which defines a node, 
+`"nodes"` must be a list of json objects, each of which defines a node,
 and has three fields:
 
 * `"name"`, a string which specifies the name of the node.
@@ -99,8 +115,8 @@ and has three fields:
   * `"switch"`, the name of the switch that the nic is connected to
   * `"port"`, the name/label of the port on the switch that the nic is
     connected to
-* `"ipmi"`, an object with the string fields `"host"`, `"user"`, 
-  `"pass"`, defining the information needed to talk to the IPMI 
+* `"ipmi"`, an object with the string fields `"host"`, `"user"`,
+  `"pass"`, defining the information needed to talk to the IPMI
   controller of the node.
 
 

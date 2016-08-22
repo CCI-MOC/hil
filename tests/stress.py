@@ -82,7 +82,7 @@ def test_many_http_queries():
             json.loads(resp.get_data())
 
     for i in range(100):
-        _show_nodes('/free_nodes')
+        _show_nodes('/node/free')
         resp = client.get('/projects')
         assert resp.status_code == 200
         for project in json.loads(resp.get_data()):

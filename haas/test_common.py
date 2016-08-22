@@ -287,6 +287,35 @@ def headnode_cleanup(request):
     request.addfinalizer(undefine_headnodes)
 
 
+def additional_db():
+    """ Populated database with additional objects needed for testing.
+
+    The database setup in initial_db is required to remain static as
+    a starting point for database migrations so any changes needed for
+    testing should be made in additional_db.
+    """
+
+    initial_db()
+
+    switch = db.session.query(Switch).filter_by(label="stock_switch_0").one()
+
+    with app.app_context():
+        for node_label in ['runway_node_0', 'runway_node_1',
+                           'manhattan_node_0', 'manhattan_node_1']:
+
+            node = db.session.query(Node).filter_by(label=node_label).one()
+            nic = db.session.query(Nic).filter_by(owner=node, label='boot-nic').one()
+
+            port = Port('connected_port_0', switch)
+            port.nic = nic
+            nic.port = port
+
+            db.session.add(node)
+
+        db.session.add(switch)
+        db.session.commit()
+
+
 def initial_db():
     """Populates the database with a useful set of objects.
 

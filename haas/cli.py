@@ -23,6 +23,7 @@ import requests
 import sys
 import urllib
 import schema
+import abc
 
 from functools import wraps
 
@@ -30,6 +31,91 @@ command_dict = {}
 usage_dict = {}
 MIN_PORT_NUMBER = 1
 MAX_PORT_NUMBER = 2**16 - 1
+
+class HTTPClient(object):
+    """An HTTP client.
+
+    Makes HTTP requests on behalf of the HaaS CLI. Responsible for adding
+    authentication information to the request.
+    """
+
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
+    def request(method, url, data=None):
+        """Make an HTTP request
+
+        Makes an HTTP request on URL `url` with method `method` and request
+        body `data` (if supplied). May add authentication or other
+        backend-specific information to the request.
+
+        Parameters
+        ----------
+
+        method : str
+            The HTTP method to use, e.g. 'GET', 'PUT', 'POST'...
+        url : str
+            The URL to act on
+        data : str, optional
+            The body of the request
+
+        Returns
+        -------
+
+        requests.Response
+            The HTTP response
+        """
+
+
+class RequestsHTTPClient(requests.Session, HTTPClient):
+    """An HTTPClient which uses the requests library.
+
+    Note that this doesn't do anything over `requests.Session`; that
+    class already implements the required interface. We declare it only
+    for clarity.
+    """
+
+class KeystoneHTTPClient(HTTPClient):
+    """An HTTPClient which authenticates with Keystone.
+
+    This uses an instance of python-keystoneclient's Session class
+    to do its work.
+    """
+
+    def __init__(self, session):
+        """Create a KeystoneHTTPClient
+
+        Parameters
+        ----------
+
+        session : keystoneauth1.Session
+            A keystone session to make the requests with
+        """
+        self.session = session
+
+    def request(self, method, url, data=None):
+        """Make an HTTP request using keystone for authentication.
+
+        Smooths over the differences between python-keystoneclient's
+        request method that specified by HTTPClient
+        """
+        # We have to import this here, since we can't assume the library
+        # is available from global scope.
+        from keystoneauth1.exceptions.http import HttpError
+
+        try:
+            # The order of these parameters is different that what
+            # we expect, but the names are the same:
+            return self.session.request(method=method,
+                                        url=url,
+                                        data=data)
+        except HttpError as e:
+            return e.response
+
+
+# An instance of HTTPClient, which will be used to make the request.
+http_client = None
+
 
 def cmd(f):
     """A decorator for CLI commands.
@@ -59,6 +145,63 @@ def cmd(f):
     return wrapped
 
 
+def setup_http_client():
+    """Set `http_client` to a valid instance of `HTTPClient`
+
+    Sets http_client to an object which makes HTTP requests with
+    authentication. It chooses an authentication backend as follows:
+
+    1. If the environment variables HAAS_USERNAME and HAAS_PASSWORD
+       are defined, it will use HTTP basic auth, with the corresponding
+       user name and password.
+    2. If the `python-keystoneclient` library is installed, and the
+       environment variables:
+
+           * OS_AUTH_URL
+           * OS_USERNAME
+           * OS_PASSWORD
+           * OS_PROJECT_NAME
+
+       are defined, Keystone is used.
+    3. Oterwise, do not supply authentication information.
+
+    This may be extended with other backends in the future.
+    """
+    global http_client
+    # First try basic auth:
+    basic_username = os.getenv('HAAS_USERNAME')
+    basic_password = os.getenv('HAAS_PASSWORD')
+    if basic_username is not None and basic_password is not None:
+        http_client = RequestsHTTPClient()
+        http_client.auth = (basic_username, basic_password)
+        return
+    # Next try keystone:
+    try:
+        from keystoneauth1.identity import v3
+        from keystoneauth1 import session
+        os_auth_url = os.getenv('OS_AUTH_URL')
+        os_password = os.getenv('OS_PASSWORD')
+        os_username = os.getenv('OS_USERNAME')
+        os_user_domain_id = os.getenv('OS_USER_DOMAIN_ID') or 'default'
+        os_project_name = os.getenv('OS_PROJECT_NAME')
+        os_project_domain_id = os.getenv('OS_PROJECT_DOMAIN_ID') or 'default'
+        if None in (os_auth_url, os_username, os_password, os_project_name):
+            raise KeyError("Required openstack environment variable not set.")
+        auth = v3.Password(auth_url=os_auth_url,
+                           username=os_username,
+                           password=os_password,
+                           project_name=os_project_name,
+                           user_domain_id=os_user_domain_id,
+                           project_domain_id=os_project_domain_id)
+        sess = session.Session(auth=auth)
+        http_client = KeystoneHTTPClient(sess)
+        return
+    except (ImportError, KeyError):
+        pass
+    # Finally, fall back to no authentication:
+    http_client = requests.Session()
+
+
 def check_status_code(response):
     if response.status_code < 200 or response.status_code >= 300:
         sys.stderr.write('Unexpected status code: %d\n' % response.status_code)
@@ -79,38 +222,30 @@ def object_url(*args):
         url += '/' + urllib.quote(arg,'')
     return url
 
-def do_request(fn, url, data={}):
+def do_request(method, url, data={}):
     """Helper function for making HTTP requests against the API.
+
+    Uses the global variable `http_client` to make the request.
 
     Arguments:
 
-        `fn` - a function from the requests library, one of requests.put,
-               requests.get...
+        `method` - the http method, as a string: 'GET', 'PUT', 'POST'...
         `url` - The url to make the request to
         `data` - the body of the request.
-
-    If the environment variables HAAS_USERNAME and HAAS_PASSWORD are
-    defined, The request will use HTTP basic auth to authenticate, with
-    the given username and password.
     """
-    kwargs = {}
-    username = os.getenv('HAAS_USERNAME')
-    password = os.getenv('HAAS_PASSWORD')
-    if username is not None and password is not None:
-        kwargs['auth'] = (username, password)
-    return check_status_code(fn(url, data=data, **kwargs))
+    return check_status_code(http_client.request(method, url, data=data))
 
 def do_put(url, data={}):
-    return do_request(requests.put, url, data=json.dumps(data))
+    return do_request('PUT', url, data=json.dumps(data))
 
 def do_post(url, data={}):
-    return do_request(requests.post, url, data=json.dumps(data))
+    return do_request('POST', url, data=json.dumps(data))
 
 def do_get(url):
-    return do_request(requests.get, url)
+    return do_request('GET', url)
 
 def do_delete(url):
-    return do_request(requests.delete, url)
+    return do_request('DELETE', url)
 
 @cmd
 def serve(port):
@@ -373,7 +508,7 @@ def switch_register(switch, subtype, *args):
     eg. haas switch_register mock03 mock mockhost01 mockuser01 mockpass01
 
     FIXME: current design needs to change. CLI should not know about every backend.
-    ideally, this should be taken care of in the driver itself or 
+    ideally, this should be taken care of in the driver itself or
     client library (work-in-progress) should manage it.
     """
     switch_api = "http://schema.massopencloud.org/haas/v0/switches/"
@@ -455,9 +590,15 @@ def port_detach_nic(switch, port):
     do_post(url)
 
 @cmd
-def list_free_nodes():
-    """List all free nodes"""
-    url = object_url('free_nodes')
+def list_nodes(is_free):
+    """List all nodes or all free nodes
+
+    <is_free> may be either "all" or "free", and determines whether
+        to list all nodes or all free nodes.
+    """
+    if is_free not in ('all', 'free'):
+        raise TypeError("is_free must be either 'all' or 'free'")
+    url = object_url('node', is_free)
     do_get(url)
 
 @cmd
@@ -566,5 +707,7 @@ def main():
     if len(sys.argv) < 2 or sys.argv[1] not in command_dict:
         # Display usage for all commands
         help()
+        sys.exit(1)
     else:
+        setup_http_client()
         command_dict[sys.argv[1]](*sys.argv[2:])

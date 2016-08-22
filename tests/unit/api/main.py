@@ -57,6 +57,15 @@ pytestmark = pytest.mark.usefixtures('configure',
                                      'server_init',
                                      'with_request_context')
 
+@pytest.fixture
+def switchinit():
+    api.switch_register('sw0',
+                        type=MOCK_SWITCH_TYPE,
+                        username="switch_user",
+                        password="switch_pass",
+                        hostname="switchname")
+    api.switch_register_port('sw0', '3')
+
 
 class TestProjectCreateDelete:
     """Tests for the haas.api.project_* functions."""
@@ -184,7 +193,8 @@ class TestNetworking:
 
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
-        api.node_connect_network('node-99', 'eth0', 'hammernet')
+        with pytest.raises(api.NotFoundError):
+            api.node_connect_network('node-99', 'eth0', 'hammernet')
 
 
 class TestProjectConnectDetachNode:
@@ -275,7 +285,7 @@ class TestProjectConnectDetachNode:
         with pytest.raises(api.NotFoundError):
             api.project_detach_node('anvil-nextgen', 'node-99')
 
-    def test_project_detach_node_on_network(self):
+    def test_project_detach_node_on_network(self, switchinit):
         api.project_create('anvil-nextgen')
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
@@ -285,6 +295,7 @@ class TestProjectConnectDetachNode:
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:13')
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
+        api.port_connect_nic('sw0', '3', 'node-99', 'eth0')
         api.node_connect_network('node-99', 'eth0', 'hammernet')
         with pytest.raises(api.BlockedError):
             api.project_detach_node('anvil-nextgen', 'node-99')
@@ -301,7 +312,7 @@ class TestProjectConnectDetachNode:
         network_create_simple('hammernet', 'anvil-nextgen')
         api.project_detach_node('anvil-nextgen', 'node-99')
 
-    def test_project_detach_node_removed_from_network(self):
+    def test_project_detach_node_removed_from_network(self, switchinit):
         api.project_create('anvil-nextgen')
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
@@ -311,6 +322,7 @@ class TestProjectConnectDetachNode:
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:13')
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
+        api.port_connect_nic('sw0', '3', 'node-99', 'eth0')
         api.node_connect_network('node-99', 'eth0', 'hammernet')
         deferred.apply_networking()
         api.node_detach_network('node-99', 'eth0', 'hammernet')
@@ -498,7 +510,7 @@ class TestNodeRegisterDeleteNic:
 
 class TestNodeConnectDetachNetwork:
 
-    def test_node_connect_network_success(self):
+    def test_node_connect_network_success(self, switchinit):
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -508,6 +520,7 @@ class TestNodeConnectDetachNetwork:
         api.project_create('anvil-nextgen')
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
+        api.port_connect_nic('sw0', '3', 'node-99', '99-eth0')
 
         # Check the actual HTTP response and status, not just the success;
         # we should do this at least once in the test suite, since this call
@@ -520,7 +533,7 @@ class TestNodeConnectDetachNetwork:
         model.NetworkAttachment.query.filter_by(network=network,
                                                 nic=nic).one()
 
-    def test_node_connect_network_wrong_node_in_project(self):
+    def test_node_connect_network_wrong_node_in_project(self, switchinit):
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -530,6 +543,7 @@ class TestNodeConnectDetachNetwork:
         api.project_create('anvil-nextgen')
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
+        api.port_connect_nic('sw0', '3', 'node-99', '99-eth0')
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
         api.node_register('node-98', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
@@ -615,7 +629,7 @@ class TestNodeConnectDetachNetwork:
         with pytest.raises(api.ProjectMismatchError):
             api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
-    def test_node_connect_network_different_projects(self):
+    def test_node_connect_network_different_projects(self, switchinit):
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -626,11 +640,12 @@ class TestNodeConnectDetachNetwork:
         api.project_create('anvil-oldtimer') # added
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-oldtimer') # changed
+        api.port_connect_nic('sw0', '3', 'node-99', '99-eth0')
 
         with pytest.raises(api.ProjectMismatchError):
             api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
-    def test_node_connect_network_already_attached_to_same(self):
+    def test_node_connect_network_already_attached_to_same(self, switchinit):
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -640,13 +655,14 @@ class TestNodeConnectDetachNetwork:
         api.project_create('anvil-nextgen')
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
+        api.port_connect_nic('sw0', '3', 'node-99', '99-eth0')
         api.node_connect_network('node-99', '99-eth0', 'hammernet') # added
         deferred.apply_networking() # added
 
         with pytest.raises(api.BlockedError):
             api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
-    def test_node_connect_network_already_attached_differently(self):
+    def test_node_connect_network_already_attached_differently(self, switchinit):
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -657,6 +673,7 @@ class TestNodeConnectDetachNetwork:
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
         network_create_simple('hammernet2', 'anvil-nextgen') #added
+        api.port_connect_nic('sw0', '3', 'node-99', '99-eth0')
         api.node_connect_network('node-99', '99-eth0', 'hammernet') # added
         deferred.apply_networking() # added
 
@@ -664,7 +681,7 @@ class TestNodeConnectDetachNetwork:
             api.node_connect_network('node-99', '99-eth0', 'hammernet2')
 
 
-    def test_node_detach_network_success(self):
+    def test_node_detach_network_success(self, switchinit):
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -674,6 +691,7 @@ class TestNodeConnectDetachNetwork:
         api.project_create('anvil-nextgen')
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
+        api.port_connect_nic('sw0', '3', 'node-99', '99-eth0')
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
         deferred.apply_networking() # added
 
@@ -700,7 +718,7 @@ class TestNodeConnectDetachNetwork:
         with pytest.raises(api.BadArgumentError):
             api.node_detach_network('node-99', '99-eth0', 'hammernet')
 
-    def test_node_detach_network_wrong_node_in_project(self):
+    def test_node_detach_network_wrong_node_in_project(self, switchinit):
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -716,12 +734,13 @@ class TestNodeConnectDetachNetwork:
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.project_connect_node('anvil-nextgen', 'node-98') # added
         network_create_simple('hammernet', 'anvil-nextgen')
+        api.port_connect_nic('sw0', '3', 'node-99', '99-eth0')
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
         with pytest.raises(api.NotFoundError):
             api.node_detach_network('node-98', '99-eth0', 'hammernet') # changed
 
-    def test_node_detach_network_wrong_node_not_in_project(self):
+    def test_node_detach_network_wrong_node_not_in_project(self, switchinit):
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -736,12 +755,13 @@ class TestNodeConnectDetachNetwork:
         api.project_create('anvil-nextgen')
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
+        api.port_connect_nic('sw0', '3', 'node-99', '99-eth0')
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
         with pytest.raises(api.NotFoundError):
             api.node_detach_network('node-98', '99-eth0', 'hammernet') # changed
 
-    def test_node_detach_network_no_such_node(self):
+    def test_node_detach_network_no_such_node(self, switchinit):
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -751,12 +771,13 @@ class TestNodeConnectDetachNetwork:
         api.project_create('anvil-nextgen')
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
+        api.port_connect_nic('sw0', '3', 'node-99', '99-eth0')
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
         with pytest.raises(api.NotFoundError):
             api.node_detach_network('node-98', '99-eth0', 'hammernet') # changed
 
-    def test_node_detach_network_no_such_nic(self):
+    def test_node_detach_network_no_such_nic(self, switchinit):
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -766,12 +787,13 @@ class TestNodeConnectDetachNetwork:
         api.project_create('anvil-nextgen')
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
+        api.port_connect_nic('sw0', '3', 'node-99', '99-eth0')
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
         with pytest.raises(api.NotFoundError):
             api.node_detach_network('node-99', '99-eth1', 'hammernet') # changed
 
-    def test_node_detach_network_node_not_in_project(self):
+    def test_node_detach_network_node_not_in_project(self, switchinit):
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -781,7 +803,9 @@ class TestNodeConnectDetachNetwork:
         api.project_create('anvil-nextgen')
 #        api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
+        api.port_connect_nic('sw0', '3', 'node-99', '99-eth0')
 #        api.node_connect_network('node-99', '99-eth0', 'hammernet')
+
 
         with pytest.raises(api.ProjectMismatchError):
             api.node_detach_network('node-99', '99-eth0', 'hammernet')
@@ -1135,7 +1159,7 @@ class TestNetworkCreateDelete:
         api.network_delete('hammernet')
         api._assert_absent(model.Network, 'hammernet')
 
-    def test_network_delete_project_complex_success(self):
+    def test_network_delete_project_complex_success(self, switchinit):
         api.project_create('anvil-nextgen')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.node_register('node-99', obm={
@@ -1145,6 +1169,7 @@ class TestNetworkCreateDelete:
                   "password": "tapeworm"})
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
         api.project_connect_node('anvil-nextgen', 'node-99')
+        api.port_connect_nic('sw0', '3', 'node-99', 'eth0')
         api.node_connect_network('node-99', 'eth0', 'hammernet')
         deferred.apply_networking()
         api.node_detach_network('node-99', 'eth0', 'hammernet')
@@ -1156,7 +1181,7 @@ class TestNetworkCreateDelete:
         with pytest.raises(api.NotFoundError):
             api.network_delete('hammernet')
 
-    def test_network_delete_node_on_network(self):
+    def test_network_delete_node_on_network(self, switchinit):
         api.project_create('anvil-nextgen')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.node_register('node-99', obm={
@@ -1166,6 +1191,7 @@ class TestNetworkCreateDelete:
                   "password": "tapeworm"})
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
         api.project_connect_node('anvil-nextgen', 'node-99')
+        api.port_connect_nic('sw0', '3', 'node-99', 'eth0')
         api.node_connect_network('node-99', 'eth0', 'hammernet')
         with pytest.raises(api.BlockedError):
             api.network_delete('hammernet')
@@ -1255,16 +1281,16 @@ class Test_list_switches:
 
     def test_list_switches(self):
         assert json.loads(api.list_switches()) == []
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE, 
-		username="foo", password="bar", hostname="baz")
+        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
+                            username="foo", password="bar", hostname="baz")
         api._must_find(model.Switch, 'sw0')
         assert json.loads(api.list_switches()) == ['sw0']
 
-        api.switch_register('mock', type=MOCK_SWITCH_TYPE, 
-		username="user", password="password", hostname="host")
+        api.switch_register('mock', type=MOCK_SWITCH_TYPE,
+                            username="user", password="password", hostname="host")
         api._must_find(model.Switch, 'mock')
-        api.switch_register('cirius', type=MOCK_SWITCH_TYPE, 
-		username="user", password="password", hostname="switch")
+        api.switch_register('cirius', type=MOCK_SWITCH_TYPE,
+                            username="user", password="password", hostname="switch")
         api._must_find(model.Switch, 'cirius')
         assert json.loads(api.list_switches()) == [
             'cirius',
@@ -1274,10 +1300,7 @@ class Test_list_switches:
 
 class TestPortConnectDetachNic:
 
-    def test_port_connect_nic_success(self):
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
-                username="switch_user", password="switch_pass", hostname="switchname")
-        api.switch_register_port('sw0', '3')
+    def test_port_connect_nic_success(self, switchinit):
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -1327,10 +1350,7 @@ class TestPortConnectDetachNic:
         with pytest.raises(api.NotFoundError):
             api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
 
-    def test_port_connect_nic_already_attached_to_same(self):
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
-                username="switch_user", password="switch_pass", hostname="switchname")
-        api.switch_register_port('sw0', '3')
+    def test_port_connect_nic_already_attached_to_same(self, switchinit):
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -1341,10 +1361,7 @@ class TestPortConnectDetachNic:
         with pytest.raises(api.DuplicateError):
             api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
 
-    def test_port_connect_nic_nic_already_attached_differently(self):
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
-                username="switch_user", password="switch_pass", hostname="switchname")
-        api.switch_register_port('sw0', '3')
+    def test_port_connect_nic_nic_already_attached_differently(self, switchinit):
         api.switch_register_port('sw0', '4')
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
@@ -1356,10 +1373,7 @@ class TestPortConnectDetachNic:
         with pytest.raises(api.DuplicateError):
             api.port_connect_nic('sw0', '4', 'compute-01', 'eth0')
 
-    def test_port_connect_nic_port_already_attached_differently(self):
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
-                username="switch_user", password="switch_pass", hostname="switchname")
-        api.switch_register_port('sw0', '3')
+    def test_port_connect_nic_port_already_attached_differently(self, switchinit):
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -1376,10 +1390,7 @@ class TestPortConnectDetachNic:
         with pytest.raises(api.DuplicateError):
             api.port_connect_nic('sw0', '3', 'compute-02', 'eth1')
 
-    def test_port_detach_nic_success(self):
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
-                username="switch_user", password="switch_pass", hostname="switchname")
-        api.switch_register_port('sw0', '3')
+    def test_port_detach_nic_success(self, switchinit):
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -1406,11 +1417,8 @@ class TestPortConnectDetachNic:
         with pytest.raises(api.NotFoundError):
             api.port_detach_nic('sw0', '3')
 
-    def port_detach_nic_node_not_free(self):
+    def port_detach_nic_node_not_free(self, switchinit):
         """should refuse to detach a nic if it has pending actions."""
-        api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
-                username="switch_user", password="switch_pass", hostname="switchname")
-        api.switch_register_port('sw0', '3')
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -1464,7 +1472,7 @@ class TestQuery:
                   "host": "ipmihost",
                   "user": "root",
                   "password": "tapeworm"})
-        result = json.loads(api.list_free_nodes())
+        result = json.loads(api.list_nodes("free"))
         # For the lists to be equal, the ordering must be the same:
         result.sort()
         assert result == [
@@ -1486,7 +1494,7 @@ class TestQuery:
         ]
 
     def test_no_free_nodes(self):
-        assert json.loads(api.list_free_nodes()) == []
+        assert json.loads(api.list_nodes("ree")) == []
 
     def test_some_non_free_nodes(self):
         """Make sure that allocated nodes don't show up in the free list."""
@@ -1510,7 +1518,7 @@ class TestQuery:
         api.project_connect_node('anvil-nextgen', 'robocop')
         api.project_connect_node('anvil-nextgen', 'data')
 
-        assert json.loads(api.list_free_nodes()) == ['master-control-program']
+        assert json.loads(api.list_nodes("free")) == ['master-control-program']
 
     def test_show_node(self):
         """Test the show_node api call.
@@ -1584,6 +1592,13 @@ class TestQuery:
         self._compare_node_dumps(actual, expected)
 
     def test_show_node_multiple_network(self):
+        api.switch_register('sw0',
+                            type=MOCK_SWITCH_TYPE,
+                            username="switch_user",
+                            password="switch_pass",
+                            hostname="switchname")
+        api.switch_register_port('sw0', '1')
+        api.switch_register_port('sw0', '2')
         api.node_register('robocop', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -1595,8 +1610,10 @@ class TestQuery:
         api.project_create('anvil-nextgen')
         api.project_connect_node('anvil-nextgen', 'robocop')
         network_create_simple('pxe', 'anvil-nextgen')
+        api.port_connect_nic('sw0', '1', 'robocop', 'eth0')
         api.node_connect_network('robocop', 'eth0', 'pxe')
         network_create_simple('storage', 'anvil-nextgen')
+        api.port_connect_nic('sw0', '2', 'robocop', 'wlan0')
         api.node_connect_network('robocop', 'wlan0', 'storage')
         deferred.apply_networking()
 

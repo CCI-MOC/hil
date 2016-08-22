@@ -283,6 +283,9 @@ def node_connect_network(node, nic, network, channel=None):
 
     allocator = get_network_allocator()
 
+    if nic.port is None:
+        raise NotFoundError("No port is connected to given nic.")
+
     if nic.current_action:
         raise BlockedError("A networking operation is already active on the nic.")
 
@@ -796,19 +799,21 @@ def port_detach_nic(switch, port):
     port.nic = None
     db.session.commit()
 
-
-@rest_call('GET', '/free_nodes', Schema({}))
-def list_free_nodes():
-    """List all nodes not in any project.
+@rest_call('GET', '/node/<is_free>', Schema({'is_free' : basestring}))
+def list_nodes(is_free):
+    """List all nodes or all free nodes
 
     Returns a JSON array of strings representing a list of nodes.
 
     Example:  '["node1", "node2", "node3"]'
     """
-    nodes = model.Node.query.filter_by(project_id=None).all()
+    if is_free == "free":
+        nodes = model.Node.query.filter_by(project_id=None).all()
+    else:
+        nodes = model.Node.query.all()
+
     nodes = sorted([n.label for n in nodes])
     return json.dumps(nodes)
-
 
 @rest_call('GET', '/project/<project>/nodes', Schema({'project': basestring}))
 def list_project_nodes(project):
@@ -836,6 +841,7 @@ def list_project_networks(project):
     Example:  '["net1", "net2", "net3"]'
     """
     project = _must_find(model.Project, project)
+    get_auth_backend().require_project_access(project)
     networks = project.networks_access
     networks = sorted([n.label for n in networks])
     return json.dumps(networks)
