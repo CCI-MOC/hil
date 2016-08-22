@@ -333,7 +333,7 @@ Authorization requirements:
 
 `GET /nodes/<is_free>`
 
-Return a list of all nodes or free/available nodes. The value of `is_free` 
+Return a list of all nodes or free/available nodes. The value of `is_free`
 can be `all` to return all nodes or `free` to return free/available nodes.
 
 Response body:
@@ -359,6 +359,24 @@ Response body:
     [
         "node-1",
         "node-2",
+        ...
+    ]
+
+Authorization requirements:
+
+* Access to `<project>` or administrative access
+
+### list_project_networks
+
+`GET /project/<project>/networks`
+
+List all networks belonging to the given project
+
+Response body:
+
+    [
+        "network-1",
+        "network-2",
         ...
     ]
 
@@ -798,6 +816,7 @@ Authorization requirements:
 
 Possible errors:
 
+* 404, if no port is connected to the given nic.
 * 409, if the nic or port is already attached to something.
 
 ### port_detach_nic
@@ -884,4 +903,3 @@ Remove a user from a project.
 Authorization requirements:
 
 * Administrative access.
-

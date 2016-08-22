@@ -2,7 +2,7 @@
 
 # Setup configuration
 cp ci/testsuite.cfg.$DB testsuite.cfg
-sudo cp ci/haas.cfg.apache.$DB /etc/haas.cfg
+sudo cp ci/apache/haas.cfg.$DB /etc/haas.cfg
 sudo chown travis:travis /etc/haas.cfg
 
 # Database Setup
