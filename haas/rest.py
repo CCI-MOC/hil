@@ -99,7 +99,7 @@ class ValidationError(APIError):
     """An exception indicating that the body of the request was invalid."""
 
 
-def rest_call(method, path, schema):
+def rest_call(methods, path, schema):
     """A decorator which registers an http mapping to a python api call.
 
     `rest_call` makes no modifications to the function itself, though the
@@ -120,14 +120,16 @@ def rest_call(method, path, schema):
             a function argument has a default value, it may be marked as
             optional in the schema.
 
-            Any arguments not found in the path will be assumed to be keys in
-            a JSON object in the body of the request. It is an error for an
-            argument to appear in both the request body and the path; such
+            Any arguments not found in the path will be assumed to be keys in a
+            JSON object in the body of the request for non-GET requests. For
+            GET requests, query parameters (ie - those appearing after '?') are
+            also examined. It is an error for an argument to appear in two
+            places (ie - the query parameters or body and the path); such
             requests will be rejected prior to invoking the schema.
 
-            Because GET query parameters have no type, ensure that any GET
-            arguments of non-string type implement Schema's "Use" to perform
-            type validation and conversion.
+            Because GET query parameters are initially strings, ensure that any
+            GET arguments of non-string type implement Schema's "Use" to
+            perform type validation and conversion.
 
     For example, given::
 
@@ -171,12 +173,18 @@ def rest_call(method, path, schema):
     """
     def register(f):
 
-        methods = method if isinstance(method, list) else [method]
+        if isinstance(methods, list):
+            # Methods can be either passed as a single string
+            # or a list.
+            meths = methods
+        else:
+            meths = [methods]
+
 
         app.add_url_rule(path,
                          f.__name__,
                          _rest_wrapper(f, schema),
-                         methods=methods)
+                         methods=meths)
         return f
     return register
 
@@ -198,7 +206,7 @@ def _do_validation(schema, kwargs):
     final_kwargs = {}
 
     if flask.request.method == "GET":
-        # GET requests can use URL and query parameter arguments
+        # GET requests can use path AND query parameter arguments
         if flask.request.data != '':
             raise ValidationError("GET request made with a non-empty request"
                                   " body")
@@ -215,7 +223,7 @@ def _do_validation(schema, kwargs):
             else:
                 final_kwargs[key] = value
     else:
-        # Methods other than GET use URL and body arguments
+        # Methods other than GET can use path and body arguments
         if flask.request.data != '':
             try:
                 final_kwargs = json.loads(flask.request.data)
