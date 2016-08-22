@@ -169,7 +169,6 @@ Enter the environment (do this every time you start working with HaaS dev enviro
 Then, proceed with installing the HaaS and its dependencies into the virtual
 environment::
 
-  sudo python setup.py install
   pip install -e .
 
 

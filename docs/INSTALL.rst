@@ -152,8 +152,8 @@ To enable the null backend, make sure **[extensions]** contains::
 Setting Up HaaS Database
 ------------------------
 
-The only DBMS currently supported for production use is PostgreSQL. (SQLite is
-supported for development purposes *only*).
+The only DBMS currently supported for production use is PostgreSQL. 
+(SQLite is supported for development purposes *only*).
 There are many ways of setting up PostgreSQL server. 
 `Install_configure_PostgreSQL_CENTOS7.md <Install_configure_PostgreSQL_CENTOS7.md>`_
 provides one way to accomplish this. 
