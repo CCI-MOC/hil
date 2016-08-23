@@ -18,7 +18,10 @@ To grant the Openstack project with that UUID access to HaaS.
 
 Note that the plugin recognizes any user with an `admin` role on any
 project as a HaaS administrator, similar to the default policy for core
-Openstack projects.
+Openstack projects. This is true even for projects not that do not exist
+within HaaS; such projects will not be able to own resources (such as
+nodes networks, etc), but may perform admin-only operations (such as
+creating projects).
 
 The HaaS command line interface will look for the same `OS_*`
 environment variables used by the Openstack command line tools; these

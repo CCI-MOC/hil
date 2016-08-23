@@ -31,6 +31,9 @@ class KeystoneAuthBackend(auth.AuthBackend):
         if request.environ['HTTP_X_IDENTITY_STATUS'] != 'Confirmed':
             return False
 
+        if self._have_admin():
+            return True
+
         project_id = request.environ['HTTP_X_PROJECT_ID']
         if Project.query.filter_by(label=project_id).count() == 0:
             logger.info("Successful authentication by Openstack project %r, "
