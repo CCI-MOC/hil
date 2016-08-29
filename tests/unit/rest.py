@@ -238,12 +238,12 @@ def validation_setup():
     # We have four kinds of calls we want to validate here:
 
     # 1. No arguments in the URL or body (no_args)
-    @rest.rest_call(['GET','POST'], '/no/args', Schema({}))
+    @rest.rest_call(['GET', 'POST'], '/no/args', Schema({}))
     def no_args():
         pass
 
     # 2. Argument in the URL and not in the body (url_args)
-    @rest.rest_call(['GET','POST'], '/url/args/<arg1>/<arg2>', Schema({
+    @rest.rest_call(['GET', 'POST'], '/url/args/<arg1>/<arg2>', Schema({
         'arg1': basestring,
         'arg2': basestring,
     }))
@@ -251,7 +251,7 @@ def validation_setup():
         return json.dumps([arg1, arg2])
 
     # 3. Arguments in both the URL and body (mixed_args)
-    @rest.rest_call(['GET','PUT'], '/mixed/args/<arg1>', Schema({
+    @rest.rest_call(['GET', 'PUT'], '/mixed/args/<arg1>', Schema({
         'arg1': basestring,
         'arg2': basestring,
     }))
@@ -259,7 +259,7 @@ def validation_setup():
         return json.dumps([arg1, arg2])
 
     # 4. Arguments in body (query parameters for GET) and not in the URL.
-    @rest.rest_call(['GET','POST'], '/just/args', Schema({
+    @rest.rest_call(['GET', 'POST'], '/just/args', Schema({
         'arg1': basestring,
         'arg2': basestring,
     }))
@@ -276,7 +276,7 @@ def validation_setup():
 
     # Let's also make sure we're testing something with a schema that isn't
     # just basestring:
-    @rest.rest_call(['GET','PUT'], '/non-string-schema',
+    @rest.rest_call(['GET', 'PUT'], '/non-string-schema',
                     schema=Schema({"the_value": Use(int)}))
     def non_string_schema(the_value):
         return json.dumps(the_value)
@@ -340,17 +340,17 @@ def _do_request(client, method, path, data={}, query={}):
                  'query': {'arg2': 'goodbye'},
                  'data': json.dumps({'arg2': 'goodbye'})},
      'expected': {'status': 400,
-                 'body_json': None}},
+                  'body_json': None}},
     {'request': {'method': 'GET',
                  'path': '/mixed/args/hello',
                  'data': json.dumps({'arg2': 'goodbye'})},
      'expected': {'status': 400,
-                 'body_json': None}},
+                  'body_json': None}},
 
     {'request': {'method': 'GET',
                  'path': '/just/args',
                  'query': {'arg1': 'hello',
-                                     'arg2': 'goodbye'}},
+                           'arg2': 'goodbye'}},
      'expected': {'status': 200,
                   'body_json': ['hello', 'goodbye']}},
     # Should fail because GET doesn't take body args
@@ -363,7 +363,7 @@ def _do_request(client, method, path, data={}, query={}):
     {'request': {'method': 'GET',
                  'path': '/just/args',
                  'query': {'arg1': '',
-                                     'arg2': 'goodbye'}},
+                           'arg2': 'goodbye'}},
      'expected': {'status': 400,
                   'body_json': None}},
 
@@ -377,7 +377,7 @@ def _do_request(client, method, path, data={}, query={}):
     {'request': {'method': 'GET',
                  'path': '/one/optional',
                  'query': {'arg1': 'foo',
-                                     'arg2': 'bar'}},
+                           'arg2': 'bar'}},
      'expected': {'status': 400,
                   'body_json': None}},
 
@@ -412,9 +412,11 @@ def _do_request(client, method, path, data={}, query={}):
                   'body_json': None}},
 
     # Arguments in the body for a function that expects no arguments
-    {'request': {'method': 'POST', 'path': '/no/args', 'data': json.dumps({'arg1': 'foo'})},
+    {'request': {'method': 'POST', 'path': '/no/args',
+                 'data': json.dumps({'arg1': 'foo'})},
      'expected': {'status': 400, 'body_json': None}},
-    {'request': {'method': 'GET', 'path': '/no/args', 'data': json.dumps({'arg1': 'foo'})},
+    {'request': {'method': 'GET', 'path': '/no/args',
+                 'data': json.dumps({'arg1': 'foo'})},
      'expected': {'status': 400, 'body_json': None}},
 
     # Empty body (for a function that expects body args). Note that this should
@@ -494,11 +496,12 @@ def test_validation_status(client, validation_setup, args):
     # function:
     resp = _do_request(client, **args['request'])
     assert resp.status_code == args['expected']['status'],\
-                               (args,resp.get_data())
+        (args, resp.get_data())
 
     if args['expected']['body_json'] is not None:
         assert json.loads(resp.get_data()) == args['expected']['body_json'],\
-               (args,resp.get_data())
+               (args, resp.get_data())
+
 
 class TestCallOnce(HttpTest):
     """Verify that the request handler invokes the API *exactly* once.

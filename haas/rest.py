@@ -180,7 +180,6 @@ def rest_call(methods, path, schema):
         else:
             meths = [methods]
 
-
         app.add_url_rule(path,
                          f.__name__,
                          _rest_wrapper(f, schema),
@@ -211,8 +210,8 @@ def _do_validation(schema, kwargs):
             raise ValidationError("GET request made with a non-empty request"
                                   " body")
 
-        for key,value in flask.request.args.iteritems():
-            if final_kwargs.has_key(key):
+        for key, value in flask.request.args.iteritems():
+            if key in final_kwargs:
                 raise ValidationError("Parameter specified more than once")
             elif value is None or value == '':
                 # TODO: if we want to take flags (ie - an option that has no
