@@ -276,9 +276,14 @@ def validation_setup():
 
     # Let's also make sure we're testing something with a schema that isn't
     # just basestring:
-    @rest.rest_call(['GET', 'PUT'], '/non-string-schema',
-                    schema=Schema({"the_value": Use(int)}))
+    @rest.rest_call('PUT', '/non-string-schema',
+                    schema=Schema({"the_value": int}))
     def non_string_schema(the_value):
+        return json.dumps(the_value)
+
+    @rest.rest_call('GET', '/non-string-schema2',
+                    schema=Schema({"the_value": Use(int)}))
+    def non_string_schema2(the_value):
         return json.dumps(the_value)
 
 
@@ -394,7 +399,7 @@ def _do_request(client, method, path, data={}, query={}):
                   'body_json': ['foo', -42]}},
 
     {'request': {'method': 'GET',
-                 'path': '/non-string-schema',
+                 'path': '/non-string-schema2',
                  'query': {'the_value': 42}},
      'expected': {'status': 200,
                   'body_json': 42}},
