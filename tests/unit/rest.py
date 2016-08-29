@@ -321,7 +321,7 @@ def _do_request(client, method, path, data={}, query={}):
                  },
      'expected': {'status': 200,
                   'body_json': ['hello', 'goodbye']}},
-    # Should fail because arg is expected in URL
+    # Should fail because arg2 is expected in URL
     {'request': {'method': 'GET',
                  'path': '/url/args/hello/',
                  'query': {'arg2': "goodbye"}
