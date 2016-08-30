@@ -598,7 +598,7 @@ def list_nodes(is_free):
     """
     if is_free not in ('all', 'free'):
         raise TypeError("is_free must be either 'all' or 'free'")
-    url = object_url('node', is_free)
+    url = object_url('nodes', is_free)
     do_get(url)
 
 @cmd

@@ -1,5 +1,5 @@
 
-from haas.test_common import config_testsuite, fresh_database
+from haas.test_common import config_testsuite, fresh_database, config_merge
 from haas import api, config, server, rest
 from haas.flaskapp import app
 
@@ -10,6 +10,10 @@ import pytest
 @pytest.fixture
 def configure():
     config_testsuite()
+    config_merge(
+            {'extensions': { 'haas.ext.obm.ipmi': '',},
+            })
+
     config.load_extensions()
 
 
@@ -76,13 +80,13 @@ def test_many_http_queries():
         resp = client.get(path)
         assert resp.status_code == 200
         for node in json.loads(resp.get_data()):
-            resp = client.get('/node/%s' % node)
+            resp = client.get('/nodes/%s' % node)
             assert resp.status_code == 200
             # At least make sure the body parses:
             json.loads(resp.get_data())
 
     for i in range(100):
-        _show_nodes('/node/free')
+        _show_nodes('/nodes/free')
         resp = client.get('/projects')
         assert resp.status_code == 200
         for project in json.loads(resp.get_data()):
