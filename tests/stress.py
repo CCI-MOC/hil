@@ -10,10 +10,9 @@ import pytest
 @pytest.fixture
 def configure():
     config_testsuite()
-    config_merge({'extensions': 
-            { 'haas.ext.obm.ipmi': '',
-              },
-                    })
+    config_merge(
+            {'extensions': { 'haas.ext.obm.ipmi': '',},
+            })
 
     config.load_extensions()
 
