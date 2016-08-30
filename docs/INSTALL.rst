@@ -322,59 +322,6 @@ configuring the ubuntu headnode to act as a PXE server; see the README in
 that directory for more information.
 
 
-<<<<<<< HEAD:docs/INSTALL.rst
-=======
-Authentication and Authorization
---------------------------------
-
-HaaS includes a pluggable architecture for authentication and authorization.
-HaaS ships with a handful of authentication backends; you must enable exactly
-one of them. The list of incuded backends is:
-
-* A backend using HTTP basic auth, with usernames and passwords stored in the
-  HaaS database.
-* A backend which authenticates against Openstack's identity service. In order
-  to use this you must install the keystonemiddleware python package.
-  `keystone-auth.md <docs/keystone-auth.md>`_ Provides further information on
-  the use of tis backend.
-* The other is a "null" backend, which does no authentication or authorization
-  checks. This can be useful for testing and experimentation but *should not*
-  be used in production.
-
-It is also possible for third parties to supply authentication backends as
-extensions. If you wish to use such an extension, refer to the documentation
-for that extension.
-
-Database Backend (haas.ext.auth.database)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-To enable the database backend, make sure the **[extensions]** section of
-``haas.cfg`` contains::
-
-  haas.ext.auth.database =
-
-Then initialize the database as described above. You will need to add an
-initial user with administrative privileges to the database in order to
-bootstrap the system. You can do this by running the following command from
-within the directory containing the server's ``haas.cfg``::
-
-  haas create_admin_user <username> <password>
-
-You can then create additional users via the HTTP API. You may want to
-subsequently delete the initial user; this can also be done via the API.
-
-Keystone Backend (haas.ext.auth.keystone)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-See `The document describing this extension in detail. <docs/keystone-auth.md>`_
-
-Null Backend (haas.ext.auth.null)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-To enable the null backend, make sure **[extensions]** contains::
-
-  haas.ext.auth.null =
-
 Running the Server under Apache
 -------------------------------
 
@@ -408,7 +355,7 @@ allow <https://stackoverflow.com/questions/4390436/need-to-allow-encoded-slashes
 this due to security concerns. ``AllowEncodedSlashes On`` enables the passing
 of these arguments.
 
-**Note:** For apache to be able to pass the authentication headers to HaaS
+**Note:** For apache to be able to pass the authentication headers to HaaS 
 following directive will have to be turned on
 
 ``WSGIPassAuthorization On``
@@ -522,4 +469,5 @@ the relevant API calls:
 - ``port_delete``
 - ``port_connect_nic``
 - ``port_detach_nic``
+
 
