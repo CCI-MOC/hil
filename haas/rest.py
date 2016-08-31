@@ -175,7 +175,8 @@ def rest_call(methods, path, schema):
 
         if isinstance(methods, list):
             # Methods can be either passed as a single string
-            # or a list.
+            # or a list. Use a separate local variable because
+            # modifying `methods` gives an "UnboundLocalError"
             meths = methods
         else:
             meths = [methods]
