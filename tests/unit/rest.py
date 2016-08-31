@@ -276,14 +276,14 @@ def validation_setup():
 
     # Let's also make sure we're testing something with a schema that isn't
     # just basestring:
-    @rest.rest_call('PUT', '/non-string-schema',
+    @rest.rest_call('PUT', '/put-int-body-arg',
                     schema=Schema({"the_value": int}))
-    def non_string_schema(the_value):
+    def put_int_body_arg(the_value):
         return json.dumps(the_value)
 
-    @rest.rest_call('GET', '/non-string-schema2',
+    @rest.rest_call('GET', '/get-int-body-arg-with-use',
                     schema=Schema({"the_value": Use(int)}))
-    def non_string_schema2(the_value):
+    def get_int_body_arg_with_use(the_value):
         return json.dumps(the_value)
 
 
@@ -399,12 +399,30 @@ def _do_request(client, method, path, data={}, query={}):
                   'body_json': ['foo', -42]}},
 
     {'request': {'method': 'GET',
-                 'path': '/non-string-schema2',
+                 'path': '/get-int-body-arg-with-use',
                  'query': {'the_value': 42}},
      'expected': {'status': 200,
                   'body_json': 42}},
+    {'request': {'method': 'GET',
+                 'path': '/get-int-body-arg-with-use',
+                 'query': {'the_value': "42"}},
+     'expected': {'status': 200,
+                  'body_json': 42}},
+
+    # These should fail: passing a float, and then a totally invalid value.
+    {'request': {'method': 'GET',
+                 'path': '/get-int-body-arg-with-use',
+                 'query': {'the_value': 42.234}},
+     'expected': {'status': 400,
+                  'body_json': None}},
+    {'request': {'method': 'GET',
+                 'path': '/get-int-body-arg-with-use',
+                 'query': {'the_value': "42.A"}},
+     'expected': {'status': 400,
+                  'body_json': None}},
+
     {'request': {'method': 'PUT',
-                 'path': '/non-string-schema',
+                 'path': '/put-int-body-arg',
                  'data': json.dumps({'the_value': 42})},
      'expected': {'status': 200,
                   'body_json': 42}},
@@ -469,7 +487,7 @@ def _do_request(client, method, path, data={}, query={}):
                   'body_json': None}},
 
     {'request': {'method': 'PUT',
-                 'path': '/non-string-schema',
+                 'path': '/put-int-body-arg',
                  'data': json.dumps({'the_value': 'Not an integer!'})},
      'expected': {'status': 400, 'body_json': None}},
 
