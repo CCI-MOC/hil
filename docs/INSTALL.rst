@@ -332,7 +332,7 @@ former is a WSGI application, which we recommend running with Apache's
   LoadModule wsgi_module modules/mod_wsgi.so
   WSGISocketPrefix run/wsgi
 
-  <VirtualHost 127.0.0.1:80>
+  <VirtualHost 127.0.0.1:80 [::1]:80>
     ServerName 127.0.0.1
     AllowEncodedSlashes On
     WSGIPassAuthorization On
