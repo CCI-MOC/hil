@@ -110,9 +110,9 @@ def rest_call(methods, path, schema):
 
     * path - the url-path to map the function to. The format is the same as for
             flask's router (e.g. '/foo/<bar>/baz')
-    * method - the HTTP method for the api call (e.g. POST, GET...).
-               Can also pass a list of methods to support multiple (used in
-               testing)
+    * method - string representing the HTTP method (e.g. POST, GET...) for the
+               api call or a list of such strings if the api call supports
+               multiple HTTP methods.
     * schema - an instance of ``schema.Schema`` with which to
             validate the arguments to the function, whether specified in the
             URL or as JSON in the request body. The schema should expect
