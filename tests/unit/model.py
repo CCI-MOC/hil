@@ -44,16 +44,23 @@ pytestmark = pytest.mark.usefixtures('configure', 'fresh_database')
 class TestNic(ModelTest):
 
     def sample_obj(self):
-        return Nic(Node(label='node-99', obm=Ipmi(type="http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                  host= "ipmihost", user= "root", password= "tapeworm")), 'ipmi', '00:11:22:33:44:55')
-        
+        return Nic(Node(label='node-99',
+                        obm=Ipmi(type=Ipmi.api_name,
+                                 host="ipmihost",
+                                 user="root",
+                                 password="tapeworm")),
+                   'ipmi', '00:11:22:33:44:55')
 
 
 class TestNode(ModelTest):
 
     def sample_obj(self):
-	return Node(label='node-99', obm=Ipmi(type="http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                  host= "ipmihost", user= "root", password= "tapeworm"))
+        return Node(label='node-99',
+                    obm=Ipmi(type=Ipmi.api_name,
+                             host="ipmihost",
+                             user="root",
+                             password="tapeworm"))
+
 
 class TestProject(ModelTest):
 
@@ -64,14 +71,16 @@ class TestProject(ModelTest):
 class TestHeadnode(ModelTest):
 
     def sample_obj(self):
-        return Headnode(Project('anvil-nextgen'), 'hn-example', 'base-headnode')
+        return Headnode(Project('anvil-nextgen'),
+                        'hn-example', 'base-headnode')
 
 
 class TestHnic(ModelTest):
 
     def sample_obj(self):
         return Hnic(Headnode(Project('anvil-nextgen'),
-            'hn-0', 'base-headnode'), 'storage')
+                             'hn-0', 'base-headnode'),
+                    'storage')
 
 
 class TestNetwork(ModelTest):
@@ -80,11 +89,16 @@ class TestNetwork(ModelTest):
         pj = Project('anvil-nextgen')
         return Network(pj, pj, True, '102', 'hammernet')
 
+
 class TestNetworkingAction(ModelTest):
 
     def sample_obj(self):
-	nic = Nic(Node(label='node-99', obm=Ipmi(type="http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                  host= "ipmihost", user= "root", password= "tapeworm")), 'ipmi', '00:11:22:33:44:55')
+        nic = Nic(Node(label='node-99',
+                       obm=Ipmi(type=Ipmi.api_name,
+                                host="ipmihost",
+                                user="root",
+                                password="tapeworm")),
+                  'ipmi', '00:11:22:33:44:55')
         project = Project('anvil-nextgen')
         network = Network(project, project, True, '102', 'hammernet')
         return NetworkingAction(nic=nic,

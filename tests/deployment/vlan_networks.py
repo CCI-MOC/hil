@@ -68,8 +68,10 @@ class TestNetworkVlan(NetworkTest):
             # Assert that n0 and n1 are not on any network
             port_networks = self.get_port_networks(ports)
 
-            assert self.get_network(nodes[0].nics[0].port, port_networks) == set()
-            assert self.get_network(nodes[1].nics[0].port, port_networks) == set()
+            assert self.get_network(nodes[0].nics[0].port, port_networks) == \
+                set()
+            assert self.get_network(nodes[1].nics[0].port, port_networks) == \
+                set()
 
             # Get the channel ids for the tagged versions of the networks:
             net_tag = {}
@@ -77,9 +79,13 @@ class TestNetworkVlan(NetworkTest):
             net_tag[1] = get_legal_channels('net-1')[1]
 
             # Connect node 0 to net-0 (native mode)
-            api.node_connect_network(nodes[0].label, nodes[0].nics[0].label, 'net-0')
+            api.node_connect_network(nodes[0].label,
+                                     nodes[0].nics[0].label,
+                                     'net-0')
             # Connect node 1 to net-1 (tagged mode)
-            api.node_connect_network(nodes[1].label, nodes[1].nics[0].label, 'net-1',
+            api.node_connect_network(nodes[1].label,
+                                     nodes[1].nics[0].label,
+                                     'net-1',
                                      channel=net_tag[1])
             deferred.apply_networking()
 
@@ -92,9 +98,13 @@ class TestNetworkVlan(NetworkTest):
 
             # Add n2 and n3 to the same networks as n0 and n1 respectively, but
             # with different channels (native vs. tagged)
-            api.node_connect_network(nodes[2].label, nodes[2].nics[0].label, 'net-0',
+            api.node_connect_network(nodes[2].label,
+                                     nodes[2].nics[0].label,
+                                     'net-0',
                                      channel=net_tag[0])
-            api.node_connect_network(nodes[3].label, nodes[3].nics[0].label, 'net-1')
+            api.node_connect_network(nodes[3].label,
+                                     nodes[3].nics[0].label,
+                                     'net-1')
             deferred.apply_networking()
 
             # Assert that n2 and n3 have been added to n0 and n1's networks
@@ -107,14 +117,15 @@ class TestNetworkVlan(NetworkTest):
 
             # Verify that we can put nodes on more than one network, with
             # different channels:
-            api.node_connect_network(nodes[2].label, nodes[2].nics[0].label, 'net-1')
+            api.node_connect_network(nodes[2].label,
+                                     nodes[2].nics[0].label,
+                                     'net-1')
             deferred.apply_networking()
             port_networks = self.get_port_networks(ports)
             assert self.get_network(nodes[1].nics[0].port, port_networks) == \
                 set([nodes[1].nics[0].port,
                      nodes[2].nics[0].port,
                      nodes[3].nics[0].port])
-
 
         def delete_networks():
             # Query the DB for nodes on this project
@@ -146,7 +157,8 @@ class TestNetworkVlan(NetworkTest):
             # Assert that none of the nodes are on any network
             port_networks = self.get_port_networks(ports)
             for node in nodes:
-                assert self.get_network(node.nics[0].port, port_networks) == set()
+                assert self.get_network(node.nics[0].port, port_networks) == \
+                    set()
 
             # Delete the networks
             api.network_delete('net-0')

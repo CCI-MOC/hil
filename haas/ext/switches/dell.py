@@ -33,7 +33,8 @@ logger = logging.getLogger(__name__)
 
 
 class PowerConnect55xx(Switch):
-    api_name = 'http://schema.massopencloud.org/haas/v0/switches/powerconnect55xx'
+    api_name = 'http://schema.massopencloud.org/haas/v0/switches/' \
+        'powerconnect55xx'
 
     __mapper_args__ = {
         'polymorphic_identity': api_name,
@@ -60,14 +61,14 @@ class _Session(_console.Session):
 
     def __init__(self, config_prompt, if_prompt, main_prompt, switch, console):
         self.config_prompt = config_prompt
-        self.if_prompt     = if_prompt
-        self.main_prompt   = main_prompt
-        self.switch        = switch
-        self.console       = console
+        self.if_prompt = if_prompt
+        self.main_prompt = main_prompt
+        self.switch = switch
+        self.console = console
 
     def _sendline(self, line):
         logger.debug('Sending to switch %r: %r',
-                      self.switch, line)
+                     self.switch, line)
         self.console.sendline(line)
 
     @staticmethod
@@ -80,7 +81,6 @@ class _Session(_console.Session):
         console.sendline(switch.password)
 
         logger.debug('Logged in to switch %r', switch)
-
 
         prompts = _console.get_prompts(console)
         return _Session(switch=switch,
@@ -126,8 +126,8 @@ class _Session(_console.Session):
             match = re.match(num_re, native)
             if match:
                 # We need to call groups to get the part of the string that
-                # actually matched, because it could include some junk on the end,
-                # e.g. "100 (Inactive)".
+                # actually matched, because it could include some junk on the
+                # end, e.g. "100 (Inactive)".
                 num_str = match.groups()[0]
                 native = int(num_str)
             else:
@@ -141,14 +141,13 @@ class _Session(_console.Session):
                     if match:
                         # There may be other tokens in the output, e.g.
                         # the string "(Inactive)" somteimtes appears.
-                        # We should only use the value if it's an actual number.
+                        # We should only use the value if it's an actual number
                         num_str = match.groups()[0]
                         networks.append(('vlan/%s' % num_str, int(num_str)))
             if native is not None:
                 networks.append(('vlan/native', native))
             result[k] = networks
         return result
-
 
     def _port_configs(self, ports):
         result = {}
@@ -163,10 +162,11 @@ class _Session(_console.Session):
         """
 
         alternatives = [
-            re.escape(r'More: <space>,  Quit: q or CTRL+Z, One line: <return> '),
-            r'Classification rules:\r\n', # End
-            r'[^ \t\r\n][^:]*:[^\n]*\n',       # Key:Value\r\n,
-            r' [^\n]*\n',                        # continuation line (from k:v)
+            re.escape(r'More: <space>, '
+                      'Quit: q or CTRL+Z, One line: <return> '),
+            r'Classification rules:\r\n',  # End
+            r'[^ \t\r\n][^:]*:[^\n]*\n',   # Key:Value\r\n,
+            r' [^\n]*\n',                  # continuation line (from k:v)
         ]
         self._sendline('show int sw %s' % interface)
         # Find the first Key:Value pair (this is needed to skip past some

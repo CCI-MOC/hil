@@ -49,7 +49,6 @@ pytestmark = pytest.mark.usefixtures('configure',
                                      'headnode_cleanup')
 
 
-
 class TestIpmi():
     """ Test IPMI driver calls using functions included in the IPMI driver. """
 

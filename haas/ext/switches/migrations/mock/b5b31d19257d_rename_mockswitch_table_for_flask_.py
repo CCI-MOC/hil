@@ -7,16 +7,15 @@ Revises:
 Create Date: 2016-03-22 05:11:19.585905
 
 """
+from alembic import op
+import sqlalchemy as sa
+from haas.model import db
+from haas.flaskapp import app
 
 # revision identifiers, used by Alembic.
 revision = 'b5b31d19257d'
 down_revision = None
 branch_labels = ('haas.ext.switches.mock',)
-
-from alembic import op
-import sqlalchemy as sa
-from haas.model import db
-from haas.flaskapp import app
 
 
 def upgrade():

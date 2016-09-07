@@ -271,10 +271,10 @@ def validation_setup():
         return json.dumps([arg1, arg2])
 
     # 5. One optional argument.
-    @rest.rest_call(['GET', 'POST'], '/just/bodyargs/optional_arg2_int', Schema({
-        'arg1': basestring,
-        Optional('arg2'): Use(int),
-    }))
+    @rest.rest_call(['GET', 'POST'], '/just/bodyargs/optional_arg2_int',
+                    Schema({'arg1': basestring,
+                            Optional('arg2'): Use(int),
+                            }))
     def bodyargs_optional_arg2_int(arg1, arg2=-42):
         return json.dumps([arg1, arg2])
 

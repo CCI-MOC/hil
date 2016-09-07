@@ -37,11 +37,11 @@ def initial_db(request):
     fresh_database(request)
     with app.app_context():
         alice = User(label='alice',
-                    password='secret',
-                    is_admin=True)
+                     password='secret',
+                     is_admin=True)
         bob = User(label='bob',
-                password='password',
-                is_admin=False)
+                   password='password',
+                   is_admin=False)
 
         db.session.add(alice)
         db.session.add(bob)
@@ -56,6 +56,7 @@ def initial_db(request):
 def server_init():
     server.register_drivers()
     server.validate_state()
+
 
 @pytest.yield_fixture
 def auth_context():
@@ -97,7 +98,10 @@ def admin_auth():
 
 @pytest.fixture
 def runway_auth():
-    """Inject mock credentials that give the request access to the "runway" project."""
+    """
+    Inject mock credentials that give the request
+    access to the "runway" project.
+    """
     flask.request = FakeAuthRequest('bob', 'password')
 
 
@@ -241,7 +245,9 @@ def test_admin_succeed(fn, args):
 @pytest.mark.parametrize('fn,args', admin_calls)
 @use_fixtures('runway_auth')
 def test_admin_runway_fail(fn, args):
-    """Verify that an admin-only call fails when invoked by a non-admin user."""
+    """
+    Verify that an admin-only call fails when invoked by a non-admin user.
+    """
     with pytest.raises(AuthorizationError):
         fn(*args)
 
@@ -249,6 +255,8 @@ def test_admin_runway_fail(fn, args):
 @pytest.mark.parametrize('fn,args', admin_calls)
 @use_fixtures('no_auth')
 def test_admin_noauth_fail(fn, args):
-    """Verify that an admin-only call fails when invoked without authentication."""
+    """
+    Verify that an admin-only call fails when invoked without authentication.
+    """
     with pytest.raises(AuthorizationError):
         fn(*args)

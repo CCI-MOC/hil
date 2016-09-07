@@ -19,10 +19,11 @@ It could be used in an environment similar to the one which
 
 from subprocess import check_call
 
-N_NODES=10
+N_NODES = 10
 
 ipmi_user = "ADMIN_USER"
 ipmi_pass = "ADMIN_PASSWORD"
+
 
 def haas(*args):
     args = map(str, args)
@@ -30,7 +31,7 @@ def haas(*args):
     check_call(['haas'] + args)
 
 for node in range(N_NODES):
-    ipmi_ip = "10.0.0." + str(node+1)
+    ipmi_ip = "10.0.0." + str(node + 1)
 
     nic_port = "R10SW1::GI1/0/%d" % (node)
     nic_name = 'nic1'

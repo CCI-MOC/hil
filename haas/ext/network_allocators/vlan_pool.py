@@ -24,7 +24,9 @@ def get_vlan_list():
 
 
 class VlanAllocator(NetworkAllocator):
-    """A allocator of VLANs. The interface is as specified in ``NetworkAllocator``."""
+    """A allocator of VLANs. The interface is as specified in
+    ``NetworkAllocator``.
+    """
 
     def get_new_network_id(self):
         vlan = Vlan.query.filter_by(available=True).first()
@@ -69,8 +71,8 @@ class Vlan(db.Model):
     created, it must allocate a Vlan, to ensure that:
 
     1. The VLAN number it is using is unique, and
-    2. The VLAN number is actually allocated to the HaaS; on some deployments we
-       may have specific vlan numbers that we are allowed to use.
+    2. The VLAN number is actually allocated to the HaaS; on some deployments
+       we may have specific vlan numbers that we are allowed to use.
     """
     id = db.Column(db.Integer, primary_key=True)
     vlan_no = db.Column(db.Integer, nullable=False, unique=True)

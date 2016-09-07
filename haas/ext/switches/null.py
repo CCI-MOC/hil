@@ -20,6 +20,7 @@ module's interface.
 
 from haas.dev_support import no_dry_run
 
+
 @no_dry_run
 def apply_networking(net_map, config):
     for port in net_map:

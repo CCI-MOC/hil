@@ -64,21 +64,21 @@ class Nic(db.Model):
     label = db.Column(db.String, nullable=False)
 
     # The Node to which the nic belongs:
-    owner_id  = db.Column(db.ForeignKey('node.id'), nullable=False)
-    owner     = db.relationship("Node", backref=db.backref('nics'))
+    owner_id = db.Column(db.ForeignKey('node.id'), nullable=False)
+    owner = db.relationship("Node", backref=db.backref('nics'))
 
     # The mac address of the nic:
-    mac_addr  = db.Column(db.String)
+    mac_addr = db.Column(db.String)
 
     # The switch port to which the nic is attached:
-    port_id   = db.Column(db.ForeignKey('port.id'))
-    port      = db.relationship("Port",
-                                backref=db.backref('nic',uselist=False))
+    port_id = db.Column(db.ForeignKey('port.id'))
+    port = db.relationship("Port",
+                           backref=db.backref('nic', uselist=False))
 
     def __init__(self, node, label, mac_addr):
-        self.owner     = node
-        self.label     = label
-        self.mac_addr  = mac_addr
+        self.owner = node
+        self.label = label
+        self.mac_addr = mac_addr
 
 
 class Node(db.Model):
@@ -89,7 +89,7 @@ class Node(db.Model):
     # The project to which this node is allocated. If the project is null, the
     # node is unallocated:
     project_id = db.Column(db.ForeignKey('project.id'))
-    project    = db.relationship("Project",backref=db.backref('nodes'))
+    project = db.relationship("Project", backref=db.backref('nodes'))
 
     # The Obm info is fetched from the obm class and its respective subclass
     # pertaining to the node
@@ -126,22 +126,22 @@ class Network(db.Model):
     # created by the administrator.  This field determines who can delete a
     # network.
     creator_id = db.Column(db.ForeignKey('project.id'))
-    creator    = db.relationship("Project",
-                                 backref=db.backref('networks_created'),
-                                 foreign_keys=[creator_id])
+    creator = db.relationship("Project",
+                              backref=db.backref('networks_created'),
+                              foreign_keys=[creator_id])
     # The project that has access to the network, or None if the network is
     # public.  This field determines who can connect a node or headnode to a
     # network.
     access_id = db.Column(db.ForeignKey('project.id'))
-    access    = db.relationship("Project",
-                                backref=db.backref('networks_access'),
-                                foreign_keys=[access_id])
+    access = db.relationship("Project",
+                             backref=db.backref('networks_access'),
+                             foreign_keys=[access_id])
     # True if network_id was allocated by the driver; False if it was
     # assigned by an administrator.
     allocated = db.Column(db.Boolean)
 
     # An identifier meaningful to the networking driver:
-    network_id    = db.Column(db.String, nullable=False)
+    network_id = db.Column(db.String, nullable=False)
 
     def __init__(self, creator, access, allocated, network_id, label):
         """Create a network.
@@ -163,10 +163,10 @@ class Port(db.Model):
     The port's label is an identifier that is meaningful only to the
     corresponding switch's driver.
     """
-    id       = db.Column(db.Integer, primary_key=True)
-    label    = db.Column(db.String, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    label = db.Column(db.String, nullable=False)
     owner_id = db.Column(db.ForeignKey('switch.id'), nullable=False)
-    owner    = db.relationship('Switch', backref=db.backref('ports'))
+    owner = db.relationship('Switch', backref=db.backref('ports'))
 
     def __init__(self, label, switch):
         """Register a port on a switch."""
@@ -223,14 +223,16 @@ class Switch(db.Model):
                 '''
 
             def get_port_networks(self, ports):
-                '''Return a mapping from port objects to (channel, network ID) pairs.
+                '''Return a mapping from port objects to (channel, network ID)
+                   pairs.
 
                 ``ports`` is a list of port objects to collect information on.
 
                 The return value will be a dictionary of the form:
 
                     {
-                        Port<"port-3">: [("vlan/native", "23"), ("vlan/52", "52")],
+                        Port<"port-3">: [("vlan/native", "23"),
+                                         ("vlan/52", "52")],
                         Port<"port-7">: [("vlan/23", "23")],
                         Port<"port-8">: [("vlan/native", "52")],
                         ...
@@ -247,6 +249,7 @@ class Switch(db.Model):
         and have ``session`` just return ``self``.
         """
 
+
 class Obm(db.Model):
     """Obm superclass supporting various drivers
 
@@ -256,8 +259,8 @@ class Obm(db.Model):
     type = db.Column(db.String, nullable=False)
 
     __mapper_args__ = {
-            'polymorphic_on': type
-            }
+        'polymorphic_on': type
+    }
 
     @staticmethod
     def validate(kwargs):
@@ -298,7 +301,8 @@ class Obm(db.Model):
         assert False, "Subclasses MUST override the get_console method"
 
     def get_console_log_filename(self):
-        assert False, "Subclasses MUST override the get_console_log_filename method"
+        assert False, "Subclasses MUST override the get_console_log_filename" \
+            "method"
 
 
 def _on_virt_uri(args_list):
@@ -318,7 +322,8 @@ class Headnode(db.Model):
 
     # The project to which this Headnode belongs:
     project_id = db.Column(db.ForeignKey('project.id'), nullable=False)
-    project = db.relationship("Project", backref=db.backref('headnodes', uselist=True))
+    project = db.relationship(
+        "Project", backref=db.backref('headnodes', uselist=True))
 
     # True iff there are unapplied changes to the Headnode:
     dirty = db.Column(db.Boolean, nullable=False)
@@ -335,7 +340,6 @@ class Headnode(db.Model):
         self.dirty = True
         self.uuid = str(uuid.uuid1())
         self.base_img = base_img
-
 
     @no_dry_run
     def create(self):
@@ -379,7 +383,8 @@ class Headnode(db.Model):
         This does a hard poweroff; the OS is not given a chance to react.
         """
         check_call(_on_virt_uri(['virsh', 'destroy', self._vmname()]))
-        check_call(_on_virt_uri(['virsh', 'autostart', '--disable', self._vmname()]))
+        check_call(_on_virt_uri(
+            ['virsh', 'autostart', '--disable', self._vmname()]))
 
     def _vmname(self):
         """Returns the name (as recognized by libvirt) of this vm."""
@@ -423,17 +428,19 @@ class Hnic(db.Model):
     label = db.Column(db.String, nullable=False)
 
     # The Headnode to which this Hnic belongs:
-    owner_id    = db.Column(db.ForeignKey('headnode.id'), nullable=False)
-    owner       = db.relationship("Headnode", backref=db.backref('hnics'))
+    owner_id = db.Column(db.ForeignKey('headnode.id'), nullable=False)
+    owner = db.relationship("Headnode", backref=db.backref('hnics'))
 
     # The network to which this Hnic is attached.
-    network_id  = db.Column(db.ForeignKey('network.id'))
-    network     = db.relationship("Network", backref=db.backref('hnics'))
+    network_id = db.Column(db.ForeignKey('network.id'))
+    network = db.relationship("Network", backref=db.backref('hnics'))
 
     def __init__(self, headnode, label):
-        """Create an Hnic attached to the given headnode. with the given label."""
-        self.owner    = headnode
-        self.label    = label
+        """Create an Hnic attached to the given headnode. with the given
+        label.
+        """
+        self.owner = headnode
+        self.label = label
 
     @no_dry_run
     def create(self):
@@ -461,9 +468,9 @@ class NetworkingAction(db.Model):
 
     # This model is not visible in the API, so inherit from AnonModel
 
-    nic_id         = db.Column(db.ForeignKey('nic.id'), nullable=False)
+    nic_id = db.Column(db.ForeignKey('nic.id'), nullable=False)
     new_network_id = db.Column(db.ForeignKey('network.id'), nullable=True)
-    channel        = db.Column(db.String, nullable=False)
+    channel = db.Column(db.String, nullable=False)
 
     nic = db.relationship("Nic",
                           backref=db.backref('current_action', uselist=False))
@@ -481,9 +488,9 @@ class NetworkAttachment(db.Model):
     #
     # * (nic_id, network_id)
     # * (nic_id, channel)
-    nic_id     = db.Column(db.ForeignKey('nic.id'),     nullable=False)
+    nic_id = db.Column(db.ForeignKey('nic.id'), nullable=False)
     network_id = db.Column(db.ForeignKey('network.id'), nullable=False)
-    channel    = db.Column(db.String, nullable=False)
+    channel = db.Column(db.String, nullable=False)
 
-    nic     = db.relationship('Nic',     backref=db.backref('attachments'))
+    nic = db.relationship('Nic', backref=db.backref('attachments'))
     network = db.relationship('Network', backref=db.backref('attachments'))

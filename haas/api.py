@@ -30,10 +30,8 @@ from haas.network_allocator import get_network_allocator
 from haas.errors import *
 
 
-                            # Project Code #
-                            ################
-
-
+# Project Code #
+################
 @rest_call('GET', '/projects', Schema({}))
 def list_projects():
     """List all projects.
@@ -74,15 +72,15 @@ def project_delete(project):
     if project.networks_created:
         raise BlockedError("Project still has networks")
     if project.networks_access:
-        ### FIXME: This is not the user's fault, and they cannot fix it.  The
-        ### only reason we need to error here is that, with how network access
-        ### is done, the following bad thing happens.  If there's a network
-        ### that only the project can access, its "access" field will be the
-        ### project.  When you then delete that project, "access" will be set
-        ### to None instead.  Counter-intuitively, this then makes that
-        ### network accessible to ALL PROJECTS!  Once we use real ACLs, this
-        ### will not be an issue---instead, the network will be accessible by
-        ### NO projects.
+        # FIXME: This is not the user's fault, and they cannot fix it.  The
+        # only reason we need to error here is that, with how network access
+        # is done, the following bad thing happens.  If there's a network
+        # that only the project can access, its "access" field will be the
+        # project.  When you then delete that project, "access" will be set
+        # to None instead.  Counter-intuitively, this then makes that
+        # network accessible to ALL PROJECTS!  Once we use real ACLs, this
+        # will not be an issue---instead, the network will be accessible by
+        # NO projects.
         raise BlockedError("Project can still access networks")
     if project.headnodes:
         raise BlockedError("Project still has a headnode")
@@ -139,10 +137,8 @@ def project_detach_node(project, node):
     db.session.commit()
 
 
-                            # Node Code #
-                            #############
-
-
+# Node Code #
+#############
 @rest_call('PUT', '/node/<node>', schema=Schema({
     'node': basestring,
     'obm': {
@@ -154,7 +150,8 @@ def node_register(node, **kwargs):
     """Create node.
 
     If the node already exists, a DuplicateError will be raised.
-    The node is initially registered with no nics; see the method node_register_nic.
+    The node is initially registered with no nics; see the method
+    node_register_nic.
     """
     get_auth_backend().require_admin()
     _assert_absent(model.Node, node)
@@ -240,9 +237,9 @@ def node_delete_nic(node, nic):
 
 
 @rest_call('POST', '/node/<node>/nic/<nic>/connect_network', schema=Schema({
-    'node'             : basestring,
-    'nic'              : basestring,
-    'network'          : basestring,
+    'node': basestring,
+    'nic': basestring,
+    'network': basestring,
     Optional('channel'): basestring,
 }))
 def node_connect_network(node, nic, network, channel=None):
@@ -287,10 +284,12 @@ def node_connect_network(node, nic, network, channel=None):
         raise NotFoundError("No port is connected to given nic.")
 
     if nic.current_action:
-        raise BlockedError("A networking operation is already active on the nic.")
+        raise BlockedError(
+            "A networking operation is already active on the nic.")
 
     if (network.access is not None) and (network.access is not project):
-        raise ProjectMismatchError("Project does not have access to given network.")
+        raise ProjectMismatchError(
+            "Project does not have access to given network.")
 
     if _have_attachment(nic, model.NetworkAttachment.network == network):
         raise BlockedError("The network is already attached to the nic.")
@@ -335,7 +334,8 @@ def node_detach_network(node, nic, network):
     auth_backend.require_project_access(node.project)
 
     if nic.current_action:
-        raise BlockedError("A networking operation is already active on the nic.")
+        raise BlockedError(
+            "A networking operation is already active on the nic.")
     attachment = model.NetworkAttachment.query \
         .filter_by(nic=nic, network=network).first()
     if attachment is None:
@@ -347,10 +347,8 @@ def node_detach_network(node, nic, network):
     return '', 202
 
 
-                            # Head Node Code #
-                            ##################
-
-
+# Head Node Code #
+##################
 @rest_call('PUT', '/headnode/<headnode>', Schema({
     'headnode': basestring, 'project': basestring, 'base_img': basestring,
 }))
@@ -510,7 +508,8 @@ def headnode_connect_network(headnode, hnic, network):
     project = headnode.project
 
     if (network.access is not None) and (network.access is not project):
-        raise ProjectMismatchError("Project does not have access to given network.")
+        raise ProjectMismatchError(
+            "Project does not have access to given network.")
 
     hnic.network = network
     db.session.commit()
@@ -534,15 +533,14 @@ def headnode_detach_network(headnode, hnic):
     hnic.network = None
     db.session.commit()
 
-                            # Network Code #
-                            ################
 
-
+# Network Code #
+################
 @rest_call('PUT', '/network/<network>', Schema({
     'network': basestring,
     'creator': basestring,
-    'access' : basestring,
-    'net_id' : basestring,
+    'access': basestring,
+    'net_id': basestring,
 }))
 def network_create(network, creator, access, net_id):
     """Create a network.
@@ -566,15 +564,18 @@ def network_create(network, creator, access, net_id):
     auth_backend = get_auth_backend()
     _assert_absent(model.Network, network)
 
-    # Check authorization and legality of arguments, and find correct 'access' and 'creator'
+    # Check authorization and legality of arguments, and find correct 'access'
+    # and 'creator'
     if creator != "admin":
         creator = _must_find(model.Project, creator)
         auth_backend.require_project_access(creator)
         # Project-owned network
         if access != creator.label:
-            raise BadArgumentError("Project-created networks must be accessed only by that project.")
+            raise BadArgumentError("Project-created networks must be accessed"
+                                   "only by that project.")
         if net_id != "":
-            raise BadArgumentError("Project-created networks must use network ID allocation")
+            raise BadArgumentError(
+                "Project-created networks must use network ID allocation")
         access = _must_find(model.Project, access)
     else:
         # Administrator-owned network
@@ -729,6 +730,7 @@ def switch_delete_port(switch, port):
     db.session.delete(port)
     db.session.commit()
 
+
 @rest_call('GET', '/switches', Schema({}))
 def list_switches():
     """List all switches.
@@ -742,11 +744,12 @@ def list_switches():
     snames = sorted([s.label for s in switches])
     return json.dumps(snames)
 
+
 @rest_call('POST', '/switch/<switch>/port/<path:port>/connect_nic', Schema({
     'switch': basestring,
-    'port'  : basestring,
-    'node'  : basestring,
-    'nic'   : basestring,
+    'port': basestring,
+    'node': basestring,
+    'nic': basestring,
 }))
 def port_connect_nic(switch, port, node, nic):
     """Connect a port on a switch to a nic on a node.
@@ -754,8 +757,8 @@ def port_connect_nic(switch, port, node, nic):
     If any of the three arguments does not exist, a NotFoundError will be
     raised.
 
-    If the port or the nic is already connected to something, a DuplicateError will be
-    raised.
+    If the port or the nic is already connected to something, a DuplicateError
+    will be raised.
     """
     get_auth_backend().require_admin()
     switch = _must_find(model.Switch, switch)
@@ -799,7 +802,8 @@ def port_detach_nic(switch, port):
     port.nic = None
     db.session.commit()
 
-@rest_call('GET', '/nodes/<is_free>', Schema({'is_free' : basestring}))
+
+@rest_call('GET', '/nodes/<is_free>', Schema({'is_free': basestring}))
 def list_nodes(is_free):
     """List all nodes or all free nodes
 
@@ -814,6 +818,7 @@ def list_nodes(is_free):
 
     nodes = sorted([n.label for n in nodes])
     return json.dumps(nodes)
+
 
 @rest_call('GET', '/project/<project>/nodes', Schema({'project': basestring}))
 def list_project_nodes(project):
@@ -856,18 +861,26 @@ def show_node(nodename):
     The object will have at least the following fields:
 
         * "name", the name/label of the node (string).
-        * "project", the name of the project a node belongs to or null if the node does not belong to a project
+        * "project", the name of the project a node belongs to or null if the
+          node does not belong to a project
         * "nics", a list of nics, each represted by a JSON object having
             at least the following fields:
 
                 - "label", the nic's label.
                 - "macaddr", the nic's mac address.
-                - "networks", a JSON object describing what networks are attached to the nic. The keys are channels and the values are the names of networks attached to those channels.
+                - "networks", a JSON object describing what networks are
+                  attached to the nic. The keys are channels and the values
+                  are the names of networks attached to those channels.
 
     Example: '{"name": "node1",
-              "project": "project1",
-              "nics": [{"label": "nic1", "macaddr": "01:23:45:67:89", "networks": {"vlan/native": "pxe", "vlan/235": "storage"}},
-                       {"label": "nic2", "macaddr": "12:34:56:78:90", "networks":{"vlan/native": "public"}}]
+                "project": "project1",
+                "nics": [{"label": "nic1",
+                          "macaddr": "01:23:45:67:89",
+                          "networks": {"vlan/native": "pxe",
+                             "vlan/235": "storage"}},
+                         {"label": "nic2",
+                          "macaddr": "12:34:56:78:90",
+                          "networks":{"vlan/native": "public"}}]
               }'
     """
 
@@ -883,7 +896,7 @@ def show_node(nodename):
                                      attachment.network.label)
                                     for attachment in n.attachments]),
                   } for n in node.nics],
-        }, sort_keys=True)
+    }, sort_keys=True)
 
 
 @rest_call('GET', '/project/<project>/headnodes', Schema({
@@ -932,9 +945,9 @@ def show_headnode(nodename):
         'project': headnode.project.label,
         'hnics': [n.label for n in headnode.hnics],
         'vncport': headnode.get_vncport(),
-        'uuid' : headnode.uuid,
+        'uuid': headnode.uuid,
         'base_img': headnode.base_img,
-    }, sort_keys = True)
+    }, sort_keys=True)
 
 
 @rest_call('GET', '/headnode_images/', Schema({}))
@@ -950,9 +963,8 @@ def list_headnode_images():
     return json.dumps(valid_imgs)
 
 
-    # Console code #
-    ################
-
+# Console code #
+################
 @rest_call('GET', '/node/<nodename>/console', Schema({'nodename': basestring}))
 def show_console(nodename):
     """Show the contents of the console log."""
@@ -981,10 +993,8 @@ def stop_console(nodename):
     node.obm.delete_console()
 
 
-    # Helper functions #
-    ####################
-
-
+# Helper functions #
+####################
 def _assert_absent(cls, name):
     """Raises a DuplicateError if the given object is already in the database.
 
@@ -1020,14 +1030,17 @@ def _must_find(cls, name):
         raise NotFoundError("%s %s does not exist." % (cls.__name__, name))
     return obj
 
+
 def _namespaced_query(obj_outer, cls_inner, name_inner):
     """Helper function to search for subobjects of an object."""
     return db.session.query(cls_inner) \
-        .filter_by(owner = obj_outer) \
-        .filter_by(label = name_inner).first()
+        .filter_by(owner=obj_outer) \
+        .filter_by(label=name_inner).first()
+
 
 def _assert_absent_n(obj_outer, cls_inner, name_inner):
-    """Raises DuplicateError if a "namespaced" object, such as a node's nic, exists.
+    """Raises DuplicateError if a "namespaced" object, such as a node's nic,
+    exists.
 
     Otherwise returns successfully.
 
@@ -1044,6 +1057,7 @@ def _assert_absent_n(obj_outer, cls_inner, name_inner):
         raise DuplicateError("%s %s on %s %s already exists" %
                              (cls_inner.__name__, name_inner,
                               obj_outer.__class__.__name__, obj_outer.label))
+
 
 def _must_find_n(obj_outer, cls_inner, name_inner):
     """Searches the database for a "namespaced" object, such as a nic on a node.

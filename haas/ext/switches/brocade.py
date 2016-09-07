@@ -77,7 +77,8 @@ class Brocade(Switch):
                                       action.new_network.network_id)
         else:
             match = re.match(re.compile(r'vlan/(\d+)'), channel)
-            assert match is not None, "HaaS passed an invalid channel to the switch!"
+            assert match is not None, "HaaS passed an invalid channel to the" \
+                " switch!"
             vlan_id = match.groups()[0]
 
             if action.new_network is None:
@@ -238,7 +239,6 @@ class Brocade(Switch):
         url = self._construct_url(interface, suffix='trunk/tag/native-vlan')
         response = requests.delete(url, auth=self._auth)
 
-
     def _construct_url(self, interface, suffix=None):
         """ Construct the API url for a specific interface appending suffix.
 
@@ -253,12 +253,13 @@ class Brocade(Switch):
         # Double quotes are necessary in the url because switch ports contain
         # forward slashes (/), ex. 101/0/10 is encoded as "101/0/10".
         return '%(hostname)s/rest/config/running/interface/' \
-               '%(interface_type)s/%%22%(interface)s%%22/switchport/%(suffix)s' % {
+            '%(interface_type)s/%%22%(interface)s%%22/switchport/%(suffix)s' \
+            % {
                   'hostname': self.hostname,
                   'interface_type': self.interface_type,
                   'interface': interface,
                   'suffix': suffix
-        }
+            }
 
     @property
     def _auth(self):

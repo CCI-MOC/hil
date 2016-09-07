@@ -62,11 +62,11 @@ class _Session(_console.Session):
     def __init__(self, config_prompt, if_prompt, main_prompt, switch, console,
                  dummy_vlan):
         self.config_prompt = config_prompt
-        self.if_prompt     = if_prompt
-        self.main_prompt   = main_prompt
-        self.switch        = switch
-        self.console       = console
-        self.dummy_vlan    = dummy_vlan
+        self.if_prompt = if_prompt
+        self.main_prompt = main_prompt
+        self.switch = switch
+        self.console = console
+        self.dummy_vlan = dummy_vlan
 
     def enter_if_prompt(self, interface):
         self.console.sendline('config terminal')
@@ -174,9 +174,10 @@ class _Session(_console.Session):
         for k, v in port_configs.iteritems():
             networks = []
             if 'Trunking Native Mode VLAN' not in v:
-                # XXX (probable BUG): For some reason the last port on the switch
-                # sometimes isn't read correctly. For now just don't use that port
-                # for the test suite, and will skip it if this happens.
+                # XXX (probable BUG): For some reason the last port on the
+                # switch sometimes isn't read correctly. For now just don't use
+                # that port for the test suite, and will skip it if this
+                # happens.
                 continue
             native = v['Trunking Native Mode VLAN'].strip()
             match = re.match(num_re, native)
@@ -195,7 +196,8 @@ class _Session(_console.Session):
                     if match:
                         # There may be other tokens in the output, e.g.
                         # the string "(Inactive)" somteimtes appears.
-                        # We should only use the value if it's an actual number.
+                        # We should only use the value if it's an actual
+                        # number.
                         num_str = match.groups()[0]
                         networks.append(('vlan/%s' % num_str, int(num_str)))
 

@@ -86,9 +86,9 @@ class AuthBackend(object):
     def require_admin(self):
         """Ensure the request is authorized to act as an administrator.
 
-        Raises an ``AuthorizationError`` on failure, instead of returning False.
-        This is a convienence wrapper around ``have_admin``, and should not be
-        overwritten by subclasses.
+        Raises an ``AuthorizationError`` on failure, instead of returning
+        False. This is a convienence wrapper around ``have_admin``,
+        and should not be overwritten by subclasses.
         """
         if not self.have_admin():
             raise AuthorizationError("This operation is administrator-only.")
@@ -96,7 +96,8 @@ class AuthBackend(object):
     def require_project_access(self, project):
         """Like ``require_admin()``, but wraps ``have_project_access()``."""
         if not self.have_project_access(project):
-            raise AuthorizationError("You do not have access to the required project.")
+            raise AuthorizationError(
+                "You do not have access to the required project.")
 
 
 def set_auth_backend(backend):

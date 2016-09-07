@@ -9,13 +9,12 @@ Revision ID: 6a8c19565060
 Revises: None
 Create Date: 2016-03-15 23:40:11.411599
 """
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = '6a8c19565060'
 down_revision = None
 branch_labels = ('haas',)
-
-from alembic import op
 
 
 def upgrade():

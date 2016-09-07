@@ -11,8 +11,7 @@ import pytest
 def configure():
     config_testsuite()
     config_merge(
-            {'extensions': { 'haas.ext.obm.ipmi': '',},
-            })
+            {'extensions': {'haas.ext.obm.ipmi': '', }, })
 
     config.load_extensions()
 
@@ -45,20 +44,20 @@ def test_many_http_queries():
     with rest.app.test_request_context():
         rest.init_auth()
         api.node_register('node-99', obm={
-                "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                "host": "ipmihost",
-                "user": "root",
-                "password": "tapeworm"})
+            "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+            "host": "ipmihost",
+            "user": "root",
+            "password": "tapeworm"})
         api.node_register('node-98', obm={
-                "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                "host": "ipmihost",
-                "user": "root",
-                "password": "tapeworm"})
+            "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+            "host": "ipmihost",
+            "user": "root",
+            "password": "tapeworm"})
         api.node_register('node-97', obm={
-                "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                "host": "ipmihost",
-                "user": "root",
-                "password": "tapeworm"})
+            "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+            "host": "ipmihost",
+            "user": "root",
+            "password": "tapeworm"})
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
         api.node_register_nic('node-98', 'eth0', 'DE:AD:BE:EF:20:15')
         api.node_register_nic('node-97', 'eth0', 'DE:AD:BE:EF:20:16')

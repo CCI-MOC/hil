@@ -32,6 +32,7 @@ usage_dict = {}
 MIN_PORT_NUMBER = 1
 MAX_PORT_NUMBER = 2**16 - 1
 
+
 class HTTPClient(object):
     """An HTTP client.
 
@@ -74,6 +75,7 @@ class RequestsHTTPClient(requests.Session, HTTPClient):
     class already implements the required interface. We declare it only
     for clarity.
     """
+
 
 class KeystoneHTTPClient(HTTPClient):
     """An HTTPClient which authenticates with Keystone.
@@ -134,6 +136,7 @@ def cmd(f):
             sys.stderr.write('Invalid arguements.  Usage:\n')
             help(f.__name__)
     command_dict[f.__name__] = wrapped
+
     def get_usage(f):
         args, varargs, _, _ = inspect.getargspec(f)
         showee = [f.__name__] + ['<%s>' % name for name in args]
@@ -210,6 +213,7 @@ def check_status_code(response):
     else:
         sys.stdout.write(response.text + "\n")
 
+
 # TODO: This function's name is no longer very accurate.  As soon as it is
 # safe, we should change it to something more generic.
 def object_url(*args):
@@ -219,8 +223,9 @@ def object_url(*args):
         url = cfg.get('client', 'endpoint')
 
     for arg in args:
-        url += '/' + urllib.quote(arg,'')
+        url += '/' + urllib.quote(arg, '')
     return url
+
 
 def do_request(method, url, data={}):
     """Helper function for making HTTP requests against the API.
@@ -235,26 +240,33 @@ def do_request(method, url, data={}):
     """
     return check_status_code(http_client.request(method, url, data=data))
 
+
 def do_put(url, data={}):
     return do_request('PUT', url, data=json.dumps(data))
+
 
 def do_post(url, data={}):
     return do_request('POST', url, data=json.dumps(data))
 
+
 def do_get(url):
     return do_request('GET', url)
+
 
 def do_delete(url):
     return do_request('DELETE', url)
 
+
 @cmd
 def serve(port):
     try:
-        port = schema.And(schema.Use(int), lambda n: MIN_PORT_NUMBER <= n <= MAX_PORT_NUMBER).validate(port)
+        port = schema.And(
+            schema.Use(int),
+            lambda n: MIN_PORT_NUMBER <= n <= MAX_PORT_NUMBER).validate(port)
     except schema.SchemaError:
-	sys.exit('Error: Invaid port. Must be in the range 1-65535.')
+        sys.exit('Error: Invaid port. Must be in the range 1-65535.')
     except Exception as e:
-	sys.exit('Unxpected Error!!! \n %s' % e)
+        sys.exit('Unxpected Error!!! \n %s' % e)
 
     """Start the HaaS API server"""
     if cfg.has_option('devel', 'debug'):
@@ -284,6 +296,7 @@ def serve_networks():
             pass
         sleep(2)
 
+
 @cmd
 def user_create(username, password, is_admin):
     """Create a user <username> with password <password>.
@@ -299,6 +312,7 @@ def user_create(username, password, is_admin):
         'is_admin': is_admin == 'admin',
     })
 
+
 @cmd
 def network_create(network, creator, access, net_id):
     """Create a link-layer <network>.  See docs/networks.md for details"""
@@ -306,6 +320,7 @@ def network_create(network, creator, access, net_id):
     do_put(url, data={'creator': creator,
                       'access': access,
                       'net_id': net_id})
+
 
 @cmd
 def network_create_simple(network, project):
@@ -315,11 +330,13 @@ def network_create_simple(network, project):
                       'access': project,
                       'net_id': ""})
 
+
 @cmd
 def network_delete(network):
     """Delete a <network>"""
     url = object_url('network', network)
     do_delete(url)
+
 
 @cmd
 def user_delete(username):
@@ -327,11 +344,13 @@ def user_delete(username):
     url = object_url('/auth/basic/user', username)
     do_delete(url)
 
+
 @cmd
 def list_projects():
     """List all projects"""
     url = object_url('projects')
     do_get(url)
+
 
 @cmd
 def user_add_project(user, project):
@@ -339,11 +358,13 @@ def user_add_project(user, project):
     url = object_url('/auth/basic/user', user, 'add_project')
     do_post(url, data={'project': project})
 
+
 @cmd
 def user_remove_project(user, project):
     """Remove <user> from <project>"""
     url = object_url('/auth/basic/user', user, 'remove_project')
     do_post(url, data={'project': project})
+
 
 @cmd
 def project_create(project):
@@ -351,11 +372,13 @@ def project_create(project):
     url = object_url('project', project)
     do_put(url)
 
+
 @cmd
 def project_delete(project):
     """Delete <project>"""
     url = object_url('project', project)
     do_delete(url)
+
 
 @cmd
 def headnode_create(headnode, project, base_img):
@@ -364,11 +387,13 @@ def headnode_create(headnode, project, base_img):
     do_put(url, data={'project': project,
                       'base_img': base_img})
 
+
 @cmd
 def headnode_delete(headnode):
     """Delete <headnode>"""
     url = object_url('headnode', headnode)
     do_delete(url)
+
 
 @cmd
 def project_connect_node(project, node):
@@ -376,11 +401,13 @@ def project_connect_node(project, node):
     url = object_url('project', project, 'connect_node')
     do_post(url, data={'node': node})
 
+
 @cmd
 def project_detach_node(project, node):
     """Detach <node> from <project>"""
     url = object_url('project', project, 'detach_node')
     do_post(url, data={'node': node})
+
 
 @cmd
 def headnode_start(headnode):
@@ -388,42 +415,43 @@ def headnode_start(headnode):
     url = object_url('headnode', headnode, 'start')
     do_post(url)
 
+
 @cmd
 def headnode_stop(headnode):
     """Stop <headnode>"""
     url = object_url('headnode', headnode, 'stop')
     do_post(url)
 
+
 @cmd
 def node_register(node, subtype, *args):
     """Register a node named <node>, with the given type
-	if obm is of type: ipmi then provide arguments
-	"ipmi", <hostname>, <ipmi-username>, <ipmi-password>
+        if obm is of type: ipmi then provide arguments
+        "ipmi", <hostname>, <ipmi-username>, <ipmi-password>
     """
     obm_api = "http://schema.massopencloud.org/haas/v0/obm/"
-    obm_types = [ "ipmi", "mock" ]
-    #Currently the classes are hardcoded
-    #In principle this should come from api.py
-    #In future an api call to list which plugins are active will be added.
-
+    obm_types = ["ipmi", "mock"]
+    # Currently the classes are hardcoded
+    # In principle this should come from api.py
+    # In future an api call to list which plugins are active will be added.
 
     if subtype in obm_types:
-	if len(args) == 3:
-	    obminfo = {"type": obm_api+subtype, "host": args[0],
-	    		"user": args[1], "password": args[2]
-	    	      }
-	else:
-	    sys.stderr.write('ERROR: subtype '+subtype+' requires exactly 3 arguments\n')
-	    sys.stderr.write('<hostname> <ipmi-username> <ipmi-password>\n')
-	    return
+        if len(args) == 3:
+            obminfo = {"type": obm_api + subtype, "host": args[0],
+                       "user": args[1], "password": args[2]
+                       }
+        else:
+            sys.stderr.write('ERROR: subtype ' + subtype +
+                             ' requires exactly 3 arguments\n')
+            sys.stderr.write('<hostname> <ipmi-username> <ipmi-password>\n')
+            return
     else:
-	sys.stderr.write('ERROR: Wrong OBM subtype supplied\n')
-	sys.stderr.write('Supported OBM sub-types: ipmi, mock\n')
-	return
+        sys.stderr.write('ERROR: Wrong OBM subtype supplied\n')
+        sys.stderr.write('Supported OBM sub-types: ipmi, mock\n')
+        return
 
     url = object_url('node', node)
     do_put(url, data={"obm": obminfo})
-
 
 
 @cmd
@@ -432,11 +460,13 @@ def node_delete(node):
     url = object_url('node', node)
     do_delete(url)
 
+
 @cmd
 def node_power_cycle(node):
     """Power cycle <node>"""
     url = object_url('node', node, 'power_cycle')
     do_post(url)
+
 
 @cmd
 def node_power_off(node):
@@ -444,11 +474,15 @@ def node_power_off(node):
     url = object_url('node', node, 'power_off')
     do_post(url)
 
+
 @cmd
 def node_register_nic(node, nic, macaddr):
-    """Register existence of a <nic> with the given <macaddr> on the given <node>"""
+    """
+    Register existence of a <nic> with the given <macaddr> on the given <node>
+    """
     url = object_url('node', node, 'nic', nic)
-    do_put(url, data={'macaddr':macaddr})
+    do_put(url, data={'macaddr': macaddr})
+
 
 @cmd
 def node_delete_nic(node, nic):
@@ -456,17 +490,20 @@ def node_delete_nic(node, nic):
     url = object_url('node', node, 'nic', nic)
     do_delete(url)
 
+
 @cmd
 def headnode_create_hnic(headnode, nic):
     """Create a <nic> on the given <headnode>"""
     url = object_url('headnode', headnode, 'hnic', nic)
     do_put(url)
 
+
 @cmd
 def headnode_delete_hnic(headnode, nic):
     """Delete a <nic> on a <headnode>"""
     url = object_url('headnode', headnode, 'hnic', nic)
     do_delete(url)
+
 
 @cmd
 def node_connect_network(node, nic, network, channel):
@@ -475,17 +512,20 @@ def node_connect_network(node, nic, network, channel):
     do_post(url, data={'network': network,
                        'channel': channel})
 
+
 @cmd
 def node_detach_network(node, nic, network):
     """Detach <node> from the given <network> on the given <nic>"""
     url = object_url('node', node, 'nic', nic, 'detach_network')
     do_post(url, data={'network': network})
 
+
 @cmd
 def headnode_connect_network(headnode, nic, network):
     """Connect <headnode> to <network> on given <nic>"""
     url = object_url('headnode', headnode, 'hnic', nic, 'connect_network')
-    do_post(url, data={'network':network})
+    do_post(url, data={'network': network})
+
 
 @cmd
 def headnode_detach_network(headnode, hnic):
@@ -493,6 +533,7 @@ def headnode_detach_network(headnode, hnic):
     url = object_url('headnode', headnode, 'hnic', hnic, 'detach_network')
     do_post(url)
 
+
 @cmd
 def switch_register(switch, subtype, *args):
     """Register a switch with name <switch> and
@@ -501,51 +542,64 @@ def switch_register(switch, subtype, *args):
     """
     switch_api = "http://schema.massopencloud.org/haas/v0/switches/"
 
+
 @cmd
 def switch_register(switch, subtype, *args):
     """Register a switch with name <switch> and
     <subtype>, <hostname>, <username>,  <password>
     eg. haas switch_register mock03 mock mockhost01 mockuser01 mockpass01
 
-    FIXME: current design needs to change. CLI should not know about every backend.
-    ideally, this should be taken care of in the driver itself or
+    FIXME: current design needs to change. CLI should not know about every
+    backend. Ideally, this should be taken care of in the driver itself or
     client library (work-in-progress) should manage it.
     """
     switch_api = "http://schema.massopencloud.org/haas/v0/switches/"
     if subtype == "nexus":
         if len(args) == 4:
-            switchinfo = { "type": switch_api+subtype, "hostname": args[0],
-                        "username": args[1], "password": args[2], "dummy_vlan": args[3] }
+            switchinfo = {
+                "type": switch_api + subtype,
+                "hostname": args[0],
+                "username": args[1],
+                "password": args[2],
+                "dummy_vlan": args[3]}
         else:
-            sys.stderr.write('ERROR: subtype '+subtype+' requires exactly 4 arguments\n')
-            sys.stderr.write('<hostname> <username> <password> <dummy_vlan_no>\n')
+            sys.stderr.write(_('ERROR: subtype ' + subtype +
+                               ' requires exactly 4 arguments\n'
+                               '<hostname> <username> <password>'
+                               '<dummy_vlan_no>\n'))
             return
     elif subtype == "mock":
         if len(args) == 3:
-            switchinfo = { "type": switch_api+subtype, "hostname": args[0],
-                        "username": args[1], "password": args[2] }
+            switchinfo = {"type": switch_api + subtype, "hostname": args[0],
+                          "username": args[1], "password": args[2]}
         else:
-            sys.stderr.write('ERROR: subtype '+subtype+' requires exactly 3 arguments\n')
+            sys.stderr.write('ERROR: subtype ' + subtype +
+                             ' requires exactly 3 arguments\n')
             sys.stderr.write('<hostname> <username> <password>\n')
             return
     elif subtype == "powerconnect55xx":
         if len(args) == 3:
-            switchinfo = { "type": switch_api+subtype, "hostname": args[0],
-                        "username": args[1], "password": args[2] }
+            switchinfo = {"type": switch_api + subtype, "hostname": args[0],
+                          "username": args[1], "password": args[2]}
         else:
-            sys.stderr.write('ERROR: subtype '+subtype+' requires exactly 3 arguments\n')
-            sys.stderr.write('<hostname> <username> <password>\n')
+            sys.stderr.write(_('ERROR: subtype ' + subtype +
+                               ' requires exactly 3 arguments\n'
+                               '<hostname> <username> <password>\n'))
             return
     elif subtype == "brocade":
         if len(args) == 4:
-            switchinfo = { "type": switch_api+subtype, "hostname": args[0],
-                           "username": args[1], "password": args[2],
-                           "interface_type": args[3] }
+            switchinfo = {"type": switch_api + subtype, "hostname": args[0],
+                          "username": args[1], "password": args[2],
+                          "interface_type": args[3]}
         else:
-            sys.stderr.write('ERROR: subtype '+ subtype+' requires exactly 4 arguments\n')
-            sys.stderr.write('<hostname> <username> <password> <interface_type>\n')
-            sys.stderr.write('NOTE: interface_type refers to the speed of the switchports\n')
-            sys.stderr.write('ex. TenGigabitEthernet, FortyGigabitEthernet, etc.\n')
+            sys.stderr.write(_('ERROR: subtype ' + subtype +
+                               ' requires exactly 4 arguments\n'
+                               '<hostname> <username> <password> '
+                               '<interface_type>\n'
+                               'NOTE: interface_type refers '
+                               'to the speed of the switchports\n '
+                               'ex. TenGigabitEthernet, FortyGigabitEthernet, '
+                               'etc.\n'))
             return
     else:
         sys.stderr.write('ERROR: Invalid subtype supplied\n')
@@ -553,11 +607,13 @@ def switch_register(switch, subtype, *args):
     url = object_url('switch', switch)
     do_put(url, data=switchinfo)
 
+
 @cmd
 def switch_delete(switch):
     """Delete a <switch> """
     url = object_url('switch', switch)
     do_delete(url)
+
 
 @cmd
 def list_switches():
@@ -565,11 +621,13 @@ def list_switches():
     url = object_url('switches')
     do_get(url)
 
+
 @cmd
 def port_register(switch, port):
     """Register a <port> with <switch> """
     url = object_url('switch', switch, 'port', port)
     do_put(url)
+
 
 @cmd
 def port_delete(switch, port):
@@ -577,17 +635,20 @@ def port_delete(switch, port):
     url = object_url('switch', switch, 'port', port)
     do_delete(url)
 
+
 @cmd
 def port_connect_nic(switch, port, node, nic):
     """Connect a <port> on a <switch> to a <nic> on a <node>"""
     url = object_url('switch', switch, 'port', port, 'connect_nic')
     do_post(url, data={'node': node, 'nic': nic})
 
+
 @cmd
 def port_detach_nic(switch, port):
     """Detach a <port> on a <switch> from whatever's connected to it"""
     url = object_url('switch', switch, 'port', port, 'detach_nic')
     do_post(url)
+
 
 @cmd
 def list_nodes(is_free):
@@ -598,8 +659,10 @@ def list_nodes(is_free):
     """
     if is_free not in ('all', 'free'):
         raise TypeError("is_free must be either 'all' or 'free'")
+
     url = object_url('nodes', is_free)
     do_get(url)
+
 
 @cmd
 def list_project_nodes(project):
@@ -607,11 +670,13 @@ def list_project_nodes(project):
     url = object_url('project', project, 'nodes')
     do_get(url)
 
+
 @cmd
 def list_project_networks(project):
     """List all networks attached to a <project>"""
     url = object_url('project', project, 'networks')
     do_get(url)
+
 
 @cmd
 def show_network(network):
@@ -619,11 +684,13 @@ def show_network(network):
     url = object_url('network', network)
     do_get(url)
 
+
 @cmd
 def show_node(node):
     """Display information about a <node>"""
     url = object_url('node', node)
     do_get(url)
+
 
 @cmd
 def list_project_headnodes(project):
@@ -631,11 +698,13 @@ def list_project_headnodes(project):
     url = object_url('project', project, 'headnodes')
     do_get(url)
 
+
 @cmd
 def show_headnode(headnode):
     """Display information about a <headnode>"""
     url = object_url('headnode', headnode)
     do_get(url)
+
 
 @cmd
 def list_headnode_images():
@@ -643,11 +712,13 @@ def list_headnode_images():
     url = object_url('headnode_images')
     do_get(url)
 
+
 @cmd
 def show_console(node):
     """Display console log for <node>"""
     url = object_url('node', node, 'console')
     do_get(url)
+
 
 @cmd
 def start_console(node):
@@ -655,11 +726,13 @@ def start_console(node):
     url = object_url('node', node, 'console')
     do_put(url)
 
+
 @cmd
 def stop_console(node):
     """Stop logging console output from <node> and delete the log"""
     url = object_url('node', node, 'console')
     do_delete(url)
+
 
 @cmd
 def create_admin_user(username, password):
@@ -674,7 +747,8 @@ def create_admin_user(username, password):
     the API.
     """
     if not config.cfg.has_option('extensions', 'haas.ext.auth.database'):
-        sys.exit("'make_inital_admin' is only valid with the database auth backend.")
+        sys.exit("'make_inital_admin' is only valid with the database auth"
+                 " backend.")
     from haas import model
     from haas.model import db
     from haas.ext.auth.database import User
@@ -682,9 +756,12 @@ def create_admin_user(username, password):
     db.session.add(User(label=username, password=password, is_admin=True))
     db.session.commit()
 
+
 @cmd
 def help(*commands):
-    """Display usage of all following <commands>, or of all commands if none are given"""
+    """Display usage of all following <commands>, or of all commands if none
+    are given
+    """
     if not commands:
         sys.stdout.write('Usage: %s <command> <arguments...> \n' % sys.argv[0])
         sys.stdout.write('Where <command> is one of:\n')

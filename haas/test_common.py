@@ -60,8 +60,6 @@ def config_testsuite():
         })
 
 
-
-
 def config_merge(config_dict):
     """Modify the configuration according to ``config_dict``.
 
@@ -118,16 +116,19 @@ def network_create_simple(network, project):
     """
     api.network_create(network, project, project, "")
 
+
 def newDB():
     """Configures and returns a connection to a freshly initialized DB."""
     with app.app_context():
         init_db()
         create_db()
 
+
 def releaseDB():
     """Do we need to do anything here to release resources?"""
     with app.app_context():
         db.drop_all()
+
 
 def fresh_database(request):
     """Runs the test against a newly populated DB.
@@ -231,9 +232,11 @@ class NetworkTest:
 
         # If there are not enough nodes with nics, raise an exception
         if len(nodes) < 4:
-            raise api.AllocationError(('At least 4 nodes with at least ' +
-                '1 NIC are required for this test. Only %d node(s) were ' +
-                'provided.') % len(nodes))
+            raise api.AllocationError(
+                ('At least 4 nodes with at least ' +
+                 '1 NIC are required for this test. Only %d node(s) were ' +
+                 'provided.') %
+                len(nodes))
         return nodes
 
 
@@ -254,11 +257,12 @@ def site_layout():
         api.switch_register(**switch)
 
     for node in layout['nodes']:
-        api.node_register(node['name'],obm=node['obm'])
+        api.node_register(node['name'], obm=node['obm'])
         for nic in node['nics']:
             api.node_register_nic(node['name'], nic['name'], nic['mac'])
             api.switch_register_port(nic['switch'], nic['port'])
-            api.port_connect_nic(nic['switch'], nic['port'], node['name'], nic['name'])
+            api.port_connect_nic(nic['switch'], nic['port'],
+                                 node['name'], nic['name'])
 
 
 def headnode_cleanup(request):
@@ -432,10 +436,10 @@ def initial_db():
             {'label': 'free_node_1', 'project': None},
         ]
         for node_dict in nodes:
-            obm=MockObm(type=MockObm.api_name,
-                        host=node_dict['label'],
-                        user='user',
-                        password='password')
+            obm = MockObm(type=MockObm.api_name,
+                          host=node_dict['label'],
+                          user='user',
+                          password='password')
             node = Node(label=node_dict['label'], obm=obm)
             node.project = node_dict['project']
             db.session.add(Nic(node, label='boot-nic', mac_addr='Unknown'))
@@ -447,15 +451,23 @@ def initial_db():
 
         # ... Some headnodes:
         headnodes = [
-            {'label': 'runway_headnode_on', 'project': runway, 'on': True},
-            {'label': 'runway_headnode_off', 'project': runway, 'on': False},
-            {'label': 'runway_manhattan_on', 'project': manhattan, 'on': True},
-            {'label': 'runway_manhattan_off', 'project': manhattan, 'on': False},
+            {'label': 'runway_headnode_on',
+             'project': runway,
+             'on': True},
+            {'label': 'runway_headnode_off',
+             'project': runway,
+             'on': False},
+            {'label': 'runway_manhattan_on',
+             'project': manhattan,
+             'on': True},
+            {'label': 'runway_manhattan_off',
+             'project': manhattan,
+             'on': False},
         ]
         for hn_dict in headnodes:
             headnode = Headnode(hn_dict['project'],
-                                    hn_dict['label'],
-                                    'base-headnode')
+                                hn_dict['label'],
+                                'base-headnode')
             headnode.dirty = not hn_dict['on']
             hnic = Hnic(headnode, 'pxe')
             db.session.add(hnic)
@@ -465,12 +477,11 @@ def initial_db():
             hnic.network = Network.query \
                 .filter_by(label='pub_default').one()
 
-
         # ... and at least one node with no nics (useful for testing delete):
-        obm=MockObm(type=MockObm.api_name,
-            host='hostname',
-            user='user',
-            password='password')
+        obm = MockObm(type=MockObm.api_name,
+                      host='hostname',
+                      user='user',
+                      password='password')
         db.session.add(Node(label='no_nic_node', obm=obm))
 
         db.session.commit()

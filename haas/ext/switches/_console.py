@@ -26,7 +26,9 @@ class Session(object):
 
     @abstractmethod
     def enter_if_prompt(self, interface):
-        """Navigate from the main prompt to the prompt for configuring ``interface``."""
+        """Navigate from the main prompt to the prompt for configuring
+        ``interface``.
+        """
 
     @abstractmethod
     def exit_if_prompt(self):
@@ -43,7 +45,9 @@ class Session(object):
 
     @abstractmethod
     def disable_vlan(self, vlan_id):
-        """Like ``enable_vlan``, but disables the vlan, rather than enabling it."""
+        """Like ``enable_vlan``, but disables the vlan, rather than enabling
+        it.
+        """
 
     @abstractmethod
     def set_native(self, old, new):
@@ -64,10 +68,9 @@ class Session(object):
     def disconnect(self):
         """End the session. Must be at the main prompt."""
 
-
     def apply_networking(self, action):
         interface = action.nic.port.label
-        channel   = action.channel
+        channel = action.channel
 
         self.enter_if_prompt(interface)
         self.console.expect(self.if_prompt)
@@ -75,7 +78,7 @@ class Session(object):
         if channel == 'vlan/native':
             old_native = None
             old_attachments = filter(lambda a: a.channel == 'vlan/native',
-                                        action.nic.attachments)
+                                     action.nic.attachments)
             if len(old_attachments) != 0:
                 old_native = old_attachments[0].network.network_id
             if action.new_network is None:
@@ -88,7 +91,8 @@ class Session(object):
             # to mis-configure HaaS in a way that triggers this; currently the
             # administrator needs to line up the network allocator with the
             # switches; this is unsatisfactory. --isd
-            assert match is not None, "HaaS passed an invalid channel to the switch!"
+            assert match is not None, "HaaS passed an invalid channel to the" \
+                "switch!"
             vlan_id = match.groups()[0]
             if action.new_network is None:
                 self.disable_vlan(vlan_id)
@@ -101,15 +105,15 @@ class Session(object):
 
 
 def get_prompts(console):
-        #Regex to handle different prompt at switch
-        #[\r\n]+ will handle any newline
-        #.+ will handle any character after newline
+        # Regex to handle different prompt at switch
+        # [\r\n]+ will handle any newline
+        # .+ will handle any character after newline
         # this sequence terminates with #
         console.expect(r'[\r\n]+.+#')
         cmd_prompt = console.after.split('\n')[-1]
         cmd_prompt = cmd_prompt.strip(' \r\n\t')
 
-        #:-1 omits the last hash character
+        # :-1 omits the last hash character
         return {
             'config_prompt': re.escape(cmd_prompt[:-1] + '(config)#'),
             'if_prompt': re.escape(cmd_prompt[:-1] + '(config-if)#'),
