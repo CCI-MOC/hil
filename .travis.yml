@@ -34,3 +34,4 @@ script:
   - sh -e ci/run_unit_tests.sh
   - sh -e ci/apache/run_integration_tests.sh
   - sh -e ci/keystone/run_integration_tests.sh
+  - pep8 *.py tests/ haas/
