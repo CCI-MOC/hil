@@ -93,7 +93,7 @@ setup(name='haas',
                         'pytest>=2.6.2,<3.0',
                         'pytest-cov>=1.8.0,<2.0',
                         'pytest-xdist>=1.14,<2.0',
-                        'pytest-pep8>=1.0.6',
+                        'pep8>=1.7.0',
                         'requests_mock>=1.0.0,<2.0',
                         'lxml>=3.6.0,<4.0',
                         ])

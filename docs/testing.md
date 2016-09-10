@@ -42,7 +42,7 @@ To run just a subset of them, specify a particular file or directory:
 
 To run just a pep8 test:
 
-    py.test --pep8 -m pep8 *.py haas/ tests/
+    pep8 *.py tests/ haas/
 
 As stated above, running at least `tests/unit` is mandatory before each
 commit.

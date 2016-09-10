@@ -308,7 +308,8 @@ def additional_db():
                            'manhattan_node_0', 'manhattan_node_1']:
 
             node = db.session.query(Node).filter_by(label=node_label).one()
-            nic = db.session.query(Nic).filter_by(owner=node, label='boot-nic').one()
+            nic = db.session.query(Nic).filter_by(owner=node,
+                                                  label='boot-nic').one()
 
             port = Port('connected_port_0', switch)
             port.nic = nic
