@@ -71,7 +71,7 @@ one exception is NICs, where the label is unique only on a per-node basis.
 
     # Headnode operations
 
-    headnode_create             <hn_label> <project_label>
+    headnode_create             <hn_label> <project_label> <base_img>
     headnode_delete             <hn_label>
 
     headnode_start              <hn_label>

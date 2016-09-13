@@ -294,7 +294,7 @@ Finally, ``haas help`` lists the various API commands one can use.
 Here is an example session, testing ``headnode_delete_hnic``::
 
   haas project_create proj
-  haas headnode_create hn proj
+  haas headnode_create hn proj img1
   haas headnode_create_hnic hn hn-eth0
   haas headnode_delete_hnic hn hn-eth0
 
