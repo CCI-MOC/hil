@@ -731,6 +731,30 @@ def switch_delete_port(switch, port):
     db.session.commit()
 
 
+@rest_call('GET', '/switch/<switch>', Schema({
+    'switch': basestring,
+}))
+def show_switch(switch):
+    switch = _must_find(model.Switch, switch)
+    attachments = {}
+    get_auth_backend().require_admin()
+    for port in switch.ports:
+        attachments[port.label] = local.db.query(model.NetworkAttachment). \
+                                filter(model.NetworkAttachment.Nic.port == port)
+
+    get_auth_backend().require_admin()
+    return json.dumps({
+        'switch': switch.label,
+        'ports': [{'name': port.label,
+                   'attachments': [{'nic': a.nic_id,
+                                    'network': a.network_id,
+                                    'channel': a.channel,
+                                    'node': a.nic.owner,
+                   } for a in attachments[port.label]],
+        } for port in switch.ports],
+    }, sort_keys=True)
+
+
 @rest_call('GET', '/switches', Schema({}))
 def list_switches():
     """List all switches.
