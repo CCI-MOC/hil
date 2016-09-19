@@ -735,23 +735,21 @@ def switch_delete_port(switch, port):
     'switch': basestring,
 }))
 def show_switch(switch):
-    switch = _must_find(model.Switch, switch)
-    attachments = {}
-    get_auth_backend().require_admin()
-    for port in switch.ports:
-        attachments[port.label] = local.db.query(model.NetworkAttachment). \
-                                filter(model.NetworkAttachment.Nic.port == port)
+    """Show details of a switch.
 
+    Returns a JSON object regrading the switch. See `docs/rest_api.md`
+    for a full description of the output.
+
+    FIXME: Ideally this api call should return all detail information about
+    this switch. right now it needs support from the switch backend.
+    """
     get_auth_backend().require_admin()
+    switch = _must_find(model.Switch, switch)
+
     return json.dumps({
-        'switch': switch.label,
-        'ports': [{'name': port.label,
-                   'attachments': [{'nic': a.nic_id,
-                                    'network': a.network_id,
-                                    'channel': a.channel,
-                                    'node': a.nic.owner,
-                   } for a in attachments[port.label]],
-        } for port in switch.ports],
+        'name': switch.label,
+        'ports': [{'label': port.label}
+                  for port in switch.ports],
     }, sort_keys=True)
 
 

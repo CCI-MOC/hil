@@ -1343,6 +1343,25 @@ class Test_list_switches:
         ]
 
 
+class TestShowSwitch:
+
+    def test_show_switch(self, switchinit):
+
+        assert json.loads(api.show_switch('sw0')) == {
+            'name': 'sw0',
+            'ports': [{'label': '3'}]
+        }
+
+        api.switch_register_port('sw0', 'test_port')
+        # Note: the order of ports is not sorted, test cases need to be in the
+        # same order.
+        assert json.loads(api.show_switch('sw0')) == {
+            'name': 'sw0',
+            'ports': [{'label': '3'},
+                      {'label': 'test_port'}]
+        }
+
+
 class TestPortConnectDetachNic:
 
     def test_port_connect_nic_success(self, switchinit):
