@@ -82,7 +82,7 @@ Documentation
 * `rest_api.md <rest_api.md>`_ provides a detailed mapping of that API to http requests.
 * `developer-guidelines.md <developer-guidelines.md>`_ discusses our code submission and approval process.
 * `examples <examples/>`_ contains examples of config files, templates for creating headnode VM images and a script to register nodes with HaaS.
-* `The docs directory </>`_ contains assorted other documentation
+* The docs directory contains assorted other documentation
 
 Please note that the documentation is a mix of Markdown and reStructured Text,
 since the latter is preferred by the python and OpenStack communities and the
