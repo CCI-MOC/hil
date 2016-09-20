@@ -1,0 +1,159 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Activating drivers under HaaS &#8212; HIL 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="HIL 1.0 documentation" href="index.html" />
+    <link rel="next" title="Overview" href="testing.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="network-teardown.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <p>This document describes the obm driver model.</p>
+<p>#Overview</p>
+<p>Out-of-Band Management (OBM) consists of separate channel dedicated for server maintenance.
+It allows the systems-administrator to manage and monitor network-attached equipments remotely.
+OBM allows operations like powering on, shutdown, reboot and knowing the status of the machines
+regardless of whether the machine itself has an operating system or access to any network.</p>
+<p>The Intelligent Platform Management Interface (IPMI) is one such OBM server protocol for which
+HaaS includes a driver. For developers, a null OBM driver is also included which can be activated
+and used just like any other driver under HaaS.</p>
+<div class="section" id="activating-drivers-under-haas">
+<span id="activating-drivers-under-haas"></span><h1>Activating drivers under HaaS<a class="headerlink" href="#activating-drivers-under-haas" title="Permalink to this headline">¶</a></h1>
+<p>Drivers are implemented as extensions, and must be added to the
+<code class="docutils literal"><span class="pre">[extensions]</span></code> section of <code class="docutils literal"><span class="pre">haas.cfg</span></code>. You can add as many OBM
+drivers as are supported in your environment</p>
+<p>for example::</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="p">[</span><span class="n">extensions</span><span class="p">]</span>
+<span class="n">haas</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">obm</span><span class="o">.</span><span class="n">mock</span> <span class="o">=</span> 
+<span class="n">haas</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">obm</span><span class="o">.</span><span class="n">ipmi</span> <span class="o">=</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="ipmi-driver">
+<span id="ipmi-driver"></span><h1>IPMI driver<a class="headerlink" href="#ipmi-driver" title="Permalink to this headline">¶</a></h1>
+<p>At present, only one driver of OBM type is supplied with HaaS.
+It is the IPMI driver.</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">haas.ext.obm.ipmi</span></code>, consist of the ipmi driver
+It does not require any driver specific configuration.</li>
+</ul>
+<div class="section" id="using-ipmi-driver">
+<span id="using-ipmi-driver"></span><h2>Using IPMI driver<a class="headerlink" href="#using-ipmi-driver" title="Permalink to this headline">¶</a></h2>
+<p>The type field for the IPMI driver has the value::</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">schema</span><span class="o">.</span><span class="n">massopencloud</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">haas</span><span class="o">/</span><span class="n">v0</span><span class="o">/</span><span class="n">obm</span><span class="o">/</span><span class="n">ipmi</span>
+</pre></div>
+</div>
+<p>IPMI driver requires three additional feilds
+to be able to communicate with the IPMI subsystem of a server.
+These feilds are <code class="docutils literal"><span class="pre">host</span></code>, <code class="docutils literal"><span class="pre">user</span></code>, and <code class="docutils literal"><span class="pre">password</span></code>
+These information is passed as a part of the <code class="docutils literal"><span class="pre">node_register</span></code> api call
+when registering the node for the first time with HaaS</p>
+<p>For example, if a node with its ipmi-hostname as &#8220;ipmi_node01&#8221;, ipmi-username as &#8220;ipmi-user01&#8221;
+and ipmi-password as &#8220;pass1234&#8221; is to be registered with HaaS.</p>
+<p>The body of the api call request <code class="docutils literal"><span class="pre">node_register</span></code> can then look like::</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;obm&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;http://schema.massopencloud.org/haas/v0/obm/ipmi&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;ipmi_node-01&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="s2">&quot;ipmi_user-01&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;pass1234&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Activating drivers under HaaS</a></li>
+<li><a class="reference internal" href="#ipmi-driver">IPMI driver</a><ul>
+<li><a class="reference internal" href="#using-ipmi-driver">Using IPMI driver</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="network-teardown.html" title="previous chapter">&lt;no title&gt;</a></li>
+      <li>Next: <a href="testing.html" title="next chapter">Overview</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/obm-drivers.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, HIL Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/obm-drivers.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

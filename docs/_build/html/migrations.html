@@ -1,0 +1,285 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Introduction &#8212; HIL 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="HIL 1.0 documentation" href="index.html" />
+    <link rel="next" title="Overview" href="network-drivers.html" />
+    <link rel="prev" title="Overview" href="logging.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <p>This document describes how to work with HaaS&#8217;s database migration
+framework. It is aimed at developers; for instructions on upgrading a
+production database see UPGRADING.rst.</p>
+<div class="section" id="introduction">
+<span id="introduction"></span><h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>HaaS uses <a class="reference external" href="http://www.sqlalchemy.org/">SQLAlchemy</a> as a database abstraction layer,
+<a class="reference external" href="http://flask-sqlalchemy.pocoo.org/2.1/">Flask-SQLAlchemy</a> for integration with <a class="reference external" href="http://flask.pocoo.org/">Flask</a>, and
+<a class="reference external" href="https://flask-migrate.readthedocs.org/en/latest/">Flask-Migrate</a>/<a class="reference external" href="http://alembic.readthedocs.org/en/latest/">Alembic</a> for migration support. This document
+explains HaaS-specific details; refer to the libraries&#8217; documentation
+for general information about these tools. This document mainly focuses
+on Alembic and Flask-Migrate.</p>
+<p>HaaS uses migration scripts for updating the database to work
+with a new version of the software. Any time the database schema
+changes, a migration script must be written so that existing
+installations may be upgraded to the next HaaS release automatically.</p>
+<div class="section" id="background">
+<span id="background"></span><h2>Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
+<p>Developers unfamiliar with alembic should at least skim the <a class="reference external" href="http://alembic.readthedocs.org/en/latest/tutorial.html">Alembic
+tutorial</a>, which
+explains general alembic concepts. Developers should also read <a class="reference external" href="https://flask-migrate.readthedocs.org/en/latest/">the
+overview documentation for Flask-Migrate</a>, which integrates Alembic
+with Flask.</p>
+</div>
+<div class="section" id="usage-in-haas">
+<span id="usage-in-haas"></span><h2>Usage In HaaS<a class="headerlink" href="#usage-in-haas" title="Permalink to this headline">¶</a></h2>
+<p>HaaS uses the migration libraries as follows:</p>
+<p>The <a class="reference external" href="http://flask-script.readthedocs.org/en/latest/">Flask-Script</a> extension is used to expose Flask-Migrate&#8217;s
+functionality, via the <code class="docutils literal"><span class="pre">haas-admin</span> <span class="pre">db</span></code> subcommand, implemented in
+<code class="docutils literal"><span class="pre">haas/commands/</span></code>. This command is almost exactly as described in the
+<a class="reference external" href="https://flask-migrate.readthedocs.org/en/latest/">Flask-Migrate</a> documentation, except we&#8217;ve added sub-command <code class="docutils literal"><span class="pre">haas</span> <span class="pre">db</span> <span class="pre">create</span></code>, which initially creates and populates the database tables.
+This command is idempotent, so it is safe to run it on an
+already-initialized database. When adding extensions to haas.cfg, the
+<code class="docutils literal"><span class="pre">create</span></code> command should be re-run to create any new tables; see
+UPGRADING for details.</p>
+<p>We use Alembic&#8217;s <a class="reference external" href="http://alembic.readthedocs.org/en/latest/branches.html">branch support</a> to handle tables created by
+extensions; Developers should be familiar with this part of alembic&#8217;s
+interface. Each extension should have its own head. We do not merge
+these heads.</p>
+<p>When a new migration script needs to be written, the procedure depends
+on whether or not the migration script concerns an extension which does
+not already have any migration scripts.</p>
+<div class="section" id="if-the-extension-does-not-have-migration-scripts-already">
+<span id="if-the-extension-does-not-have-migration-scripts-already"></span><h3>If the extension does not have migration scripts already<a class="headerlink" href="#if-the-extension-does-not-have-migration-scripts-already" title="Permalink to this headline">¶</a></h3>
+<p>First, choose a directory in which to store the migration scripts for the
+extension. Storing the migrations as close to the module as possible is
+recommended. Add code to your extension to register this directory with
+<code class="docutils literal"><span class="pre">haas.migrations.paths</span></code>, e.g.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">haas.migrations</span> <span class="k">import</span> <span class="n">paths</span><span class="p">:</span>
+
+<span class="n">paths</span><span class="p">[</span><span class="n">__name__</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Path to my migrations directory&#39;</span>
+</pre></div>
+</div>
+<p>Make sure the value will be correct regardless of where the source tree is
+located; making it a function of <code class="docutils literal"><span class="pre">__file__</span></code> is a good idea. Have a look at
+existing extensions for examples if need be. <code class="docutils literal"><span class="pre">haas.ext.switches.dell</span></code> is a
+good example.</p>
+<p>Also, make sure that the migration scripts will be included in the final
+package. This usually just means adding an appropriate entry to <code class="docutils literal"><span class="pre">package_data</span></code>
+in <code class="docutils literal"><span class="pre">setup.py</span></code>. If the extension is maintained outside of the HaaS core source
+tree, make sure you pass <code class="docutils literal"><span class="pre">zip_safe=False</span></code> to <code class="docutils literal"><span class="pre">setup</span></code>.</p>
+<p>Next, to generate a template migration, execute:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>haas-admin db migrate --head haas@head \
+    --branch-label ${name_of_extension_module} \
+    -m &#39;&lt;Summary of change&gt;&#39;
+</pre></div>
+</div>
+<p>Alembic will look at the differences between the schema in the database and
+the one derived from the HaaS source, and generate its best attempt at a
+migration script. The script will be stored in <code class="docutils literal"><span class="pre">haas/migrations/versions</span></code>.
+Copy it to the directory you chose, and change the value of <code class="docutils literal"><span class="pre">down_revision</span></code> to
+<code class="docutils literal"><span class="pre">None</span></code>.</p>
+<p>Sanity check the output; Alembic often does a good job generating scripts, but
+it should not be trusted blindly.</p>
+<p>Finally, run <code class="docutils literal"><span class="pre">haas-admin</span> <span class="pre">db</span> <span class="pre">upgrade</span> <span class="pre">heads</span></code> to upgrade the database according
+to your new migration.</p>
+</div>
+<div class="section" id="if-the-extension-already-has-migrations-or-the-script-is-for-haas-core">
+<span id="if-the-extension-already-has-migrations-or-the-script-is-for-haas-core"></span><h3>If the extension already has migrations, or the script is for HaaS core<a class="headerlink" href="#if-the-extension-already-has-migrations-or-the-script-is-for-haas-core" title="Permalink to this headline">¶</a></h3>
+<p>To generate a new migration script, execute:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>haas-admin db migrate --head ${branch_name}@head \
+    -m &#39;&lt;Summary of change&gt;&#39;
+</pre></div>
+</div>
+<p>Where <code class="docutils literal"><span class="pre">${branch_name}</span></code> is either the name of the extension&#8217;s module (if the
+script is for an extension) or <code class="docutils literal"><span class="pre">haas</span></code> (if the script is for HaaS core).</p>
+<p>Alembic will look at the differences between the schema in the database and
+the one derived from the HaaS source, and generate its best attempt at a
+migration script. The script will be stored in <code class="docutils literal"><span class="pre">haas/migrations/versions</span></code>.</p>
+<p>The value of <code class="docutils literal"><span class="pre">down_revision</span></code> should be the identifier of the previous migration script.
+The value of <code class="docutils literal"><span class="pre">branch_labels</span></code> should be <code class="docutils literal"><span class="pre">('&lt;branch_name&gt;',)</span></code> where <code class="docutils literal"><span class="pre">branch_name</span></code>
+should match what was used in the command to generate the migration script.</p>
+<p>Sanity check the output; Alembic often does a good job generating scripts, but
+it should not be trusted blindly.</p>
+</div>
+</div>
+<div class="section" id="notes-on-generating-migrations-and-checking-the-output">
+<span id="notes-on-generating-migrations-and-checking-the-output"></span><h2>Notes on Generating Migrations and Checking the Output<a class="headerlink" href="#notes-on-generating-migrations-and-checking-the-output" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="state-of-the-database">
+<span id="state-of-the-database"></span><h3>State of the Database<a class="headerlink" href="#state-of-the-database" title="Permalink to this headline">¶</a></h3>
+<p>For automatic migrations the database being loaded to generate the migration should
+match the schema of the current master branch.
+To ensure this, create a new PostgreSQL database and initialise it using
+<code class="docutils literal"><span class="pre">haas-admin</span> <span class="pre">db</span> <span class="pre">create</span></code> while on a branch that is up to date with current HaaS
+master branch. The command to generate the migration script should then be run
+after checking out the branch that has the changes that the script should be generated for.</p>
+</div>
+<div class="section" id="renaming-columns">
+<span id="renaming-columns"></span><h3>Renaming Columns<a class="headerlink" href="#renaming-columns" title="Permalink to this headline">¶</a></h3>
+<p>Alembic will not rename a column, instead it will delete the original column
+and create a new one with the new name. This is an issue as the data will then
+not be contained in the new column (see Data Migration vs Schema Migration below).
+To change the name of a column the script should be edited manually to remove the
+lines dropping the old column and creating one with the new name and replace them
+with a line altering the column: <code class="docutils literal"><span class="pre">op.alter_column(u'&lt;table_name&gt;',</span> <span class="pre">'&lt;old_column_name&gt;',</span> <span class="pre">new_column_name='&lt;new_column_name&gt;')</span></code></p>
+</div>
+<div class="section" id="data-migration-vs-schema-migration">
+<span id="data-migration-vs-schema-migration"></span><h3><a class="reference external" href="https://groups.google.com/forum/#!topic/sqlalchemy-alembic/gCJO4W0GKB4">Data Migration</a> vs. Schema Migration<a class="headerlink" href="#data-migration-vs-schema-migration" title="Permalink to this headline">¶</a></h3>
+<p>The migrations Alembic generates are schema migrations: they will create/delete tables,
+columns, and relationships, but they do not populate these with data. This can be an issue,
+particularly in the case of a new relationship that would apply to existing data. None of
+the existing data will be accessible via the new relationship unless the data itself is
+specifically migrated as well.</p>
+<p>This can be done by directly encoding data within the script and using a command like
+<code class="docutils literal"><span class="pre">bulk_insert()</span></code>, executing a SQL statement to SELECT the data and INSERT it into the new
+column, or by creating a live interaction with the database.</p>
+<p>lines 28-32 in <code class="docutils literal"><span class="pre">haas/migrations/versions/89630e3872ec_network_acl.py</span></code> show an example
+of executing a SQL statement then using <code class="docutils literal"><span class="pre">bulk_insert()</span></code> to migrate data.</p>
+</div>
+</div>
+<div class="section" id="writing-tests">
+<span id="writing-tests"></span><h2>Writing tests<a class="headerlink" href="#writing-tests" title="Permalink to this headline">¶</a></h2>
+<p>The file <code class="docutils literal"><span class="pre">tests/unit/migrations.py</span></code> provides some basic infrastructure
+for testing migrations. The comments there describe things in full
+detail, but the basic strategy is, back up a database with a known set
+of objects using <code class="docutils literal"><span class="pre">pg_dump</span></code>, and place the result in
+<code class="docutils literal"><span class="pre">tests/unit/migrations/</span></code>. To generate a dump, execute::</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>pg_dump -U $haas_user $database_name --column-inserts &gt; filename.sql
+</pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">--column-inserts</span></code> is necessary to ensure that the result can be
+loaded via SQLAlchemy; the default is not valid SQL and takes advantage
+of specific features of the <code class="docutils literal"><span class="pre">psql</span></code> command. You will also need to edit
+the file manually, doing the following:</p>
+<ul class="simple">
+<li>If the option lock_timeout is set (<code class="docutils literal"><span class="pre">SET</span> <span class="pre">lock_timeout</span> <span class="pre">=</span> <span class="pre">...</span></code>), remove
+that statement; the version of postgres used by Travis doesn&#8217;t support
+it, so it will cause failures. It also isn&#8217;t required.</li>
+<li>Delete all statements using the keywords GRANT, REVOKE, or EXTENSION.
+These will cause permission errors if your database user is not root.</li>
+<li>Delete all statements of the form <code class="docutils literal"><span class="pre">ALTER</span> <span class="pre">TABLE</span> <span class="pre">...</span> <span class="pre">SET</span> <span class="pre">OWNER</span> <span class="pre">TO</span> <span class="pre">...</span></code>; these may cause failures if the connection details on the
+machine which runs the tests are different from yours, since the
+refer to specific database users/roles.</li>
+<li>At the top of the file, document the following:<ul>
+<li>In roughly what stage of HaaS&#8217;s development this dump was taken,
+e.g. &#8220;Just after re-integrating flask&#8221; or &#8220;first integration of
+openvpn&#8221;</li>
+<li>The git commit hash of the revision of HaaS which created the
+database.</li>
+<li>A list of extensions that were loaded into HaaS when the database
+was created.</li>
+<li>Any other options in the config file that would have affected the
+contents of the database.</li>
+<li>How the database was generated, e.g. &#8220;by the function haas.foo.bar
+as of commit <code class="docutils literal"><span class="pre">$hash</span></code>.&#8221;</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Introduction</a><ul>
+<li><a class="reference internal" href="#background">Background</a></li>
+<li><a class="reference internal" href="#usage-in-haas">Usage In HaaS</a><ul>
+<li><a class="reference internal" href="#if-the-extension-does-not-have-migration-scripts-already">If the extension does not have migration scripts already</a></li>
+<li><a class="reference internal" href="#if-the-extension-already-has-migrations-or-the-script-is-for-haas-core">If the extension already has migrations, or the script is for HaaS core</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#notes-on-generating-migrations-and-checking-the-output">Notes on Generating Migrations and Checking the Output</a><ul>
+<li><a class="reference internal" href="#state-of-the-database">State of the Database</a></li>
+<li><a class="reference internal" href="#renaming-columns">Renaming Columns</a></li>
+<li><a class="reference internal" href="#data-migration-vs-schema-migration">Data Migration vs. Schema Migration</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#writing-tests">Writing tests</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="logging.html" title="previous chapter">Overview</a></li>
+      <li>Next: <a href="network-drivers.html" title="next chapter">Overview</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/migrations.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, HIL Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/migrations.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

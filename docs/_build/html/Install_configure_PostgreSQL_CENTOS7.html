@@ -1,0 +1,209 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Part 1: Install PostgreSQL server. &#8212; HIL 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="HIL 1.0 documentation" href="index.html" />
+    <link rel="next" title="Usage" href="keystone-auth.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="consistency-model.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <p>The following steps will let you install, configure PostgreSQL server and
+create a <code class="docutils literal"><span class="pre">haas</span></code> database for development or production version of HaaS on a
+Centos - 7 server.</p>
+<p>For simplicity of configuration and ease of maintenance we will use
+single name <code class="docutils literal"><span class="pre">haas</span></code> for creating a system user, database role and database name.
+This is merely a guideline for users new to database setup and administration.
+Experienced users are free to choose any other method that suits their need.
+The end goal is to have a way to have a working PostgreSQL backend for <code class="docutils literal"><span class="pre">haas</span></code></p>
+<div class="section" id="part-1-install-postgresql-server">
+<span id="part-1-install-postgresql-server"></span><h1>Part 1: Install PostgreSQL server.<a class="headerlink" href="#part-1-install-postgresql-server" title="Permalink to this headline">¶</a></h1>
+<p>Initialize the system. Configure PostgreSQL to allow password authentication.</p>
+<p><strong>1. Install the requisite packages on your server.</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">yum</span> <span class="n">install</span> <span class="n">postgresql</span><span class="o">-</span><span class="n">server</span> <span class="n">postgresql</span><span class="o">-</span><span class="n">contrib</span> <span class="o">-</span><span class="n">y</span>
+</pre></div>
+</div>
+<p><strong>2. Initialize postgresql:</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">postgresql</span><span class="o">-</span><span class="n">setup</span> <span class="n">initdb</span>
+</pre></div>
+</div>
+<p><strong>3. Replace the term <code class="docutils literal"><span class="pre">ident</span></code> from following lines</strong>
+in file <code class="docutils literal"><span class="pre">/var/lib/pgsql/data/pg_hba.conf</span></code> with <code class="docutils literal"><span class="pre">md5</span></code></p>
+<p><strong>Before:</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># &quot;krb5&quot;, &quot;ident&quot;, &quot;peer&quot;, &quot;pam&quot;, &quot;ldap&quot;, &quot;radius&quot; or &quot;cert&quot;.  Note that</span>
+<span class="n">host</span>    <span class="nb">all</span>             <span class="nb">all</span>             <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="o">/</span><span class="mi">32</span>            <span class="n">ident</span>
+<span class="n">host</span>    <span class="nb">all</span>             <span class="nb">all</span>             <span class="p">::</span><span class="mi">1</span><span class="o">/</span><span class="mi">128</span>                 <span class="n">ident</span>
+<span class="c1">#host    replication     postgres        127.0.0.1/32            ident</span>
+<span class="c1">#host    replication     postgres        ::1/128                 ident</span>
+</pre></div>
+</div>
+<p><strong>After:</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># &quot;krb5&quot;, &quot;ident&quot;, &quot;peer&quot;, &quot;pam&quot;, &quot;ldap&quot;, &quot;radius&quot; or &quot;cert&quot;.  Note that</span>
+<span class="n">host</span>    <span class="nb">all</span>             <span class="nb">all</span>             <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="o">/</span><span class="mi">32</span>            <span class="n">md5</span>
+<span class="n">host</span>    <span class="nb">all</span>             <span class="nb">all</span>             <span class="p">::</span><span class="mi">1</span><span class="o">/</span><span class="mi">128</span>                 <span class="n">md5</span>
+<span class="c1">#host    replication     postgres        127.0.0.1/32            ident</span>
+<span class="c1">#host    replication     postgres        ::1/128                 ident</span>
+</pre></div>
+</div>
+<p><strong>4. Start postgresql service</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ sudo systemctl start postgresql
+$ sudo systemctl enable postgresql
+</pre></div>
+</div>
+<p>##Part 2: Setup system user and database role for HaaS.</p>
+<p>Create database named <code class="docutils literal"><span class="pre">haas</span></code> owned by user also named as <code class="docutils literal"><span class="pre">haas</span></code>.</p>
+<p><strong>5. Create a system user haas:</strong></p>
+<p>If you are setting up this database for a <a class="reference external" href="production/INSTALL.rst">production setup</a>
+then you might have already created a system user for managing <code class="docutils literal"><span class="pre">HaaS</span></code>. In that case skip this
+step.</p>
+<p>If you are setting up database for <a class="reference external" href="development/HACKING.rst">development purpose</a>
+you will need to create a system user to manage <code class="docutils literal"><span class="pre">HaaS</span></code> database as follows.</p>
+<p><strong>format:</strong> <code class="docutils literal"><span class="pre">useradd</span> <span class="pre">&lt;username&gt;</span> <span class="pre">--system</span> <span class="pre">-d</span> <span class="pre">&lt;path-to-home-dir&gt;</span> <span class="pre">-m</span> <span class="pre">-r</span></code></p>
+<p>In this case both system username and home directory will be named <code class="docutils literal"><span class="pre">haas</span></code></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">useradd</span> <span class="n">haas</span> <span class="o">--</span><span class="n">system</span> <span class="o">-</span><span class="n">d</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">haas</span> <span class="o">-</span><span class="n">m</span> <span class="o">-</span><span class="n">r</span>
+</pre></div>
+</div>
+<p><strong>6. Create a database role named <code class="docutils literal"><span class="pre">haas</span></code> with priviledges to:</strong>
+<code class="docutils literal"><span class="pre">-r</span></code> create roles
+<code class="docutils literal"><span class="pre">-d</span></code> create databases and
+<code class="docutils literal"><span class="pre">-P</span></code> will prompt for the password of the new user.
+This is necessary since we have configured PostgreSQL to use password authentication.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ sudo -u postgres createuser -r -d -P haas
+Enter password for new role:  &lt;Input password for database role haas&gt;
+Enter it again: &lt;Retype password for role haas&gt;
+</pre></div>
+</div>
+<p>Confirm that the role with requisite privileges is created <strong>as postgres user</strong>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ psql -c &#39;\dg&#39;
+                             List of roles
+ Role name |                   Attributes                   | Member of 
+-----------+------------------------------------------------+-----------
+ haas      | Create role, Create DB                         | {}
+ postgres  | Superuser, Create role, Create DB, Replication | {}
+</pre></div>
+</div>
+<p>If you wish to delete the user, do the following:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ sudo -u postgres dropuser haas
+</pre></div>
+</div>
+<p><strong>Note</strong>: Make sure that the database role you create corresponds to an existing system user.
+eg. There has to be a system user <code class="docutils literal"><span class="pre">haas</span></code> to access database named <code class="docutils literal"><span class="pre">haas</span></code> as database role named <code class="docutils literal"><span class="pre">haas</span></code>.</p>
+<p><strong>7. Create database haas owned by database role haas:</strong></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">-</span><span class="n">u</span> <span class="n">haas</span> <span class="n">createdb</span> <span class="n">haas</span>
+</pre></div>
+</div>
+<p>confirm it created a database named <code class="docutils literal"><span class="pre">haas</span></code> and it is owned by <code class="docutils literal"><span class="pre">haas</span></code>.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ psql -c &#39;\l&#39;
+                                  List of databases
+   Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges   
+-----------+----------+----------+-------------+-------------+-----------------------
+ haas      | haas     | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
+ postgres  | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
+ template0 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
+           |          |          |             |             | postgres=CTc/postgres
+ template1 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
+           |          |          |             |             | postgres=CTc/postgres
+</pre></div>
+</div>
+<p>##Finally:</p>
+<p>If you have followed all steps so far.
+Put following string in <code class="docutils literal"><span class="pre">haas.cfg</span></code> under section <code class="docutils literal"><span class="pre">[database]</span></code></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">uri</span> <span class="o">=</span> <span class="n">postgresql</span><span class="p">:</span><span class="o">//</span><span class="n">haas</span><span class="p">:</span><span class="o">&lt;</span><span class="n">clear</span> <span class="n">text</span> <span class="n">password</span> <span class="o">&gt;</span><span class="nd">@localhost</span><span class="p">:</span><span class="mi">5432</span><span class="o">/</span><span class="n">haas</span>
+</pre></div>
+</div>
+<p>It follows the format: <code class="docutils literal"><span class="pre">postgresql://&lt;user&gt;:&lt;password&gt;&#64;&lt;address&gt;/&lt;dbname&gt;</span></code>
+where <code class="docutils literal"><span class="pre">&lt;user&gt;</span></code> is the name of the postgres user you created, <code class="docutils literal"><span class="pre">&lt;password&gt;</span></code> is
+its password, <code class="docutils literal"><span class="pre">&lt;dbname&gt;</span></code> is the name of the database you created, and
+<code class="docutils literal"><span class="pre">&lt;address&gt;</span></code> is the address which haas should use to connect to postgres (In a
+typical default postgres setup, the right value is <code class="docutils literal"><span class="pre">localhost</span></code>).</p>
+<p>Continue with installation steps:</p>
+<p><a class="reference external" href="INSTALL.rst">continue with production install</a>
+or
+<a class="reference external" href="INSTALL-devel.rst">continue with development install</a></p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="consistency-model.html" title="previous chapter">&lt;no title&gt;</a></li>
+      <li>Next: <a href="keystone-auth.html" title="next chapter">Usage</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/Install_configure_PostgreSQL_CENTOS7.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, HIL Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/Install_configure_PostgreSQL_CENTOS7.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

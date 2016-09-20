@@ -1,0 +1,302 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Overview &#8212; HIL 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="HIL 1.0 documentation" href="index.html" />
+    <link rel="next" title="Types of Networks in the HaaS" href="networks.html" />
+    <link rel="prev" title="Introduction" href="migrations.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <p>This document describes the network driver model, primarily from a
+system administrator&#8217;s standpoint, though there are some details useful
+for developers writing tools which interact with the API as well.</p>
+<div class="section" id="overview">
+<span id="overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+<p>There are two classes of network-related drivers: network allocators and
+switches. Switches are straightforward to understand; they provide
+support for a particular hardware switch. Network allocators are a
+bit more abstract.</p>
+<p>HaaS networks may be backed by various underlying isolation technologies
+(currently the only network allocator shipped with HaaS uses 802.1q
+VLANs, but there may be more, e.g. VXLANs in the future). A network
+allocator manages the details of mapping networks created by HaaS to
+these underlying technologies. For example, the <code class="docutils literal"><span class="pre">vlan_pool</span></code> allocator
+maps each network to a unique VLAN id.</p>
+<p>Drivers are implemented as extensions, and must be added to the
+<code class="docutils literal"><span class="pre">[extensions]</span></code> section of <code class="docutils literal"><span class="pre">haas.cfg</span></code>. You must supply <em>exactly</em> one
+network allocator driver, and one or more switches. For example::</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="p">[</span><span class="n">extensions</span><span class="p">]</span>
+<span class="n">haas</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">network_allocators</span><span class="o">.</span><span class="n">vlan_pool</span> <span class="o">=</span>
+<span class="n">haas</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">switches</span><span class="o">.</span><span class="n">dell</span> <span class="o">=</span>
+<span class="n">haas</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">switches</span><span class="o">.</span><span class="n">nexus</span> <span class="o">=</span>
+</pre></div>
+</div>
+<p>Some drivers may also need driver specific options, which go in a
+section with the same name as the extension, e.g.::</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">haas</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">network_allocators</span><span class="o">.</span><span class="n">vlan_pool</span><span class="p">]</span>
+<span class="n">vlans</span> <span class="o">=</span> <span class="mi">300</span><span class="o">-</span><span class="mi">500</span><span class="p">,</span> <span class="mi">700</span><span class="o">-</span><span class="mi">750</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="network-allocator-drivers">
+<span id="network-allocator-drivers"></span><h1>Network allocator drivers<a class="headerlink" href="#network-allocator-drivers" title="Permalink to this headline">¶</a></h1>
+<p>The only network allocator shipped with HaaS that is of interest to
+users (there are others useful for development purposes) is the VLAN
+allocator. The name of the extension is
+<code class="docutils literal"><span class="pre">haas.ext.network_allocators.vlan_pool</span></code>, and it requires a single
+extension-specific config option, <code class="docutils literal"><span class="pre">vlans</span></code>, which is a comma separated
+list of VLAN ids and/or ranges of VLAN ids. Networks created within HaaS
+will use VLANs specified in the configuration file. An example::</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">...</span>
+
+<span class="p">[</span><span class="n">extensions</span><span class="p">]</span>
+<span class="n">haas</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">network_allocators</span><span class="o">.</span><span class="n">vlan_pool</span> <span class="o">=</span>
+<span class="o">...</span>
+
+<span class="p">[</span><span class="n">haas</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">network_allocators</span><span class="o">.</span><span class="n">vlan_pool</span><span class="p">]</span>
+<span class="n">vlans</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">500</span><span class="o">-</span><span class="mi">700</span><span class="p">,</span> <span class="mi">800</span><span class="o">-</span><span class="mi">950</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p>Once HaaS has been started, removing VLANs from this list is <em>not</em>
+supported. You may add additional VLANs, but you will have to re-run
+<code class="docutils literal"><span class="pre">haas-admin</span> <span class="pre">db</span> <span class="pre">create</span></code>.</p>
+</div>
+<div class="section" id="security">
+<span id="security"></span><h1>Security<a class="headerlink" href="#security" title="Permalink to this headline">¶</a></h1>
+<p>It is VERY IMPORTANT that you be sure to configure your switches to
+guard against VLAN hopping attacks:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">en</span><span class="o">.</span><span class="n">wikipedia</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">wiki</span><span class="o">/</span><span class="n">VLAN_hopping</span>
+</pre></div>
+</div>
+<p>Doing so is not difficult, and it is critical for security.</p>
+</div>
+<div class="section" id="switch-drivers">
+<span id="switch-drivers"></span><h1>Switch drivers<a class="headerlink" href="#switch-drivers" title="Permalink to this headline">¶</a></h1>
+<p>At present, all switch drivers shipped with HaaS require that the VLAN
+pool allocator is in use. There are two switch drivers shipped with
+HaaS:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">haas.ext.switches.dell</span></code>, which provides a driver for the Dell
+Powerconnect 5500 series switches.</li>
+<li><code class="docutils literal"><span class="pre">haas.ext.switches.nexus</span></code>, which provides a driver for some Cisco
+Nexus switches. Only the 3500 and 5500 have been tested, though it is
+possible that other models will work as well.</li>
+</ul>
+<p>Neither driver requires any extension-specific config options. Per the
+information in <code class="docutils literal"><span class="pre">rest_api.md</span></code>, the details of certain API calls are
+driver-dependant, below are the details for each of these switches.</p>
+<div class="section" id="powerconnect-driver">
+<span id="powerconnect-driver"></span><h2>Powerconnect driver<a class="headerlink" href="#powerconnect-driver" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="switch-register">
+<span id="switch-register"></span><h3>switch_register<a class="headerlink" href="#switch-register" title="Permalink to this headline">¶</a></h3>
+<p>To register a Dell Powerconnect switch, the <code class="docutils literal"><span class="pre">&quot;type&quot;</span></code> field of the
+request body must have a value of::</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">schema</span><span class="o">.</span><span class="n">massopencloud</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">haas</span><span class="o">/</span><span class="n">v0</span><span class="o">/</span><span class="n">switches</span><span class="o">/</span><span class="n">powerconnect55xx</span>
+</pre></div>
+</div>
+<p>In addition, it requires three extra fields: <code class="docutils literal"><span class="pre">&quot;username&quot;</span></code>,
+<code class="docutils literal"><span class="pre">&quot;hostname&quot;</span></code>, and <code class="docutils literal"><span class="pre">&quot;password&quot;</span></code>, which provide the necessary
+information to connect to the switch via telnet (<code class="docutils literal"><span class="pre">&quot;hostname&quot;</span></code> may also
+be an IP address).  SSH support is planned, but even so we do not
+recommend allowing connectivity to a switch&#8217;s management interface from
+an untrusted network.</p>
+</div>
+<div class="section" id="switch-register-port">
+<span id="switch-register-port"></span><h3>switch_register_port<a class="headerlink" href="#switch-register-port" title="Permalink to this headline">¶</a></h3>
+<p>Port names must be of the same form accepted by the switch&#8217;s console
+interface, e.g. <code class="docutils literal"><span class="pre">gi1/0/5</span></code>. Be <em>very</em> careful when specifying these, as
+they are not validated by HaaS (this will be fixed in future versions).</p>
+</div>
+</div>
+<div class="section" id="nexus-driver">
+<span id="nexus-driver"></span><h2>Nexus driver<a class="headerlink" href="#nexus-driver" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="switch-register">
+<span id="id1"></span><h3>switch_register<a class="headerlink" href="#switch-register" title="Permalink to this headline">¶</a></h3>
+<p>The type field for the Nexus driver has the value::</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">schema</span><span class="o">.</span><span class="n">massopencloud</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">haas</span><span class="o">/</span><span class="n">v0</span><span class="o">/</span><span class="n">switches</span><span class="o">/</span><span class="n">nexus</span>
+</pre></div>
+</div>
+<p>The nexus driver requires the same additional fields as the powerconnect
+driver, plus an additional field &#8220;dummy_vlan&#8221;, which should be a JSON
+number corresponding to an unused VLAN id on the switch. This VLAN
+should be deactivated (and thus no traffic should flow across it ever).
+This exists to get around an implementation problem related to disabling
+the native VLAN.</p>
+<p>For example, if you&#8217;ve chosen VLAN id 2222 to use as the dummy vlan, on
+the switch&#8217;s console, run:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># config terminal</span>
+<span class="c1"># no vlan 2222</span>
+</pre></div>
+</div>
+<p>The body of the api call request can then look like:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;http://schema.massopencloud.org/haas/v0/switches/nexus&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;MyUser&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;secret&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hostname&quot;</span><span class="p">:</span> <span class="s2">&quot;mynexus.example.com&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;dummy_vlan&quot;</span><span class="p">:</span> <span class="mi">2222</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="switch-register-port">
+<span id="id2"></span><h3>switch_register_port<a class="headerlink" href="#switch-register-port" title="Permalink to this headline">¶</a></h3>
+<p>Like the powerconnect driver, the Nexus driver accepts port names of the
+same format accepted by the underlying switch, in this case (e.g.)
+<code class="docutils literal"><span class="pre">ethernet</span> <span class="pre">1/42</span></code>. The same concerns about validation apply.</p>
+</div>
+</div>
+<div class="section" id="brocade-driver">
+<span id="brocade-driver"></span><h2>Brocade driver<a class="headerlink" href="#brocade-driver" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="switch-register">
+<span id="id3"></span><h3>switch_register<a class="headerlink" href="#switch-register" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal"><span class="pre">type</span></code> field for the Brocade NOS driver has the value:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">schema</span><span class="o">.</span><span class="n">massopencloud</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">haas</span><span class="o">/</span><span class="n">v0</span><span class="o">/</span><span class="n">switches</span><span class="o">/</span><span class="n">brocade</span>
+</pre></div>
+</div>
+<p>In addition to <code class="docutils literal"><span class="pre">type</span></code>, the brocade driver requires three additional fields
+<code class="docutils literal"><span class="pre">hostname</span></code>, <code class="docutils literal"><span class="pre">username</span></code>, <code class="docutils literal"><span class="pre">password</span></code>, and <code class="docutils literal"><span class="pre">interface_type</span></code>.
+<code class="docutils literal"><span class="pre">interface_type</span></code> refers to the type and speed of the ports on the switch,
+ex. &#8220;TenGigabitEthernet&#8221;, &#8220;FortyGigabitEthernet&#8221;. If you have multiple types
+of ports on the same switch, register the switch multiple times with different
+parameters for <code class="docutils literal"><span class="pre">interface_type</span></code>.</p>
+<p>The body of the api call request will look like:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;http://schema.massopencloud.org/haas/v0/switches/brocade&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;MyUser&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;secret&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hostname&quot;</span><span class="p">:</span> <span class="s2">&quot;mybrocade.example.com&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;interface_type&quot;</span><span class="p">:</span> <span class="s2">&quot;TenGigabitEthernet&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="switch-register-port">
+<span id="id4"></span><h3>switch_register_port<a class="headerlink" href="#switch-register-port" title="Permalink to this headline">¶</a></h3>
+<p>The brocade driver accepts interface names the same way they would be accepted
+in the console of the switch, ex. <code class="docutils literal"><span class="pre">101/0/10</span></code>.</p>
+</div>
+</div>
+<div class="section" id="using-multiple-switches">
+<span id="using-multiple-switches"></span><h2>Using multiple switches<a class="headerlink" href="#using-multiple-switches" title="Permalink to this headline">¶</a></h2>
+<p>Networks managed by HaaS may span multiple switches. No special configuration
+of HaaS itself is required; just register each switch as normal and ensure that
+all VLANs in the allocator&#8217;s <code class="docutils literal"><span class="pre">vlans</span></code> option are trunked to every managed
+switch.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Overview</a></li>
+<li><a class="reference internal" href="#network-allocator-drivers">Network allocator drivers</a></li>
+<li><a class="reference internal" href="#security">Security</a></li>
+<li><a class="reference internal" href="#switch-drivers">Switch drivers</a><ul>
+<li><a class="reference internal" href="#powerconnect-driver">Powerconnect driver</a><ul>
+<li><a class="reference internal" href="#switch-register">switch_register</a></li>
+<li><a class="reference internal" href="#switch-register-port">switch_register_port</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#nexus-driver">Nexus driver</a><ul>
+<li><a class="reference internal" href="#switch-register">switch_register</a></li>
+<li><a class="reference internal" href="#switch-register-port">switch_register_port</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#brocade-driver">Brocade driver</a><ul>
+<li><a class="reference internal" href="#switch-register">switch_register</a></li>
+<li><a class="reference internal" href="#switch-register-port">switch_register_port</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#using-multiple-switches">Using multiple switches</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="migrations.html" title="previous chapter">Introduction</a></li>
+      <li>Next: <a href="networks.html" title="next chapter">Types of Networks in the HaaS</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/network-drivers.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, HIL Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/network-drivers.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

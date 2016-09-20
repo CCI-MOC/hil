@@ -1,0 +1,222 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Using HaaS as a Client &#8212; HIL 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="HIL 1.0 documentation" href="index.html" />
+    <link rel="next" title="Extensions" href="extensions.html" />
+    <link rel="prev" title="Upgrading HaaS" href="UPGRADING.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="using-haas-as-a-client">
+<h1>Using HaaS as a Client<a class="headerlink" href="#using-haas-as-a-client" title="Permalink to this headline">¶</a></h1>
+<p>Interaction with HaaS occurs via its REST API. The high-level semantics of the
+API are documented in <a class="reference external" href="apidesc.md">apidesc.md</a>, and the mapping to HTTP is
+described in <a class="reference external" href="rest_api.md">rest_api.md</a>.</p>
+<p>The <code class="docutils literal"><span class="pre">haas</span></code> command line tool is a wrapper around this API. Running <code class="docutils literal"><span class="pre">haas</span>
+<span class="pre">help</span></code> will display an overview of the available commands. To tell <code class="docutils literal"><span class="pre">haas</span></code>
+which HaaS instance to use, be sure to do one of:</p>
+<ol class="arabic simple">
+<li>Set the <code class="docutils literal"><span class="pre">HAAS_ENDPOINT</span></code> environmental variable. An example (using
+the default port used when running <code class="docutils literal"><span class="pre">haas</span> <span class="pre">serve</span></code>) would be <code class="docutils literal"><span class="pre">http://127.0.0.1:5000</span></code></li>
+<li>Ensure that there is a <code class="docutils literal"><span class="pre">haas.cfg</span></code> in the current directory which contains
+a valid <code class="docutils literal"><span class="pre">client</span></code> section. A valid config file in this case could look
+like</li>
+</ol>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">client</span><span class="p">]</span>
+<span class="n">endpoint</span> <span class="o">=</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>If both configuration methods are present, the <code class="docutils literal"><span class="pre">HAAS_ENDPOINT</span></code> environmental variable will take precedence over whatever is contained within <code class="docutils literal"><span class="pre">haas.cfg</span></code>.</li>
+<li>Though insignificant in some circumstances, the presence or absence of trailing slashes within the endpoint URL can cause issues in communicating with the HaaS server, such as &#8220;404&#8221; errors. For example, using <code class="docutils literal"><span class="pre">http://127.0.0.1:5000</span></code> vs <code class="docutils literal"><span class="pre">http://127.0.0.1:5000/</span></code>.</li>
+</ul>
+<p>If using the basic auth/database auth backend, you must set the environment
+variables <code class="docutils literal"><span class="pre">HAAS_USERNAME</span></code> and <code class="docutils literal"><span class="pre">HAAS_PASSWORD</span></code> to the correct credentials.</p>
+<div class="section" id="deploying-machines">
+<h2>Deploying Machines<a class="headerlink" href="#deploying-machines" title="Permalink to this headline">¶</a></h2>
+<p>The most basic workflow for deploying machines onto a set of nodes allocated
+with HaaS is as follows. First, create a headnode, and attach it to the network
+that the hardware nodes PXE boot off of.  Then, enter the headnode by VNCing to
+it from the headnode host. The VNC port can be found with the REST
+<code class="docutils literal"><span class="pre">show_headnode</span></code> call. Authentication support <a class="reference external" href="https://github.com/CCI-MOC/haas/issues/352">is slated</a> for a future release. From
+there, you can set up SSH access to the headnode, or you can continue to use
+VNC if you prefer.</p>
+<p>Next, configure DHCP and TFTP servers that will boot nodes into some automated
+install image.  We have an example of this in <code class="docutils literal"><span class="pre">examples/puppet_headnode</span></code>.  In
+this example, we use Kickstart to automate a Centos install.  Our kickstart
+file configures very little of the system, but complicated configuration can be
+done this way, especially by using Kickstart to install a tool such as Puppet.</p>
+<p>Our setup has one additional trick.  We run a server that, firstly, serves the
+Kickstart file, but secondly makes it so each node only PXE boots the installer
+once.  The last thing each node does while installing is to tell the server to
+delete its symlink from the TFTP config, which will make the machine fall back
+to hard-disk booting the installed system.</p>
+<p>This is, as the filepath states, merely an example of how you might deploy to
+physical nodes.  Existing deployment systems such as Canonical&#8217;s MAAS have also
+been run succesfully.</p>
+</div>
+</div>
+<div class="section" id="usage-examples">
+<h1>Usage examples<a class="headerlink" href="#usage-examples" title="Permalink to this headline">¶</a></h1>
+<p>Included herewith are some examples about</p>
+<blockquote>
+<div>&#8211; Interacting with HaaS API directly using the curl utility.
+&#8211; And using equivalent cli calls are also included.</div></blockquote>
+</div>
+<div class="section" id="haas-node-register-ipmi-dummynode01-ipmihost4node-01-ipmiuser4node-01-ipmipass4node-01">
+<h1>haas node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01<a class="headerlink" href="#haas-node-register-ipmi-dummynode01-ipmihost4node-01-ipmiuser4node-01-ipmipass4node-01" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="register-a-switch-with-haas">
+<h2>1) Register a switch with HaaS:<a class="headerlink" href="#register-a-switch-with-haas" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>Eg&gt; Switch name: mockswitch01</dt>
+<dd>Host name:  switchhost01
+User name:  switchuser01
+Password:   password1234</dd>
+</dl>
+<p>api call</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">X</span> <span class="n">put</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5000</span><span class="o">/</span><span class="n">switch</span><span class="o">/</span><span class="n">mockswitch01</span> <span class="o">-</span><span class="n">d</span> <span class="s1">&#39;</span>
+    <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;http://schema.massopencloud.org/haas/v0/switches/mock&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hostname&quot;</span><span class="p">:</span> <span class="s2">&quot;switchhost01&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;switchuser01&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;password1234&quot;</span><span class="p">}</span><span class="s1">&#39;</span>
+</pre></div>
+</div>
+<p>cli call</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">haas</span> <span class="n">switch_register</span> <span class="n">mockswitch02</span> <span class="n">mock</span> <span class="n">switchhost01</span> <span class="n">switchuser01</span> <span class="n">password1234</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="registering-a-node-which-uses-ipmi-for-out-of-band-management">
+<h2>2) Registering a Node which uses IPMI for out of band management<a class="headerlink" href="#registering-a-node-which-uses-ipmi-for-out-of-band-management" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul>
+<li><p class="first"><strong>Node name:</strong>  dummyNoderHaaS-02</p>
+</li>
+<li><dl class="first docutils">
+<dt><strong>Ipmi info:</strong></dt>
+<dd><ul class="first last simple">
+<li><strong>hostname:</strong>           ipmiHost4node-02</li>
+<li><strong>ipmi_username:</strong>      ipmiUser4node-02</li>
+<li><strong>ipmi_password:</strong>      ipmiPass4node-02</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<p>For nodes using IPMI use the following api call:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">X</span> <span class="n">PUT</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">5001</span><span class="o">/</span><span class="n">node</span><span class="o">/</span><span class="n">dummyNode01</span> <span class="o">-</span><span class="n">d</span> <span class="s1">&#39;</span>
+<span class="o">&gt;</span> <span class="p">{</span><span class="s2">&quot;obm&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;http://schema.massopencloud.org/haas/v0/obm/ipmi&quot;</span><span class="p">,</span>
+<span class="o">&gt;</span> <span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;ipmiHost4node-01&quot;</span><span class="p">,</span>
+<span class="o">&gt;</span> <span class="s2">&quot;user&quot;</span><span class="p">:</span> <span class="s2">&quot;ipmiUser4node-01&quot;</span><span class="p">,</span>
+<span class="o">&gt;</span> <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;ipmiPass4node-01&quot;</span>
+<span class="o">&gt;</span> <span class="p">}}</span><span class="s1">&#39;</span>
+</pre></div>
+</div>
+<p>Corresponding cli calls will be as follows:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">haas</span> <span class="n">node_register</span> <span class="n">ipmi</span> <span class="n">dummyNode01</span> <span class="n">ipmiHost4node</span><span class="o">-</span><span class="mi">01</span> <span class="n">ipmiUser4node</span><span class="o">-</span><span class="mi">01</span> <span class="n">ipmiPass4node</span><span class="o">-</span><span class="mi">01</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Using HaaS as a Client</a><ul>
+<li><a class="reference internal" href="#deploying-machines">Deploying Machines</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#usage-examples">Usage examples</a></li>
+<li><a class="reference internal" href="#haas-node-register-ipmi-dummynode01-ipmihost4node-01-ipmiuser4node-01-ipmipass4node-01">haas node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01</a><ul>
+<li><a class="reference internal" href="#register-a-switch-with-haas">1) Register a switch with HaaS:</a></li>
+<li><a class="reference internal" href="#registering-a-node-which-uses-ipmi-for-out-of-band-management">2) Registering a Node which uses IPMI for out of band management</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="UPGRADING.html" title="previous chapter">Upgrading HaaS</a></li>
+      <li>Next: <a href="extensions.html" title="next chapter">Extensions</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/USING.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, HIL Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/USING.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

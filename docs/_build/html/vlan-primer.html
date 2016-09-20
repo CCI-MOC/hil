@@ -1,0 +1,211 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Managed vs. Unmanaged Switches &#8212; HIL 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="HIL 1.0 documentation" href="index.html" />
+    <link rel="next" title="&lt;no title&gt;" href="driver-model.html" />
+    <link rel="prev" title="Overview" href="testing.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <p>This document is a brief primer on 802.1q VLANs (Virtual LANs): what they are,
+how switches tend to deal with them, how Linux deals with them, and how the
+HaaS uses them.</p>
+<div class="section" id="managed-vs-unmanaged-switches">
+<span id="managed-vs-unmanaged-switches"></span><h1>Managed vs. Unmanaged Switches<a class="headerlink" href="#managed-vs-unmanaged-switches" title="Permalink to this headline">¶</a></h1>
+<p>The primary function of an <em>unmanaged</em> switch is to connect several
+computers into a single network segment. This is similar to the purpose
+of a hub - which is in essence just a shared wire - except that it
+understand the ethernet protocol and thus does not have to send traffic
+to every machine. Instead it can only send traffic to the machines which
+need to see it. This improves performance somewhat, but for the most
+part does not affect usage of the device.</p>
+<p>For a managed switch, the basic purpose is the same. However, a managed
+switch provides additional capabilities, and typically can be configured
+via a web interface, serial console, or telnet or ssh.</p>
+<p>One piece of additional functionality provided by nearly all managed
+switches is support for VLANs, which are typically used to create
+logical networks within the switch - i.e. they allow the switch to be
+divided into isolated sections, which cannot communicate with one
+another.</p>
+</div>
+<div class="section" id="what-are-vlans">
+<span id="what-are-vlans"></span><h1>What are VLANs?<a class="headerlink" href="#what-are-vlans" title="Permalink to this headline">¶</a></h1>
+<p>At a most basic level, a VLAN is simply a 12 bit tag in the header of an
+ethernet packet, which can be used by networking equipment. Mostly this
+is used as described above - it provides both the switch and other
+devices with information about which logical network the packet belongs
+to.</p>
+</div>
+<div class="section" id="how-do-switches-deal-with-vlans">
+<span id="how-do-switches-deal-with-vlans"></span><h1>How do switches deal with VLANs?<a class="headerlink" href="#how-do-switches-deal-with-vlans" title="Permalink to this headline">¶</a></h1>
+<p>Typically, traffic moving &#8220;through&#8221; a managed  switch will have a VLAN tag
+associated with it, and will be distributed to all of the ports associated
+with that VLAN. A port may be in one of two modes: access or trunking. (Some
+switches have additional modes, but they are usually variations on one of
+these, and inessential).</p>
+<p>Access mode is the simpler of the two. For a port in access mode:</p>
+<ul class="simple">
+<li>The port is associated with exactly one VLAN tag.</li>
+<li>Any device(s) connected to the port do not and need not have any knowledge of
+the use VLANs.</li>
+<li>Any traffic coming in on the port has the associated VLAN tag added.</li>
+<li>Any traffic going out on the port has it&#8217;s VLAN tag removed.</li>
+</ul>
+<p>Access mode allows a port to be a member of a logical network without requiring
+any knowledge of VLANs on the part of whatever is connected to the port.</p>
+<p>In trunking mode:</p>
+<ul class="simple">
+<li>The port is associated with zero or more &#8220;tagged&#8221; VLANs.</li>
+<li>The port may also have one &#8220;native&#8221; VLAN.</li>
+<li>If an ethernet packet coming in on the port has no VLAN tag, then it is tagged
+with the &#8220;native&#8221; VLAN&#8217;s tag.</li>
+<li>If an ethernet packet coming in on the port has a VLAN tag, then:<ul>
+<li>If that VLAN is associated with the port, it is left untouched, and
+distributed to the corresponding logical network as normal</li>
+<li>Otherwise, the packet is dropped.</li>
+</ul>
+</li>
+<li>Packets bound for VLANs which are &#8220;tagged&#8221; for the port retain their VLAN tags
+when going out on th port.</li>
+<li>TODO: my intuition is that packets bound for the native VLAN have their tags
+stripped off before exiting the port, but I&#8217;m not 100% sure of this.</li>
+</ul>
+<p>Trunking mode could actually fully replace the functionality of access mode,
+since a trunked port with just a native VLAN (and no tagged VLANs) is
+equivalent. It is more flexible however.</p>
+</div>
+<div class="section" id="how-does-linux-deal-with-vlans">
+<span id="how-does-linux-deal-with-vlans"></span><h1>How does Linux deal with VLANs?<a class="headerlink" href="#how-does-linux-deal-with-vlans" title="Permalink to this headline">¶</a></h1>
+<p>In a typical networking configuration, a Linux machine is not VLAN aware.
+However, it is possible to create VLAN aware network interfaces with the
+<code class="docutils literal"><span class="pre">vconfig</span></code> command. If <code class="docutils literal"><span class="pre">eth0</span></code> is a physical network interface, the command</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">vconfig</span> <span class="n">add</span> <span class="n">eth0</span> <span class="mi">104</span>
+</pre></div>
+</div>
+<p>will create an interface called <code class="docutils literal"><span class="pre">eth0.104</span></code>. Any ethernet traffic coming into the
+machine on <code class="docutils literal"><span class="pre">eth0</span></code> that is tagged for VLAN 104 will come out of <code class="docutils literal"><span class="pre">eth0.104</span></code>, with
+its VLAN tag stripped off. Any traffic going into <code class="docutils literal"><span class="pre">eth0.104</span></code> will have a VLAN
+tag for 104 added, and then be sent out on <code class="docutils literal"><span class="pre">eth0</span></code>. <code class="docutils literal"><span class="pre">eth0.104</span></code> may be deleted
+with:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>vconfig rem `eth0.104`
+</pre></div>
+</div>
+</div>
+<div class="section" id="how-does-the-haas-use-vlans">
+<span id="how-does-the-haas-use-vlans"></span><h1>How does the HaaS use VLANs?<a class="headerlink" href="#how-does-the-haas-use-vlans" title="Permalink to this headline">¶</a></h1>
+<p>At present, when a network consisting of nodes 0, 1 and 2, and headnode H,
+using vlan tag N is deployed,</p>
+<ul class="simple">
+<li>The ports to which 0, 1 and 2 are attached are configured for trunked
+mode, and given access to VLAN N. Depending on the user&#8217;s preferences,
+the VLAN may either be tagged or native, on a per-port basis.</li>
+<li>An interface <code class="docutils literal"><span class="pre">ethM.N</span></code> is created on the HaaS master, where <code class="docutils literal"><span class="pre">ethM</span></code> is a network
+interface connected to the switch. <code class="docutils literal"><span class="pre">ethM</span></code> must be connected to a port that is
+configured as trunking, with VLAN M being tagged for that port.</li>
+<li><code class="docutils literal"><span class="pre">ethM.N</span></code> is attached to H (not directly, see(1)).</li>
+<li>H is started.</li>
+</ul>
+<p>From here, we have an isolated network connecting 0, 1, 2 and H. H can then
+manage the nodes by e.g. providing a PXE server and invoking the HaaS API to
+reboot the nodes.</p>
+<p>(1): The one slight wrinkle with the network setup described above is that libvirt
+doesn&#8217;t actually allow connecting <code class="docutils literal"><span class="pre">ethM.N</span></code> directly to the VM; instead we
+connect both <code class="docutils literal"><span class="pre">ethM.N</span></code> and the virtualized network interface to a bridge, which
+achieves the same effect.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Managed vs. Unmanaged Switches</a></li>
+<li><a class="reference internal" href="#what-are-vlans">What are VLANs?</a></li>
+<li><a class="reference internal" href="#how-do-switches-deal-with-vlans">How do switches deal with VLANs?</a></li>
+<li><a class="reference internal" href="#how-does-linux-deal-with-vlans">How does Linux deal with VLANs?</a></li>
+<li><a class="reference internal" href="#how-does-the-haas-use-vlans">How does the HaaS use VLANs?</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="testing.html" title="previous chapter">Overview</a></li>
+      <li>Next: <a href="driver-model.html" title="next chapter">&lt;no title&gt;</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/vlan-primer.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, HIL Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/vlan-primer.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

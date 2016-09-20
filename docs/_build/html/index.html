@@ -1,0 +1,271 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Welcome to HIL’s documentation! &#8212; HIL 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="HIL 1.0 documentation" href="#" />
+    <link rel="next" title="HaaS" href="README.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="welcome-to-hil-s-documentation">
+<h1>Welcome to HIL&#8217;s documentation!<a class="headerlink" href="#welcome-to-hil-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="README.html">HaaS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#requirements">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#documentation">Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#mass-open-cloud">Mass Open Cloud</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#operation">Operation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#anatomy-of-a-running-installation">Anatomy of a Running Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALL.html">INSTALL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALL.html#the-haas-service-node">The HaaS Service node</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="INSTALL.html#prerequisite-software">Prerequisite Software</a></li>
+<li class="toctree-l2"><a class="reference internal" href="INSTALL.html#disable-selinux">Disable SELinux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="INSTALL.html#user-need-to-choose-appropriate-values-for-their-environment">User need to choose appropriate values for their environment:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="INSTALL.html#setting-up-system-user-for-haas">Setting up system user for HaaS:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="INSTALL.html#haas-cfg">haas.cfg</a></li>
+<li class="toctree-l2"><a class="reference internal" href="INSTALL.html#authentication-and-authorization">Authentication and Authorization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="INSTALL.html#setting-up-haas-database">Setting Up HaaS Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="INSTALL.html#networking-bridges">Networking - Bridges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="INSTALL.html#libvirt">Libvirt</a></li>
+<li class="toctree-l2"><a class="reference internal" href="INSTALL.html#running-the-server-under-apache">Running the Server under Apache</a></li>
+<li class="toctree-l2"><a class="reference internal" href="INSTALL.html#running-the-network-server">Running the network server:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="INSTALL.html#using-systemd">Using systemd:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="INSTALL.html#centos">Centos:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="INSTALL.html#ubuntu">Ubuntu:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="INSTALL.html#starting-the-service">Starting the service:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="INSTALL.html#for-systems-that-do-not-support-systemd">For systems that do not support systemd:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="INSTALL.html#haas-client">HaaS Client:</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALL.html#describe-datacenter-resources">Describe datacenter resources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALL-devel.html">INSTALL-devel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALL-devel.html#dependencies">Dependencies:</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALL-devel.html#setting-postgresql-for-development-environment">Setting PostgreSQL for development environment:</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="INSTALL-devel.html#part-1-install-postgresql-server">Part 1: Install PostgreSQL server.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="INSTALL-devel.html#part-2-create-a-system-user-database-and-database-role">Part 2: Create a system user, database and database role.</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALL-devel.html#setup-database-and-role-to-control-it">Setup database and role to control it.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALL-devel.html#getting-started-with-haas-installation">Getting Started with HaaS Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALL-devel.html#for-older-systems">For older systems:</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALL-devel.html#setting-up-the-database">Setting up the Database:</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALL-devel.html#configuring-haas">Configuring HaaS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALL-devel.html#if-using-postgresql-as-a-database-backend">If using PostgreSQL as a database backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALL-devel.html#setting-up-extensions">Setting up extensions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="INSTALL-devel.html#database-auth">Database auth</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="INSTALL-devel.html#start-the-server">Start the server</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="INSTALL-devel.html#testing">Testing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="UPGRADING.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="USING.html">Using HaaS as a Client</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="USING.html#deploying-machines">Deploying Machines</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="USING.html#usage-examples">Usage examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="USING.html#haas-node-register-ipmi-dummynode01-ipmihost4node-01-ipmiuser4node-01-ipmipass4node-01">haas node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="USING.html#register-a-switch-with-haas">1) Register a switch with HaaS:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="USING.html#registering-a-node-which-uses-ipmi-for-out-of-band-management">2) Registering a Node which uses IPMI for out of band management</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apidesc.html">Objects in the HaaS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apidesc.html#api-design-philosophy">API design philosophy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apidesc.html#user-operations">User operations:</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apidesc.html#authorization-related-operations">Authorization-related operations:</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apidesc.html#administrative-operations-to-describe-physical-configuration">Administrative operations to describe physical configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rest_api.html">How to read</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rest_api.html#my-api-call">my_api_call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rest_api.html#core-api-specification">Core API Specification</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="rest_api.html#networks">Networks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rest_api.html#nodes">Nodes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rest_api.html#projects">Projects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rest_api.html#headnodes">Headnodes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rest_api.html#switches">Switches</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="rest_api.html#api-extensions">API Extensions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="rest_api.html#the-haas-ext-auth-database-auth-backend">The <code class="docutils literal"><span class="pre">haas.ext.auth.database</span></code> auth backend</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="developer-guidelines.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="developer-guidelines.html#getting-started">Getting started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developer-guidelines.html#communicating">Communicating</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="developer-guidelines.html#coding-style-conventions">Coding style/conventions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="developer-guidelines.html#rest-api-calls-rest-call">REST API calls - &#64;rest_call</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developer-guidelines.html#often-used-code">Often-used code</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="developer-guidelines.html#submitting-code-pull-requests">Submitting code / Pull Requests</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="developer-guidelines.html#prior-to-the-pull-request">Prior to the pull request</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developer-guidelines.html#pull-requests">Pull Requests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developer-guidelines.html#code-review">Code review</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developer-guidelines.html#friendliness">Friendliness</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developer-guidelines.html#approval-criteria">Approval criteria</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developer-guidelines.html#labels">Labels</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="developer-guidelines.html#core-developers">Core developers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html#nodes">Nodes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#bios-firmware">BIOS/Firmware</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html#networks">Networks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#switch-configuration">Switch configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#vlans">VLANs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#headnodes">Headnodes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployment.html#multiple-switches">Multiple Switches</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Install_configure_PostgreSQL_CENTOS7.html">Install and configure PostgreSQL CentOS7</a></li>
+<li class="toctree-l1"><a class="reference internal" href="keystone-auth.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="keystone-auth.html#configuration">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logging.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logging.html#setup">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migrations.html">Migrations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="migrations.html#background">Background</a></li>
+<li class="toctree-l2"><a class="reference internal" href="migrations.html#usage-in-haas">Usage In HaaS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="migrations.html#notes-on-generating-migrations-and-checking-the-output">Notes on Generating Migrations and Checking the Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="migrations.html#writing-tests">Writing tests</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="network-drivers.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="network-drivers.html#network-allocator-drivers">Network allocator drivers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="network-drivers.html#security">Security</a></li>
+<li class="toctree-l1"><a class="reference internal" href="network-drivers.html#switch-drivers">Switch drivers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="network-drivers.html#powerconnect-driver">Powerconnect driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="network-drivers.html#nexus-driver">Nexus driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="network-drivers.html#brocade-driver">Brocade driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="network-drivers.html#using-multiple-switches">Using multiple switches</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Netowkrs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="obm-drivers.html">Activating drivers under HaaS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="obm-drivers.html#ipmi-driver">IPMI driver</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="obm-drivers.html#using-ipmi-driver">Using IPMI driver</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html#configuration">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html#running">Running</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html#code-coverage">Code Coverage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html#test-structure">Test structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html#integration-tests">Integration tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html#deployment-tests">Deployment tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vlan-primer.html">Managed vs. Unmanaged Switches</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vlan-primer.html#what-are-vlans">What are VLANs?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vlan-primer.html#how-do-switches-deal-with-vlans">How do switches deal with VLANs?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vlan-primer.html#how-does-linux-deal-with-vlans">How does Linux deal with VLANs?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vlan-primer.html#how-does-the-haas-use-vlans">How does the HaaS use VLANs?</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to HIL&#8217;s documentation!</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="README.html" title="next chapter">HaaS</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, HIL Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/index.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Objects in the HaaS &#8212; HIL 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="HIL 1.0 documentation" href="index.html" />
+    <link rel="next" title="How to read" href="rest_api.html" />
+    <link rel="prev" title="Extensions" href="extensions.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <p>#HaaS API</p>
+<p>First describe the main objects, the users and security model, then
+then the actual API.</p>
+<div class="section" id="objects-in-the-haas">
+<span id="objects-in-the-haas"></span><h1>Objects in the HaaS<a class="headerlink" href="#objects-in-the-haas" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li>project - a grouping of resources (e.g., headnodes, nodes, networks).</li>
+<li>node - a physical node.  Either unallocated or belongs to a project.  Has
+one or more NICs attached to it.</li>
+<li>headnode - a controlling machine for a project, today a VM, assigned to one
+project</li>
+<li>NIC - network card, identified by a user-specified label (e.g., PXE, ipmi,
+user1, silly) will have a visible ethernet mac address (or equivalent unique
+number for other network types), and is always part of one node and
+connected to at most one port.</li>
+<li>HNIC - headnode network card, identified by a user-specified label (e.g.,
+PXE, ipmi, user1, silly), and is always part of one headnode.</li>
+<li>port - a port to which NICs can be connected.  Only visible to admins.</li>
+<li>network - a network, today implemented as a VLAN, that NICs and HNICs can be
+connected to.  See networks.md for more details.</li>
+</ul>
+<p>Additionally, we provide one built-in authorization model, that adds another kind of object:</p>
+<ul class="simple">
+<li>user - a user, with password and login.  Users can have access to any number
+of projects.</li>
+</ul>
+</div>
+<div class="section" id="api-design-philosophy">
+<span id="api-design-philosophy"></span><h1>API design philosophy<a class="headerlink" href="#api-design-philosophy" title="Permalink to this headline">¶</a></h1>
+<p>We provide the most basic API that we can, and attempt to impose no structure
+that is not required for authorization purposes.</p>
+<ul class="simple">
+<li>A &#8216;project&#8217; is merely an authorization domain.  It is reasonable to have
+logically independent groupings of resources within one project, but the
+HaaS will not help you create such a structure.  Policies like this belong
+in higher-level tools built on top of the haas.</li>
+<li>We considered having a mechanism for staging a large number of networking
+changes and performing them all-together, and even potentially allowing
+roll-back.  Instead, we simply have API calls to connect a NIC to a network,
+and to disconnect it.  All other functionalities can be built on top of
+this.</li>
+</ul>
+<p>There is no garbage-collection of objects.  If an object is being used
+somehow, it cannot be deleted.  For example, if a node is on a network, the
+user can neither de-allocate the node nor delete the network.  They must first
+detach the node from the network.  (The one exception to this is that, when
+deleting a headnode, all of its HNICs are deleted with it.  This is due to a
+technical limitation&#8212;we cannot currently dynamically add and remove HNICs.)</p>
+<p>Most objects are identified by &#8220;labels&#8221; that are globally unique, e.g., nodes,
+networks, groups, users, headnodes.  While we may eventually change this, it
+seems a reasonable limitation for now that simplifies the implementation and
+will allow potential sharing of resources. The system will return an error if
+a second user tries to create an object with an already existing label. The
+one exception is NICs, where the label is unique only on a per-node basis.</p>
+</div>
+<div class="section" id="user-operations">
+<span id="user-operations"></span><h1>User operations:<a class="headerlink" href="#user-operations" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Basic node allocation and network isolation</span>
+
+<span class="n">network_create</span>              <span class="o">&lt;</span><span class="n">network_label</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">proj_creator</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">proj_access</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="nb">id</span><span class="o">&gt;</span>
+<span class="n">network_delete</span>              <span class="o">&lt;</span><span class="n">network_label</span><span class="o">&gt;</span>
+
+<span class="n">project_connect_node</span>        <span class="o">&lt;</span><span class="n">project_label</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">node_label</span><span class="o">&gt;</span>
+<span class="n">project_detach_node</span>         <span class="o">&lt;</span><span class="n">project_label</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">node_label</span><span class="o">&gt;</span>
+
+<span class="n">node_connect_network</span>        <span class="o">&lt;</span><span class="n">node_label</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">nic_label</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">network_label</span><span class="o">&gt;</span>
+<span class="n">node_detach_network</span>         <span class="o">&lt;</span><span class="n">node_label</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">nic_label</span><span class="o">&gt;</span>
+
+<span class="c1"># Headnode operations</span>
+
+<span class="n">headnode_create</span>             <span class="o">&lt;</span><span class="n">hn_label</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">project_label</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">base_img</span><span class="o">&gt;</span>
+<span class="n">headnode_delete</span>             <span class="o">&lt;</span><span class="n">hn_label</span><span class="o">&gt;</span>
+
+<span class="n">headnode_start</span>              <span class="o">&lt;</span><span class="n">hn_label</span><span class="o">&gt;</span>
+<span class="n">headnode_stop</span>               <span class="o">&lt;</span><span class="n">hn_label</span><span class="o">&gt;</span>
+
+<span class="n">headnode_create_hnic</span>        <span class="o">&lt;</span><span class="n">hn_label</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">hnic_label</span><span class="o">&gt;</span>
+<span class="n">headnode_delete_hnic</span>        <span class="o">&lt;</span><span class="n">hn_label</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">hnic_label</span><span class="o">&gt;</span>
+
+<span class="n">headnode_connect_network</span>    <span class="o">&lt;</span><span class="n">hn_label</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">hnic_label</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">network</span><span class="o">&gt;</span>
+<span class="n">headnode_detach_network</span>     <span class="o">&lt;</span><span class="n">hn_label</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">hnic_label</span><span class="o">&gt;</span>
+
+<span class="c1"># IPMI-based operations on nodes</span>
+
+<span class="n">node_power_cycle</span>           <span class="o">&lt;</span><span class="n">node_label</span><span class="o">&gt;</span>
+
+<span class="n">start_console</span>              <span class="o">&lt;</span><span class="n">node_label</span><span class="o">&gt;</span>
+<span class="n">show_console</span>               <span class="o">&lt;</span><span class="n">node_label</span><span class="o">&gt;</span>
+<span class="n">stop_console</span>               <span class="o">&lt;</span><span class="n">node_label</span><span class="o">&gt;</span>
+
+<span class="c1"># Query interface</span>
+
+<span class="n">list_nodes</span>                 <span class="o">&lt;</span><span class="n">is_free</span><span class="o">&gt;</span>
+<span class="n">list_project_nodes</span>         <span class="o">&lt;</span><span class="n">project</span><span class="o">&gt;</span>
+<span class="n">list_project_networks</span>      <span class="o">&lt;</span><span class="n">project</span><span class="o">&gt;</span>
+<span class="n">list_project_headnodes</span>     <span class="o">&lt;</span><span class="n">project</span><span class="o">&gt;</span>
+<span class="n">list_switches</span>
+<span class="n">show_node</span>                  <span class="o">&lt;</span><span class="n">node</span><span class="o">&gt;</span>
+<span class="n">show_headnode</span>              <span class="o">&lt;</span><span class="n">headnode</span><span class="o">&gt;</span>
+<span class="n">show_network</span>               <span class="o">&lt;</span><span class="n">network</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="authorization-related-operations">
+<span id="authorization-related-operations"></span><h1>Authorization-related operations:<a class="headerlink" href="#authorization-related-operations" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Always useful</span>
+
+<span class="n">project_create</span>              <span class="o">&lt;</span><span class="n">project_label</span><span class="o">&gt;</span>
+<span class="n">project_delete</span>              <span class="o">&lt;</span><span class="n">project_label</span><span class="o">&gt;</span>
+
+<span class="c1"># Only meaningful with the built-in auth backend</span>
+
+<span class="n">user_create</span>                 <span class="o">&lt;</span><span class="n">user_label</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">password</span><span class="o">&gt;</span>
+<span class="n">user_delete</span>                 <span class="o">&lt;</span><span class="n">user_label</span><span class="o">&gt;</span>
+
+<span class="n">project_add_user</span>            <span class="o">&lt;</span><span class="n">project_label</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">user_label</span><span class="o">&gt;</span>
+<span class="n">project_remove_user</span>         <span class="o">&lt;</span><span class="n">project_label</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">user_label</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="administrative-operations-to-describe-physical-configuration">
+<span id="administrative-operations-to-describe-physical-configuration"></span><h1>Administrative operations to describe physical configuration<a class="headerlink" href="#administrative-operations-to-describe-physical-configuration" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">list_projects</span>
+
+<span class="n">node_register</span>      <span class="o">&lt;</span><span class="n">node_label</span><span class="o">&gt;</span>
+<span class="n">node_delete</span>        <span class="o">&lt;</span><span class="n">node_label</span><span class="o">&gt;</span>
+<span class="n">node_register_nic</span>  <span class="o">&lt;</span><span class="n">node_label</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">nic_label</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">mac_addr</span><span class="o">&gt;</span>
+<span class="n">node_delete_nic</span>    <span class="o">&lt;</span><span class="n">node_label</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">nic_label</span><span class="o">&gt;</span>
+
+<span class="n">port_register</span>      <span class="o">&lt;</span><span class="n">port_no</span><span class="o">&gt;</span>
+<span class="n">port_delete</span>        <span class="o">&lt;</span><span class="n">port_no</span><span class="o">&gt;</span>
+<span class="n">port_connect_nic</span>   <span class="o">&lt;</span><span class="n">port_no</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">node_label</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">nic_label</span><span class="o">&gt;</span>
+<span class="n">port_detach_nic</span>    <span class="o">&lt;</span><span class="n">port_no</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Objects in the HaaS</a></li>
+<li><a class="reference internal" href="#api-design-philosophy">API design philosophy</a></li>
+<li><a class="reference internal" href="#user-operations">User operations:</a></li>
+<li><a class="reference internal" href="#authorization-related-operations">Authorization-related operations:</a></li>
+<li><a class="reference internal" href="#administrative-operations-to-describe-physical-configuration">Administrative operations to describe physical configuration</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="extensions.html" title="previous chapter">Extensions</a></li>
+      <li>Next: <a href="rest_api.html" title="next chapter">How to read</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/apidesc.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, HIL Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/apidesc.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

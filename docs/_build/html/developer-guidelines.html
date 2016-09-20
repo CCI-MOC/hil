@@ -1,0 +1,332 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Overview &#8212; HIL 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="HIL 1.0 documentation" href="index.html" />
+    <link rel="next" title="Introduction" href="deployment.html" />
+    <link rel="prev" title="How to read" href="rest_api.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="overview">
+<span id="overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+<p>This document represents the developer policies and procedures for maintaining
+Hardware as a Service (HaaS), including the accepted <a class="reference external" href="#Coding-style">coding style</a>.</p>
+<div class="section" id="getting-started">
+<span id="getting-started"></span><h2>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<p>If you are new to HaaS and would like to jump in, then welcome!</p>
+<p>Contributions can come in many forms: installing haas and using it in your
+environment (and giving us feedback), improving the testing, squashing bugs and
+introducing new functionality.</p>
+<p>If you are interested in any of this, a good place to start is by reading the
+documentation (linked from the <a class="reference external" href="../README.rst">README</a>).</p>
+<p>If you&#8217;re looking to code, there are a few ways to help:</p>
+<ul class="simple">
+<li>Improving the HaaS documentation</li>
+<li>Better testing</li>
+<li>Reviewing <a class="reference external" href="https://github.com/CCI-MOC/haas/pulls">Pull Requests</a></li>
+<li>Taking a github issue marked with the <a class="reference external" href="https://github.com/CCI-MOC/haas/labels/easy">easy label</a>. (Talk to one of the core team members to have it assigned to you officially!)</li>
+<li>Taking on a github issue that is part of one of the next <a class="reference external" href="https://github.com/CCI-MOC/haas/milestones?state=open">milestones in github</a></li>
+</ul>
+</div>
+<div class="section" id="communicating">
+<span id="communicating"></span><h2>Communicating<a class="headerlink" href="#communicating" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>IRC: The MOC team hangs out on #moc on <a class="reference external" href="https://www.freenode.net/">freenode</a></li>
+<li>IRL (In Real Life): The MOC group office is on the BU campus, at 3 Cummington Mall, Boston, MA room 451. Anyone interested in HaaS is welcome to drop in and work there.</li>
+<li>Email: HaaS developers or anyone else wishing to stay up to date should subscribe to haas-dev-list&#64;bu.edu by sending a plain text email to majordomo&#64;bu.edu with &#8220;subscribe haas-dev-list&#8221; in the body.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="coding-style-conventions">
+<span id="coding-style-conventions"></span><h1>Coding style/conventions<a class="headerlink" href="#coding-style-conventions" title="Permalink to this headline">¶</a></h1>
+<p>By default, HaaS (like many other python projects) uses
+<a class="reference external" href="https://www.python.org/dev/peps/pep-0008/">PEP8</a> as its naming guide, and
+<a class="reference external" href="https://www.python.org/dev/peps/pep-0257/">PEP257</a> for documentation.
+Departures are acceptable when called for, but should be discussed first.</p>
+<div class="section" id="rest-api-calls-rest-call">
+<span id="rest-api-calls-rest-call"></span><h2>REST API calls - &#64;rest_call<a class="headerlink" href="#rest-api-calls-rest-call" title="Permalink to this headline">¶</a></h2>
+<p>Any functionality that is intended to be externally visible (ie -
+available through the REST API) will need to be exposed by decorating a
+function with the <code class="docutils literal"><span class="pre">&#64;rest_call</span></code> decorator, <a class="reference external" href="../haas/rest.py">available in
+rest.py</a>.  This tells the framework the URL path and
+HTTP method which should be mapped to that function, and also specifies
+how the arguments should be verified.</p>
+<p>Please <a class="reference external" href="../haas/rest.py">see the documentation there</a> for additional
+information on the specifics, as well as <a class="reference external" href="../haas/api.py">api.py</a> for a number
+of examples. Of special note is that every externally-visible function must
+supply a <code class="docutils literal"><span class="pre">Schema</span></code> which explicitly specifies the method for verifying all URL
+and body arguments. In HaaS, all body arguments are required to be JSON.</p>
+</div>
+<div class="section" id="often-used-code">
+<span id="often-used-code"></span><h2>Often-used code<a class="headerlink" href="#often-used-code" title="Permalink to this headline">¶</a></h2>
+<p>In certain cases, one will encounter heavily repeated code that gets run once per API call such as this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">db</span> <span class="o">=</span> <span class="n">local</span><span class="o">.</span><span class="n">db</span>
+</pre></div>
+</div>
+<p>In these cases, it is preferred to keep a reference in &#8220;local&#8221;, and use it directly. For example, instead of:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">db</span> <span class="o">=</span> <span class="n">local</span><span class="o">.</span><span class="n">db</span>
+<span class="n">db</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>one should prefer:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">local</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="submitting-code-pull-requests">
+<span id="submitting-code-pull-requests"></span><h1>Submitting code / Pull Requests<a class="headerlink" href="#submitting-code-pull-requests" title="Permalink to this headline">¶</a></h1>
+<p>Overall, HaaS follows the <a class="reference external" href="http://scottchacon.com/2011/08/31/github-flow.html">github fork &amp; pull
+model</a> to integrate
+contributions, where users fork the <a class="reference external" href="https://github.com/CCI-MOC/haas">main HaaS repository</a>, push changes
+to their personal fork and then create a <a class="reference external" href="https://help.github.com/articles/using-pull-requests/">Pull Request</a>(PR) to merge it
+into the master branch of the HaaS repository.</p>
+<div class="section" id="prior-to-the-pull-request">
+<span id="prior-to-the-pull-request"></span><h2>Prior to the pull request<a class="headerlink" href="#prior-to-the-pull-request" title="Permalink to this headline">¶</a></h2>
+<p>This summarizes what should be done prior to a pull request:</p>
+<ul class="simple">
+<li>[ ] If functionality could have architectural implications or controversial, have a discussion with the team. Ideally, prior to coding to save effort.</li>
+<li>[ ] Ensure any user, deployer or developer documentation is updated.</li>
+<li>[ ] If a change affects an external API, be sure to update docs/rest_api.md.</li>
+<li>[ ] Testing:<ul>
+<li>[ ] Ensure tests pass after making your changes by running <code class="docutils literal"><span class="pre">py.test</span> <span class="pre">tests/unit</span> <span class="pre">tests/stress.py</span></code> from the top-level haas directory. Parallel testing can be used on multi-core systems by running <code class="docutils literal"><span class="pre">py.test</span> <span class="pre">tests/unit</span> <span class="pre">tests/stress.py</span> <span class="pre">-n</span> <span class="pre">auto</span></code></li>
+<li>[ ] Add unit tests in the corresponding file and create one if none are present.</li>
+<li>[ ] If practical, bug fixes should have an reproducing test to ensure that the bug does not come back.</li>
+<li>[ ] Run deployment tests if code could affect switches</li>
+</ul>
+</li>
+</ul>
+<div class="section" id="get-agreement">
+<span id="get-agreement"></span><h3>Get agreement<a class="headerlink" href="#get-agreement" title="Permalink to this headline">¶</a></h3>
+<p>The HaaS project appreciates all ideas and submissions. In the past, we&#8217;ve
+discussed several alternatives to how things currently work (which we&#8217;re trying
+to get better about writing down), and it would be good to have agreement that
+includes input from these past discussions as well as the wisdom of the
+community. The best way to do this is to <a class="reference external" href="https://github.com/CCI-MOC/haas/issues">file an
+issue</a> on github, email
+haas-dev-list&#64;bu.edu or speak with one of the core developers directly.</p>
+</div>
+<div class="section" id="documentation">
+<span id="documentation"></span><h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><a class="reference external" href="../README.rst#documentation">Documentation listing</a></li>
+</ul>
+<p>In HaaS, we primarily have 3 types of users: end-users (API/CLI users),
+deployers (HaaS instance admins) and developers (you!). If your change affects
+any of HaaS&#8217;s extensive documentation, please be sure to update the
+accompanying documentation. For example, if an API call signature is changed or
+added, please update <a class="reference external" href="./rest_api.md">docs/rest_api.md</a>.</p>
+<p>While most end-user and developer documentation can be found in the documentation listing
+(linked above), developer documentation may be found in the <a class="reference external" href="./">docs
+directory</a>.</p>
+</div>
+<div class="section" id="testing">
+<span id="testing"></span><h3>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><a class="reference external" href="testing.md">Testing document</a></li>
+</ul>
+<p>Testing helps to ensure the quality of the code base. Every pull request
+submitted should first be tested to ensure that all existing tests pass. If
+changes could affect state external to HaaS&#8217;s DB (network switches and
+headnodes), then deployment tests should also be run.</p>
+<p>When introducing new functionality, new tests (both unit and more comprehensive)
+should be added that provide adequate coverage.</p>
+<p>If fixing a bug, a regression test should accompany the bug fix to ensure that
+the bug does not return.</p>
+</div>
+</div>
+<div class="section" id="pull-requests">
+<span id="pull-requests"></span><h2>Pull Requests<a class="headerlink" href="#pull-requests" title="Permalink to this headline">¶</a></h2>
+<p>Once the checklist above has been met, issue a <a class="reference external" href="https://help.github.com/articles/using-pull-requests/">pull request</a> from your
+personal fork to the <a class="reference external" href="https://github.com/CCI-MOC/haas">main HaaS repo</a>.</p>
+<p>Labels are the way we communicate github pull request and issue status. They should be assigned in line with the <em>Suggestions</em> section
+of <a class="reference external" href="https://github.com/CCI-MOC/haas/wiki/Issue-Tracker-Proposal#suggestions">this wiki
+page</a>.</p>
+</div>
+<div class="section" id="code-review">
+<span id="code-review"></span><h2>Code review<a class="headerlink" href="#code-review" title="Permalink to this headline">¶</a></h2>
+<p>Code reviews help increase code quality by finding:</p>
+<ul class="simple">
+<li>mistakes that can oftentimes be overlooked by a single developer</li>
+<li>improving readability</li>
+<li>helping reviewers to learn about different areas of the code</li>
+</ul>
+<p>Reviewers are the final guardians for good code quality. If you see a piece of
+complex code, that is probably where you want to spend a lot of your review
+time. Remember the 80/20 rule (80% of the bugs come from 20% of the code).</p>
+</div>
+<div class="section" id="friendliness">
+<span id="friendliness"></span><h2>Friendliness<a class="headerlink" href="#friendliness" title="Permalink to this headline">¶</a></h2>
+<p>We want the MOC HaaS to be a pleasure to work with. Thus, while we want to
+ensure a high level of code quality, we don&#8217;t want new project contributors to
+get overwhelmed. This should be kept in mind while conducting a review.  In
+some cases, such as missing tests, it may help a new contributor for an
+experienced reviewer to work closely or even write the initial tests
+themselves.</p>
+<p>As a practical matter, if feedback is lengthy and would take a longer time to
+write up than simply to do, it can be considered a courtesy to check out the
+submitter&#8217;s branch, make the changes yourself, then submit a Pull Request
+directly to the submitter&#8217;s branch. This is especially helpful for
+documentation PRs. When doing so, it can help to notify the submitter directly
+as they may otherwise miss your pending PR (they likely won&#8217;t be expecting it).</p>
+</div>
+<div class="section" id="approval-criteria">
+<span id="approval-criteria"></span><h2>Approval criteria<a class="headerlink" href="#approval-criteria" title="Permalink to this headline">¶</a></h2>
+<p>Pull Requests require at least 2 successful reviews, also known as &#8220;+1&#8220;&#8216;s, in
+order to be merged, with at least 2 core developers being involved in some way:
+either as a submitter or a reviewer.</p>
+<p>The exception to this is documentation, where we are a little more lenient in
+the interest of lowering the barrier to having better docs. For docs changes,
+typically one +1 is sufficient.</p>
+<p>Whomever provides the enabling +1 is responsible for clicking the merge button
+on github. If you do not have commit access, then please add your +1 to the PR
+and ask one of the Core Developers to complete the merge.</p>
+</div>
+<div class="section" id="labels">
+<span id="labels"></span><h2>Labels<a class="headerlink" href="#labels" title="Permalink to this headline">¶</a></h2>
+<p>Github labels are used to indicate the status of a Pull Request. Those that are relevant to PRs include:</p>
+<ul class="simple">
+<li>Easy (if the submitter or someone else thinks this would be good for someone new to the code base)</li>
+<li>Waiting on reviewer</li>
+<li>Waiting on submitter</li>
+<li>Waiting on other change</li>
+<li>Waiting on deployment tests</li>
+<li>Waiting on +2</li>
+<li>Do not merge yet</li>
+</ul>
+<p>After updating a PR, it is good to apply/unapply labels as appropriate so that
+it&#8217;s easy for others to quickly scan the list of outstanding requests and
+figure out which are in need of help.</p>
+</div>
+</div>
+<div class="section" id="core-developers">
+<span id="core-developers"></span><h1>Core developers<a class="headerlink" href="#core-developers" title="Permalink to this headline">¶</a></h1>
+<p>Core developers are the trusted gatekeepers of the HaaS codebase. They consist of:</p>
+<ul class="simple">
+<li>Jon Bell</li>
+<li>Ian Denhardt</li>
+<li>Jason Hennessey (PTL)</li>
+<li>Kyle Hogan</li>
+<li>Kristi Nikolla</li>
+<li>George Silvis</li>
+<li>Sahil Tikale</li>
+</ul>
+<p>Anyone who has had a few successful commits is invited to speak to the PTL
+(Project Team Lead) about being added as one.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Overview</a><ul>
+<li><a class="reference internal" href="#getting-started">Getting started</a></li>
+<li><a class="reference internal" href="#communicating">Communicating</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#coding-style-conventions">Coding style/conventions</a><ul>
+<li><a class="reference internal" href="#rest-api-calls-rest-call">REST API calls - &#64;rest_call</a></li>
+<li><a class="reference internal" href="#often-used-code">Often-used code</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#submitting-code-pull-requests">Submitting code / Pull Requests</a><ul>
+<li><a class="reference internal" href="#prior-to-the-pull-request">Prior to the pull request</a><ul>
+<li><a class="reference internal" href="#get-agreement">Get agreement</a></li>
+<li><a class="reference internal" href="#documentation">Documentation</a></li>
+<li><a class="reference internal" href="#testing">Testing</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pull-requests">Pull Requests</a></li>
+<li><a class="reference internal" href="#code-review">Code review</a></li>
+<li><a class="reference internal" href="#friendliness">Friendliness</a></li>
+<li><a class="reference internal" href="#approval-criteria">Approval criteria</a></li>
+<li><a class="reference internal" href="#labels">Labels</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#core-developers">Core developers</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="rest_api.html" title="previous chapter">How to read</a></li>
+      <li>Next: <a href="deployment.html" title="next chapter">Introduction</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/developer-guidelines.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, HIL Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/developer-guidelines.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

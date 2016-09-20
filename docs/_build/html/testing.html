@@ -1,0 +1,230 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Overview &#8212; HIL 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="HIL 1.0 documentation" href="index.html" />
+    <link rel="next" title="Managed vs. Unmanaged Switches" href="vlan-primer.html" />
+    <link rel="prev" title="Activating drivers under HaaS" href="obm-drivers.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="overview">
+<span id="overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+<p>Testing for HaaS is done using <a class="reference external" href="http://pytest.org/">pytest</a>. All tests
+are placed in the &#8220;tests&#8221; subdirectory, which is subdivided into:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">unit</span></code> - for basic unit tests. These are safe to run without a full HaaS enviornment (i.e. you don&#8217;t need libvirt etc).</li>
+<li><code class="docutils literal"><span class="pre">deployment</span></code> - for tests that need to run against an actual setup, with libvirtd and at least one real switch.</li>
+</ul>
+<p>Developers should run at least the unit and pep8 tests before making a commit.
+Ideally, the deployment tests should also be run, though we&#8217;re less
+strict about this. Developers should also introduce tests for any new
+functions/methods they write, or any new or fixed functionality. Ideally,
+bug fixes should include a test (whether unit or functional) that reproduces
+the problem scenario so that we can ensure the bug doesn&#8217;t return!</p>
+</div>
+<div class="section" id="configuration">
+<span id="configuration"></span><h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h1>
+<p>By installing HaaS and its dependencies in the virtual environment (done
+via: <code class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code> in the root directory), you will automatically
+receive a recent version of pytest and be ready to test the code. Using
+pip&#8217;s <code class="docutils literal"><span class="pre">-e</span></code> option installs the haas in editable mode, which has the
+advantage that one need not reinstall every time a file is changed!</p>
+<p>Most of the tests use a common set of default configuration options, as
+seen in <code class="docutils literal"><span class="pre">testsuite.cfg.default</span></code>. If you wish to override these
+parameters, you may copy it to <code class="docutils literal"><span class="pre">testsuite.cfg</span></code> and edit. In the future,
+this will allow developers to do things like test against different
+DBMSes (for the moment some changes are needed to the test suite to
+actually support this). For now, it&#8217;s mostly interesting when running
+the deployment tests (see below).</p>
+</div>
+<div class="section" id="running">
+<span id="running"></span><h1>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h1>
+<p>To run all tests, from the HaaS root directory run:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">py</span><span class="o">.</span><span class="n">test</span> <span class="n">tests</span><span class="o">/</span>
+</pre></div>
+</div>
+<p>To run just a subset of them, specify a particular file or directory:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">py</span><span class="o">.</span><span class="n">test</span> <span class="n">tests</span><span class="o">/</span><span class="n">unit</span>
+<span class="n">py</span><span class="o">.</span><span class="n">test</span> <span class="n">tests</span><span class="o">/</span><span class="n">unit</span><span class="o">/</span><span class="n">api</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>To run just a pep8 test:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pep8</span> <span class="o">*.</span><span class="n">py</span> <span class="n">tests</span><span class="o">/</span> <span class="n">haas</span><span class="o">/</span>
+</pre></div>
+</div>
+<p>As stated above, running at least <code class="docutils literal"><span class="pre">tests/unit</span></code> is mandatory before each
+commit.</p>
+</div>
+<div class="section" id="code-coverage">
+<span id="code-coverage"></span><h1>Code Coverage<a class="headerlink" href="#code-coverage" title="Permalink to this headline">¶</a></h1>
+<p>The pytest-cov plugin (included in requirements.txt) allows us to
+generate reports indicating what code is/is not executed by our tests.
+<code class="docutils literal"><span class="pre">setup.cfg</span></code> configures pytest to output coverage information by default,
+so you mostly don&#8217;t need to worry about this from a usage perspective &#8211;
+just make sure you pay attention to the output.</p>
+<p>More information is available on the projects <a class="reference external" href="https://pypi.python.org/pypi/pytest-cov">PyPI page</a>.</p>
+</div>
+<div class="section" id="test-structure">
+<span id="test-structure"></span><h1>Test structure<a class="headerlink" href="#test-structure" title="Permalink to this headline">¶</a></h1>
+<p>Tests are kept in the <code class="docutils literal"><span class="pre">tests</span></code> directory, which is further organized into
+a few subdirectories:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">unit</span></code></li>
+<li><code class="docutils literal"><span class="pre">integration</span></code></li>
+<li><code class="docutils literal"><span class="pre">deployment</span></code></li>
+</ul>
+<p>For each file in the haas code, there should be a file with the same name in
+the unit directory. Within those files, classes (class names <strong>must</strong>
+begin with &#8220;Test&#8221;) can be used to organize tests into functional areas.
+Function names must also begin with &#8220;test&#8221;. See tests/unit/api.py for
+examples.</p>
+<p>There also may be a few files loose in the <code class="docutils literal"><span class="pre">tests</span></code> directory that do not
+clearly fit into one of the above categories.</p>
+</div>
+<div class="section" id="integration-tests">
+<span id="integration-tests"></span><h1>Integration tests<a class="headerlink" href="#integration-tests" title="Permalink to this headline">¶</a></h1>
+<p>The <code class="docutils literal"><span class="pre">tests/integration</span></code> directory contains tests that require
+substantial setup of external software, or special configuration. These
+tend to be expensive in terms of time. These are run automatically by
+our travis-ci configuration.</p>
+</div>
+<div class="section" id="deployment-tests">
+<span id="deployment-tests"></span><h1>Deployment tests<a class="headerlink" href="#deployment-tests" title="Permalink to this headline">¶</a></h1>
+<p>The deployment tests (<code class="docutils literal"><span class="pre">tests/deployment</span></code>) are a set of unit tests which
+are most useful when executed in an environment with real hardware and a
+libvirtd instance available. As such, these are <em>not</em> run by our
+travis-ci configuration. They should be run before merging any patch
+relating to specific hardware support, or interacting with headnodes. To
+run the deployment tests, you must do the following:</p>
+<ul class="simple">
+<li>Write a <code class="docutils literal"><span class="pre">testsuite.cfg</span></code> reflecting your environment. Copy
+<code class="docutils literal"><span class="pre">testsuite.cfg.default</span></code> and edit. In particular, you will need to load
+the extensions for your switch drivers and the corresponding network
+allocator (see <code class="docutils literal"><span class="pre">drivers.md</span></code>), and specify extension-specific options.</li>
+<li>Write a <code class="docutils literal"><span class="pre">site-layout.json</span></code> describing the layout of your environment.
+The file <code class="docutils literal"><span class="pre">site-layout.json.example</span></code> provides an example. Here is a
+full description of the file format:</li>
+</ul>
+<p><code class="docutils literal"><span class="pre">site-layout.json</span></code> must contain a single json object, with two fields:
+<code class="docutils literal"><span class="pre">&quot;switches&quot;</span></code> and <code class="docutils literal"><span class="pre">&quot;nodes&quot;</span></code>.</p>
+<p><code class="docutils literal"><span class="pre">&quot;switches&quot;</span></code> must be a list of json objects, each of which describes a
+switch in your environment, and must have the same fields as required in
+the body of  the <code class="docutils literal"><span class="pre">switch_register</span></code> API call (see <code class="docutils literal"><span class="pre">rest_api.md</span></code>), plus a
+<code class="docutils literal"><span class="pre">&quot;switch&quot;</span></code> field, which supplies the name of the switch (normally
+specified in the URL).</p>
+<p><code class="docutils literal"><span class="pre">&quot;nodes&quot;</span></code> must be a list of json objects, each of which defines a node,
+and has three fields:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">&quot;name&quot;</span></code>, a string which specifies the name of the node.</li>
+<li><code class="docutils literal"><span class="pre">&quot;nics&quot;</span></code>, a list of objects each describing a nic on the node, with the
+fields (all of them strings):<ul>
+<li><code class="docutils literal"><span class="pre">&quot;name&quot;</span></code>, the name of the nic</li>
+<li><code class="docutils literal"><span class="pre">&quot;mac&quot;</span></code>, the mac address of the nic</li>
+<li><code class="docutils literal"><span class="pre">&quot;switch&quot;</span></code>, the name of the switch that the nic is connected to</li>
+<li><code class="docutils literal"><span class="pre">&quot;port&quot;</span></code>, the name/label of the port on the switch that the nic is
+connected to</li>
+</ul>
+</li>
+<li><code class="docutils literal"><span class="pre">&quot;ipmi&quot;</span></code>, an object with the string fields <code class="docutils literal"><span class="pre">&quot;host&quot;</span></code>, <code class="docutils literal"><span class="pre">&quot;user&quot;</span></code>,
+<code class="docutils literal"><span class="pre">&quot;pass&quot;</span></code>, defining the information needed to talk to the IPMI
+controller of the node.</li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Overview</a></li>
+<li><a class="reference internal" href="#configuration">Configuration</a></li>
+<li><a class="reference internal" href="#running">Running</a></li>
+<li><a class="reference internal" href="#code-coverage">Code Coverage</a></li>
+<li><a class="reference internal" href="#test-structure">Test structure</a></li>
+<li><a class="reference internal" href="#integration-tests">Integration tests</a></li>
+<li><a class="reference internal" href="#deployment-tests">Deployment tests</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="obm-drivers.html" title="previous chapter">Activating drivers under HaaS</a></li>
+      <li>Next: <a href="vlan-primer.html" title="next chapter">Managed vs. Unmanaged Switches</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/testing.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, HIL Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/testing.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
