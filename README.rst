@@ -79,12 +79,11 @@ Documentation
 =============
 
 * `overview.md <docs/overview.md>`_ gives a sense as to how HaaS operates
-* `INSTALL.rst <INSTALL.rst>`_ for details on setting up HaaS
-* `UPGRADE.rst <docs/UPGRADE.rst>`_ for details on upgrading to a new version of HaaS
+* `INSTALL.rst <docs/INSTALL.rst>`_ for details on setting up HaaS
+* `UPGRADING.rst <docs/UPGRADING.rst>`_ for details on upgrading to a new version of HaaS
 * `using.rst <docs/USING.rst>`_ for details on using HaaS as a client
 * `apidesc.md <docs/apidesc.md>`_ describes the API at a conceptual level (enough to use it via the ``haas`` command line tool)
 * `rest_api.md <docs/rest_api.md>`_ provides a detailed mapping of that API to http requests.
-* `HACKING.rst <HACKING.rst>`_ has information about running HaaS in a development environment, including flags that remove the need to have real hardware.
 * `developer-guidelines.md <docs/developer-guidelines.md>`_ discusses our code submission and approval process.
 * `examples <examples/>`_ contains examples of config files, templates for creating headnode VM images and a script to register nodes with HaaS.
 * `The docs directory <docs/>`_ contains assorted other documentation
