@@ -57,8 +57,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'HIL'
-copyright = u'2016, HIL Team'
-author = u'HIL Team'
+copyright = u'2016, MOC'
+author = u'MOC'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
