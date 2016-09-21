@@ -1,5 +1,5 @@
-HaaS
-========
+HaaS - Introduction
+====================
 
 HaaS is a low-level tool for reserving physical machines and connecting
 them via isolated networks. It does not prescribe a particular
@@ -37,7 +37,7 @@ administrator must populate initially.
    operating system on them via the network.
 
 Requirements
-============
+-------------
 
 Required software/hardware for running a production HaaS include:
 
@@ -72,7 +72,7 @@ For headnode functionality:
 * A trunk port connected between the switch and HaaS service node that carries all VLANs accessible from HaaS
 
 Documentation
-=============
+--------------
 
 * `overview.md <overview.md>`_ gives a sense as to how HaaS operates
 * `INSTALL.rst <INSTALL.rst>`_ for details on setting up HaaS
@@ -89,7 +89,7 @@ since the latter is preferred by the python and OpenStack communities and the
 former was what was originally used.
 
 Mass Open Cloud
-===============
+----------------
 
 This project is part of the larger `Massachusetts Open Cloud
 <http://www.massopencloud.org>`_. For a description of the team and other

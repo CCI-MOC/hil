@@ -1,3 +1,5 @@
+# Keystone Authentication
+
 An authentication backend for Openstack's Keystone is maintained in this
 source tree as `haas.ext.auth.keystone`. This document describes its
 configuration and usage in detail.
@@ -5,7 +7,7 @@ configuration and usage in detail.
 NOTE: The HaaS command line interface only supports the keystone v3 API.
 The server supports anything supported by [keystonemiddleware][1].
 
-# Usage
+## Usage
 
 Once HaaS has been configured to work with Keystone, an administrator
 must manually add Openstack projects to HaaS before they can access the
@@ -30,7 +32,7 @@ may be set by a user to authenticate when using the CLI.
 A script to set these variables correctly can be downloaded from the
 Openstack web dashboard via "Access & Security."
 
-# Configuration
+## Configuration
 
 As with any other extension, you must load the extension in `haas.cfg`:
 

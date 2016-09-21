@@ -1,8 +1,10 @@
+# VLAN Primer
+
 This document is a brief primer on 802.1q VLANs (Virtual LANs): what they are,
 how switches tend to deal with them, how Linux deals with them, and how the
 HaaS uses them.
 
-# Managed vs. Unmanaged Switches
+## Managed vs. Unmanaged Switches
 
 The primary function of an *unmanaged* switch is to connect several
 computers into a single network segment. This is similar to the purpose
@@ -22,7 +24,7 @@ logical networks within the switch - i.e. they allow the switch to be
 divided into isolated sections, which cannot communicate with one
 another.
 
-# What are VLANs?
+## What are VLANs?
 
 At a most basic level, a VLAN is simply a 12 bit tag in the header of an
 ethernet packet, which can be used by networking equipment. Mostly this
@@ -30,7 +32,7 @@ is used as described above - it provides both the switch and other
 devices with information about which logical network the packet belongs
 to.
 
-# How do switches deal with VLANs?
+## How do switches deal with VLANs?
 
 Typically, traffic moving "through" a managed  switch will have a VLAN tag
 associated with it, and will be distributed to all of the ports associated
@@ -68,7 +70,7 @@ Trunking mode could actually fully replace the functionality of access mode,
 since a trunked port with just a native VLAN (and no tagged VLANs) is
 equivalent. It is more flexible however.
 
-# How does Linux deal with VLANs?
+## How does Linux deal with VLANs?
 
 In a typical networking configuration, a Linux machine is not VLAN aware.
 However, it is possible to create VLAN aware network interfaces with the
@@ -84,7 +86,7 @@ with:
 
     vconfig rem `eth0.104`
 
-# How does the HaaS use VLANs?
+## How does the HaaS use VLANs?
 
 At present, when a network consisting of nodes 0, 1 and 2, and headnode H,
 using vlan tag N is deployed,

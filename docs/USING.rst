@@ -55,19 +55,22 @@ physical nodes.  Existing deployment systems such as Canonical's MAAS have also
 been run succesfully.
 
 Usage examples 
-====================
+---------------
 
 Included herewith are some examples about
 
- -- Interacting with HaaS API directly using the curl utility.
- -- And using equivalent cli calls are also included. 
+ * Interacting with HaaS API directly using the curl utility.
 
-haas node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01
-======================================================================================
+ * And using equivalent cli calls are also included. 
+
+::
+
+        haas node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01
+
 
 
 1) Register a switch with HaaS:
--------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Eg> Switch name: mockswitch01
      Host name:  switchhost01
@@ -91,7 +94,7 @@ cli call
        haas switch_register mockswitch02 mock switchhost01 switchuser01 password1234
 
 2) Registering a Node which uses IPMI for out of band management
-----------------------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
    - **Node name:**  dummyNoderHaaS-02

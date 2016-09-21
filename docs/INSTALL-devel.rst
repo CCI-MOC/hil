@@ -5,7 +5,7 @@ Following guide covers setting up a developement environment for HaaS
 on a CentOS/RHEL based system.
 
 Dependencies: 
-=============
+-------------
 There are a few things that HaaS expects the operating system to have::
 
   yum install epel-release bridge-utils  gcc  httpd  ipmitool libvirt \
@@ -18,7 +18,7 @@ with a separate home directory. This user will be configured to control the haas
 The development environment will be created in its home directory.
 
 Setting PostgreSQL for development environment:
-================================================
+------------------------------------------------
 
 If you choose to use sqlite database, skip this section and go to `Getting Started with HaaS Installation`_.
 
@@ -26,7 +26,7 @@ For setting up PostgreSQL, you will have to install the requisite packages on yo
 Make sure your account can `sudo` to execute the following commands.
 
 Part 1: Install PostgreSQL server. 
-----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Initialize the system. Configure PostgreSQL to allow password authentication.
 
@@ -67,7 +67,7 @@ Start postgresql service::
 
 
 Part 2: Create a system user, database and database role.
----------------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Setting up development environment with PostgreSQL backend becomes 
 easy with a dedicated user controlling the database as well as the 
@@ -91,7 +91,7 @@ Switch to the `haas_dev` user::
   sudo -u haas_dev -i
 
 Setup database and role to control it.
-=============================================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Create database named `haas_dev` owned by user also named as `haas_dev`.
 
@@ -153,7 +153,7 @@ home directory of `haas_dev`
 
 
 Getting Started with HaaS Installation
-======================================
+---------------------------------------
 First you will need to fork and clone the HaaS repo into your dev VM.::
 
   git clone https://github.com/**username**/hil
@@ -176,7 +176,7 @@ environment::
 
 
 For older systems:
-==================
+------------------
 
 On systems with older versions of ``pip``, such as Debian Wheezy and Ubuntu
 12.04, this install will fail with the following error::
@@ -196,7 +196,7 @@ you may need to run::
 
 
 Setting up the Database:
-========================
+-------------------------
 The default dev environment uses SQLite as a database, so if you're using it you can skip this section.
 
 If you wish to use PostgreSQL instead, you may get an error ``psycopg2 package not found``,
@@ -218,7 +218,7 @@ driver in your HaaS virtualenv::
 
 
 Configuring HaaS
-================
+-----------------
 
 Now the ``haas`` executable should be in your path. First, create a
 configuration file ``haas.cfg``. There are two examples for you to work from,
@@ -234,7 +234,7 @@ section.
 
 
 If using PostgreSQL as a database backend
-=========================================
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you choose to use PostgreSQL and did the necessary steps as described above,
 put following string in **haas.cfg** under section **[database]**::
@@ -249,7 +249,7 @@ its password, ``<dbname>`` is the name of the database you created, and
 typical default postgres setup, the right value is ``localhost``).
 
 Setting up extensions
-=====================
+----------------------
 
 Most customizations require including extension names within the ``[extensions]``
 section.
@@ -283,7 +283,7 @@ Next initialize the database with the required tables::
   haas-admin db create
   
 Start the server
-================
+-----------------
 
 Run the server with the port number as defined in ``haas.cfg``::
 

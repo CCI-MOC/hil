@@ -6,7 +6,7 @@ HaaS should work on other distros, but is not well tested or supported.
 For development environments, see ``INSTALL-devel.rst``.
 
 The HaaS Service node
-=====================
+----------------------
 
 This section talks about what must be done on the server upon which HaaS runs.
 
@@ -99,7 +99,7 @@ CLI client and the server. Carefully read the ``haas.cfg*`` files in
 particular, the following two fields in the ``headnode`` section are very
 important: ``trunk_nic`` must match your choice of trunk NIC in the "Networking
 - Bridges" instructions below; ``base_imgs`` must match the name of the base
-  headnode libvirt instance created in the "Libvirt" instructions below.
+headnode libvirt instance created in the "Libvirt" instructions below.
 
 For a detailed description of the configuration needed for various switch
 setups, see ``docs/network-drivers.md``.
@@ -457,7 +457,7 @@ If you get an empty list ``[]`` as output then congratulations !!
 At this point, you should have a functional HaaS service running!
 
 Describe datacenter resources
-===================================
+------------------------------
 
 For HaaS to do anything useful, you must use the HaaS API to populate the
 database with information about the resources in your datacenter -- chiefly

@@ -1,8 +1,10 @@
+# Netowork Drivers
+
 This document describes the network driver model, primarily from a
 system administrator's standpoint, though there are some details useful
 for developers writing tools which interact with the API as well.
 
-# Overview
+## Overview
 
 There are two classes of network-related drivers: network allocators and
 switches. Switches are straightforward to understand; they provide
@@ -32,7 +34,7 @@ section with the same name as the extension, e.g.::
     [haas.ext.network_allocators.vlan_pool]
     vlans = 300-500, 700-750
 
-# Network allocator drivers
+## Network allocator drivers
 
 The only network allocator shipped with HaaS that is of interest to
 users (there are others useful for development purposes) is the VLAN
@@ -56,7 +58,7 @@ Once HaaS has been started, removing VLANs from this list is *not*
 supported. You may add additional VLANs, but you will have to re-run
 ``haas-admin db create``.
 
-# Security
+## Security
 
 It is VERY IMPORTANT that you be sure to configure your switches to
 guard against VLAN hopping attacks:
@@ -65,7 +67,7 @@ guard against VLAN hopping attacks:
 
 Doing so is not difficult, and it is critical for security.
 
-# Switch drivers
+## Switch drivers
 
 At present, all switch drivers shipped with HaaS require that the VLAN
 pool allocator is in use. There are two switch drivers shipped with
@@ -81,9 +83,9 @@ Neither driver requires any extension-specific config options. Per the
 information in `rest_api.md`, the details of certain API calls are
 driver-dependant, below are the details for each of these switches.
 
-## Powerconnect driver
+### Powerconnect driver
 
-### switch_register
+#### switch_register
 
 To register a Dell Powerconnect switch, the ``"type"`` field of the
 request body must have a value of::
@@ -97,15 +99,15 @@ be an IP address).  SSH support is planned, but even so we do not
 recommend allowing connectivity to a switch's management interface from
 an untrusted network.
 
-### switch_register_port
+#### switch_register_port
 
 Port names must be of the same form accepted by the switch's console
 interface, e.g. ``gi1/0/5``. Be *very* careful when specifying these, as
 they are not validated by HaaS (this will be fixed in future versions).
 
-## Nexus driver
+### Nexus driver
 
-### switch_register
+#### switch_register
 
 The type field for the Nexus driver has the value::
 
@@ -134,15 +136,15 @@ The body of the api call request can then look like:
         "dummy_vlan": 2222
     }
 
-### switch_register_port
+#### switch_register_port
 
 Like the powerconnect driver, the Nexus driver accepts port names of the
 same format accepted by the underlying switch, in this case (e.g.)
 ``ethernet 1/42``. The same concerns about validation apply.
 
-## Brocade driver                                                                                          
+### Brocade driver                                                                                          
                                                                                                            
-### switch_register                                                                                        
+#### switch_register                                                                                        
                                                                                                            
 The ``type`` field for the Brocade NOS driver has the value:
 
@@ -165,12 +167,12 @@ The body of the api call request will look like:
         "interface_type": "TenGigabitEthernet"
     }
 
-### switch_register_port
+#### switch_register_port
 
 The brocade driver accepts interface names the same way they would be accepted
 in the console of the switch, ex. ``101/0/10``.
 
-## Using multiple switches
+### Using multiple switches
 
 Networks managed by HaaS may span multiple switches. No special configuration
 of HaaS itself is required; just register each switch as normal and ensure that

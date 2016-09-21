@@ -1,6 +1,8 @@
+# OBM Drivers
+
 This document describes the obm driver model.
 
-#Overview
+## Overview
 
 Out-of-Band Management (OBM) consists of separate channel dedicated for server maintenance.
 It allows the systems-administrator to manage and monitor network-attached equipments remotely. 
@@ -12,7 +14,7 @@ HaaS includes a driver. For developers, a null OBM driver is also included which
 and used just like any other driver under HaaS. 
 
 
-# Activating drivers under HaaS
+## Activating drivers under HaaS
 
 Drivers are implemented as extensions, and must be added to the 
 `[extensions]` section of `haas.cfg`. You can add as many OBM 
@@ -26,7 +28,7 @@ for example::
     haas.ext.obm.ipmi =
 
 
-# IPMI driver
+## IPMI driver
 
 At present, only one driver of OBM type is supplied with HaaS.
 It is the IPMI driver. 
@@ -34,7 +36,7 @@ It is the IPMI driver.
 * `haas.ext.obm.ipmi`, consist of the ipmi driver
     It does not require any driver specific configuration.
 
-## Using IPMI driver
+### Using IPMI driver
 
 The type field for the IPMI driver has the value::
 
