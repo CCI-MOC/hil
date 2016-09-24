@@ -205,11 +205,16 @@ def setup_http_client():
     http_client = requests.Session()
 
 
+class FailedAPICallException(Exception):
+    pass
+
+
 def check_status_code(response):
     if response.status_code < 200 or response.status_code >= 300:
         sys.stderr.write('Unexpected status code: %d\n' % response.status_code)
         sys.stderr.write('Response text:\n')
         sys.stderr.write(response.text + "\n")
+        raise FailedAPICallException()
     else:
         sys.stdout.write(response.text + "\n")
 
@@ -787,4 +792,7 @@ def main():
         sys.exit(1)
     else:
         setup_http_client()
-        command_dict[sys.argv[1]](*sys.argv[2:])
+        try:
+            command_dict[sys.argv[1]](*sys.argv[2:])
+        except FailedAPICallException:
+            sys.exit(1)
