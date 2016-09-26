@@ -158,7 +158,7 @@ Setting Up HaaS Database
 The only DBMS currently supported for production use is PostgreSQL. 
 (SQLite is supported for development purposes *only*).
 There are many ways of setting up PostgreSQL server. 
-`Install_configure_PostgreSQL_CENTOS7.md <Install_configure_PostgreSQL_CENTOS7.md>`_
+`Install_configure_PostgreSQL_CENTOS7.md <http://hil-documentation.readthedocs.io/en/documentation_fix/Install_configure_PostgreSQL_CENTOS7.html>`_
 provides one way to accomplish this. 
 
 To create the database tables, first make sure ``haas.cfg`` is set up the way
