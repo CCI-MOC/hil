@@ -74,7 +74,7 @@ For headnode functionality:
 Documentation
 --------------
 
-* `overview.md <overview.md>`_ gives a sense as to how HaaS operates
+* `overview.md <https://github.com/CCI-MOC/hil/blob/master/docs/overview.md>`_ gives a sense as to how HaaS operates
 * `INSTALL.rst <INSTALL.rst>`_ for details on setting up HaaS
 * `UPGRADING.rst <UPGRADING.rst>`_ for details on upgrading to a new version of HaaS
 * `using.rst <USING.rst>`_ for details on using HaaS as a client
