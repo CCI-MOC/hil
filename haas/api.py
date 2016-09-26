@@ -731,6 +731,28 @@ def switch_delete_port(switch, port):
     db.session.commit()
 
 
+@rest_call('GET', '/switch/<switch>', Schema({
+    'switch': basestring,
+}))
+def show_switch(switch):
+    """Show details of a switch.
+
+    Returns a JSON object regrading the switch. See `docs/rest_api.md`
+    for a full description of the output.
+
+    FIXME: Ideally this api call should return all detail information about
+    this switch. right now it needs support from the switch backend.
+    """
+    get_auth_backend().require_admin()
+    switch = _must_find(model.Switch, switch)
+
+    return json.dumps({
+        'name': switch.label,
+        'ports': [{'label': port.label}
+                  for port in switch.ports],
+    }, sort_keys=True)
+
+
 @rest_call('GET', '/switches', Schema({}))
 def list_switches():
     """List all switches.
