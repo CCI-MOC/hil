@@ -14,8 +14,8 @@ Contents:
    Introduction <README.rst>
    HaaS Architecture Overview <overview.md>
    Installation <INSTALL.rst>
+   Installation - Developer - TL;DR <INSTALL-devel-tldr.rst>
    Installation - Developer <INSTALL-devel.rst>
-   Installation - Developer; TLDR <INSTALL-devel-tldr.rst>
    Upgrade <UPGRADING.rst>
    Usage <USING.rst>
    Extensions <extensions.rst>
