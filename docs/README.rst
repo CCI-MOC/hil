@@ -74,19 +74,15 @@ For headnode functionality:
 Documentation
 --------------
 
-* `overview.md <https://github.com/CCI-MOC/hil/blob/master/docs/overview.md>`_ gives a sense as to how HaaS operates
-* `INSTALL.rst <INSTALL.rst>`_ for details on setting up HaaS
-* `UPGRADING.rst <UPGRADING.rst>`_ for details on upgrading to a new version of HaaS
-* `using.rst <USING.rst>`_ for details on using HaaS as a client
-* `apidesc.md <apidesc.md>`_ describes the API at a conceptual level (enough to use it via the ``haas`` command line tool)
-* `rest_api.md <rest_api.md>`_ provides a detailed mapping of that API to http requests.
-* `developer-guidelines.md <developer-guidelines.md>`_ discusses our code submission and approval process.
-* `examples <examples/>`_ contains examples of config files, templates for creating headnode VM images and a script to register nodes with HaaS.
-* The docs directory contains assorted other documentation
+* `Architecture Overview <http://hil-documentation.readthedocs.io/en/documentation_fix/overview.html>`_ gives a sense as to how HaaS operates
+* `Installation <http://hil-documentation.readthedocs.io/en/documentation_fix/INSTALL.html>`_ for details on setting up HaaS
+* `Upgrading <http://hil-documentation.readthedocs.io/en/documentation_fix/UPGRADING.html>`_ for details on upgrading to a new version of HaaS
+* `Usage <http://hil-documentation.readthedocs.io/en/documentation_fix/USING.html>`_ for details on using HaaS as a client
+* `HaaS API <http://hil-documentation.readthedocs.io/en/documentation_fix/apidesc.html>`_ describes the API at a conceptual level (enough to use it via the ``haas`` command line tool)
+* `REST API <http://hil-documentation.readthedocs.io/en/documentation_fix/rest_api.html>`_ provides a detailed mapping of that API to http requests.
+* `Developer Guidelines <http://hil-documentation.readthedocs.io/en/documentation_fix/rest_api.html>`_ discusses our code submission and approval process.
+* `Examples <https://github.com/CCI-MOC/hil/tree/master/examples>`_ contains examples of config files, templates for creating headnode VM images and a script to register nodes with HaaS.
 
-Please note that the documentation is a mix of Markdown and reStructured Text,
-since the latter is preferred by the python and OpenStack communities and the
-former was what was originally used.
 
 Mass Open Cloud
 ----------------
