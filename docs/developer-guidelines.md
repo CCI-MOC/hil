@@ -1,4 +1,4 @@
-# Developer Guidlines
+# Developer Guidelines
 
 This document represents the developer policies and procedures for maintaining
 Hardware as a Service (HaaS), including the accepted [coding style](#Coding-style).

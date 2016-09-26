@@ -77,10 +77,10 @@ Documentation
 * `Architecture Overview <http://hil-documentation.readthedocs.io/en/documentation_fix/overview.html>`_ gives a sense as to how HaaS operates
 * `Installation <http://hil-documentation.readthedocs.io/en/documentation_fix/INSTALL.html>`_ for details on setting up HaaS
 * `Upgrading <http://hil-documentation.readthedocs.io/en/documentation_fix/UPGRADING.html>`_ for details on upgrading to a new version of HaaS
-* `Usage <http://hil-documentation.readthedocs.io/en/documentation_fix/USING.html>`_ for details on using HaaS as a client
+* `HaaS as a client <http://hil-documentation.readthedocs.io/en/documentation_fix/USING.html>`_ for details on using HaaS as a client
 * `HaaS API <http://hil-documentation.readthedocs.io/en/documentation_fix/apidesc.html>`_ describes the API at a conceptual level (enough to use it via the ``haas`` command line tool)
 * `REST API <http://hil-documentation.readthedocs.io/en/documentation_fix/rest_api.html>`_ provides a detailed mapping of that API to http requests.
-* `Developer Guidelines <http://hil-documentation.readthedocs.io/en/documentation_fix/rest_api.html>`_ discusses our code submission and approval process.
+* `Developer Guidelines <http://hil-documentation.readthedocs.io/en/documentation_fix/developer-guidelines.html>`_ discusses our code submission and approval process.
 * `Examples <https://github.com/CCI-MOC/hil/tree/master/examples>`_ contains examples of config files, templates for creating headnode VM images and a script to register nodes with HaaS.
 
 
