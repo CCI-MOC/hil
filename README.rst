@@ -87,6 +87,7 @@ Documentation
 * `developer-guidelines.md <docs/developer-guidelines.md>`_ discusses our code submission and approval process.
 * `examples <examples/>`_ contains examples of config files, templates for creating headnode VM images and a script to register nodes with HaaS.
 * `The docs directory <docs/>`_ contains assorted other documentation
+* You may also read the full documentation at `ReadTheDocs <http://hil-documentation.readthedocs.io/en/documentation_fix/>`_.
 
 Please note that the documentation is a mix of Markdown and reStructured Text,
 since the latter is preferred by the python and OpenStack communities and the
