@@ -309,6 +309,6 @@ tests/unit``. If at all possible, run the deployment tests as well (``py.test
 tests/deployment``), but this requires access to a specialized setup, so if the
 patch is sufficiently unintrusive it may be acceptable to skip this step.
 
-`testing.md <testing.md>`_ contains more information about testing HaaS.
-`migrations.md <migrations.md>`_ dicsusses working with database migrations
+`Testing <testing.html>`_ contains more information about testing HaaS.
+`Migrations <migrations.html>`_ dicsusses working with database migrations
 and schema changes.

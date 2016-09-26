@@ -3,7 +3,7 @@ INSTALL
 
 This document describes the installation and setup of HaaS on CentOS 7.0.
 HaaS should work on other distros, but is not well tested or supported.
-For development environments, see ``INSTALL-devel.rst``.
+For development environments, see `Installation - Developers <INSTALL-devel.html>`_.
 
 The HaaS Service node
 ----------------------
@@ -158,7 +158,7 @@ Setting Up HaaS Database
 The only DBMS currently supported for production use is PostgreSQL. 
 (SQLite is supported for development purposes *only*).
 There are many ways of setting up PostgreSQL server. 
-`Install_configure_PostgreSQL_CENTOS7.md <http://hil-documentation.readthedocs.io/en/documentation_fix/Install_configure_PostgreSQL_CENTOS7.html>`_
+`Install_configure_PostgreSQL_CENTOS7.md <Install_configure_PostgreSQL_CENTOS7.html>`_
 provides one way to accomplish this. 
 
 To create the database tables, first make sure ``haas.cfg`` is set up the way

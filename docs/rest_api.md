@@ -93,7 +93,7 @@ Request Body:
     }
 
 Create a network. For the semantics of each of the fields, see
-[docs/networks.md](./networks.md).
+[Networks](./networks.html).
 
 Authorization requirements:
 

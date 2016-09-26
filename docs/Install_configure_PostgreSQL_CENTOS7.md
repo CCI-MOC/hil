@@ -61,11 +61,11 @@ Create database named `haas` owned by user also named as `haas`.
 
 **5. Create a system user haas:**
 
-If you are setting up this database for a [production setup](production/INSTALL.rst)
+If you are setting up this database for a [production setup](INSTALL.html)
 then you might have already created a system user for managing `HaaS`. In that case skip this 
 step.
 
-If you are setting up database for [development purpose](development/HACKING.rst)
+If you are setting up database for [development purpose](INSTALL-devel.html)
 you will need to create a system user to manage `HaaS` database as follows.
 
 **format:** `useradd <username> --system -d <path-to-home-dir> -m -r `
@@ -146,6 +146,6 @@ typical default postgres setup, the right value is ``localhost``).
 
 Continue with installation steps:
 
-[continue with production install](INSTALL.rst)
+[continue with production install](INSTALL.html)
 or 
-[continue with development install](INSTALL-devel.rst)
+[continue with development install](INSTALL-devel.html)

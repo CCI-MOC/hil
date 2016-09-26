@@ -1,4 +1,4 @@
-# Netowork Drivers
+# Network Drivers
 
 This document describes the network driver model, primarily from a
 system administrator's standpoint, though there are some details useful

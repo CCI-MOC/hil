@@ -12,7 +12,7 @@ environment (and giving us feedback), improving the testing, squashing bugs and
 introducing new functionality.
 
 If you are interested in any of this, a good place to start is by reading the
-documentation (linked from the [README](../README.rst)).
+documentation (linked from the [Readme](./README.html)).
 
 If you're looking to code, there are a few ways to help:
 * Improving the HaaS documentation
@@ -39,12 +39,12 @@ Departures are acceptable when called for, but should be discussed first.
 Any functionality that is intended to be externally visible (ie -
 available through the REST API) will need to be exposed by decorating a
 function with the `@rest_call` decorator, [available in
-rest.py](../haas/rest.py).  This tells the framework the URL path and
+rest.py](https://github.com/CCI-MOC/hil/blob/master/haas/rest.py).  This tells the framework the URL path and
 HTTP method which should be mapped to that function, and also specifies
 how the arguments should be verified.
 
-Please [see the documentation there](../haas/rest.py) for additional
-information on the specifics, as well as [api.py]( ../haas/api.py) for a number
+Please [see the documentation there](rest_api.html) for additional
+information on the specifics, as well as [api.py]( https://github.com/CCI-MOC/hil/blob/master/haas/rest.py) for a number
 of examples. Of special note is that every externally-visible function must
 supply a `Schema` which explicitly specifies the method for verifying all URL
 and body arguments. In HaaS, all body arguments are required to be JSON.
@@ -98,21 +98,21 @@ haas-dev-list@bu.edu or speak with one of the core developers directly.
 
 #### Documentation
 
-* [Documentation listing](../README.rst#documentation)
+* [Documentation listing](/README.html#documentation)
 
 In HaaS, we primarily have 3 types of users: end-users (API/CLI users),
 deployers (HaaS instance admins) and developers (you!). If your change affects
 any of HaaS's extensive documentation, please be sure to update the
 accompanying documentation. For example, if an API call signature is changed or
-added, please update [docs/rest_api.md](./rest_api.md).
+added, please update [docs/rest_api.md](https://github.com/CCI-MOC/hil/blob/master/docs/rest_api.md).
 
 While most end-user and developer documentation can be found in the documentation listing
 (linked above), developer documentation may be found in the [docs
-directory](./).
+directory](https://github.com/CCI-MOC/hil/blob/master/docs/).
 
 #### Testing
 
-* [Testing document](testing.md)
+* [Testing document](testing.html)
 
 Testing helps to ensure the quality of the code base. Every pull request
 submitted should first be tested to ensure that all existing tests pass. If

@@ -2,8 +2,8 @@ Using HaaS as a Client
 ======================
 
 Interaction with HaaS occurs via its REST API. The high-level semantics of the
-API are documented in `apidesc.md <apidesc.md>`_, and the mapping to HTTP is
-described in `rest_api.md <rest_api.md>`_.
+API are documented in `API Description <apidesc.html>`_, and the mapping to HTTP is
+described in `REST API <rest_api.html>`_.
 
 The ``haas`` command line tool is a wrapper around this API. Running ``haas
 help`` will display an overview of the available commands. To tell ``haas``

@@ -59,8 +59,8 @@ Required software/hardware for running a production HaaS include:
 
 * Database: a Postgres database server. Sqlite works but is not recommended for production.
 
-For IPMI proxy functionality:
-
+For IPMI proxy functionality
+:
 * Network access from the HaaS service node to the IPMI interfaces of node under management
 * Nodes that support IPMI v2+
 * A recent version of ipmitool installed on the HaaS service node
@@ -74,13 +74,8 @@ For headnode functionality:
 Documentation
 --------------
 
-* `Architecture Overview <http://hil-documentation.readthedocs.io/en/documentation_fix/overview.html>`_ gives a sense as to how HaaS operates
-* `Installation <INSTALL.html>`_ for details on setting up HaaS
-* `Upgrading <UPGRADING.html>`_ for details on upgrading to a new version of HaaS
-* `HaaS as a client <USING.html>`_ for details on using HaaS as a client
-* `HaaS API <http://apidesc.html>`_ describes the API at a conceptual level (enough to use it via the ``haas`` command line tool)
-* `REST API <rest_api.html>`_ provides a detailed mapping of that API to http requests.
-* `Developer Guidelines <developer-guidelines.html>`_ discusses our code submission and approval process.
+* The full documentation is availalbe at `ReadTheDocs <http://hil-documentation.readthedocs.io/en/documentation_fix/>`_ in a beautiful and easy to navigate web interface. 
+* `The docs directory <https://github.com/CCI-MOC/hil/tree/master/docs>`_ contains all the documentation in .rst and .md format
 * `Examples <https://github.com/CCI-MOC/hil/tree/master/examples>`_ contains examples of config files, templates for creating headnode VM images and a script to register nodes with HaaS.
 
 
