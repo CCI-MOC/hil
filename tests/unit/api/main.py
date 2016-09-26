@@ -14,13 +14,12 @@
 
 """Unit tests for api.py"""
 import haas
-from haas import model, api, deferred, server, config
-from haas.model import db
+from haas import model, deferred, server
 from haas.test_common import *
 from haas.network_allocator import get_network_allocator
 import pytest
 import json
-
+import uuid
 
 MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/v0/switches/mock'
 OBM_TYPE_MOCK = 'http://schema.massopencloud.org/haas/v0/obm/mock'
@@ -1214,9 +1213,9 @@ class TestNetworkCreateDelete:
             api.network_delete('hammernet')
 
 
-class Test_switch_register:
+class TestSwitch:
 
-    def test_basic(self):
+    def test_register(self):
         """Calling switch_register should create an object in the db."""
         api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
                             username="switch_user",
@@ -1224,7 +1223,7 @@ class Test_switch_register:
                             hostname="switchname")
         assert model.Switch.query.one().label == 'sw0'
 
-    def test_duplicate(self):
+    def test_register_duplicate(self):
         """switch_register should complain if asked to make a duplicate switch.
         """
         api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
@@ -1237,10 +1236,7 @@ class Test_switch_register:
                                 password="switch_pass",
                                 hostname="switchname")
 
-
-class Test_switch_delete:
-
-    def test_basic(self):
+    def test_delete(self):
         """Deleting a switch should actually remove it."""
         api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
                             username="switch_user",
@@ -1249,7 +1245,7 @@ class Test_switch_delete:
         api.switch_delete('sw0')
         assert model.Switch.query.count() == 0
 
-    def test_nexist(self):
+    def test_delete_nonexisting(self):
         """
         switch_delete should complain if asked to delete a switch
         that doesn't exist.
@@ -1257,10 +1253,7 @@ class Test_switch_delete:
         with pytest.raises(api.NotFoundError):
             api.switch_delete('sw0')
 
-
-class Test_switch_register_port:
-
-    def test_basic(self):
+    def test_register_port(self):
         """Creating a port on an existing switch should succeed."""
         api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
                             username="switch_user",
@@ -1271,15 +1264,12 @@ class Test_switch_register_port:
         assert port.label == '5'
         assert port.owner.label == 'sw0'
 
-    def test_switch_nexist(self):
+    def test_register_port_nonexisting_switch(self):
         """Creating  port on a non-existant switch should fail."""
         with pytest.raises(api.NotFoundError):
             api.switch_register_port('sw0', '5')
 
-
-class Test_switch_delete_port:
-
-    def test_basic(self):
+    def test_delete_port(self):
         """Removing a port should remove it from the db."""
         api.switch_register('sw0',
                             type=MOCK_SWITCH_TYPE,
@@ -1290,7 +1280,7 @@ class Test_switch_delete_port:
         api.switch_delete_port('sw0', '5')
         assert model.Port.query.count() == 0
 
-    def test_switch_nexist(self):
+    def test_delete_port_nonexisting_switch(self):
         """
         Removing a port on a switch that does not exist should
         report the error.
@@ -1298,7 +1288,7 @@ class Test_switch_delete_port:
         with pytest.raises(api.NotFoundError):
             api.switch_delete_port('sw0', '5')
 
-    def test_port_nexist(self):
+    def test_delete_port_nonexisting_port(self):
         """Removing a port that does not exist should report the error"""
         api.switch_register('sw0',
                             type=MOCK_SWITCH_TYPE,
@@ -1307,9 +1297,6 @@ class Test_switch_delete_port:
                             hostname="switchname")
         with pytest.raises(api.NotFoundError):
             api.switch_delete_port('sw0', '5')
-
-
-class Test_list_switches:
 
     def test_list_switches(self):
         assert json.loads(api.list_switches()) == []
@@ -1341,9 +1328,6 @@ class Test_list_switches:
             'mock',
             'sw0',
         ]
-
-
-class TestShowSwitch:
 
     def test_show_switch(self, switchinit):
 
@@ -1823,8 +1807,6 @@ class TestQuery:
         api.project_create('anvil-nextgen')
         assert json.loads(api.list_project_nodes('anvil-nextgen')) == []
 
-    import uuid
-
     def test_show_headnode(self):
         api.project_create('anvil-nextgen')
         network_create_simple('spiderwebs', 'anvil-nextgen')
@@ -1862,7 +1844,7 @@ class TestQuery:
         assert result == ['base-headnode', 'img1', 'img2', 'img3', 'img4']
 
 
-class Test_show_network:
+class TestShowNetwork:
     """Test the show_network api cal."""
 
     def test_show_network_simple(self):
