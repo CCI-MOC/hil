@@ -684,6 +684,13 @@ def list_project_networks(project):
 
 
 @cmd
+def show_switch(switch):
+    """Display information about <switch>"""
+    url = object_url('switch', switch)
+    do_get(url)
+
+
+@cmd
 def show_network(network):
     """Display information about <network>"""
     url = object_url('network', network)

@@ -704,8 +704,30 @@ Authorization requirements:
 
 ### Switches
 
-#### switch_register
 
+### show_switch
+
+`GET /switch/<switch>`
+
+View detailed information about `<switch>`.
+
+The result must contain the following fields:
+
+* "name", the name of the switch
+* "ports", a list of the name of the ports which exist on the switch
+
+Response body (on success):
+
+    {
+        "name": <switch>,
+        "ports": <ports-list>
+    }
+
+Authorization requirements:
+
+* Administrative access.
+
+### switch_register
 Register a network switch of type `<type>`
 
 `<type>` (a string) is the type of network switch. The possible values
