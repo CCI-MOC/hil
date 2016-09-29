@@ -123,6 +123,10 @@ class KeystoneHTTPClient(HTTPClient):
 http_client = None
 
 
+class InvalidAPIArgumentsException(Exception):
+    pass
+
+
 def cmd(f):
     """A decorator for CLI commands.
 
@@ -139,6 +143,7 @@ def cmd(f):
             # TODO TypeError is probably too broad here.
             sys.stderr.write('Invalid arguements.  Usage:\n')
             help(f.__name__)
+            raise InvalidAPIArgumentsException()
     command_dict[f.__name__] = wrapped
 
     def get_usage(f):
@@ -802,3 +807,5 @@ def main():
             command_dict[sys.argv[1]](*sys.argv[2:])
         except FailedAPICallException:
             sys.exit(1)
+        except InvalidAPIArgumentsException:
+            sys.exit(2)
