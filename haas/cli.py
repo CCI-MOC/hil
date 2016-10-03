@@ -543,15 +543,6 @@ def switch_register(switch, subtype, *args):
     """Register a switch with name <switch> and
     <subtype>, <hostname>, <username>,  <password>
     eg. haas switch_register mock03 mock mockhost01 mockuser01 mockpass01
-    """
-    switch_api = "http://schema.massopencloud.org/haas/v0/switches/"
-
-
-@cmd
-def switch_register(switch, subtype, *args):
-    """Register a switch with name <switch> and
-    <subtype>, <hostname>, <username>,  <password>
-    eg. haas switch_register mock03 mock mockhost01 mockuser01 mockpass01
 
     FIXME: current design needs to change. CLI should not know about every
     backend. Ideally, this should be taken care of in the driver itself or
