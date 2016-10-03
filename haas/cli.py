@@ -43,12 +43,12 @@ class HTTPClient(object):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def request(method, url, data=None):
+    def request(method, url, data=None, params=None):
         """Make an HTTP request
 
-        Makes an HTTP request on URL `url` with method `method` and request
-        body `data` (if supplied). May add authentication or other
-        backend-specific information to the request.
+        Makes an HTTP request on URL `url` with method `method`, request body
+        `data`(if supplied) and query parameter `params`(if supplied). May add
+        authentication or other backend-specific information to the request.
 
         Parameters
         ----------
@@ -59,6 +59,9 @@ class HTTPClient(object):
             The URL to act on
         data : str, optional
             The body of the request
+        params : dictionary, optional
+            The query parameter, e.g. {'key1': 'val1', 'key2': 'val2'},
+            dictionary key can't be `None`
 
         Returns
         -------
@@ -95,7 +98,7 @@ class KeystoneHTTPClient(HTTPClient):
         """
         self.session = session
 
-    def request(self, method, url, data=None):
+    def request(self, method, url, data=None, params=None):
         """Make an HTTP request using keystone for authentication.
 
         Smooths over the differences between python-keystoneclient's
@@ -110,7 +113,8 @@ class KeystoneHTTPClient(HTTPClient):
             # we expect, but the names are the same:
             return self.session.request(method=method,
                                         url=url,
-                                        data=data)
+                                        data=data,
+                                        params=params)
         except HttpError as e:
             return e.response
 
@@ -232,34 +236,29 @@ def object_url(*args):
     return url
 
 
-def do_request(method, url, data={}):
-    """Helper function for making HTTP requests against the API.
-
-    Uses the global variable `http_client` to make the request.
-
-    Arguments:
-
-        `method` - the http method, as a string: 'GET', 'PUT', 'POST'...
-        `url` - The url to make the request to
-        `data` - the body of the request.
-    """
-    return check_status_code(http_client.request(method, url, data=data))
-
+# Helper functions for making HTTP requests against the API.
+#    Uses the global variable `http_client` to make the request.
+#
+#    Arguments:
+#
+#        `url` - The url to make the request to
+#        `data` - the body of the request (for PUT, POST and DELETE)
+#        `params` - query parameters (for GET)
 
 def do_put(url, data={}):
-    return do_request('PUT', url, data=json.dumps(data))
+    check_status_code(http_client.request('PUT', url, data=json.dumps(data)))
 
 
 def do_post(url, data={}):
-    return do_request('POST', url, data=json.dumps(data))
+    check_status_code(http_client.request('POST', url, data=json.dumps(data)))
 
 
-def do_get(url):
-    return do_request('GET', url)
+def do_get(url, params=None):
+    check_status_code(http_client.request('GET', url, params=params))
 
 
 def do_delete(url):
-    return do_request('DELETE', url)
+    check_status_code(http_client.request('DELETE', url))
 
 
 @cmd
