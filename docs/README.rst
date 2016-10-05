@@ -1,9 +1,5 @@
-.. image:: https://travis-ci.org/CCI-MOC/hil.svg?branch=master
-    :target: https://travis-ci.org/CCI-MOC/hil
-
-
-HaaS
-========
+HaaS - Introduction
+====================
 
 HaaS is a low-level tool for reserving physical machines and connecting
 them via isolated networks. It does not prescribe a particular
@@ -41,7 +37,7 @@ administrator must populate initially.
    operating system on them via the network.
 
 Requirements
-============
+-------------
 
 Required software/hardware for running a production HaaS include:
 
@@ -63,8 +59,8 @@ Required software/hardware for running a production HaaS include:
 
 * Database: a Postgres database server. Sqlite works but is not recommended for production.
 
-For IPMI proxy functionality:
-
+For IPMI proxy functionality
+:
 * Network access from the HaaS service node to the IPMI interfaces of node under management
 * Nodes that support IPMI v2+
 * A recent version of ipmitool installed on the HaaS service node
@@ -76,19 +72,15 @@ For headnode functionality:
 * A trunk port connected between the switch and HaaS service node that carries all VLANs accessible from HaaS
 
 Documentation
-=============
+--------------
 
 * The full documentation is availalbe at `ReadTheDocs <http://hil.readthedocs.io/en/latest/>`_ in a beautiful and easy to navigate web interface. 
-* `The docs directory <docs/>`_ contains all the documentation in .rst and .md format
-* `examples <examples/>`_ contains examples of config files, templates for creating headnode VM images and a script to register nodes with HaaS.
+* `The docs directory <https://github.com/CCI-MOC/hil/tree/master/docs>`_ contains all the documentation in .rst and .md format
+* `Examples <https://github.com/CCI-MOC/hil/tree/master/examples>`_ contains examples of config files, templates for creating headnode VM images and a script to register nodes with HaaS.
 
-
-Please note that the documentation is a mix of Markdown and reStructured Text,
-since the latter is preferred by the python and OpenStack communities and the
-former was what was originally used.
 
 Mass Open Cloud
-===============
+----------------
 
 This project is part of the larger `Massachusetts Open Cloud
 <http://www.massopencloud.org>`_. For a description of the team and other

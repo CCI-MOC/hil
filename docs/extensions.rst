@@ -1,3 +1,6 @@
+Extensions
+==========
+
 HaaS supports a simple extension mechanism, to allow external plugins
 to implement things we don't want in the HaaS core. One obvious example
 of this is drivers.
@@ -36,7 +39,7 @@ Extension-approved components currently include:
 * From haas.model:
     * db.Model
     * Switch
-* The migration framework; see ``migrations.md`` for an overview.
+* The migration framework; see `Migrations <migrations.html>`_ for an overview.
 
 See the docstrings for each component for details.
 

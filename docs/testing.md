@@ -1,4 +1,6 @@
-# Overview
+# Testing
+
+## Overview
 
 Testing for HaaS is done using [pytest][1]. All tests
 are placed in the "tests" subdirectory, which is subdivided into:
@@ -13,7 +15,7 @@ functions/methods they write, or any new or fixed functionality. Ideally,
 bug fixes should include a test (whether unit or functional) that reproduces
 the problem scenario so that we can ensure the bug doesn't return!
 
-# Configuration
+## Configuration
 
 By installing HaaS and its dependencies in the virtual environment (done
 via: `pip install -e .` in the root directory), you will automatically
@@ -29,7 +31,7 @@ DBMSes (for the moment some changes are needed to the test suite to
 actually support this). For now, it's mostly interesting when running
 the deployment tests (see below).
 
-# Running
+## Running
 
 To run all tests, from the HaaS root directory run:
 
@@ -47,7 +49,7 @@ To run just a pep8 test:
 As stated above, running at least `tests/unit` is mandatory before each
 commit.
 
-# Code Coverage
+## Code Coverage
 
 The pytest-cov plugin (included in requirements.txt) allows us to
 generate reports indicating what code is/is not executed by our tests.
@@ -57,7 +59,7 @@ just make sure you pay attention to the output.
 
 More information is available on the projects [PyPI page][2].
 
-# Test structure
+## Test structure
 
 Tests are kept in the `tests` directory, which is further organized into
 a few subdirectories:
@@ -75,14 +77,14 @@ examples.
 There also may be a few files loose in the `tests` directory that do not
 clearly fit into one of the above categories.
 
-# Integration tests
+## Integration tests
 
 The `tests/integration` directory contains tests that require
 substantial setup of external software, or special configuration. These
 tend to be expensive in terms of time. These are run automatically by
 our travis-ci configuration.
 
-# Deployment tests
+## Deployment tests
 
 The deployment tests (`tests/deployment`) are a set of unit tests which
 are most useful when executed in an environment with real hardware and a

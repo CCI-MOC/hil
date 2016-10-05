@@ -1,9 +1,12 @@
+INSTALL
+=======
+
 This document describes the installation and setup of HaaS on CentOS 7.0.
 HaaS should work on other distros, but is not well tested or supported.
-For development environments, see ``INSTALL-devel.rst``.
+For development environments, see `Installation - Developers <INSTALL-devel.html>`_.
 
 The HaaS Service node
-=====================
+----------------------
 
 This section talks about what must be done on the server upon which HaaS runs.
 
@@ -96,7 +99,7 @@ CLI client and the server. Carefully read the ``haas.cfg*`` files in
 particular, the following two fields in the ``headnode`` section are very
 important: ``trunk_nic`` must match your choice of trunk NIC in the "Networking
 - Bridges" instructions below; ``base_imgs`` must match the name of the base
-  headnode libvirt instance created in the "Libvirt" instructions below.
+headnode libvirt instance created in the "Libvirt" instructions below.
 
 For a detailed description of the configuration needed for various switch
 setups, see ``docs/network-drivers.md``.
@@ -155,7 +158,7 @@ Setting Up HaaS Database
 The only DBMS currently supported for production use is PostgreSQL. 
 (SQLite is supported for development purposes *only*).
 There are many ways of setting up PostgreSQL server. 
-`Install_configure_PostgreSQL_CENTOS7.md <Install_configure_PostgreSQL_CENTOS7.md>`_
+`Install_configure_PostgreSQL_CENTOS7.md <Install_configure_PostgreSQL_CENTOS7.html>`_
 provides one way to accomplish this. 
 
 To create the database tables, first make sure ``haas.cfg`` is set up the way
@@ -454,7 +457,7 @@ If you get an empty list ``[]`` as output then congratulations !!
 At this point, you should have a functional HaaS service running!
 
 Describe datacenter resources
-===================================
+------------------------------
 
 For HaaS to do anything useful, you must use the HaaS API to populate the
 database with information about the resources in your datacenter -- chiefly

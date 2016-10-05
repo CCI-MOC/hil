@@ -1,3 +1,6 @@
+Driver Model
+============
+
 HaaS supports different types of devices (like network switches, out of band
 management controllers) through a driver model. This document describes the
 general concepts of that driver model and where it is currently applied.
