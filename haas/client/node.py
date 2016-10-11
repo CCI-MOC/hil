@@ -8,7 +8,7 @@ class Node(ClientBase):
 
     def list(self, is_free):
         """ List all nodes that HIL manages """
-        url = self.object_url('node', is_free)
+        url = self.object_url('nodes', is_free)
         q = requests.get(url, headers={"Authorization": "Basic %s" % self.auth})
         if q.ok:
             return q.json()
