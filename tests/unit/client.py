@@ -34,7 +34,7 @@ from requests.exceptions import ConnectionError
 from haas.client.base import ClientBase
 from haas.client.auth import auth_db
 from haas.client.client import Client
-
+from haas.client import client_errors
 
 
 
@@ -253,10 +253,6 @@ def create_setup(request):
         cleanup(dir_names)
     request.addfinalizer(fin)
 
-
-
-
-
 @pytest.mark.usefixtures("create_setup")
 class Test_Node:
     """ Tests Node related client calls. """
@@ -269,7 +265,6 @@ class Test_Node:
         result = C.node.list('all')
         assert result == [u'node-01', u'node-02', u'node-03', u'node-04',
                             u'node-05', u'node-06']
-
 
 @pytest.mark.usefixtures("create_setup")
 class Test_project:
@@ -288,6 +283,25 @@ class Test_project:
     def test_list_networks_inproject(self):
         result = C.project.networks_in('proj-01')
         assert result == [u'net-01', u'net-02', u'net-03']
+
+    def test_project_create(self):
+        result = C.project.create('dummy-01')
+        assert result == None
+
+    def test_duplicate_project_create(self):
+        C.project.create('dummy-01')
+        with pytest.raises(client_errors.DuplicateError):
+            C.project.create('dummy-01')
+
+    def test_project_delete(self):
+        C.project.create('dummy-02')
+        result = C.project.delete('dummy-02')
+        assert result == None
+
+    def test_error_project_delete(self):
+        with pytest.raises(client_errors.NotFoundError):
+            C.project.delete('dummy-03')
+
 
 @pytest.mark.usefixtures("create_setup")
 class Test_switch:

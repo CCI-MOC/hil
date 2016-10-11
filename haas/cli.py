@@ -30,6 +30,7 @@ from functools import wraps
 ## Hook to the client library
 from haas.client.auth import *
 from haas.client.client import Client
+from haas.client.client_errors import *
 
 
 ep = os.environ.get('HAAS_ENDPOINT') or "http://127.0.0.1:5000"
@@ -382,27 +383,27 @@ def user_add_project(user, project):
     url = object_url('/auth/basic/user', user, 'add_project')
     do_post(url, data={'project': project})
 
-
 @cmd
 def user_remove_project(user, project):
     """Remove <user> from <project>"""
     url = object_url('/auth/basic/user', user, 'remove_project')
     do_post(url, data={'project': project})
 
-
 @cmd
 def project_create(project):
     """Create a <project>"""
-    url = object_url('project', project)
-    do_put(url)
-
+    try:
+        C.project.create(project)
+    except (DuplicateError, AuthenticationError) as e:
+        print e
 
 @cmd
 def project_delete(project):
     """Delete <project>"""
-    url = object_url('project', project)
-    do_delete(url)
-
+    try:
+        C.project.delete(project)
+    except (NotFoundError, AuthenticationError) as e:
+        print e
 
 @cmd
 def headnode_create(headnode, project, base_img):
@@ -410,7 +411,6 @@ def headnode_create(headnode, project, base_img):
     url = object_url('headnode', headnode)
     do_put(url, data={'project': project,
                       'base_img': base_img})
-
 
 @cmd
 def headnode_delete(headnode):
@@ -687,19 +687,12 @@ def list_project_nodes(project):
     """List all nodes attached to a <project>"""
     q = C.project.nodes_in(project)
     sys.stdout.write('Nodes allocated to %s:    ' %project + " ".join(q) + '\n')
-#    print q
-
-#    url = object_url('project', project, 'nodes')
-#    do_get(url)
-
 
 @cmd
 def list_project_networks(project):
     """List all networks attached to a <project>"""
     q = C.project.networks_in(project)
     sys.stdout.write("Networks allocated to {}\t:   {}\n".format(project, " ".join(q)))
-#    url = object_url('project', project, 'networks')
-#    do_get(url)
 
 
 @cmd
