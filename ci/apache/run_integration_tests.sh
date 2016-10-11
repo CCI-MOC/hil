@@ -11,3 +11,6 @@ cd $TRAVIS_BUILD_DIR
 
 # Test commands
 py.test tests/integration/cli.py
+
+# Test dbinit script
+python examples/dbinit.py

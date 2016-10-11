@@ -19,10 +19,11 @@ It could be used in an environment similar to the one which
 
 from subprocess import check_call
 
-N_NODES = 10
+N_NODES = 6
 
 ipmi_user = "ADMIN_USER"
 ipmi_pass = "ADMIN_PASSWORD"
+switch = "mock01"
 
 
 def haas(*args):
@@ -30,12 +31,14 @@ def haas(*args):
     print args
     check_call(['haas'] + args)
 
+haas('switch_register', switch, 'mock', 'ip', 'user', 'pass')
+
 for node in range(N_NODES):
     ipmi_ip = "10.0.0." + str(node + 1)
 
     nic_port = "R10SW1::GI1/0/%d" % (node)
     nic_name = 'nic1'
-    haas('node_register', node, ipmi_ip, ipmi_user, ipmi_pass)
+    haas('node_register', node, "mock", ipmi_ip, ipmi_user, ipmi_pass)
     haas('node_register_nic', node, nic_name, 'FillThisInLater')
-    haas('port_register', nic_port)
-    haas('port_connect_nic', nic_port, node, nic_name)
+    haas('port_register', switch, nic_port)
+    haas('port_connect_nic', switch, nic_port, node, nic_name)
