@@ -18,6 +18,7 @@ from haas import model
 from haas.model import db
 import logging
 
+
 def apply_networking():
     """Do each networking action in the journal, then cross them off.
 
@@ -71,8 +72,8 @@ def apply_networking():
                 .delete()
         else:
             db.session.add(model.NetworkAttachment(nic=action.nic,
-                                           network=action.new_network,
-                                           channel=action.channel))
+                                                   network=action.new_network,
+                                                   channel=action.channel))
         db.session.delete(action)
 
     db.session.commit()

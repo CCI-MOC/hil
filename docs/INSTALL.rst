@@ -1,9 +1,12 @@
+INSTALL
+=======
+
 This document describes the installation and setup of HaaS on CentOS 7.0.
 HaaS should work on other distros, but is not well tested or supported.
-For development environments, see ``HACKING.rst``.
+For development environments, see `Installation - Developers <INSTALL-devel.html>`_.
 
 The HaaS Service node
-=====================
+----------------------
 
 This section talks about what must be done on the server upon which HaaS runs.
 
@@ -24,36 +27,6 @@ available as RPMs as well, but we recommend installing them with pip, since
 this will install the versions that HaaS has been tested with.  This is done
 automatically by the instructions below.
 
-Setting Up HaaS Database
-------------------------
-
-The only DBMS currently supported for production use is PostgreSQL. (SQLite is
-supported for development purposes *only*). There are many guides on the web
-which describe setting up PostgreSQL; in these instructions we assume that
-you've done so successfully.
-
-You need to create a postgresql user and database for HaaS. Once you've done so,
-the ``uri`` option in ``haas.cfg``'s ``database`` must be set to::
-
-        postgresql://<user>:<password>@<address>/<dbname>
-
-Where ``<user>`` is the name of the postgres user you created, ``<password>`` is
-its password, ``<dbname>`` is the name of the database you created, and
-``<address>`` is the address which haas should use to connect to postgres (In a
-typical default postgres setup, the right value is ``localhost``).
-
-
-The HaaS software itself can then be installed by running::
-
-    git clone https://github.com/CCI-MOC/haas
-    cd haas
-    sudo python setup.py install
-
-To create the database tables, first make sure ``haas.cfg`` is set up the way
-you need, including any extensions you plan to use, then (from the directory
-containing ``haas.cfg``) exectue::
-
-    haas-admin db create
 
 Disable SELinux
 ---------------
@@ -64,8 +37,8 @@ now the solution is to disable SELinux::
 
     sudo setenforce 0
 
-Make sure SELinux is also disabled on startup. To do this [on
-CentOS/RHEL](https://wiki.centos.org/HowTos/SELinux), edit
+Make sure SELinux is also disabled on startup. To do this `on
+CentOS/RHEL <https://wiki.centos.org/HowTos/SELinux>`_, edit
 `/etc/selinux/config` to change:
 ```
 SELINUX=enforcing
@@ -75,12 +48,47 @@ to
 SELINUX=permissive
 ```
 
-Create User
------------
+User need to choose appropriate values for their environment:
+-------------------------------------------------------------
 
-First create a system user ``haas_user`` with::
+For simplicity we have provided default values:
+Copy the following lines in file ``haas_env`` 
 
-  sudo useradd haas_user -d /var/lib/haas -m -r
+        HAAS_USER=haas
+
+        HAAS_DB_ROLE=haas
+        
+        HAAS_DB_PASSWORD=secret
+        
+        HAAS_ADMIN=haas
+        
+        HAAS_ADMIN_PASSWORD=secret
+        
+        HAAS_HOME_DIR=/var/lib/haas
+
+
+
+Before starting this procedure do::
+        
+        source haas_env
+
+
+Setting up system user for HaaS:
+--------------------------------
+
+First create a system user ``${HAAS_USER}`` with::
+
+  sudo useradd --system ${HAAS_USER} -d /var/lib/haas -m -r
+
+
+The HaaS software itself can then be installed as root by running::
+    
+    sudo su -
+    cd /root
+    git clone https://github.com/CCI-MOC/haas
+    cd haas
+    sudo python setup.py install
+
 
 haas.cfg
 --------
@@ -91,7 +99,7 @@ CLI client and the server. Carefully read the ``haas.cfg*`` files in
 particular, the following two fields in the ``headnode`` section are very
 important: ``trunk_nic`` must match your choice of trunk NIC in the "Networking
 - Bridges" instructions below; ``base_imgs`` must match the name of the base
-  headnode libvirt instance created in the "Libvirt" instructions below.
+headnode libvirt instance created in the "Libvirt" instructions below.
 
 For a detailed description of the configuration needed for various switch
 setups, see ``docs/network-drivers.md``.
@@ -99,27 +107,77 @@ setups, see ``docs/network-drivers.md``.
 Logging level and directory can be set in the ``[general]`` section. For more
 information view ``docs/logging.md``.
 
-The file should be placed at ``/etc/haas.cfg``; The ``haas.wsgi``
-script, described below, requires this. Awkwardly, the ``haas``
-command line tool expects the file to be present in its current
-working directory. This will be fixed in the next release, but for
-now, put the file in ``/etc`` and create a symlink to it in the
-HaaS user's home directory::
 
-  sudo ln -s /etc/haas.cfg /var/lib/haas/
+``haas.cfg`` file contains sensitive administrative information and should not be exposed to clients or 
+end users. Therefore, after placing the file at ``/etc/haas.cfg`` its 
+permissions should be set to read-only and ownership set to ``${HAAS_USER}``
+From source directory of haas as user root do the following::
 
-It should be noted that HaaS end users will also require a ``haas.cfg`` file
-in their local directory in order to communicate with the HaaS server.
-However, creating another symlink to the ``/etc/haas.cfg`` exposes sensitive
-administrative information to users, such as usernames and passwords. To
-avoid this, users should have their own copy of ``haas.cfg`` that is stripped
-of all sections except for the ``[client]`` section.  Additionally, the
-``/etc/haas.cfg`` should have its permissions set to read-only and ownership
-set to the ``haas_user``::
+    (from /root/haas)
+    cp examples/haas.cfg /etc/haas.cfg
+    chown ${HAAS_USER}:${HAAS_USER} haas.cfg
+    chmod 400 haas.cfg
+    (run following command as ${HAAS_USER} from ${HAAS_HOME_DIR}
+    su - ${HAAS_USER}
+    ln -s /etc/haas.cfg .
 
-  sudo chown haas_user:haas_user /etc/haas.cfg
-  sudo chmod 400 /etc/haas.cfg
+Authentication and Authorization
+--------------------------------
 
+HaaS includes a pluggable architecture for authentication and authorization.
+HaaS ships with two authentication backends. One uses HTTP basic auth, with
+usernames and passwords stored in the haas database. The other is a "null"
+backend, which does no authentication or authorization checks. This can be
+useful for testing and experimentation but *should not* be used in production.
+You must enable exactly one auth backend.
+
+In productions system where non-null backend is active, end users will have to include
+a username and password as additional parameters in ``client_env`` file to be able to 
+communicate with the haas server. This is user/password should be registered with the 
+haas auth backend using haas.
+
+
+Database Backend
+^^^^^^^^^^^^^^^^
+
+To enable the database backend, make sure the **[extensions]** section of
+``haas.cfg`` contains::
+
+  haas.ext.auth.database =
+
+Null Backend
+^^^^^^^^^^^^
+
+To enable the null backend, make sure **[extensions]** contains::
+
+  haas.ext.auth.null =
+
+Setting Up HaaS Database
+------------------------
+
+The only DBMS currently supported for production use is PostgreSQL. 
+(SQLite is supported for development purposes *only*).
+There are many ways of setting up PostgreSQL server. 
+`Install_configure_PostgreSQL_CENTOS7.md <Install_configure_PostgreSQL_CENTOS7.html>`_
+provides one way to accomplish this. 
+
+To create the database tables, first make sure ``haas.cfg`` is set up the way
+you need, including any extensions you plan to use, then::
+
+    sudo -i -u ${HAAS_USER}; haas-admin db create
+
+If the authorization backend activated in ``haas.cfg`` is  ``haas.ext.auth.database =``
+then you will need to add an initial user with administrative privileges to the 
+database in order to bootstrap the system. 
+You can do this by running the following command (as user ``haas``)::
+
+  sudo -i -u ${HAAS_USER}; haas create_admin_user ${HAAS_ADMIN_USER} ${HAAS_ADMIN_PASSWORD
+
+You can then create additional users via the HTTP API. You may want to
+subsequently delete the initial user; this can also be done via the API.
+
+
+    
 All HaaS commands in these instructions should be run in this directory::
 
   cd /var/lib/haas
@@ -147,6 +205,8 @@ be pre-allocated again on each boot. For now, the recomended approach is to add:
 
 to the end of ``/etc/rc.local``.
 
+You can also run the this command manually as root user to create the bridges.
+
 HaaS must additionally have IP connectivity to the switch's administration
 console.  Right now the only mechanism for connecting to the switch is via
 telnet (with `plans <https://github.com/CCI-MOC/haas/issues/46>`_ to support
@@ -167,7 +227,7 @@ uncomment the following lines::
 Then create the group 'libvirt' and add the HaaS user to that group::
 
   sudo groupadd libvirt
-  sudo gpasswd libvirt -a haas_user
+  sudo gpasswd libvirt -a haas
 
 Finally, restart ``libvirt`` with::
 
@@ -265,42 +325,6 @@ configuring the ubuntu headnode to act as a PXE server; see the README in
 that directory for more information.
 
 
-Authentication and Authorization
---------------------------------
-
-HaaS includes a pluggable architecture for authentication and authorization.
-HaaS ships with two authentication backends. One uses HTTP basic auth, with
-usernames and passwords stored in the haas database. The other is a "null"
-backend, which does no authentication or authorization checks. This can be
-useful for testing and experimentation but *should not* be used in production.
-You must enable exactly one auth backend.
-
-Database Backend
-^^^^^^^^^^^^^^^^
-
-To enable the database backend, make sure the **[extensions]** section of
-``haas.cfg`` contains::
-
-  haas.ext.auth.database =
-
-Then initialize the database as described above. You will need to add an
-initial user with administrative privileges to the database in order to
-bootstrap the system. You can do this by running the following command from
-within the directory containing the server's ``haas.cfg``::
-
-  haas create_admin_user <username> <password>
-
-You can then create additional users via the HTTP API. You may want to
-subsequently delete the initial user; this can also be done via the API.
-
-Null Backend
-^^^^^^^^^^^^
-
-To enable the null backend, make sure **[extensions]** contains::
-
-  haas.ext.auth.null =
-
-
 Running the Server under Apache
 -------------------------------
 
@@ -311,14 +335,14 @@ former is a WSGI application, which we recommend running with Apache's
   LoadModule wsgi_module modules/mod_wsgi.so
   WSGISocketPrefix run/wsgi
 
-  <VirtualHost 127.0.0.1:80>
+  <VirtualHost 127.0.0.1:80 [::1]:80>
     ServerName 127.0.0.1
     AllowEncodedSlashes On
     WSGIPassAuthorization On
-    WSGIDaemonProcess haas_user user=haas_user group=haas_user threads=2
+    WSGIDaemonProcess haas user=haas group=haas threads=2
     WSGIScriptAlias / /var/www/haas/haas.wsgi
     <Directory /var/www/haas>
-      WSGIProcessGroup haas_user
+      WSGIProcessGroup haas
       WSGIApplicationGroup %{GLOBAL}
       Order deny,allow
       Allow from all
@@ -406,13 +430,34 @@ For such systems, the networking server may be started as the HaaS user by runni
 
 To make this happen on boot, add the following to ``/etc/rc.local``::
 
-  (cd /var/lib/haas && su haas_user -c 'haas serve_networks') &
+  (cd /var/lib/haas && su haas -c 'haas serve_networks') &
 
 
-Congratulations- at this point, you should have a functional HaaS service running!
+HaaS Client:
+------------
+
+If your authentication backend is null, you only need to have the ``HAAS_ENDPOINT`` defined
+in the ``client_env``. In productions system where non-null backend is active, 
+end users will have to include a username and password as additional parameters in ``client_env`` 
+file to be able to communicate with the haas server. 
+If you created a admin user for haas as a part of `Setting Up HaaS Database` step, 
+you will have to pass those credentials to HaaS to be able to access, change state of HaaS.
+Create a file ``client_env`` with following entries::
+
+    export HAAS_ENDPOINT=http://127.0.0.1/
+    export HAAS_USERNAME=<haas_admin_username>
+    export HAAS_PASSWORD=<haas_admin_password>
+
+To get started with HaaS from your home dir do the following::
+
+    source client_env
+    haas list_nodes all
+
+If you get an empty list ``[]`` as output then congratulations !! 
+At this point, you should have a functional HaaS service running!
 
 Describe datacenter resources
-===================================
+------------------------------
 
 For HaaS to do anything useful, you must use the HaaS API to populate the
 database with information about the resources in your datacenter -- chiefly
@@ -427,4 +472,5 @@ the relevant API calls:
 - ``port_delete``
 - ``port_connect_nic``
 - ``port_detach_nic``
+
 

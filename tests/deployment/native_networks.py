@@ -21,6 +21,7 @@ from haas.model import db
 from haas.test_common import *
 import pytest
 
+
 @pytest.fixture
 def configure():
     config_testsuite()
@@ -64,12 +65,18 @@ class TestNativeNetwork(NetworkTest):
             # Assert that n0 and n1 are not on any network
             port_networks = self.get_port_networks(ports)
 
-            assert self.get_network(nodes[0].nics[0].port, port_networks) == set()
-            assert self.get_network(nodes[1].nics[0].port, port_networks) == set()
+            assert self.get_network(nodes[0].nics[0].port, port_networks) == \
+                set()
+            assert self.get_network(nodes[1].nics[0].port, port_networks) == \
+                set()
 
             # Connect n0 and n1 to net-0 and net-1 respectively
-            api.node_connect_network(nodes[0].label, nodes[0].nics[0].label, 'net-0')
-            api.node_connect_network(nodes[1].label, nodes[1].nics[0].label, 'net-1')
+            api.node_connect_network(nodes[0].label,
+                                     nodes[0].nics[0].label,
+                                     'net-0')
+            api.node_connect_network(nodes[1].label,
+                                     nodes[1].nics[0].label,
+                                     'net-1')
             deferred.apply_networking()
 
             # Assert that n0 and n1 are on isolated networks
@@ -80,8 +87,12 @@ class TestNativeNetwork(NetworkTest):
                 set([nodes[1].nics[0].port])
 
             # Add n2 and n3 to the same networks as n0 and n1 respectively
-            api.node_connect_network(nodes[2].label, nodes[2].nics[0].label, 'net-0')
-            api.node_connect_network(nodes[3].label, nodes[3].nics[0].label, 'net-1')
+            api.node_connect_network(nodes[2].label,
+                                     nodes[2].nics[0].label,
+                                     'net-0')
+            api.node_connect_network(nodes[3].label,
+                                     nodes[3].nics[0].label,
+                                     'net-1')
             deferred.apply_networking()
 
             # Assert that n2 and n3 have been added to n0 and n1's networks
@@ -91,7 +102,6 @@ class TestNativeNetwork(NetworkTest):
                 set([nodes[0].nics[0].port, nodes[2].nics[0].port])
             assert self.get_network(nodes[1].nics[0].port, port_networks) == \
                 set([nodes[1].nics[0].port, nodes[3].nics[0].port])
-
 
         def delete_networks():
             # Query the DB for nodes on this project
@@ -111,7 +121,8 @@ class TestNativeNetwork(NetworkTest):
             # Assert that none of the nodes are on any network
             port_networks = self.get_port_networks(ports)
             for node in nodes:
-                assert self.get_network(node.nics[0].port, port_networks) == set()
+                assert self.get_network(node.nics[0].port, port_networks) == \
+                    set()
 
             # Delete the networks
             api.network_delete('net-0')

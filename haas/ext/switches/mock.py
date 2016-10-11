@@ -56,7 +56,6 @@ class MockSwitch(Switch):
             'password': basestring,
         }).validate(kwargs)
 
-
     def session(self):
         return self
 

@@ -1,3 +1,5 @@
+# Consistency model
+
 Here is the consistency model for headnodes.
 
   - ``headnode_create``: After running this, you can then run

@@ -31,8 +31,8 @@ class NetworkAllocator(object):
     @abstractmethod
     def get_new_network_id(self):
         """Gets a new network ID, valid for this driver.  Returns 'None' if there
-        are no more possible IDs available.  Pass in the database connection, to
-        make the allocation part of the current transaction.
+        are no more possible IDs available.  Pass in the database connection,
+        to make the allocation part of the current transaction.
         """
 
     @abstractmethod
@@ -47,8 +47,9 @@ class NetworkAllocator(object):
         """Populate the database with any initial state needed by the allocator.
 
         This is invoked when the haas database is first initialized. It *must*
-        be safe to call this method multiple times, including on a database that
-        has been modified in ways during the course of normal HaaS operation.
+        be safe to call this method multiple times, including on a database
+        that has been modified in ways during the course of normal HaaS
+        operation.
         """
 
     @abstractmethod
@@ -57,18 +58,23 @@ class NetworkAllocator(object):
 
         Note that this is not necessarily a list of each possible channel id;
         it may include wildcards. A consumer of the allocator should
-        invoke ``is_legal_channel_for`` to check if a given identifier is legal.
+        invoke ``is_legal_channel_for`` to check if a given identifier is
+        legal.
 
         See ``docs/rest_api.md`` for details.
         """
 
     @abstractmethod
     def is_legal_channel_for(self, channel_id, net_id):
-        """Returns True if ``channel_id`` is legal for ``net_id``, False otherwise."""
+        """Returns True if ``channel_id`` is legal for ``net_id``,
+        False otherwise.
+        """
 
     @abstractmethod
     def get_default_channel(self):
-        """Return the "default" channel which is used if a channel is unspecified."""
+        """Return the "default" channel which is used if a
+        channel is unspecified.
+        """
 
 
 _network_allocator = None
@@ -84,8 +90,9 @@ def set_network_allocator(network_allocator):
     """
     global _network_allocator
     if _network_allocator is not None:
-        sys.exit("Fatal Error: set_network_allocator() called twice. Make sure "
-                 "you don't have conflicting extensions loaded.")
+        sys.exit(_("Fatal Error: set_network_allocator() called twice."
+                   "Make sure you don't have conflicting extensions loaded."))
+
     _network_allocator = network_allocator
 
 

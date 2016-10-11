@@ -1,4 +1,7 @@
-# Overview
+# Logging
+
+## Overview
+
 HaaS supports basic logging of the API calls received in the below format,
 recording the user who issued the API call (or guest if the user was
 unauthenticated) and the time. Log files are rotated daily.
@@ -7,7 +10,7 @@ unauthenticated) and the time. Log files are rotated daily.
 2016-03-31 14:55:07,961 - haas.rest - INFO - (guest) - API call: list_projects()
 ```
 
-# Setup
+## Setup
 Logging can be configured with the following options in `haas.cfg`.
 
 ```

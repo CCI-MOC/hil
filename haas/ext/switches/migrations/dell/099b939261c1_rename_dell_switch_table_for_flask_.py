@@ -7,16 +7,15 @@ Revises:
 Create Date: 2016-03-22 04:34:49.141555
 
 """
+from alembic import op
+import sqlalchemy as sa
+from haas.model import db
+from haas.flaskapp import app
 
 # revision identifiers, used by Alembic.
 revision = '099b939261c1'
 down_revision = None
 branch_labels = ('haas.ext.switches.dell',)
-
-from alembic import op
-import sqlalchemy as sa
-from haas.model import db
-from haas.flaskapp import app
 
 
 def upgrade():

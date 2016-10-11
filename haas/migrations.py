@@ -44,7 +44,8 @@ _alembic_version_table = db.Table(
 def create_db():
     """Create and populate the initial database.
 
-    The database connection must have been previously initialzed via `haas.model.init_db`.
+    The database connection must have been previously initialzed via
+    `haas.model.init_db`.
     """
     with app.app_context():
         db.create_all()

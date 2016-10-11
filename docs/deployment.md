@@ -1,15 +1,15 @@
-# Introduction
+# Deployment
 
 This is a guide to the best practices for deploying Hardware as a Service
 (HaaS). It documents many of the assumptions that the HaaS development team
 made in terms of how HaaS would be used, how it would be deployed, and the
 configuration of the hardware systems it would be managing.
 
-For instructions on installing HaaS, take a look at [INSTALL.rst](INSTALL.rst).
-For a general overview, please take a look at [README.rst](README.rst).
+For instructions on installing HaaS, take a look at [Installation](INSTALL.html).
+For a general overview, please take a look at [Introduction](README.html).
 
-# Nodes
-## BIOS/Firmware
+## Nodes
+### BIOS/Firmware
 
 We recommend coming up with a standard list of BIOS settings for your nodes and
 documenting them. These could vary between pools of different types, like
@@ -22,7 +22,7 @@ Settings useful to document would include:
 * Hyperthreading
 * Whether turbo boosting is enabled
 
-### Boot order
+#### Boot order
 
 A provider should consistently set up all nodes to have the same order. It is
 recommended that this order consist of: cdrom, disk, PXE. By placing
@@ -37,7 +37,7 @@ explicitly request PXE booting for the next boot via an API call, however the
 permanent boot order would not likely be able to be changed as that is not
 supported by IPMI in a standard way.
 
-### Devices
+#### Devices
 
 For higher security, it may be desirable to disable CD/DVD access to the OS,
 only enabling it when needed for maintenance or other reasons. This is because
@@ -45,7 +45,7 @@ an inadvertent CD/DVD left in the drive could allow a user to burn an image.
 Placed in another system or left in the tray, this image could then allow an
 attack on another system. 
 
-### Firmware security
+#### Firmware security
 
 End users will have full control your node. If they are not trusted, it is
 extremely important to disable firmware update mechanisms before access is
@@ -75,9 +75,9 @@ even the root user is untrusted.
 * GPUs
 * Other peripherals
 
-# Networks
+## Networks
 
-## Switch configuration
+### Switch configuration
 In order to deploy HaaS, at least one switch supported by one of HaaS's 
 drivers is required.
 
@@ -90,13 +90,13 @@ This currently includes:
 ``null`` and ``mock`` drivers are also included for testing and
 experimentation.
 
-## VLANs
+### VLANs
 
 The network administrator will need to pre-allocate a set of VLANs to 
 dedicate to HaaS's management. These are kept within the *vlan* section 
 of the config file.
 
-## Headnodes
+### Headnodes
 
 Currently, the system or systems that run the HaaS service (sometimes
 informally called the HaaS master) also run the Headnode virtual machines.
@@ -106,7 +106,7 @@ trunked using 802.1Q to HaaS service systems. This port upon which these
 networks are shared is indicated using the *trunk_nic* member of the
 **[headnode]** section.
 
-## Multiple Switches
+### Multiple Switches
 HaaS supports networks spanning multiple switches via 2 mechanisms:
 
 1. Vendor-specific "stacking" features that make all of the switches appear to

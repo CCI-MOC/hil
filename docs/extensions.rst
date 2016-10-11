@@ -1,3 +1,6 @@
+Extensions
+==========
+
 HaaS supports a simple extension mechanism, to allow external plugins
 to implement things we don't want in the HaaS core. One obvious example
 of this is drivers.
@@ -36,6 +39,17 @@ Extension-approved components currently include:
 * From haas.model:
     * db.Model
     * Switch
-* The migration framework; see ``migrations.md`` for an overview.
+* The migration framework; see `Migrations <migrations.html>`_ for an overview.
 
 See the docstrings for each component for details.
+
+Additionally, extensions may add wsgi middleware to the flask
+application from their ``setup`` function. For example:
+
+    app.wsgi_app = my_middleware(app.wsgi_app)
+
+Note that the order in which the ``setup`` functions are run is not
+defined. As such, if multiple extensions add wsgi middleware the
+order in which they are applied is also undefined. Using more than one
+such extension is discouraged. An ordering *may* be defined in the
+future.

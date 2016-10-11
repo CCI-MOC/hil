@@ -1,4 +1,4 @@
-#HaaS API
+# HaaS API
 
 First describe the main objects, the users and security model, then
 then the actual API.
@@ -71,7 +71,7 @@ one exception is NICs, where the label is unique only on a per-node basis.
 
     # Headnode operations
 
-    headnode_create             <hn_label> <project_label>
+    headnode_create             <hn_label> <project_label> <base_img>
     headnode_delete             <hn_label>
 
     headnode_start              <hn_label>
@@ -118,7 +118,7 @@ one exception is NICs, where the label is unique only on a per-node basis.
     project_add_user            <project_label> <user_label>
     project_remove_user         <project_label> <user_label>
 
-# Administrative operations to describe physical configuration
+## Administrative operations to describe physical configuration
 
     list_projects
 

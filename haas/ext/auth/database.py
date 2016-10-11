@@ -19,7 +19,7 @@ class User(db.Model):
     """A user of the HaaS.
 
     A user can be a member of any number of projects, which grants them access
-    to that process's resources. A user may also be flagged as an administrator.
+    to that process's resources. A user may also be flagged as an administrator
     """
     id = db.Column(db.Integer, primary_key=True)
     label = db.Column(db.String, nullable=False)
@@ -49,7 +49,8 @@ class User(db.Model):
         self.hashed_password = sha512_crypt.encrypt(password)
 
 
-# A joining table for users and projects, which have a many to many relationship:
+# A joining table for users and projects, which have a many to many
+# relationship:
 user_projects = db.Table('user_projects',
                          db.Column('user_id', db.ForeignKey('user.id')),
                          db.Column('project_id', db.ForeignKey('project.id')))
@@ -105,7 +106,7 @@ def user_add_project(user, project):
     user = api._must_find(User, user)
     project = api._must_find(model.Project, project)
     if project in user.projects:
-        raise DuplicateError('User %s is already in project %s'%
+        raise DuplicateError('User %s is already in project %s' %
                              (user.label, project.label))
     user.projects.append(project)
     db.session.commit()
@@ -124,7 +125,7 @@ def user_remove_project(user, project):
     user = api._must_find(User, user)
     project = api._must_find(model.Project, project)
     if project not in user.projects:
-        raise NotFoundError("User %s is not in project %s"%
+        raise NotFoundError("User %s is not in project %s" %
                             (user.label, project.label))
     user.projects.remove(project)
     db.session.commit()

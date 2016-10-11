@@ -47,22 +47,21 @@ class MockObm(Obm):
             'password': basestring,
             }).validate(kwargs)
 
-
     @no_dry_run
     def power_cycle(self):
-	return
+        return
 
     @no_dry_run
     def power_off(self):
-	return
+        return
 
     @no_dry_run
     def start_console(self):
-	return
+        return
 
     @no_dry_run
     def stop_console(self):
-	return
+        return
 
     @no_dry_run
     def delete_console(self):
@@ -70,10 +69,8 @@ class MockObm(Obm):
 
     @no_dry_run
     def get_console(self):
-	return
+        return
 
     @no_dry_run
     def get_console_log_filename(self):
-	return
-
-
+        return

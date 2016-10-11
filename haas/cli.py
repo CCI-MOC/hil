@@ -58,12 +58,12 @@ class HTTPClient(object):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def request(method, url, data=None):
+    def request(method, url, data=None, params=None):
         """Make an HTTP request
 
-        Makes an HTTP request on URL `url` with method `method` and request
-        body `data` (if supplied). May add authentication or other
-        backend-specific information to the request.
+        Makes an HTTP request on URL `url` with method `method`, request body
+        `data`(if supplied) and query parameter `params`(if supplied). May add
+        authentication or other backend-specific information to the request.
 
         Parameters
         ----------
@@ -74,6 +74,9 @@ class HTTPClient(object):
             The URL to act on
         data : str, optional
             The body of the request
+        params : dictionary, optional
+            The query parameter, e.g. {'key1': 'val1', 'key2': 'val2'},
+            dictionary key can't be `None`
 
         Returns
         -------
@@ -92,8 +95,51 @@ class RequestsHTTPClient(requests.Session, HTTPClient):
     """
 
 
+class KeystoneHTTPClient(HTTPClient):
+    """An HTTPClient which authenticates with Keystone.
+
+    This uses an instance of python-keystoneclient's Session class
+    to do its work.
+    """
+
+    def __init__(self, session):
+        """Create a KeystoneHTTPClient
+
+        Parameters
+        ----------
+
+        session : keystoneauth1.Session
+            A keystone session to make the requests with
+        """
+        self.session = session
+
+    def request(self, method, url, data=None, params=None):
+        """Make an HTTP request using keystone for authentication.
+
+        Smooths over the differences between python-keystoneclient's
+        request method that specified by HTTPClient
+        """
+        # We have to import this here, since we can't assume the library
+        # is available from global scope.
+        from keystoneauth1.exceptions.http import HttpError
+
+        try:
+            # The order of these parameters is different that what
+            # we expect, but the names are the same:
+            return self.session.request(method=method,
+                                        url=url,
+                                        data=data,
+                                        params=params)
+        except HttpError as e:
+            return e.response
+
+
 # An instance of HTTPClient, which will be used to make the request.
 http_client = None
+
+
+class InvalidAPIArgumentsException(Exception):
+    pass
 
 
 def cmd(f):
@@ -112,7 +158,9 @@ def cmd(f):
             # TODO TypeError is probably too broad here.
             sys.stderr.write('Invalid arguements.  Usage:\n')
             help(f.__name__)
+            raise InvalidAPIArgumentsException()
     command_dict[f.__name__] = wrapped
+
     def get_usage(f):
         args, varargs, _, _ = inspect.getargspec(f)
         showee = [f.__name__] + ['<%s>' % name for name in args]
@@ -133,7 +181,16 @@ def setup_http_client():
     1. If the environment variables HAAS_USERNAME and HAAS_PASSWORD
        are defined, it will use HTTP basic auth, with the corresponding
        user name and password.
-    2. Oterwise, do not supply authentication information.
+    2. If the `python-keystoneclient` library is installed, and the
+       environment variables:
+
+           * OS_AUTH_URL
+           * OS_USERNAME
+           * OS_PASSWORD
+           * OS_PROJECT_NAME
+
+       are defined, Keystone is used.
+    3. Oterwise, do not supply authentication information.
 
     This may be extended with other backends in the future.
     """
@@ -145,9 +202,35 @@ def setup_http_client():
         http_client = RequestsHTTPClient()
         http_client.auth = (basic_username, basic_password)
         return
-    # Fall back to no authentication:
-    http_client = RequestsHTTPClient()
+    # Next try keystone:
+    try:
+        from keystoneauth1.identity import v3
+        from keystoneauth1 import session
+        os_auth_url = os.getenv('OS_AUTH_URL')
+        os_password = os.getenv('OS_PASSWORD')
+        os_username = os.getenv('OS_USERNAME')
+        os_user_domain_id = os.getenv('OS_USER_DOMAIN_ID') or 'default'
+        os_project_name = os.getenv('OS_PROJECT_NAME')
+        os_project_domain_id = os.getenv('OS_PROJECT_DOMAIN_ID') or 'default'
+        if None in (os_auth_url, os_username, os_password, os_project_name):
+            raise KeyError("Required openstack environment variable not set.")
+        auth = v3.Password(auth_url=os_auth_url,
+                           username=os_username,
+                           password=os_password,
+                           project_name=os_project_name,
+                           user_domain_id=os_user_domain_id,
+                           project_domain_id=os_project_domain_id)
+        sess = session.Session(auth=auth)
+        http_client = KeystoneHTTPClient(sess)
+        return
+    except (ImportError, KeyError):
+        pass
+    # Finally, fall back to no authentication:
+    http_client = requests.Session()
 
+
+class FailedAPICallException(Exception):
+    pass
 
 
 def check_status_code(response):
@@ -155,8 +238,10 @@ def check_status_code(response):
         sys.stderr.write('Unexpected status code: %d\n' % response.status_code)
         sys.stderr.write('Response text:\n')
         sys.stderr.write(response.text + "\n")
+        raise FailedAPICallException()
     else:
         sys.stdout.write(response.text + "\n")
+
 
 # TODO: This function's name is no longer very accurate.  As soon as it is
 # safe, we should change it to something more generic.
@@ -167,42 +252,45 @@ def object_url(*args):
         url = cfg.get('client', 'endpoint')
 
     for arg in args:
-        url += '/' + urllib.quote(arg,'')
+        url += '/' + urllib.quote(arg, '')
     return url
 
-def do_request(method, url, data={}):
-    """Helper function for making HTTP requests against the API.
 
-    Uses the global variable `http_client` to make the request.
-
-    Arguments:
-
-        `method` - the http method, as a string: 'GET', 'PUT', 'POST'...
-        `url` - The url to make the request to
-        `data` - the body of the request.
-    """
-    return check_status_code(http_client.request(method, url, data=data))
+# Helper functions for making HTTP requests against the API.
+#    Uses the global variable `http_client` to make the request.
+#
+#    Arguments:
+#
+#        `url` - The url to make the request to
+#        `data` - the body of the request (for PUT, POST and DELETE)
+#        `params` - query parameters (for GET)
 
 def do_put(url, data={}):
-    return do_request('PUT', url, data=json.dumps(data))
+    check_status_code(http_client.request('PUT', url, data=json.dumps(data)))
+
 
 def do_post(url, data={}):
-    return do_request('POST', url, data=json.dumps(data))
+    check_status_code(http_client.request('POST', url, data=json.dumps(data)))
 
-def do_get(url):
-    return do_request('GET', url)
+
+def do_get(url, params=None):
+    check_status_code(http_client.request('GET', url, params=params))
+
 
 def do_delete(url):
-    return do_request('DELETE', url)
+    check_status_code(http_client.request('DELETE', url))
+
 
 @cmd
 def serve(port):
     try:
-        port = schema.And(schema.Use(int), lambda n: MIN_PORT_NUMBER <= n <= MAX_PORT_NUMBER).validate(port)
+        port = schema.And(
+            schema.Use(int),
+            lambda n: MIN_PORT_NUMBER <= n <= MAX_PORT_NUMBER).validate(port)
     except schema.SchemaError:
-	sys.exit('Error: Invaid port. Must be in the range 1-65535.')
+        sys.exit('Error: Invaid port. Must be in the range 1-65535.')
     except Exception as e:
-	sys.exit('Unxpected Error!!! \n %s' % e)
+        sys.exit('Unxpected Error!!! \n %s' % e)
 
     """Start the HaaS API server"""
     if cfg.has_option('devel', 'debug'):
@@ -232,6 +320,7 @@ def serve_networks():
             pass
         sleep(2)
 
+
 @cmd
 def user_create(username, password, is_admin):
     """Create a user <username> with password <password>.
@@ -247,6 +336,7 @@ def user_create(username, password, is_admin):
         'is_admin': is_admin == 'admin',
     })
 
+
 @cmd
 def network_create(network, creator, access, net_id):
     """Create a link-layer <network>.  See docs/networks.md for details"""
@@ -254,6 +344,7 @@ def network_create(network, creator, access, net_id):
     do_put(url, data={'creator': creator,
                       'access': access,
                       'net_id': net_id})
+
 
 @cmd
 def network_create_simple(network, project):
@@ -263,11 +354,13 @@ def network_create_simple(network, project):
                       'access': project,
                       'net_id': ""})
 
+
 @cmd
 def network_delete(network):
     """Delete a <network>"""
     url = object_url('network', network)
     do_delete(url)
+
 
 @cmd
 def user_delete(username):
@@ -275,11 +368,13 @@ def user_delete(username):
     url = object_url('/auth/basic/user', username)
     do_delete(url)
 
+
 @cmd
 def list_projects():
     """List all projects"""
     q = C.project.list()
     sys.stdout.write('%s Projects :    ' %len(q) + " ".join(q) + '\n')
+
 
 @cmd
 def user_add_project(user, project):
@@ -287,11 +382,13 @@ def user_add_project(user, project):
     url = object_url('/auth/basic/user', user, 'add_project')
     do_post(url, data={'project': project})
 
+
 @cmd
 def user_remove_project(user, project):
     """Remove <user> from <project>"""
     url = object_url('/auth/basic/user', user, 'remove_project')
     do_post(url, data={'project': project})
+
 
 @cmd
 def project_create(project):
@@ -299,11 +396,13 @@ def project_create(project):
     url = object_url('project', project)
     do_put(url)
 
+
 @cmd
 def project_delete(project):
     """Delete <project>"""
     url = object_url('project', project)
     do_delete(url)
+
 
 @cmd
 def headnode_create(headnode, project, base_img):
@@ -312,11 +411,13 @@ def headnode_create(headnode, project, base_img):
     do_put(url, data={'project': project,
                       'base_img': base_img})
 
+
 @cmd
 def headnode_delete(headnode):
     """Delete <headnode>"""
     url = object_url('headnode', headnode)
     do_delete(url)
+
 
 @cmd
 def project_connect_node(project, node):
@@ -324,11 +425,13 @@ def project_connect_node(project, node):
     url = object_url('project', project, 'connect_node')
     do_post(url, data={'node': node})
 
+
 @cmd
 def project_detach_node(project, node):
     """Detach <node> from <project>"""
     url = object_url('project', project, 'detach_node')
     do_post(url, data={'node': node})
+
 
 @cmd
 def headnode_start(headnode):
@@ -336,42 +439,43 @@ def headnode_start(headnode):
     url = object_url('headnode', headnode, 'start')
     do_post(url)
 
+
 @cmd
 def headnode_stop(headnode):
     """Stop <headnode>"""
     url = object_url('headnode', headnode, 'stop')
     do_post(url)
 
+
 @cmd
 def node_register(node, subtype, *args):
     """Register a node named <node>, with the given type
-	if obm is of type: ipmi then provide arguments
-	"ipmi", <hostname>, <ipmi-username>, <ipmi-password>
+        if obm is of type: ipmi then provide arguments
+        "ipmi", <hostname>, <ipmi-username>, <ipmi-password>
     """
     obm_api = "http://schema.massopencloud.org/haas/v0/obm/"
-    obm_types = [ "ipmi", "mock" ]
-    #Currently the classes are hardcoded
-    #In principle this should come from api.py
-    #In future an api call to list which plugins are active will be added.
-
+    obm_types = ["ipmi", "mock"]
+    # Currently the classes are hardcoded
+    # In principle this should come from api.py
+    # In future an api call to list which plugins are active will be added.
 
     if subtype in obm_types:
-	if len(args) == 3:
-	    obminfo = {"type": obm_api+subtype, "host": args[0],
-	    		"user": args[1], "password": args[2]
-	    	      }
-	else:
-	    sys.stderr.write('ERROR: subtype '+subtype+' requires exactly 3 arguments\n')
-	    sys.stderr.write('<hostname> <ipmi-username> <ipmi-password>\n')
-	    return
+        if len(args) == 3:
+            obminfo = {"type": obm_api + subtype, "host": args[0],
+                       "user": args[1], "password": args[2]
+                       }
+        else:
+            sys.stderr.write('ERROR: subtype ' + subtype +
+                             ' requires exactly 3 arguments\n')
+            sys.stderr.write('<hostname> <ipmi-username> <ipmi-password>\n')
+            return
     else:
-	sys.stderr.write('ERROR: Wrong OBM subtype supplied\n')
-	sys.stderr.write('Supported OBM sub-types: ipmi, mock\n')
-	return
+        sys.stderr.write('ERROR: Wrong OBM subtype supplied\n')
+        sys.stderr.write('Supported OBM sub-types: ipmi, mock\n')
+        return
 
     url = object_url('node', node)
     do_put(url, data={"obm": obminfo})
-
 
 
 @cmd
@@ -380,11 +484,13 @@ def node_delete(node):
     url = object_url('node', node)
     do_delete(url)
 
+
 @cmd
 def node_power_cycle(node):
     """Power cycle <node>"""
     url = object_url('node', node, 'power_cycle')
     do_post(url)
+
 
 @cmd
 def node_power_off(node):
@@ -392,11 +498,15 @@ def node_power_off(node):
     url = object_url('node', node, 'power_off')
     do_post(url)
 
+
 @cmd
 def node_register_nic(node, nic, macaddr):
-    """Register existence of a <nic> with the given <macaddr> on the given <node>"""
+    """
+    Register existence of a <nic> with the given <macaddr> on the given <node>
+    """
     url = object_url('node', node, 'nic', nic)
-    do_put(url, data={'macaddr':macaddr})
+    do_put(url, data={'macaddr': macaddr})
+
 
 @cmd
 def node_delete_nic(node, nic):
@@ -404,17 +514,20 @@ def node_delete_nic(node, nic):
     url = object_url('node', node, 'nic', nic)
     do_delete(url)
 
+
 @cmd
 def headnode_create_hnic(headnode, nic):
     """Create a <nic> on the given <headnode>"""
     url = object_url('headnode', headnode, 'hnic', nic)
     do_put(url)
 
+
 @cmd
 def headnode_delete_hnic(headnode, nic):
     """Delete a <nic> on a <headnode>"""
     url = object_url('headnode', headnode, 'hnic', nic)
     do_delete(url)
+
 
 @cmd
 def node_connect_network(node, nic, network, channel):
@@ -423,17 +536,20 @@ def node_connect_network(node, nic, network, channel):
     do_post(url, data={'network': network,
                        'channel': channel})
 
+
 @cmd
 def node_detach_network(node, nic, network):
     """Detach <node> from the given <network> on the given <nic>"""
     url = object_url('node', node, 'nic', nic, 'detach_network')
     do_post(url, data={'network': network})
 
+
 @cmd
 def headnode_connect_network(headnode, nic, network):
     """Connect <headnode> to <network> on given <nic>"""
     url = object_url('headnode', headnode, 'hnic', nic, 'connect_network')
-    do_post(url, data={'network':network})
+    do_post(url, data={'network': network})
+
 
 @cmd
 def headnode_detach_network(headnode, hnic):
@@ -441,13 +557,6 @@ def headnode_detach_network(headnode, hnic):
     url = object_url('headnode', headnode, 'hnic', hnic, 'detach_network')
     do_post(url)
 
-@cmd
-def switch_register(switch, subtype, *args):
-    """Register a switch with name <switch> and
-    <subtype>, <hostname>, <username>,  <password>
-    eg. haas switch_register mock03 mock mockhost01 mockuser01 mockpass01
-    """
-    switch_api = "http://schema.massopencloud.org/haas/v0/switches/"
 
 @cmd
 def switch_register(switch, subtype, *args):
@@ -455,45 +564,57 @@ def switch_register(switch, subtype, *args):
     <subtype>, <hostname>, <username>,  <password>
     eg. haas switch_register mock03 mock mockhost01 mockuser01 mockpass01
 
-    FIXME: current design needs to change. CLI should not know about every backend.
-    ideally, this should be taken care of in the driver itself or
+    FIXME: current design needs to change. CLI should not know about every
+    backend. Ideally, this should be taken care of in the driver itself or
     client library (work-in-progress) should manage it.
     """
     switch_api = "http://schema.massopencloud.org/haas/v0/switches/"
     if subtype == "nexus":
         if len(args) == 4:
-            switchinfo = { "type": switch_api+subtype, "hostname": args[0],
-                        "username": args[1], "password": args[2], "dummy_vlan": args[3] }
+            switchinfo = {
+                "type": switch_api + subtype,
+                "hostname": args[0],
+                "username": args[1],
+                "password": args[2],
+                "dummy_vlan": args[3]}
         else:
-            sys.stderr.write('ERROR: subtype '+subtype+' requires exactly 4 arguments\n')
-            sys.stderr.write('<hostname> <username> <password> <dummy_vlan_no>\n')
+            sys.stderr.write(_('ERROR: subtype ' + subtype +
+                               ' requires exactly 4 arguments\n'
+                               '<hostname> <username> <password>'
+                               '<dummy_vlan_no>\n'))
             return
     elif subtype == "mock":
         if len(args) == 3:
-            switchinfo = { "type": switch_api+subtype, "hostname": args[0],
-                        "username": args[1], "password": args[2] }
+            switchinfo = {"type": switch_api + subtype, "hostname": args[0],
+                          "username": args[1], "password": args[2]}
         else:
-            sys.stderr.write('ERROR: subtype '+subtype+' requires exactly 3 arguments\n')
+            sys.stderr.write('ERROR: subtype ' + subtype +
+                             ' requires exactly 3 arguments\n')
             sys.stderr.write('<hostname> <username> <password>\n')
             return
     elif subtype == "powerconnect55xx":
         if len(args) == 3:
-            switchinfo = { "type": switch_api+subtype, "hostname": args[0],
-                        "username": args[1], "password": args[2] }
+            switchinfo = {"type": switch_api + subtype, "hostname": args[0],
+                          "username": args[1], "password": args[2]}
         else:
-            sys.stderr.write('ERROR: subtype '+subtype+' requires exactly 3 arguments\n')
-            sys.stderr.write('<hostname> <username> <password>\n')
+            sys.stderr.write(_('ERROR: subtype ' + subtype +
+                               ' requires exactly 3 arguments\n'
+                               '<hostname> <username> <password>\n'))
             return
     elif subtype == "brocade":
         if len(args) == 4:
-            switchinfo = { "type": switch_api+subtype, "hostname": args[0],
-                           "username": args[1], "password": args[2],
-                           "interface_type": args[3] }
+            switchinfo = {"type": switch_api + subtype, "hostname": args[0],
+                          "username": args[1], "password": args[2],
+                          "interface_type": args[3]}
         else:
-            sys.stderr.write('ERROR: subtype '+ subtype+' requires exactly 4 arguments\n')
-            sys.stderr.write('<hostname> <username> <password> <interface_type>\n')
-            sys.stderr.write('NOTE: interface_type refers to the speed of the switchports\n')
-            sys.stderr.write('ex. TenGigabitEthernet, FortyGigabitEthernet, etc.\n')
+            sys.stderr.write(_('ERROR: subtype ' + subtype +
+                               ' requires exactly 4 arguments\n'
+                               '<hostname> <username> <password> '
+                               '<interface_type>\n'
+                               'NOTE: interface_type refers '
+                               'to the speed of the switchports\n '
+                               'ex. TenGigabitEthernet, FortyGigabitEthernet, '
+                               'etc.\n'))
             return
     else:
         sys.stderr.write('ERROR: Invalid subtype supplied\n')
@@ -501,11 +622,13 @@ def switch_register(switch, subtype, *args):
     url = object_url('switch', switch)
     do_put(url, data=switchinfo)
 
+
 @cmd
 def switch_delete(switch):
     """Delete a <switch> """
     url = object_url('switch', switch)
     do_delete(url)
+
 
 @cmd
 def list_switches():
@@ -515,11 +638,13 @@ def list_switches():
 #    url = object_url('switches')
 #    do_get(url)
 
+
 @cmd
 def port_register(switch, port):
     """Register a <port> with <switch> """
     url = object_url('switch', switch, 'port', port)
     do_put(url)
+
 
 @cmd
 def port_delete(switch, port):
@@ -527,17 +652,20 @@ def port_delete(switch, port):
     url = object_url('switch', switch, 'port', port)
     do_delete(url)
 
+
 @cmd
 def port_connect_nic(switch, port, node, nic):
     """Connect a <port> on a <switch> to a <nic> on a <node>"""
     url = object_url('switch', switch, 'port', port, 'connect_nic')
     do_post(url, data={'node': node, 'nic': nic})
 
+
 @cmd
 def port_detach_nic(switch, port):
     """Detach a <port> on a <switch> from whatever's connected to it"""
     url = object_url('switch', switch, 'port', port, 'detach_nic')
     do_post(url)
+
 
 @cmd
 def list_nodes(is_free):
@@ -564,6 +692,7 @@ def list_project_nodes(project):
 #    url = object_url('project', project, 'nodes')
 #    do_get(url)
 
+
 @cmd
 def list_project_networks(project):
     """List all networks attached to a <project>"""
@@ -572,6 +701,14 @@ def list_project_networks(project):
 #    url = object_url('project', project, 'networks')
 #    do_get(url)
 
+
+@cmd
+def show_switch(switch):
+    """Display information about <switch>"""
+    url = object_url('switch', switch)
+    do_get(url)
+
+
 @cmd
 def show_network(network):
     """Display information about <network>"""
@@ -579,6 +716,7 @@ def show_network(network):
     sys.stdout.write("Networks allocated to {}\t:   {}\n".format(project, " ".join(q)))
 #    url = object_url('network', network)
 #    do_get(url)
+
 
 @cmd
 def show_node(node):
@@ -589,11 +727,13 @@ def show_node(node):
     for item in q.items():
         sys.stdout.write("{}\t  :  {}\n".format(item[0], item[1]))
 
+
 @cmd
 def list_project_headnodes(project):
     """List all headnodes attached to a <project>"""
     url = object_url('project', project, 'headnodes')
     do_get(url)
+
 
 @cmd
 def show_headnode(headnode):
@@ -601,11 +741,13 @@ def show_headnode(headnode):
     url = object_url('headnode', headnode)
     do_get(url)
 
+
 @cmd
 def list_headnode_images():
     """Display registered headnode images"""
     url = object_url('headnode_images')
     do_get(url)
+
 
 @cmd
 def show_console(node):
@@ -613,17 +755,20 @@ def show_console(node):
     url = object_url('node', node, 'console')
     do_get(url)
 
+
 @cmd
 def start_console(node):
     """Start logging console output from <node>"""
     url = object_url('node', node, 'console')
     do_put(url)
 
+
 @cmd
 def stop_console(node):
     """Stop logging console output from <node> and delete the log"""
     url = object_url('node', node, 'console')
     do_delete(url)
+
 
 @cmd
 def create_admin_user(username, password):
@@ -638,7 +783,8 @@ def create_admin_user(username, password):
     the API.
     """
     if not config.cfg.has_option('extensions', 'haas.ext.auth.database'):
-        sys.exit("'make_inital_admin' is only valid with the database auth backend.")
+        sys.exit("'make_inital_admin' is only valid with the database auth"
+                 " backend.")
     from haas import model
     from haas.model import db
     from haas.ext.auth.database import User
@@ -646,9 +792,12 @@ def create_admin_user(username, password):
     db.session.add(User(label=username, password=password, is_admin=True))
     db.session.commit()
 
+
 @cmd
 def help(*commands):
-    """Display usage of all following <commands>, or of all commands if none are given"""
+    """Display usage of all following <commands>, or of all commands if none
+    are given
+    """
     if not commands:
         sys.stdout.write('Usage: %s <command> <arguments...> \n' % sys.argv[0])
         sys.stdout.write('Where <command> is one of:\n')
@@ -674,4 +823,9 @@ def main():
         sys.exit(1)
     else:
         setup_http_client()
-        command_dict[sys.argv[1]](*sys.argv[2:])
+        try:
+            command_dict[sys.argv[1]](*sys.argv[2:])
+        except FailedAPICallException:
+            sys.exit(1)
+        except InvalidAPIArgumentsException:
+            sys.exit(2)

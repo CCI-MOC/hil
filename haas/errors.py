@@ -60,12 +60,12 @@ class ServerError(InternalServerError):
 
 class NotFoundError(APIError):
     """An exception indicating that a given resource does not exist."""
-    status_code = 404 # Not Found
+    status_code = 404  # Not Found
 
 
 class DuplicateError(APIError):
     """An exception indicating that a given resource already exists."""
-    status_code = 409 # Conflict
+    status_code = 409  # Conflict
 
 
 class AllocationError(APIError):
@@ -80,7 +80,7 @@ class ProjectMismatchError(APIError):
     """An exception indicating that the resources given don't belong to the
     same project.
     """
-    status_code = 409 # Conflict
+    status_code = 409  # Conflict
 
 
 class AuthorizationError(APIError):
@@ -92,7 +92,7 @@ class BlockedError(APIError):
     some other change.  For example, deletion is blocked until the components
     are deleted, and possibly until the dirty flag is cleared as well.
     """
-    status_code = 409 # Conflict
+    status_code = 409  # Conflict
 
 
 class IllegalStateError(APIError):
@@ -101,7 +101,7 @@ class IllegalStateError(APIError):
     The request might be perfectly valid in another context. For example,
     trying to remove a nic from a running headnode might raise this error.
     """
-    status_code = 409 # Conflict
+    status_code = 409  # Conflict
 
 
 class OBMError(ServerError):

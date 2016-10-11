@@ -26,7 +26,6 @@ dry_run=True
 [extensions]
 haas.ext.switches.mock =
 haas.ext.obm.mock =
-haas.ext.auth.null =
 
 haas.ext.network_allocators.null =
 
@@ -35,6 +34,28 @@ haas.ext.network_allocators.null =
 # null allocator extension above, and uncomment the following:
 #
 # haas.ext.network_allocators.vlan_pool =
-# 
+#
 # [haas.ext.network_allocators.vlan_pool]
 # vlans = 100-200, 300-500
+
+haas.ext.auth.null =
+# Again, depending on what you're doing, you may want to change this to a
+# diffefrent authentication backend:
+# haas.ext.auth.database =
+# haas.ext.auth.keystone =
+#
+# If using the keystone backend, you'll also need to fill out this section:
+# [haas.ext.auth.keystone]
+# # This is equivalent to the [keystone_auth] section described at:
+# # http://docs.openstack.org/developer/keystonemiddleware/middlewarearchitecture.html
+# #
+# # Below is a reasoanble configuration *for development*. It is not suitable
+# # for production, If for no other reason than because it forces plaintext
+# # (non-TLS) connections to keystone:
+# auth_url = http://127.0.0.1:35357/v3
+# auth_protocol = http
+# username = admin
+# password = s3cr3t
+# project_name = admin
+# admin_user = admin
+# admin_password = s3cr3t
