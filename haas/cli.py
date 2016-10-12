@@ -323,10 +323,10 @@ def user_create(username, password, is_admin):
 
 
 @cmd
-def network_create(network, creator, access, net_id):
+def network_create(network, owner, access, net_id):
     """Create a link-layer <network>.  See docs/networks.md for details"""
     url = object_url('network', network)
-    do_put(url, data={'creator': creator,
+    do_put(url, data={'owner': owner,
                       'access': access,
                       'net_id': net_id})
 
@@ -335,7 +335,7 @@ def network_create(network, creator, access, net_id):
 def network_create_simple(network, project):
     """Create <network> owned by project.  Specific case of network_create"""
     url = object_url('network', network)
-    do_put(url, data={'creator': project,
+    do_put(url, data={'owner': project,
                       'access': project,
                       'net_id': ""})
 
@@ -373,6 +373,20 @@ def user_remove_project(user, project):
     """Remove <user> from <project>"""
     url = object_url('/auth/basic/user', user, 'remove_project')
     do_post(url, data={'project': project})
+
+
+@cmd
+def network_grant_project_access(project, network):
+    """Add <project> to <network> access"""
+    url = object_url('network', network, 'access', project)
+    do_put(url)
+
+
+@cmd
+def network_revoke_project_access(project, network):
+    """Remove <project> from <network> access"""
+    url = object_url('network', network, 'access', project)
+    do_delete(url)
 
 
 @cmd
@@ -651,6 +665,19 @@ def port_detach_nic(switch, port):
 
 
 @cmd
+def list_network_attachments(network, project):
+    """List nodes connected to a network
+    <project> may be either "all" or a specific project name.
+    """
+    url = object_url('network', network, 'attachments')
+
+    if project == "all":
+        do_get(url)
+    else:
+        do_get(url, data={'project': project})
+
+
+@cmd
 def list_nodes(is_free):
     """List all nodes or all free nodes
 
@@ -659,7 +686,6 @@ def list_nodes(is_free):
     """
     if is_free not in ('all', 'free'):
         raise TypeError("is_free must be either 'all' or 'free'")
-
     url = object_url('nodes', is_free)
     do_get(url)
 
@@ -682,6 +708,13 @@ def list_project_networks(project):
 def show_switch(switch):
     """Display information about <switch>"""
     url = object_url('switch', switch)
+    do_get(url)
+
+
+@cmd
+def list_networks():
+    """List all networks"""
+    url = object_url('networks')
     do_get(url)
 
 

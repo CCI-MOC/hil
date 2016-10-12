@@ -302,6 +302,8 @@ def additional_db():
     initial_db()
 
     switch = db.session.query(Switch).filter_by(label="stock_switch_0").one()
+    manhattan = db.session.query(Project).filter_by(label="manhattan").one()
+    runway = db.session.query(Project).filter_by(label="runway").one()
 
     with app.app_context():
         for node_label in ['runway_node_0', 'runway_node_1',
@@ -315,6 +317,27 @@ def additional_db():
             port.nic = nic
             nic.port = port
 
+        networks = [
+            {
+                'owner': None,
+                'access': [manhattan, runway],
+                'allocated': False,
+                'network_id': 'manhattan_runway_provider_chan',
+                'label': 'manhattan_runway_provider',
+            },
+            {
+                'owner': manhattan,
+                'access': [manhattan, runway],
+                'allocated': True,
+                'label': 'manhattan_runway_pxe',
+            },
+        ]
+
+        for net in networks:
+            if net['allocated']:
+                net['network_id'] = \
+                    get_network_allocator().get_new_network_id()
+            db.session.add(Network(**net))
             db.session.add(node)
 
         db.session.add(switch)
@@ -326,6 +349,9 @@ def initial_db():
 
     This allows us to avoid some boilerplate in tests which need a few objects
     in the database in order to work.
+
+    Is static to allow database migrations to be tested, if new objects need
+    to be added they should be included in additional_db not initial_db.
 
     Note that this fixture requires the use of the following extensions:
 
@@ -354,49 +380,49 @@ def initial_db():
 
         networks = [
             {
-                'creator': None,
-                'access': None,
+                'owner': None,
+                'access': [],
                 'allocated': True,
                 'label': 'stock_int_pub',
             },
             {
-                'creator': None,
-                'access': None,
+                'owner': None,
+                'access': [],
                 'allocated': False,
                 'network_id': 'ext_pub_chan',
                 'label': 'stock_ext_pub',
             },
             {
-                # For some tests, we want things to initial be attached to a
+                # For some tests, we want things to initially be attached to a
                 # network. This one serves that purpose; using the others would
                 # interfere with some of the network_delete tests.
-                'creator': None,
-                'access': None,
+                'owner': None,
+                'access': [],
                 'allocated': True,
                 'label': 'pub_default',
             },
             {
-                'creator': runway,
-                'access': runway,
+                'owner': runway,
+                'access': [runway],
                 'allocated': True,
                 'label': 'runway_pxe'
             },
             {
-                'creator': None,
-                'access': runway,
+                'owner': None,
+                'access': [runway],
                 'allocated': False,
                 'network_id': 'runway_provider_chan',
                 'label': 'runway_provider',
             },
             {
-                'creator': manhattan,
-                'access': manhattan,
+                'owner': manhattan,
+                'access': [manhattan],
                 'allocated': True,
                 'label': 'manhattan_pxe'
             },
             {
-                'creator': None,
-                'access': manhattan,
+                'owner': None,
+                'access': [manhattan],
                 'allocated': False,
                 'network_id': 'manhattan_provider_chan',
                 'label': 'manhattan_provider',

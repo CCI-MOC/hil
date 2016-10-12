@@ -157,7 +157,7 @@ class TestBrocade(object):
     @pytest.fixture
     def network(self):
         project = model.Project('anvil-nextgen')
-        return model.Network(project, project, True, '102', 'hammernet')
+        return model.Network(project, [project], True, '102', 'hammernet')
 
     def test_get_port_networks(self, switch):
         with requests_mock.mock() as mock:

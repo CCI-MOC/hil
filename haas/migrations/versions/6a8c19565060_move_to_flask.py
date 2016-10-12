@@ -14,7 +14,7 @@ from alembic import op
 # revision identifiers, used by Alembic.
 revision = '6a8c19565060'
 down_revision = None
-branch_labels = ('haas',)
+branch_labels = None
 
 
 def upgrade():
