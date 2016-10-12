@@ -271,37 +271,78 @@ class Test_project:
     """ Tests project related client calls."""
 
     def test_list_projects(self):
+        """ test for getting list of project """
         result = C.project.list()
         assert result == [u'proj-01', u'proj-02', u'proj-03']
 
     def test_list_nodes_inproject(self):
+        """ test for getting list of nodes connected to a project. """
         result01 = C.project.nodes_in('proj-01')
         result02 = C.project.nodes_in('proj-02')
         assert result01 == [u'node-01']
         assert result02 == [u'node-02', u'node-04']
 
     def test_list_networks_inproject(self):
+        """ test for getting list of networks connected to a project. """
         result = C.project.networks_in('proj-01')
         assert result == [u'net-01', u'net-02', u'net-03']
 
     def test_project_create(self):
+        """ test for creating project. """
         result = C.project.create('dummy-01')
         assert result == None
 
     def test_duplicate_project_create(self):
+        """ test for catching duplicate name while creating new project. """
         C.project.create('dummy-01')
         with pytest.raises(client_errors.DuplicateError):
             C.project.create('dummy-01')
 
     def test_project_delete(self):
+        """ test for deleting project. """
         C.project.create('dummy-02')
         result = C.project.delete('dummy-02')
         assert result == None
 
     def test_error_project_delete(self):
+        """ test to capture error condition in project delete. """
         with pytest.raises(client_errors.NotFoundError):
             C.project.delete('dummy-03')
 
+    def test_project_connect_node(self):
+        """ test for connecting node to project. """
+        C.project.create('abcd')
+        result = C.project.connect('abcd', 'node-06')
+        assert result == None
+
+    def test_project_connect_node_duplicate(self):
+        """ test for erronous reconnecting node to project. """
+        C.project.create('abcd')
+        C.project.connect('abcd', 'node-06')
+        with pytest.raises(client_errors.DuplicateError):
+            C.project.connect('abcd', 'node-06')
+
+    def test_project_connect_node_nosuchobject(self):
+        """ test for connecting no such node or project """
+        C.project.create('abcd')
+        with pytest.raises(client_errors.NotFoundError):
+            C.project.connect('abcd', 'no-such-node')
+        with pytest.raises(client_errors.NotFoundError):
+            C.project.connect('no-such-project', 'node-06')
+
+    def test_project_disconnect_node(self):
+        """ Test for correctly disconnecting node from project."""
+        result = C.project.disconnect('proj-01', 'node-01')
+        assert result == None
+        # ?? This tests takes same time as sum of all the other tests ??
+
+    def test_project_disconnect_node_nosuchobject(self):
+        """ Test for errors while disconnecting node from project."""
+        C.project.create('abcd')
+        with pytest.raises(client_errors.NotFoundError):
+            C.project.disconnect('abcd', 'no-such-node')
+        with pytest.raises(client_errors.NotFoundError):
+            C.project.disconnect('no-such-project', 'node-06')
 
 @pytest.mark.usefixtures("create_setup")
 class Test_switch:

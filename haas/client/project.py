@@ -64,12 +64,36 @@ class Project(ClientBase):
             elif q.status_code == 404:
                 raise NotFoundError("Deletion failed. Project does not exist.")
 
-#        def add_node(self, project_name, node_name):
-#            """ Adds a node to a project. """
-#            self.project_name = project_name
-#            self.node_name = node_name
-#
-#            url = self.object_url('project', project_name, 'connect_node')
+        def connect(self, project_name, node_name):
+            """ Adds a node to a project. """
+            self.project_name = project_name
+            self.node_name = node_name
+
+            url = self.object_url('project', project_name, 'connect_node')
+            payload=json.dumps({'node':node_name})
+            q = requests.post(url, headers={"Authorization": "Basic %s" % self.auth}, data=payload)
+            if q.ok:
+                return
+            elif q.status_code == 409:
+                raise DuplicateError("Node is already owned by the project. ")
+            elif q.status_code == 404:
+                raise NotFoundError("Node or project does not exist. ")
+
+        def disconnect(self, project_name, node_name):
+            """ Adds a node to a project. """
+            self.project_name = project_name
+            self.node_name = node_name
+
+            url = self.object_url('project', project_name, 'detach_node')
+            payload=json.dumps({'node':node_name})
+            q = requests.post(url, headers={"Authorization": "Basic %s" % self.auth}, data=payload)
+            if q.ok:
+                return
+            elif q.status_code == 404:
+                raise NotFoundError("Node or Project does not exist or Node not owned by project")
+
+
+
 
 
 

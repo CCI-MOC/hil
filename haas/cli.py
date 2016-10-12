@@ -395,7 +395,7 @@ def project_create(project):
     try:
         C.project.create(project)
     except (DuplicateError, AuthenticationError) as e:
-        print e
+        sys.stderr.write('Error: %s\n' % e.message)
 
 @cmd
 def project_delete(project):
@@ -403,7 +403,7 @@ def project_delete(project):
     try:
         C.project.delete(project)
     except (NotFoundError, AuthenticationError) as e:
-        print e
+        sys.stderr.write('Error: %s\n' % e.message)
 
 @cmd
 def headnode_create(headnode, project, base_img):
@@ -422,15 +422,18 @@ def headnode_delete(headnode):
 @cmd
 def project_connect_node(project, node):
     """Connect <node> to <project>"""
-    url = object_url('project', project, 'connect_node')
-    do_post(url, data={'node': node})
-
+    try:
+        C.project.connect(project, node)
+    except (NotFoundError, DuplicateError) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
 
 @cmd
 def project_detach_node(project, node):
     """Detach <node> from <project>"""
-    url = object_url('project', project, 'detach_node')
-    do_post(url, data={'node': node})
+    try:
+        C.project.disconnect(project, node)
+    except (NotFoundError) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
 
 
 @cmd
@@ -707,8 +710,6 @@ def show_network(network):
     """Display information about <network>"""
     q = C.project.networks_in(project)
     sys.stdout.write("Networks allocated to {}\t:   {}\n".format(project, " ".join(q)))
-#    url = object_url('network', network)
-#    do_get(url)
 
 
 @cmd
