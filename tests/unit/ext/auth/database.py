@@ -1,6 +1,6 @@
 from haas import api, model, config, server
 from haas.test_common import config_testsuite, config_merge, fresh_database, \
-    ModelTest
+    ModelTest, fail_on_log_warnings
 from haas.flaskapp import app
 from haas.model import db
 from haas.errors import AuthorizationError
@@ -10,6 +10,8 @@ from haas.ext.auth.database import User, user_create, user_delete, \
 import flask
 import pytest
 import unittest
+
+fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
 
 @pytest.fixture

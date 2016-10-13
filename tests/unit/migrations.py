@@ -17,7 +17,8 @@ The general approach is as follows:
 """
 import pytest
 from haas import server
-from haas.test_common import config_testsuite, config_merge, initial_db
+from haas.test_common import config_testsuite, config_merge, initial_db, \
+    fail_on_log_warnings
 from haas.config import cfg, load_extensions
 from haas.model import db, init_db
 from haas.flaskapp import app
@@ -27,6 +28,9 @@ from os import path
 import re
 from pprint import pformat
 import difflib
+
+fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
+
 
 # Directory containing database dumps (./migrations)
 pg_dump_dir = path.join(path.dirname(__file__), "migrations")

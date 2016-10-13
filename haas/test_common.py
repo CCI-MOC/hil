@@ -154,6 +154,39 @@ def with_request_context():
         yield
 
 
+def fail_on_log_warnings():
+    """Raise an exception if a message is logged at warning level or higher.
+
+    Calling this registers a Handler for the `haas` module; it is meant to be
+    used as a test fixture.
+
+    The exception raised will be of type `LoggedWarningError`.
+    """
+    logger = logging.getLogger('haas')
+    logger.addHandler(_FailOnLogWarnings())
+
+
+class _FailOnLogWarnings(logging.Handler):
+    """The Handler type used by the `fail_on_log_warnings` fixture."""
+
+    def emit(self, record):
+        if record.levelno >= logging.WARNING:
+            raise LoggedWarningError(record)
+
+
+class LoggedWarningError(Exception):
+    """Error indicating that a message was logged at warning level or higher.
+
+    Used by `fail_on_log_warnings`
+    """
+
+    def __init__(self, record):
+        self.record = record
+
+    def __repr__(self):
+        return 'LoggedWarningError(%r)' % self.record
+
+
 class ModelTest:
     """Superclass with tests common to all models.
 

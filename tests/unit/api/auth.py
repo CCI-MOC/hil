@@ -18,7 +18,7 @@ from haas.auth import get_auth_backend
 from haas.errors import AuthorizationError, BadArgumentError, \
     ProjectMismatchError, BlockedError
 from haas.test_common import config_testsuite, config_merge, fresh_database, \
-    with_request_context, additional_db
+    with_request_context, additional_db, fail_on_log_warnings
 
 from haas.ext.switches.mock import MockSwitch
 from haas.ext.obm.mock import MockObm
@@ -52,6 +52,7 @@ def auth_call_test(fn, error, admin, project, args, kwargs={}):
 
 
 additional_db = pytest.fixture(additional_db)
+fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
 
 @pytest.fixture

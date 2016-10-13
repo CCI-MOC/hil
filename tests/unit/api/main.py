@@ -41,6 +41,7 @@ def configure():
 
 fresh_database = pytest.fixture(fresh_database)
 additional_database = pytest.fixture(additional_db)
+fail_on_log_warnings = pytest.fixture(fail_on_log_warnings)
 
 
 @pytest.fixture
@@ -62,7 +63,8 @@ def switchinit():
     api.switch_register_port('sw0', '3')
 
 
-default_fixtures = ['configure',
+default_fixtures = ['fail_on_log_warnings',
+                    'configure',
                     'fresh_database',
                     'server_init',
                     'with_request_context']
