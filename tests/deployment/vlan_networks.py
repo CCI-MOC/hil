@@ -27,6 +27,7 @@ def configure():
     config.load_extensions()
 
 
+fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 fresh_database = pytest.fixture(fresh_database)
 
 

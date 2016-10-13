@@ -25,8 +25,11 @@ from haas.model import *
 from haas import config
 from haas.ext.obm.ipmi import Ipmi
 
-from haas.test_common import fresh_database, config_testsuite, ModelTest
+from haas.test_common import fresh_database, config_testsuite, ModelTest, \
+    fail_on_log_warnings
 import pytest
+
+fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
 
 @pytest.fixture
@@ -87,7 +90,7 @@ class TestNetwork(ModelTest):
 
     def sample_obj(self):
         pj = Project('anvil-nextgen')
-        return Network(pj, pj, True, '102', 'hammernet')
+        return Network(pj, [pj], True, '102', 'hammernet')
 
 
 class TestNetworkingAction(ModelTest):
@@ -100,7 +103,7 @@ class TestNetworkingAction(ModelTest):
                                 password="tapeworm")),
                   'ipmi', '00:11:22:33:44:55')
         project = Project('anvil-nextgen')
-        network = Network(project, project, True, '102', 'hammernet')
+        network = Network(project, [project], True, '102', 'hammernet')
         return NetworkingAction(nic=nic,
                                 new_network=network,
                                 channel='null')

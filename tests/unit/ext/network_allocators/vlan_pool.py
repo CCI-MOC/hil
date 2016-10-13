@@ -1,5 +1,5 @@
 from haas.test_common import config_testsuite, config_merge, \
-    fresh_database
+    fresh_database, fail_on_log_warnings
 from haas.config import load_extensions
 from haas.flaskapp import app
 from haas.model import db
@@ -7,6 +7,8 @@ from haas.migrations import create_db
 from haas.ext.network_allocators.vlan_pool import Vlan
 from haas import api, model
 import pytest
+
+fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
 
 @pytest.fixture

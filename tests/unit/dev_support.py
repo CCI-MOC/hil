@@ -16,6 +16,9 @@ from haas.dev_support import no_dry_run
 import pytest
 from haas.test_common import *
 
+fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
+
+
 # We test two ways of using the decorator: applying it to a freestanding
 # function, and applying it to an instance method.
 

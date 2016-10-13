@@ -18,7 +18,7 @@ from haas.auth import get_auth_backend
 from haas.errors import AuthorizationError, BadArgumentError, \
     ProjectMismatchError, BlockedError
 from haas.test_common import config_testsuite, config_merge, fresh_database, \
-    with_request_context, additional_db
+    with_request_context, additional_db, fail_on_log_warnings
 
 from haas.ext.switches.mock import MockSwitch
 from haas.ext.obm.mock import MockObm
@@ -52,6 +52,7 @@ def auth_call_test(fn, error, admin, project, args, kwargs={}):
 
 
 additional_db = pytest.fixture(additional_db)
+fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
 
 @pytest.fixture
@@ -77,6 +78,7 @@ def server_init():
     server.validate_state()
 
 
+fresh_database = pytest.fixture(fresh_database)
 with_request_context = pytest.yield_fixture(with_request_context)
 
 
@@ -155,7 +157,7 @@ auth_call_params = [
          project='runway',
          args=['pub', 'admin', '', '']),
 
-    # Project tries to set creator to 'admin' on its own network.
+    # Project tries to set owner to 'admin' on its own network:
     dict(fn=api.network_create,
          error=AuthorizationError,
          admin=False,
@@ -200,6 +202,7 @@ for net in [
     'stock_int_pub',
     'stock_ext_pub',
     'runway_provider',  # ... including networks created for said project.
+    'manhattan_runway_provider',
 ]:
     auth_call_params.append(dict(
         fn=api.network_delete,
@@ -213,6 +216,7 @@ for net in [
 for net in [
     'manhattan_pxe',
     'manhattan_provider',
+    'manhattan_runway_pxe',
 ]:
     auth_call_params.append(dict(
         fn=api.network_delete,
@@ -220,6 +224,194 @@ for net in [
         admin=False,
         project='runway',
         args=[net]))
+
+#
+# network_grant_project_access
+#
+
+# Legal cases
+# admin should be able to add  access to a network
+# for any project (that does not already have access)
+for (project, net) in [
+    ('manhattan', 'runway_provider'),
+    ('runway', 'manhattan_provider'),
+    ('runway', 'manhattan_pxe'),
+    ('manhattan', 'runway_pxe'),
+]:
+    auth_call_params.append(dict(
+        fn=api.network_grant_project_access,
+        error=None,
+        admin=True,
+        project=None,
+        args=[project, net]
+    ))
+
+# project that is the owner of the network should
+# be able to add access for other projects
+for (project, project_access, net) in [
+    ('manhattan', 'runway', 'manhattan_pxe'),
+    ('runway', 'manhattan', 'runway_pxe'),
+]:
+    auth_call_params.append(dict(
+        fn=api.network_grant_project_access,
+        error=None,
+        admin=False,
+        project=project,
+        args=[project_access, net]
+    ))
+
+
+# Illegal cases:
+# Projects other than the network owner should not be ble to grant access
+for (project, project_access, net) in [
+    ('manhattan', 'manhattan', 'runway_pxe'),
+    ('runway', 'runway', 'manhattan_pxe'),
+]:
+    auth_call_params.append(dict(
+        fn=api.network_grant_project_access,
+        error=AuthorizationError,
+        admin=False,
+        project=project,
+        args=[project_access, net]
+    ))
+
+#
+# network_revoke_project_access
+#
+
+# Legal cases
+# admin should be able to remove access to a network
+# for any project (that was not the owner of the network)
+# admin created networks with all the access removed will become
+# public networks
+for (project, net) in [
+    ('runway', 'runway_provider'),
+    ('runway', 'manhattan_runway_pxe'),
+    ('manhattan', 'manhattan_provider'),
+    ('runway', 'manhattan_runway_provider'),
+    ('manhattan', 'manhattan_runway_provider'),
+]:
+    auth_call_params.append(dict(
+        fn=api.network_revoke_project_access,
+        error=None,
+        admin=True,
+        project=None,
+        args=[project, net]
+    ))
+
+# project that is the owner of the network should
+# be able to remove the access of other projects
+# projects should be able to remove their own access
+for (project, project_access, net) in [
+    ('manhattan', 'runway', 'manhattan_runway_pxe'),
+    ('runway', 'runway', 'manhattan_runway_pxe'),
+    ('manhattan', 'manhattan', 'manhattan_runway_provider'),
+    ('runway', 'runway', 'manhattan_runway_provider'),
+]:
+    auth_call_params.append(dict(
+        fn=api.network_revoke_project_access,
+        error=None,
+        admin=False,
+        project=project,
+        args=[project_access, net]
+    ))
+
+
+# Illegal cases:
+# Projects other than the network owner or the project
+# itself should  not be able to remove access of other projects
+for (project, project_access, net) in [
+    ('manhattan', 'runway', 'manhattan_runway_provider'),
+]:
+    auth_call_params.append(dict(
+        fn=api.network_revoke_project_access,
+        error=AuthorizationError,
+        admin=False,
+        project=project,
+        args=[project_access, net]
+    ))
+
+#
+# list_network_attachments
+#
+
+# Legal cases
+# Admin should be able to list attachments for public network:
+for net in ('stock_int_pub', 'stock_ext_pub'):
+    for project in ('runway', 'manhattan'):
+            auth_call_params.append(dict(
+                fn=api.list_network_attachments,
+                error=None,
+                admin=True,
+                project=project,
+                args=[net]
+            ))
+
+# Projects should be able to view their own nodes in a network:
+for (project, net) in [
+    ('runway', 'runway_pxe'),
+    ('runway', 'runway_provider'),
+    ('manhattan', 'manhattan_pxe'),
+    ('manhattan', 'manhattan_provider'),
+    ('manhattan', 'manhattan_runway_pxe'),
+    ('manhattan', 'manhattan_runway_provider'),
+    ('runway', 'manhattan_runway_pxe'),
+    ('runway', 'manhattan_runway_provider'),
+]:
+    auth_call_params.append(dict(
+        fn=api.list_network_attachments,
+        error=None,
+        admin=False,
+        project=project,
+        args=[net, project]
+    ))
+
+# owner of a network should be able to view all nodes in the network:
+for (project, net) in [
+    ('runway', 'runway_pxe'),
+    ('manhattan', 'manhattan_pxe'),
+    ('manhattan', 'manhattan_runway_pxe'),
+]:
+    auth_call_params.append(dict(
+        fn=api.list_network_attachments,
+        error=None,
+        admin=False,
+        project=project,
+        args=[net]
+    ))
+
+
+# Illegal cases
+# Projects should not be able to list nodes that do not belong to them
+# (on network they do not own)
+for (project, access_project, net) in [
+    ('runway', 'manhattan', 'manhattan_runway_pxe'),
+    ('runway', 'manhattan', 'manhattan_runway_provider'),
+    ('runway', None, 'manhattan_runway_pxe'),
+    ('runway', None, 'manhattan_runway_provider'),
+]:
+    auth_call_params.append(dict(
+        fn=api.list_network_attachments,
+        error=AuthorizationError,
+        admin=False,
+        project=project,
+        args=[net, access_project]
+    ))
+
+# or on networks they do not have access to
+for (project, net) in [
+    ('runway', 'manhattan_pxe'),
+    ('runway', 'manhattan_provider'),
+    ('manhattan', 'runway_pxe'),
+    ('manhattan', 'runway_provider'),
+]:
+    auth_call_params.append(dict(
+        fn=api.list_network_attachments,
+        error=AuthorizationError,
+        admin=False,
+        project=project,
+        args=[net, project]
+    ))
 
 #
 # show_network
@@ -244,6 +436,10 @@ for (project, net) in [
     ('runway', 'runway_provider'),
     ('manhattan', 'manhattan_pxe'),
     ('manhattan', 'manhattan_provider'),
+    ('manhattan', 'manhattan_runway_pxe'),
+    ('manhattan', 'manhattan_runway_provider'),
+    ('runway', 'manhattan_runway_pxe'),
+    ('runway', 'manhattan_runway_provider'),
 ]:
     auth_call_params.append(dict(
         fn=api.show_network,
