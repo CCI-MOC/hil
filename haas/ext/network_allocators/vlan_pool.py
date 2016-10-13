@@ -63,6 +63,15 @@ class VlanAllocator(NetworkAllocator):
     def get_default_channel(self):
         return "vlan/native"
 
+    def validate_network_id(self, net_id):
+        try:
+            if 1 <= int(net_id) <= 4096:
+                return True
+            else:
+                return False
+        except ValueError:
+            return False
+
 
 class Vlan(db.Model):
     """A VLAN for the Dell switch

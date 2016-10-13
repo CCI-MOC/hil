@@ -5,6 +5,7 @@ from haas.flaskapp import app
 from haas.model import db
 from haas.migrations import create_db
 from haas.ext.network_allocators.vlan_pool import Vlan
+from haas import api, model
 import pytest
 
 
@@ -46,3 +47,20 @@ def test_populate_dirty_db():
         db.session.commit()
     # Okay, now try re-initializing:
     create_db()
+
+
+def test_vlanid_for_admin_network():
+    """
+    Test for valid vlanID for administrator-owned networks.
+    """
+    # create a network with a string vlan id
+    with pytest.raises(api.BadArgumentError):
+        api.network_create('hammernet', 'admin', '', 'yes')
+
+    # create a network with a vlanid>4096
+    with pytest.raises(api.BadArgumentError):
+        api.network_create('nailnet', 'admin', '', '5023')
+
+    # create a netowrk with a vlanid<1
+    with pytest.raises(api.BadArgumentError):
+        api.network_create('nailnet', 'admin', '', '-2')

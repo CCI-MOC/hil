@@ -17,6 +17,7 @@ Network IDs are random and arbitrary. The only supported channel is "null".
 """
 
 import uuid
+import re
 from haas.network_allocator import NetworkAllocator, set_network_allocator
 
 
@@ -42,6 +43,9 @@ class NullNetworkAllocator(NetworkAllocator):
 
     def get_default_channel(self):
         return "null"
+
+    def validate_network_id(self, net_id):
+        return True
 
 
 def setup(*args, **kwargs):
