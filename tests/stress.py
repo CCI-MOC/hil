@@ -1,5 +1,6 @@
 
-from haas.test_common import config_testsuite, fresh_database, config_merge
+from haas.test_common import config_testsuite, fresh_database, config_merge, \
+    fail_on_log_warnings
 from haas import api, config, server, rest
 from haas.flaskapp import app
 
@@ -16,6 +17,7 @@ def configure():
     config.load_extensions()
 
 
+fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 fresh_database = pytest.fixture(fresh_database)
 
 

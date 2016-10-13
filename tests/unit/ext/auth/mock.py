@@ -3,7 +3,7 @@ from haas.auth import get_auth_backend
 from haas.errors import AuthorizationError
 from haas.model import db, Project
 from haas.test_common import config_testsuite, config_merge, fresh_database, \
-    with_request_context
+    with_request_context, fail_on_log_warnings
 import pytest
 
 
@@ -19,6 +19,7 @@ def configure():
     config.load_extensions()
 
 
+fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 fresh_database = pytest.fixture(fresh_database)
 
 

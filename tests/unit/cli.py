@@ -8,6 +8,10 @@ import os
 import signal
 from subprocess import check_call, Popen
 from time import sleep
+from haas.test_common import fail_on_log_warnings
+
+
+fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
 
 @pytest.fixture(autouse=True)

@@ -25,12 +25,11 @@ import unittest
 import json
 
 from schema import Schema, Optional, Use
-
-# We don't directly use this, but unless we import it, the coverage tool
-# complains and doesn't give us a report.
 import pytest
 
-from haas.test_common import config_testsuite
+from haas.test_common import config_testsuite, fail_on_log_warnings
+
+fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
 
 @pytest.fixture(autouse=True)

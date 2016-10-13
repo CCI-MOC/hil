@@ -6,6 +6,7 @@ a specific configuration and database contents. The script
 this up. This is done automatically in our travis config.
 """
 from haas import test_common as tc
+from haas.test_common import fail_on_log_warnings
 from haas import server, config, model, rest, auth
 from haas.flaskapp import app
 import pytest
@@ -18,6 +19,8 @@ from keystoneauth1.identity import v3
 from keystoneauth1 import session
 from keystoneauth1.exceptions.http import HttpError
 from keystoneclient import client
+
+fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
 
 # A list of projects to be added to HaaS's database.

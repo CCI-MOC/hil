@@ -8,7 +8,10 @@ import pytest
 from haas import config, server
 from haas.auth import get_auth_backend
 from haas.rest import app
-from haas.test_common import config_testsuite, config_merge, fresh_database
+from haas.test_common import config_testsuite, config_merge, fresh_database, \
+    fail_on_log_warnings
+
+fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
 
 @pytest.fixture

@@ -1,6 +1,10 @@
-from haas.test_common import config_set
+from haas.test_common import config_set, fail_on_log_warnings
 from haas import config
 import sys
+import pytest
+
+
+fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
 
 def test_load_extension():
