@@ -10,15 +10,14 @@ from haas.test_common import *
 import pytest
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
+with_request_context = pytest.yield_fixture(with_request_context)
+fresh_database = pytest.fixture(fresh_database)
 
 
 @pytest.fixture
 def server_init():
     server.register_drivers()
     server.validate_state()
-
-
-with_request_context = pytest.yield_fixture(with_request_context)
 
 
 @pytest.fixture
@@ -35,19 +34,14 @@ def configure():
     })
     load_extensions()
 
-fresh_database = pytest.fixture(fresh_database)
 
-pytestmark = pytest.mark.usefixtures('configure',
-                                     'fresh_database',
-                                     'fail_on_log_warnings',
-                                     'server_init',
-                                     'with_request_context',
-                                     )
 default_fixtures = ['fail_on_log_warnings',
                     'configure',
                     'fresh_database',
                     'server_init',
                     'with_request_context']
+
+pytestmark = pytest.mark.usefixtures(*default_fixtures)
 
 
 def test_populate_dirty_db():
@@ -68,13 +62,6 @@ def test_populate_dirty_db():
     # Okay, now try re-initializing:
     create_db()
 
-
-# def test_test():
-#     """test test to see if something is up with postgresql
-#     """
-#     with pytest.raises(api.BadArgumentError):
-#         api.network_create('hammernet', 'admin', '', '5023')
-#     return
 
 def test_vlanid_for_admin_network():
     """
