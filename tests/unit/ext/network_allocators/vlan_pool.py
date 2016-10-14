@@ -61,6 +61,7 @@ def test_test():
     """
     with pytest.raises(api.BadArgumentError):
         api.network_create('hammernet', 'admin', '', 'yes')
+    return
 
 
 # def test_vlanid_for_admin_network():
