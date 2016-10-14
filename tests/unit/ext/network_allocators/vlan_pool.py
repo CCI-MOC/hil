@@ -60,7 +60,7 @@ def test_test():
     """test test to see if something is up with postgresql
     """
     with pytest.raises(api.BadArgumentError):
-        api.network_create('hammernet', 'admin', '', 'yes')
+        api.network_create('hammernet', 'admin', '', '5023')
     return
 
 
