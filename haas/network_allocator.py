@@ -77,7 +77,7 @@ class NetworkAllocator(object):
         """
     @abstractmethod
     def validate_network_id(self, net_id):
-        """Check if net_id is valid a network id"""
+        """Check if net_id is a valid network id"""
 
 
 _network_allocator = None
