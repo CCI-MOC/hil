@@ -30,6 +30,11 @@ fresh_database = pytest.fixture(fresh_database)
 pytestmark = pytest.mark.usefixtures('configure',
                                      'fresh_database',
                                      )
+default_fixtures = ['fail_on_log_warnings',
+                    'configure',
+                    'fresh_database',
+                    'server_init',
+                    'with_request_context']
 
 
 def test_populate_dirty_db():
