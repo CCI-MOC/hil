@@ -1,14 +1,23 @@
-from haas.test_common import config_testsuite, config_merge, \
-    fresh_database, fail_on_log_warnings
+# from haas.test_common import config_testsuite, config_merge, \
+#     fresh_database, fail_on_log_warnings
 from haas.config import load_extensions
 from haas.flaskapp import app
 from haas.model import db
 from haas.migrations import create_db
 from haas.ext.network_allocators.vlan_pool import Vlan
-from haas import api, model
+from haas import api, model, server
+from haas.test_common import *
 import pytest
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
+
+@pytest.fixture
+def server_init():
+    server.register_drivers()
+    server.validate_state()
+
+
+with_request_context = pytest.yield_fixture(with_request_context)
 
 
 @pytest.fixture
@@ -29,6 +38,9 @@ fresh_database = pytest.fixture(fresh_database)
 
 pytestmark = pytest.mark.usefixtures('configure',
                                      'fresh_database',
+                                     'fail_on_log_warnings',
+                                     'server_init',
+                                     'with_request_context',
                                      )
 default_fixtures = ['fail_on_log_warnings',
                     'configure',
