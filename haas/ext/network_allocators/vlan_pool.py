@@ -65,10 +65,7 @@ class VlanAllocator(NetworkAllocator):
 
     def validate_network_id(self, net_id):
         try:
-            if 1 <= int(net_id) <= 4096:
-                return True
-            else:
-                return False
+            return 1 <= int(net_id) <= 4096
         except ValueError:
             return False
 
