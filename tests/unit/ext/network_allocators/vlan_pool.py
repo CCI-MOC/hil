@@ -1,5 +1,3 @@
-# from haas.test_common import config_testsuite, config_merge, \
-#     fresh_database, fail_on_log_warnings
 from haas.config import load_extensions
 from haas.flaskapp import app
 from haas.model import db
