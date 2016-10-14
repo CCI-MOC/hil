@@ -11,6 +11,7 @@ import pytest
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
+
 @pytest.fixture
 def server_init():
     server.register_drivers()
@@ -68,26 +69,25 @@ def test_populate_dirty_db():
     create_db()
 
 
-def test_test():
-    """test test to see if something is up with postgresql
+# def test_test():
+#     """test test to see if something is up with postgresql
+#     """
+#     with pytest.raises(api.BadArgumentError):
+#         api.network_create('hammernet', 'admin', '', '5023')
+#     return
+
+def test_vlanid_for_admin_network():
     """
+    Test for valid vlanID for administrator-owned networks.
+    """
+    # create a network with a string vlan id
     with pytest.raises(api.BadArgumentError):
-        api.network_create('hammernet', 'admin', '', '5023')
-    return
+        api.network_create('hammernet', 'admin', '', 'yes')
 
+    # create a network with a vlanid>4096
+    with pytest.raises(api.BadArgumentError):
+        api.network_create('nailnet', 'admin', '', '5023')
 
-# def test_vlanid_for_admin_network():
-#     """
-#     Test for valid vlanID for administrator-owned networks.
-#     """
-#     # create a network with a string vlan id
-#     with pytest.raises(api.BadArgumentError):
-#         api.network_create('hammernet', 'admin', '', 'yes')
-
-#     # create a network with a vlanid>4096
-#     with pytest.raises(api.BadArgumentError):
-#         api.network_create('nailnet', 'admin', '', '5023')
-
-#     # create a netowrk with a vlanid<1
-#     with pytest.raises(api.BadArgumentError):
-#         api.network_create('nailnet', 'admin', '', '-2')
+    # create a netowrk with a vlanid<1
+    with pytest.raises(api.BadArgumentError):
+        api.network_create('nailnet', 'admin', '', '-2')
