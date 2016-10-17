@@ -75,6 +75,9 @@ class NetworkAllocator(object):
         """Return the "default" channel which is used if a
         channel is unspecified.
         """
+    @abstractmethod
+    def validate_network_id(self, net_id):
+        """Check if net_id is a valid network id"""
 
 
 _network_allocator = None

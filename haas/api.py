@@ -739,6 +739,8 @@ def network_create(network, owner, access, net_id):
             raise AllocationError('No more networks')
         allocated = True
     else:
+        if not get_network_allocator().validate_network_id(net_id):
+            raise BadArgumentError("Invalid net_id")
         allocated = False
 
     network = model.Network(owner, access, allocated, net_id, network)
