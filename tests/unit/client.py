@@ -119,7 +119,7 @@ def make_config():
             'haas.ext.switches.nexus =',
             'haas.ext.switches.dell =',
             'haas.ext.switches.brocade =',
-
+            'haas.ext.obm.mock =',
             'haas.ext.obm.ipmi =',
             'haas.ext.network_allocators.null =',
             '[haas.ext.network_allocators.vlan_pool]',
@@ -187,6 +187,11 @@ def populate_server():
     obminfo6 = {"type": api_nodename+'ipmi', "host":"10.10.0.06",
             "user":"ipmi_u", "password":"pass1234" }
 
+    obminfo7 = {"type": api_nodename+'mock', "host":"10.10.0.07",
+            "user":"ipmi_u", "password":"pass1234" }
+
+    obminfo8 = {"type": api_nodename+'mock', "host":"10.10.0.08",
+            "user":"ipmi_u", "password":"pass1234" }
 
     requests.put(url_node+'node-01', data=json.dumps({"obm":obminfo1}))
     requests.put(url_node+'node-02', data=json.dumps({"obm":obminfo2}))
@@ -194,6 +199,8 @@ def populate_server():
     requests.put(url_node+'node-04', data=json.dumps({"obm":obminfo4}))
     requests.put(url_node+'node-05', data=json.dumps({"obm":obminfo5}))
     requests.put(url_node+'node-06', data=json.dumps({"obm":obminfo6}))
+    requests.put(url_node+'node-07', data=json.dumps({"obm":obminfo7}))
+    requests.put(url_node+'node-08', data=json.dumps({"obm":obminfo8}))
 
     ## Adding Projects proj-01 - proj-03
     for i in [ "proj-01", "proj-02", "proj-03" ]:
@@ -257,12 +264,50 @@ class Test_Node:
 
     def test_list_nodes_free(self):
         result = C.node.list('free')
-        assert result == [u'node-06']
+        assert result == [u'node-06', u'node-07', u'node-08']
 
     def test_list_nodes_all(self):
         result = C.node.list('all')
         assert result == [u'node-01', u'node-02', u'node-03', u'node-04',
-                            u'node-05', u'node-06']
+                            u'node-05', u'node-06', u'node-07', u'node-08']
+
+    def test_show_node(self):
+        result = C.node.show_node('node-07')
+        assert result == {u'name': u'node-07', u'nics': [], u'project': None}
+
+    def test_power_cycle(self):
+        result = C.node.power_cycle('node-07')
+        assert result == None
+
+    def test_power_off(self):
+        result = C.node.power_off('node-07')
+        assert result == None
+
+    def test_node_add_nic(self):
+        result = C.node.add_nic('node-07', 'eth0', 'aa:bb:cc:dd:ee:ff')
+        assert result == None
+
+    def test_node_add_duplicate_nic(self):
+        C.node.add_nic('node-07', 'eth0', 'aa:bb:cc:dd:ee:ff')
+        with pytest.raises(client_errors.DuplicateError):
+            C.node.add_nic('node-07', 'eth0', 'aa:bb:cc:dd:ee:ff')
+
+    def test_nosuch_node_add_nic(self):
+        with pytest.raises(client_errors.NotFoundError):
+            C.node.add_nic('abcd', 'eth0', 'aa:bb:cc:dd:ee:ff')
+
+    def test_remove_nic(self):
+        C.node.add_nic('node-07', 'eth0', 'aa:bb:cc:dd:ee:ff')
+        result = C.node.remove_nic('node-07', 'eth0')
+        assert result == None
+
+    def test_remove_duplicate_nic(self):
+        C.node.add_nic('node-07', 'eth0', 'aa:bb:cc:dd:ee:ff')
+        C.node.remove_nic('node-07', 'eth0')
+        with pytest.raises(client_errors.NotFoundError):
+            C.node.remove_nic('node-07', 'eth0')
+
+
 
 @pytest.mark.usefixtures("create_setup")
 class Test_project:
@@ -330,7 +375,9 @@ class Test_project:
 
     def test_project_disconnect_node(self):
         """ Test for correctly disconnecting node from project."""
-        result = C.project.disconnect('proj-01', 'node-01')
+        C.project.create('abcd')
+        C.project.connect('abcd', 'node-07')
+        result = C.project.disconnect('abcd', 'node-07')
         assert result == None
         # ?? This tests takes same time as sum of all the other tests ??
 

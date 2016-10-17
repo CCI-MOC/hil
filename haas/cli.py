@@ -484,7 +484,6 @@ def node_register(node, subtype, *args):
 @cmd
 def node_delete(node):
     """Delete <node>"""
-#    import pdb; pdb.set_trace()
     try:
         C.node.delete(node)
     except (NotFoundError, BlockedError) as e:
