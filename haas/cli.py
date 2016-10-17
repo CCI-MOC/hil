@@ -484,22 +484,35 @@ def node_register(node, subtype, *args):
 @cmd
 def node_delete(node):
     """Delete <node>"""
-    url = object_url('node', node)
-    do_delete(url)
+#    import pdb; pdb.set_trace()
+    try:
+        C.node.delete(node)
+    except (NotFoundError, BlockedError) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
+
+#    url = object_url('node', node)
+#    do_delete(url)
 
 
 @cmd
 def node_power_cycle(node):
     """Power cycle <node>"""
-    url = object_url('node', node, 'power_cycle')
-    do_post(url)
+    try:
+        C.node.power_cycle(node)
+    except (NotFoundError, BlockedError) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
+
+#    url = object_url('node', node, 'power_cycle')
+#    do_post(url)
 
 
 @cmd
 def node_power_off(node):
     """Power off <node>"""
-    url = object_url('node', node, 'power_off')
-    do_post(url)
+    try:
+        C.node.power_off(node)
+    except (NotFoundError, BlockedError) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
 
 
 @cmd
@@ -507,15 +520,22 @@ def node_register_nic(node, nic, macaddr):
     """
     Register existence of a <nic> with the given <macaddr> on the given <node>
     """
-    url = object_url('node', node, 'nic', nic)
-    do_put(url, data={'macaddr': macaddr})
+    try: 
+        C.node.add_nic(node, nic, macaddr)
+    except (NotFoundError, DuplicateError) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
 
 
 @cmd
 def node_delete_nic(node, nic):
     """Delete a <nic> on a <node>"""
-    url = object_url('node', node, 'nic', nic)
-    do_delete(url)
+    try:
+        C.node.remove_nic(node, nic)
+    except(NotFoundError, BlockedError) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
+
+#    url = object_url('node', node, 'nic', nic)
+#    do_delete(url)
 
 
 @cmd

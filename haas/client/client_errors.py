@@ -6,3 +6,6 @@ class NotFoundError(Exception):
 
 class DuplicateError(Exception):
     pass
+
+class BlockedError(Exception):
+    pass

@@ -37,19 +37,17 @@ from haas.client.client import Client
 from haas.client import client_errors
 
 
-
-MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/v0/switches/mock'
-OBM_TYPE_MOCK = 'http://schema.massopencloud.org/haas/v0/obm/mock'
-OBM_TYPE_IPMI = 'http://schema.massopencloud.org/haas/v0/obm/ipmi'
-
 ep = "http://127.0.0.1:8888" or os.environ.get('HAAS_ENDPOINT')
 username = "hil_user" or os.environ.get('HAAS_USERNAME')
 password = "hil_pass1234" or os.environ.get('HAAS_PASSWORD')
 
-
 auth = auth_db(username, password)
-
 C = Client(ep, auth) #Initializing client library
+
+
+MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/v0/switches/mock'
+OBM_TYPE_MOCK = 'http://schema.massopencloud.org/haas/v0/obm/mock'
+OBM_TYPE_IPMI = 'http://schema.massopencloud.org/haas/v0/obm/ipmi'
 
 
 ## Following tests check if the client library is initialized correctly
