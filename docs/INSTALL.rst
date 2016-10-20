@@ -215,19 +215,16 @@ Centos uses systemd to controll all its processes.
 Place the file create_bridges.service under:
 ``/usr/lib/systemd/system/``
 
-Place the file create_bridges and haas.cfg under:
-``/etc/``
-
 Ubuntu:
 ^^^^^^^
 Systemd is available from Ubuntu 15.04 onwards and LTS version 16.04 will ship with systemd by default.
 
+Edit the create_bridges.service file and change the ExecStart
+to 
+`` /usr/local/bin/create_bridges``
+
 Place the file create_bridges.service under:
 ``/lib/systemd/system/``
-
-Place the file create_bridges and haas.cfg under:
-``/etc/``
-
 
 Starting the service:
 ^^^^^^^^^^^^^^^^^^^^^
