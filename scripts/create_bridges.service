@@ -1,6 +1,6 @@
 [Unit]
 Description=Service to create bridges
-After=libvirtd
+After=libvirtd.service
 
 [Service]
 WorkingDirectory = /etc/
