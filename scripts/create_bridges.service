@@ -1,0 +1,12 @@
+[Unit]
+Description=Service to create bridges
+After=libvirtd
+
+[Service]
+WorkingDirectory = /etc/
+ExecStart=/etc/create_bridges
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
+
