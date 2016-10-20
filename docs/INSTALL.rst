@@ -204,6 +204,7 @@ systemd.  A systemd service for running the create_bridges script is available
 in the 'scripts' directory.
 
 Name of the service is: create_bridges.service
+
 Name of the script is: create_bridges
 
 Centos:
@@ -214,7 +215,8 @@ Centos uses systemd to controll all its processes.
 Place the file create_bridges.service under:
 ``/usr/lib/systemd/system/``
 
-And, place the file create_bridges and haas.cfg under /etc/
+Place the file create_bridges and haas.cfg under:
+``/etc/``
 
 Ubuntu:
 ^^^^^^^
@@ -223,7 +225,8 @@ Systemd is available from Ubuntu 15.04 onwards and LTS version 16.04 will ship w
 Place the file create_bridges.service under:
 ``/lib/systemd/system/``
 
-And, place the file create_bridges and haas.cfg under /etc/
+Place the file create_bridges and haas.cfg under:
+``/etc/``
 
 
 Starting the service:
