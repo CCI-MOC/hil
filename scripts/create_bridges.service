@@ -1,6 +1,6 @@
 [Unit]
 Description=Service to create bridges
-Before=libvirtd.service
+#Before=libvirtd.service
 After=network.target
 
 [Service]
