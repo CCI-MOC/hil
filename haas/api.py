@@ -423,6 +423,40 @@ def node_detach_network(node, nic, network):
     return '', 202
 
 
+
+@rest_call('PUT', '/TPM_key/<tpm_key>', Schema({
+    'node': basestring, 'tpm_key': basestring, 'value': basestring
+}))
+def node_register_tpm_key(node, label, value):
+    """Register a tpm key on a node.
+
+    If the key already exists, a DuplicateError will be raised.
+    """
+    get_auth_backend().require_admin()
+    node = _must_find(model.Node, node)
+    #_assert_absent_n(switch, model.Port, port)
+    #need to see if key with that label exists for that node
+    tmp_key = model.TPM_key(label, value, node)
+
+    db.session.add(tpm_key)
+    db.session.commit()
+
+
+@rest_call('DELETE', '/node/<node>/TPM_key/<tpm_key>', Schema({
+    'node': basestring, 'tpm_key': basestring,
+}))
+def node_delete_tpm_key(node, tpm_key):
+    """Delete a TPM key on a node.
+
+    If the key does not exist, a NotFoundError will be raised.
+    """
+    get_auth_backend().require_admin()
+    node = _must_find(model.Node, node)
+    tpm_key = _must_find_n(node, model.TPM_key, tpm_key)
+   
+    db.session.delete(tpm_key)
+    db.session.commit()
+
 # Head Node Code #
 ##################
 @rest_call('PUT', '/headnode/<headnode>', Schema({

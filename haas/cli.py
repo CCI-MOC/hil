@@ -556,6 +556,18 @@ def headnode_detach_network(headnode, hnic):
     url = object_url('headnode', headnode, 'hnic', hnic, 'detach_network')
     do_post(url)
 
+@cmd
+def tpm_key_register(node, tpm_key, value):
+    """Register a <tpm_key> with <node> """
+    url = object_url('TPM_key', tpm_key)
+    do_put(url, data={'value': value, 'node': node})
+
+@cmd
+def tpm_key_delete(node, tpm_key):
+    """Delete a <tpm_key> from a <node>"""
+    url = object_url('node', node, 'TPM_key', tpm_key)
+    do_delete(url)
+
 
 @cmd
 def switch_register(switch, subtype, *args):
