@@ -200,30 +200,30 @@ than on-demand creation, and allows HaaS to be run as an unprivileged user,
 but it also causes some limitations.  For instance, because of this, headnodes
 can only be connected to networks with allocated VLANs.  The bridges must also
 be pre-allocated again on each boot. For now, the recommened method is to use 
-systemd.  A systemd service for running the create_bridges script is available 
+``systemd``.  A ``systemd`` service for running the ``create_bridges`` script is available 
 in the 'scripts' directory.
 
-Name of the service is: create_bridges.service
+Name of the service is: ``create_bridges.service``
 
-Name of the script is: create_bridges
+Name of the script is: ``create_bridges``
 
 Centos:
 ^^^^^^^
 
 Centos uses systemd to controll all its processes.
 
-Place the file create_bridges.service under:
+Place the file ``create_bridges.service`` under:
 ``/usr/lib/systemd/system/``
 
 Ubuntu:
 ^^^^^^^
 Systemd is available from Ubuntu 15.04 onwards and LTS version 16.04 will ship with systemd by default.
 
-Edit the create_bridges.service file and change the ExecStart
+Edit the ``create_bridges.service`` file and change the ExecStart
 to 
-`` /usr/local/bin/create_bridges``
+``/usr/local/bin/create_bridges``
 
-Place the file create_bridges.service under:
+Place the file ``create_bridges.service`` under:
 ``/lib/systemd/system/``
 
 Starting the service:
