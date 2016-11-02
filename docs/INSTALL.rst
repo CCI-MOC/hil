@@ -102,10 +102,10 @@ important: ``trunk_nic`` must match your choice of trunk NIC in the "Networking
 headnode libvirt instance created in the "Libvirt" instructions below.
 
 For a detailed description of the configuration needed for various switch
-setups, see ``docs/network-drivers.md``.
+setups, see `Network Drivers <network-drivers.html>`_.
 
 Logging level and directory can be set in the ``[general]`` section. For more
-information view ``docs/logging.md``.
+information view `logging <logging.html>`_.
 
 
 ``haas.cfg`` file contains sensitive administrative information and should not be exposed to clients or 
@@ -158,7 +158,7 @@ Setting Up HaaS Database
 The only DBMS currently supported for production use is PostgreSQL. 
 (SQLite is supported for development purposes *only*).
 There are many ways of setting up PostgreSQL server. 
-`Install_configure_PostgreSQL_CENTOS7.md <Install_configure_PostgreSQL_CENTOS7.html>`_
+`Install configure PostgreSQL CENTOS7 <Install_configure_PostgreSQL_CENTOS7.html>`_.
 provides one way to accomplish this. 
 
 To create the database tables, first make sure ``haas.cfg`` is set up the way
@@ -171,7 +171,7 @@ then you will need to add an initial user with administrative privileges to the
 database in order to bootstrap the system. 
 You can do this by running the following command (as user ``haas``)::
 
-  sudo -i -u ${HAAS_USER}; haas create_admin_user ${HAAS_ADMIN_USER} ${HAAS_ADMIN_PASSWORD
+  sudo -i -u ${HAAS_USER}; haas create_admin_user ${HAAS_ADMIN_USER} ${HAAS_ADMIN_PASSWORD}
 
 You can then create additional users via the HTTP API. You may want to
 subsequently delete the initial user; this can also be done via the API.
