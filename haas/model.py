@@ -471,8 +471,6 @@ class NetworkingAction(db.Model):
     """A journal entry representing a pending networking change."""
     id = db.Column(db.Integer, primary_key=True)
 
-    # This model is not visible in the API, so inherit from AnonModel
-
     nic_id = db.Column(db.ForeignKey('nic.id'), nullable=False)
     new_network_id = db.Column(db.ForeignKey('network.id'), nullable=True)
     channel = db.Column(db.String, nullable=False)
