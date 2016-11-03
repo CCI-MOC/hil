@@ -49,7 +49,6 @@ def apply_networking():
 
     for action in actions:
         nic = action.nic
-        network = action.new_network
         if nic.port:
             switch = nic.port.owner
             if switch.label not in switch_sessions:
