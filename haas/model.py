@@ -27,14 +27,10 @@ Extensions are permitted to create new database objects by subclassing from
 from flask.ext.sqlalchemy import SQLAlchemy
 from subprocess import call, check_call, Popen, PIPE
 from haas.flaskapp import app
-from haas.network_allocator import get_network_allocator
 from haas.config import cfg
 from haas.dev_support import no_dry_run
-from haas.errors import OBMError
 import uuid
 import xml.etree.ElementTree
-import logging
-import os
 
 db = SQLAlchemy(app)
 
@@ -470,8 +466,6 @@ class Hnic(db.Model):
 class NetworkingAction(db.Model):
     """A journal entry representing a pending networking change."""
     id = db.Column(db.Integer, primary_key=True)
-
-    # This model is not visible in the API, so inherit from AnonModel
 
     nic_id = db.Column(db.ForeignKey('nic.id'), nullable=False)
     new_network_id = db.Column(db.ForeignKey('network.id'), nullable=True)
