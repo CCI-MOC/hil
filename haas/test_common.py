@@ -14,15 +14,16 @@
 
 from haas.model import *
 from haas.migrations import create_db
+from haas.network_allocator import get_network_allocator
 from haas.config import cfg
 from haas.rest import app, init_auth
 from haas import api, config
-from StringIO import StringIO
 from abc import ABCMeta, abstractmethod
 import json
 import subprocess
 import sys
 import os.path
+import logging
 
 
 def config_testsuite():
