@@ -116,15 +116,15 @@ class Project(db.Model):
         self.label = label
 
 
-class TPM_key(db.Model):
-    """a Key within a Node's TPM
+class TPM_metadata(db.Model):
+    """metadata for a Node's TPM
 
-    A key may be an Endorsement Key, Attestation Key, or otherwise
+    Metadata may a key, a hash, or otherwise
     """
     id = db.Column(db.Integer, primary_key=True)
     label = db.Column(db.String, nullable=False)
     value = db.Column(db.String)
-    node = db.relationship("Node", backref=db.backref('keys'))
+    node = db.relationship("Node", backref=db.backref('metadata'))
     node_id = db.Column(db.ForeignKey('node.id'), nullable=False)
 
     def __init__(self, label, value, node):

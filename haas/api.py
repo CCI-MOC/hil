@@ -424,37 +424,37 @@ def node_detach_network(node, nic, network):
 
 
 
-@rest_call('PUT', '/TPM_key/<tpm_key>', Schema({
-    'node': basestring, 'tpm_key': basestring, 'value': basestring
+@rest_call('PUT', '/TPM_metadata/<tpm_metadata>', Schema({
+    'node': basestring, 'value': basestring
 }))
 def node_register_tpm_key(node, label, value):
-    """Register a tpm key on a node.
+    """Register tpm metadata on a node.
 
-    If the key already exists, a DuplicateError will be raised.
+    If the label already exists, a DuplicateError will be raised.
     """
     get_auth_backend().require_admin()
     node = _must_find(model.Node, node)
     #_assert_absent_n(switch, model.Port, port)
     #need to see if key with that label exists for that node
-    tmp_key = model.TPM_key(label, value, node)
+    tmp_metadata = model.TPM_metadata(label, value, node)
 
-    db.session.add(tpm_key)
+    db.session.add(tpm_metadata)
     db.session.commit()
 
 
-@rest_call('DELETE', '/node/<node>/TPM_key/<tpm_key>', Schema({
-    'node': basestring, 'tpm_key': basestring,
+@rest_call('DELETE', '/node/<node>/TPM_metadata/<tpm_metadata>', Schema({
+    'node': basestring, 'tpm_metadata': basestring,
 }))
-def node_delete_tpm_key(node, tpm_key):
-    """Delete a TPM key on a node.
+def node_delete_tpm_metadata(node, tpm_metadata):
+    """Delete a TPM metadata from a node.
 
-    If the key does not exist, a NotFoundError will be raised.
+    If the metadata does not exist, a NotFoundError will be raised.
     """
     get_auth_backend().require_admin()
     node = _must_find(model.Node, node)
-    tpm_key = _must_find_n(node, model.TPM_key, tpm_key)
+    tpm_metadata = _must_find_n(node, model.TPM_metadata, tpm_metadata)
    
-    db.session.delete(tpm_key)
+    db.session.delete(tpm_metadata)
     db.session.commit()
 
 # Head Node Code #
@@ -1107,6 +1107,9 @@ def show_node(nodename):
                                      attachment.network.label)
                                     for attachment in n.attachments]),
                   } for n in node.nics],
+        'tpm_metadata': [{'label': m.label,
+                          'value': m.value,
+                          } for m in node.metadata]
     }, sort_keys=True)
 
 
