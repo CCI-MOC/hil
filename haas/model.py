@@ -124,14 +124,14 @@ class TPM_metadata(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     label = db.Column(db.String, nullable=False)
     value = db.Column(db.String)
-    node = db.relationship("Node", backref=db.backref('metadata'))
-    node_id = db.Column(db.ForeignKey('node.id'), nullable=False)
+    owner_id = db.Column(db.ForeignKey('node.id'), nullable=False)
+    owner = db.relationship('Node', backref=db.backref('metadata'))
 
     def __init__(self, label, value, node):
         """Create a key with the given label."""
         self.label = label
         self.value = value
-        self.node = node
+        self.owner = node
 
 class Network(db.Model):
     """A link-layer network.

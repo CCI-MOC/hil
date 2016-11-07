@@ -427,16 +427,15 @@ def node_detach_network(node, nic, network):
 @rest_call('PUT', '/TPM_metadata/<tpm_metadata>', Schema({
     'node': basestring, 'value': basestring
 }))
-def node_register_tpm_key(node, label, value):
+def node_register_tpm_metadata(node, label, value):
     """Register tpm metadata on a node.
 
     If the label already exists, a DuplicateError will be raised.
     """
     get_auth_backend().require_admin()
     node = _must_find(model.Node, node)
-    #_assert_absent_n(switch, model.Port, port)
-    #need to see if key with that label exists for that node
-    tmp_metadata = model.TPM_metadata(label, value, node)
+    _assert_absent_n(node, model.TPM_metadata, label)
+    tpm_metadata = model.TPM_metadata(label, value, node)
 
     db.session.add(tpm_metadata)
     db.session.commit()

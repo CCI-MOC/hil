@@ -92,6 +92,16 @@ class TestNetwork(ModelTest):
         pj = Project('anvil-nextgen')
         return Network(pj, [pj], True, '102', 'hammernet')
 
+class TestTPMMetadata(ModelTest):
+    
+    def sample_obj(self):
+        node = Node(label='node-99',
+                    obm=Ipmi(type=Ipmi.api_name,
+                             host="ipmihost",
+                             user="root",
+                             password="tapeworm"))
+        return TPM_metadata('EK', 'pk', node)
+
 
 class TestNetworkingAction(ModelTest):
 
