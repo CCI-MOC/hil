@@ -137,6 +137,82 @@ def project_detach_node(project, node):
     db.session.commit()
 
 
+@rest_call('PUT', '/network/<network>/access/<project>', Schema({
+    'project': basestring, 'network': basestring,
+}))
+def network_grant_project_access(project, network):
+    """Add access to <network> to <project>.
+
+    If the project or network does not exist, a NotFoundError will be raised.
+    If the project already has access to the network a DuplicateError will be
+    raised.
+    """
+    network = _must_find(model.Network, network)
+    project = _must_find(model.Project, project)
+    auth_backend = get_auth_backend()
+
+    # Must be admin or the owner of the network to add projects
+    if network.owner is None:
+        auth_backend.require_admin()
+    else:
+        auth_backend.require_project_access(network.owner)
+
+    if project in network.access:
+        raise DuplicateError('Network %s is already in project %s' %
+                             (network.label, project.label))
+
+    network.access.append(project)
+    db.session.commit()
+
+
+@rest_call('DELETE', '/network/<network>/access/<project>', Schema({
+    'project': basestring, 'network': basestring,
+}))
+def network_revoke_project_access(project, network):
+    """Remove access to <network> from <project>.
+
+    If the project or network does not exist, a NotFoundError will be raised.
+    If the project is the owner of the network a BlockedError will be raised.
+    """
+    auth_backend = get_auth_backend()
+    network = _must_find(model.Network, network)
+    project = _must_find(model.Project, project)
+    # must be admin, the owner of the network, or <project> to remove
+    # <project>.
+
+    if network.access:
+        if not (auth_backend.have_admin() or
+                (network.owner is not None and
+                    auth_backend.have_project_access(network.owner)) or
+                (project in network.access and
+                    auth_backend.have_project_access(project))):
+            raise AuthorizationError("You are not authorized to remove the "
+                                     "specified project from this network.")
+
+    if project not in network.access:
+        raise NotFoundError("Network %r is not in project %r" %
+                            (network.label, project.label))
+
+    if project is network.owner:
+        raise BlockedError("Project %r is owner of network %r and "
+                           "its access cannot be removed" %
+                           (project.label, network.label))
+
+    # TODO: Make this and the next loop more SQLAlchemy-friendly
+    for attachment in network.attachments:
+        if attachment.nic.owner.project.label == project.label:
+            raise BlockedError(
+                "Project still has node(s) attached to the network")
+
+    for hnic in network.hnics:
+        if hnic.owner.project.label == project.label:
+            raise BlockedError(
+                "Project still has headnode(s) attached to the network")
+
+    network.access.remove(project)
+    db.session.commit()
+
+
 # Node Code #
 #############
 @rest_call('PUT', '/node/<node>', schema=Schema({
@@ -287,7 +363,7 @@ def node_connect_network(node, nic, network, channel=None):
         raise BlockedError(
             "A networking operation is already active on the nic.")
 
-    if (network.access is not None) and (network.access is not project):
+    if (network.access) and (project not in network.access):
         raise ProjectMismatchError(
             "Project does not have access to given network.")
 
@@ -360,7 +436,7 @@ def headnode_create(headnode, project, base_img):
 
     If the project does not exist, a NotFoundError will be raised.
 
-    If the base image does not exist (not specified in haas.cfg) a
+    If the base image does not exist (is not specified in haas.cfg) a
     BadArgumentError will be raised.
     """
 
@@ -507,7 +583,7 @@ def headnode_connect_network(headnode, hnic, network):
 
     project = headnode.project
 
-    if (network.access is not None) and (network.access is not project):
+    if (network.access) and (project not in network.access):
         raise ProjectMismatchError(
             "Project does not have access to given network.")
 
@@ -536,25 +612,95 @@ def headnode_detach_network(headnode, hnic):
 
 # Network Code #
 ################
+
+@rest_call('GET', '/networks', Schema({}))
+def list_networks():
+    """Lists all networks"""
+
+    get_auth_backend().require_admin()
+
+    networks = db.session.query(model.Network).all()
+    result = {}
+    for n in networks:
+        if n.access:
+            net = {'network_id': n.network_id,
+                   'projects': sorted([p.label for p in n.access])}
+        else:
+            net = {'network_id': n.network_id, 'projects': None}
+        result[n.label] = net
+
+    return json.dumps(result, sort_keys=True)
+
+
+@rest_call('GET', '/network/<network>/attachments', schema=Schema({
+    'network': basestring, Optional('project'): basestring,
+}))
+def list_network_attachments(network, project=None):
+    """Lists all the attachments from <project> for <network>
+
+    If <project> is `None`, lists all attachments for <network>
+    """
+    auth_backend = get_auth_backend()
+    network = _must_find(model.Network, network)
+
+    # Determine if caller has access to owning project
+    if network.owner is None:
+        owner_access = auth_backend.have_admin()
+    else:
+        owner_access = auth_backend.have_project_access(network.owner)
+
+    if project is None:
+        # No project means list all connected nodes
+        # Only access to the project that owns the network or an admin can do
+        # this
+        if not owner_access:
+            raise AuthorizationError("Operation requires admin rights or"
+                                     " access to network's owning project")
+    else:
+        # Only list the nodes coming from the specified project that are
+        # connected to this network.
+        project = _must_find(model.Project, project)
+        if not owner_access:
+            # Caller does not own the network, so they need both basic access
+            # to the network, and access to tueh queried project.
+            if not (project in network.access and
+                    auth_backend.have_project_access(project)):
+                raise AuthorizationError(
+                    "You do not have access to this project.")
+
+    attachments = network.attachments
+    nodes = {}
+    for attachment in attachments:
+        if project is None or project is attachment.nic.owner.project:
+            node = {
+                'nic': attachment.nic.label,
+                'channel': attachment.channel,
+                'project': attachment.nic.owner.project.label
+            }
+            nodes[attachment.nic.owner.label] = node
+
+    return json.dumps(nodes, sort_keys=True)
+
+
 @rest_call('PUT', '/network/<network>', Schema({
     'network': basestring,
-    'creator': basestring,
+    'owner': basestring,
     'access': basestring,
     'net_id': basestring,
 }))
-def network_create(network, creator, access, net_id):
+def network_create(network, owner, access, net_id):
     """Create a network.
 
     If the network with that name already exists, a DuplicateError will be
     raised.
 
-    If the combination of creator, access, and net_id is illegal, a
+    If the combination of owner, access, and net_id is illegal, a
     BadArgumentError will be raised.
 
     If network ID allocation was requested, and the network cannot be
     allocated (due to resource exhaustion), an AllocationError will be raised.
 
-    Pass 'admin' as creator for an administrator-owned network.  Pass '' as
+    Pass 'admin' as owner for an administrator-owned network.  Pass '' as
     access for a publicly accessible network.  Pass '' as net_id if you wish
     to use the HaaS's network-id allocation pool.
 
@@ -565,26 +711,26 @@ def network_create(network, creator, access, net_id):
     _assert_absent(model.Network, network)
 
     # Check authorization and legality of arguments, and find correct 'access'
-    # and 'creator'
-    if creator != "admin":
-        creator = _must_find(model.Project, creator)
-        auth_backend.require_project_access(creator)
+    # and 'owner'
+    if owner != "admin":
+        owner = _must_find(model.Project, owner)
+        auth_backend.require_project_access(owner)
         # Project-owned network
-        if access != creator.label:
-            raise BadArgumentError("Project-created networks must be accessed"
-                                   "only by that project.")
+        if access != owner.label:
+            raise BadArgumentError(
+                "Project-owned networks must be accessible by the owner.")
         if net_id != "":
             raise BadArgumentError(
-                "Project-created networks must use network ID allocation")
-        access = _must_find(model.Project, access)
+                "Project-owned networks must use network ID allocation")
+        access = [_must_find(model.Project, access)]
     else:
         # Administrator-owned network
         auth_backend.require_admin()
-        creator = None
+        owner = None
         if access == "":
-            access = None
+            access = []
         else:
-            access = _must_find(model.Project, access)
+            access = [_must_find(model.Project, access)]
 
     # Allocate net_id, if requested
     if net_id == "":
@@ -593,9 +739,11 @@ def network_create(network, creator, access, net_id):
             raise AllocationError('No more networks')
         allocated = True
     else:
+        if not get_network_allocator().validate_network_id(net_id):
+            raise BadArgumentError("Invalid net_id")
         allocated = False
 
-    network = model.Network(creator, access, allocated, net_id, network)
+    network = model.Network(owner, access, allocated, net_id, network)
     db.session.add(network)
     db.session.commit()
 
@@ -613,10 +761,10 @@ def network_delete(network):
 
     network = _must_find(model.Network, network)
 
-    if network.creator is None:
+    if network.owner is None:
         auth_backend.require_admin()
     else:
-        auth_backend.require_project_access(network.creator)
+        auth_backend.require_project_access(network.owner)
 
     if len(network.attachments) != 0:
         raise BlockedError("Network still connected to nodes")
@@ -643,20 +791,27 @@ def show_network(network):
 
     network = _must_find(model.Network, network)
 
-    if network.access is not None:
-        auth_backend.require_project_access(network.access)
+    if network.access:
+        authorized = False
+        for proj in network.access:
+            authorized = authorized or auth_backend.have_project_access(proj)
+
+        if not authorized:
+            raise AuthorizationError("You do not have access to this network.")
 
     result = {
         'name': network.label,
         'channels': allocator.legal_channels_for(network.network_id),
     }
-    if network.creator is None:
-        result['creator'] = 'admin'
+    if network.owner is None:
+        result['owner'] = 'admin'
     else:
-        result['creator'] = network.creator.label
+        result['owner'] = network.owner.label
 
-    if network.access is not None:
-        result['access'] = network.access.label
+    if network.access:
+        result['access'] = [p.label for p in network.access]
+    else:
+        result['access'] = None
 
     return json.dumps(result, sort_keys=True)
 

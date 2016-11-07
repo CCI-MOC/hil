@@ -3,14 +3,13 @@
 
 Networks in the HaaS have three fields:
 
-- 'creator' represents what project created it; or 'admin' if it was
-  administrator-created.  If there are still networks created by a project,
-  then that project cannot be deleted.  Only the creator has the ability to
+- 'owner' represents what project owns it; or 'admin' if it was
+  administrator-created.  If there are still networks owned by a project,
+  then that project cannot be deleted.  Only the owner has the ability to
   delete a network.
 
-- 'access' represents which project's nodes can access it, or '' (the
-  empty string) if all   projects' nodes can.  This will eventually be extended
-  into a ACL-style approach.
+- 'access' represents which projects' nodes can access it, or `[]` (the
+  empty list) if all   projects' nodes can.
 
 - 'allocated' represents whether the underlying network ID was taken from the
   network driver's allocation pool.  (The other option is that it was manually
@@ -35,8 +34,8 @@ Here are the illegal ones:
 - (project, [anything], no): Normal users cannot just assert control of external
       VLANs.
 
-- (project, different project, yes): Normal users cannot share networks with
-      other users [yet]
-
 - (project, all, yes): In the same vein, user-created public networks are also
       not allowed.
+
+- (project, different project, yes): Projects can grant access to other networks later using 'network_grant_project_access', but must have the project that is the owner of the network on the access list.
+

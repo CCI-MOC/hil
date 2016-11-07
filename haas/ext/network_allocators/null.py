@@ -43,6 +43,9 @@ class NullNetworkAllocator(NetworkAllocator):
     def get_default_channel(self):
         return "null"
 
+    def validate_network_id(self, net_id):
+        return True
+
 
 def setup(*args, **kwargs):
     set_network_allocator(NullNetworkAllocator())

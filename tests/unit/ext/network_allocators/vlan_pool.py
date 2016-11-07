@@ -1,11 +1,21 @@
-from haas.test_common import config_testsuite, config_merge, \
-    fresh_database
 from haas.config import load_extensions
 from haas.flaskapp import app
 from haas.model import db
 from haas.migrations import create_db
 from haas.ext.network_allocators.vlan_pool import Vlan
+from haas import api, model, server
+from haas.test_common import *
 import pytest
+
+fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
+with_request_context = pytest.yield_fixture(with_request_context)
+fresh_database = pytest.fixture(fresh_database)
+
+
+@pytest.fixture
+def server_init():
+    server.register_drivers()
+    server.validate_state()
 
 
 @pytest.fixture
@@ -22,11 +32,14 @@ def configure():
     })
     load_extensions()
 
-fresh_database = pytest.fixture(fresh_database)
 
-pytestmark = pytest.mark.usefixtures('configure',
-                                     'fresh_database',
-                                     )
+default_fixtures = ['fail_on_log_warnings',
+                    'configure',
+                    'fresh_database',
+                    'server_init',
+                    'with_request_context']
+
+pytestmark = pytest.mark.usefixtures(*default_fixtures)
 
 
 def test_populate_dirty_db():
@@ -46,3 +59,20 @@ def test_populate_dirty_db():
         db.session.commit()
     # Okay, now try re-initializing:
     create_db()
+
+
+def test_vlanid_for_admin_network():
+    """
+    Test for valid vlanID for administrator-owned networks.
+    """
+    # create a network with a string vlan id
+    with pytest.raises(api.BadArgumentError):
+        api.network_create('hammernet', 'admin', '', 'yes')
+
+    # create a network with a vlanid>4096
+    with pytest.raises(api.BadArgumentError):
+        api.network_create('nailnet', 'admin', '', '5023')
+
+    # create a netowrk with a vlanid<1
+    with pytest.raises(api.BadArgumentError):
+        api.network_create('nailnet', 'admin', '', '-2')

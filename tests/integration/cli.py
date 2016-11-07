@@ -1,5 +1,10 @@
 import json
 import subprocess
+import pytest
+from haas.test_common import fail_on_log_warnings
+
+fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
+
 
 PROJECT1 = 'foo'
 PROJECT2 = 'bar'

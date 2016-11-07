@@ -40,6 +40,8 @@ def configure():
 
 
 fresh_database = pytest.fixture(fresh_database)
+additional_database = pytest.fixture(additional_db)
+fail_on_log_warnings = pytest.fixture(fail_on_log_warnings)
 
 
 @pytest.fixture
@@ -49,12 +51,6 @@ def server_init():
 
 
 with_request_context = pytest.yield_fixture(with_request_context)
-
-
-pytestmark = pytest.mark.usefixtures('configure',
-                                     'fresh_database',
-                                     'server_init',
-                                     'with_request_context')
 
 
 @pytest.fixture
@@ -67,39 +63,41 @@ def switchinit():
     api.switch_register_port('sw0', '3')
 
 
+default_fixtures = ['fail_on_log_warnings',
+                    'configure',
+                    'fresh_database',
+                    'server_init',
+                    'with_request_context']
+
+pytestmark = pytest.mark.usefixtures(*default_fixtures)
+
+
 class TestProjectCreateDelete:
     """Tests for the haas.api.project_* functions."""
+
+    pytestmark = pytest.mark.usefixtures(*(default_fixtures +
+                                           ['additional_database']))
 
     def test_project_create_success(self):
         api.project_create('anvil-nextgen')
         api._must_find(model.Project, 'anvil-nextgen')
 
     def test_project_create_duplicate(self):
-        api.project_create('anvil-nextgen')
         with pytest.raises(api.DuplicateError):
-            api.project_create('anvil-nextgen')
+            api.project_create('manhattan')
 
     def test_project_delete(self):
-        api.project_create('anvil-nextgen')
-        api.project_delete('anvil-nextgen')
+        api.project_delete('empty-project')
         with pytest.raises(api.NotFoundError):
-            api._must_find(model.Project, 'anvil-nextgen')
+            api._must_find(model.Project, 'empty-project')
 
     def test_project_delete_nexist(self):
         with pytest.raises(api.NotFoundError):
             api.project_delete('anvil-nextgen')
 
     def test_project_delete_hasnode(self):
-        api.node_register('node-99', obm={
-                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                  "host": "ipmihost",
-                  "user": "root",
-                  "password": "tapeworm"})
-
-        api.project_create('anvil-nextgen')
-        api.project_connect_node('anvil-nextgen', 'node-99')
         with pytest.raises(api.BlockedError):
-            api.project_delete('anvil-nextgen')
+            api.project_delete('manhattan')
 
     def test_project_delete_success_nodesdeleted(self):
         api.node_register('node-99', obm={
@@ -130,16 +128,45 @@ class TestProjectCreateDelete:
         with pytest.raises(api.BlockedError):
             api.project_delete('anvil-nextgen')
 
-    def test_project_delete(self):
-        api.project_create('acme-corp')
-        api.project_delete('acme-corp')
-        with pytest.raises(api.NotFoundError):
-            api._must_find(model.Project, 'acme-corp')
-
     def test_duplicate_project_create(self):
         api.project_create('acme-corp')
         with pytest.raises(api.DuplicateError):
             api.project_create('acme-corp')
+
+
+class TestProjectAddDeleteNetwork:
+    """Tests for adding and deleting a network from a project"""
+
+    pytestmark = pytest.mark.usefixtures(*(default_fixtures +
+                                           ['additional_database']))
+
+    def test_network_grant_project_access(self):
+        api.network_grant_project_access('manhattan', 'runway_pxe')
+        network = api._must_find(model.Network, 'runway_pxe')
+        project = api._must_find(model.Project, 'manhattan')
+        assert project in network.access
+        assert network in project.networks_access
+
+    def test_network_revoke_project_access(self):
+        api.network_revoke_project_access('runway', 'runway_provider')
+        network = api._must_find(model.Network, 'runway_provider')
+        project = api._must_find(model.Project, 'runway')
+        assert project not in network.access
+        assert network not in project.networks_access
+
+    def test_network_revoke_project_access_connected_node(self):
+        api.node_connect_network(
+            'runway_node_0',
+            'boot-nic',
+            'runway_provider')
+        deferred.apply_networking()
+
+        with pytest.raises(api.BlockedError):
+            api.network_revoke_project_access('runway', 'runway_provider')
+
+    def test_project_remove_network_owner(self):
+        with pytest.raises(api.BlockedError):
+            api.network_revoke_project_access('runway', 'runway_pxe')
 
 
 class TestNetworking:
@@ -336,6 +363,7 @@ class TestProjectConnectDetachNode:
 class TestRegisterCorrectObm:
     """Tests that node_register stores obm driver information into
     correct corresponding tables
+
     """
 
     def test_ipmi(self):
@@ -1145,7 +1173,7 @@ class TestNetworkCreateDelete:
         api.project_create('anvil-nextgen')
         network_create_simple('hammernet', 'anvil-nextgen')
         net = api._must_find(model.Network, 'hammernet')
-        assert net.creator.label == 'anvil-nextgen'
+        assert net.owner.label == 'anvil-nextgen'
 
     def test_network_create_badproject(self):
         """Tests that creating a network with a nonexistent project fails"""
@@ -1236,6 +1264,9 @@ class TestSwitch:
                                 password="switch_pass",
                                 hostname="switchname")
 
+
+class Test_switch_delete:
+
     def test_delete(self):
         """Deleting a switch should actually remove it."""
         api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
@@ -1253,6 +1284,9 @@ class TestSwitch:
         with pytest.raises(api.NotFoundError):
             api.switch_delete('sw0')
 
+
+class Test_switch_register_port:
+
     def test_register_port(self):
         """Creating a port on an existing switch should succeed."""
         api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
@@ -1268,6 +1302,9 @@ class TestSwitch:
         """Creating  port on a non-existant switch should fail."""
         with pytest.raises(api.NotFoundError):
             api.switch_register_port('sw0', '5')
+
+
+class Test_switch_delete_port:
 
     def test_delete_port(self):
         """Removing a port should remove it from the db."""
@@ -1297,6 +1334,9 @@ class TestSwitch:
                             hostname="switchname")
         with pytest.raises(api.NotFoundError):
             api.switch_delete_port('sw0', '5')
+
+
+class Test_list_switches:
 
     def test_list_switches(self):
         assert json.loads(api.list_switches()) == []
@@ -1496,8 +1536,79 @@ class TestPortConnectDetachNic:
             api.port_detach_nic('sw0', '3')
 
 
-class TestQuery:
-    """test the query api"""
+class TestQuery_populated_db:
+    """test portions of the query api with a populated database"""
+
+    pytestmark = pytest.mark.usefixtures(*(default_fixtures +
+                                           ['additional_database']))
+
+    def test_list_networks(self):
+        result = json.loads(api.list_networks())
+        for net in result.keys():
+            del result[net]['network_id']
+        assert result == {
+            'manhattan_provider': {'projects': ['manhattan']},
+            'manhattan_pxe': {'projects': ['manhattan']},
+            'manhattan_runway_provider': {'projects': ['manhattan', 'runway']},
+            'manhattan_runway_pxe': {'projects': ['manhattan', 'runway']},
+            'pub_default': {'projects': None},
+            'runway_provider': {'projects': ['runway']},
+            'runway_pxe': {'projects': ['runway']},
+            'stock_ext_pub': {'projects': None},
+            'stock_int_pub': {'projects': None},
+        }
+
+    def test_list_network_attachments(self):
+        api.node_connect_network(
+            'runway_node_0', 'boot-nic', 'manhattan_runway_pxe')
+        api.node_connect_network(
+            'manhattan_node_0', 'boot-nic', 'manhattan_runway_pxe')
+        deferred.apply_networking()
+
+        actual = json.loads(
+            api.list_network_attachments('manhattan_runway_pxe'))
+        expected = {
+            'manhattan_node_0':
+                {
+                    'nic': 'boot-nic',
+                    'channel': get_network_allocator().get_default_channel(),
+                    'project': 'manhattan'
+                },
+            'runway_node_0':
+                {
+                    'nic': 'boot-nic',
+                    'channel': get_network_allocator().get_default_channel(),
+                    'project': 'runway'
+                }
+            }
+        assert actual == expected
+
+    def test_list_network_attachments_for_project(self):
+        api.node_connect_network(
+            'runway_node_0',
+            'boot-nic',
+            'manhattan_runway_pxe')
+        api.node_connect_network(
+            'manhattan_node_0',
+            'boot-nic',
+            'manhattan_runway_pxe')
+        deferred.apply_networking()
+
+        actual = json.loads(
+            api.list_network_attachments('manhattan_runway_pxe', 'runway'))
+        expected = {
+            'runway_node_0':
+                {
+                    'nic': 'boot-nic',
+                    'channel': get_network_allocator().get_default_channel(),
+                    'project': 'runway'
+                }
+            }
+        assert actual == expected
+
+
+class TestQuery_unpopulated_db:
+    """test portions of the query api with a fresh database"""
 
     def _compare_node_dumps(self, actual, expected):
         """This is a helper method which compares the parsed json output of
@@ -1542,6 +1653,9 @@ class TestQuery:
             'master-control-program',
             'robocop',
         ]
+
+    def test_list_networks_none(self):
+        assert json.loads(api.list_networks()) == {}
 
     def test_list_projects(self):
         assert json.loads(api.list_projects()) == []
@@ -1617,15 +1731,6 @@ class TestQuery:
             ],
         }
         self._compare_node_dumps(actual, expected)
-
-    def test_show_node(self):
-        """Test the show_node api call.
-        We create a node, and query it twice: once before it is reserved,
-        and once after it has been reserved by a project and attached to
-        a network. Two things should change: (1) "project" should show
-        registered project, and (2) the newly attached network should be
-        listed.
-        """
 
     def test_show_node_unavailable(self):
         api.node_register('robocop', obm={
@@ -1854,36 +1959,37 @@ class TestShowNetwork:
         result = json.loads(api.show_network('spiderwebs'))
         assert result == {
             'name': 'spiderwebs',
-            'creator': 'anvil-nextgen',
-            'access': 'anvil-nextgen',
+            'owner': 'anvil-nextgen',
+            'access': ['anvil-nextgen'],
             "channels": ["null"]
         }
 
     def test_show_network_public(self):
         api.network_create('public-network',
-                           creator='admin',
+                           owner='admin',
                            access='',
                            net_id='432')
 
         result = json.loads(api.show_network('public-network'))
         assert result == {
             'name': 'public-network',
-            'creator': 'admin',
+            'owner': 'admin',
+            'access': None,
             'channels': ['null'],
         }
 
     def test_show_network_provider(self):
         api.project_create('anvil-nextgen')
         api.network_create('spiderwebs',
-                           creator='admin',
+                           owner='admin',
                            access='anvil-nextgen',
                            net_id='451')
 
         result = json.loads(api.show_network('spiderwebs'))
         assert result == {
             'name': 'spiderwebs',
-            'creator': 'admin',
-            'access': 'anvil-nextgen',
+            'owner': 'admin',
+            'access': ['anvil-nextgen'],
             'channels': ['null'],
         }
 
@@ -1905,8 +2011,8 @@ class TestFancyNetworkCreate:
         api.network_create('hammernet', 'anvil-nextgen', 'anvil-nextgen', '')
         project = api._must_find(model.Project, 'anvil-nextgen')
         network = api._must_find(model.Network, 'hammernet')
-        assert network.creator is project
-        assert network.access is project
+        assert network.owner is project
+        assert project in network.access
         assert network.allocated is True
 
     def test_project_network_imported_fails(self):
@@ -1941,8 +2047,11 @@ class TestFancyNetworkCreate:
                 network = 'hammernet' + project_api + net_id
                 api.network_create(network, 'admin', project_api, net_id)
                 network = api._must_find(model.Network, network)
-                assert network.creator is None
-                assert network.access is project_db
+                assert network.owner is None
+                if project_db is None:
+                    assert not network.access
+                else:
+                    assert project_db in network.access
                 assert network.allocated is allocated
             network = api._must_find(model.Network, 'hammernet' +
                                      project_api + '35')

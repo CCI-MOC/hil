@@ -1514,4 +1514,3 @@ ALTER TABLE ONLY user_projects
 --
 -- PostgreSQL database dump complete
 --
-

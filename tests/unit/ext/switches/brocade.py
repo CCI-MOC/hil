@@ -18,6 +18,10 @@ import requests_mock
 from haas.ext.switches import brocade
 from haas import model
 from haas.ext.obm.ipmi import Ipmi
+from haas.test_common import fail_on_log_warnings
+
+fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
+
 
 MODE_RESPONSE_ACCESS = """
 <mode xmlns="urn:brocade.com:mgmt:brocade-interface"
@@ -42,7 +46,7 @@ MODE_RESPONSE_TRUNK = """
 """
 
 TRUNK_VLAN_RESPONSE = """
-<trunk xmlns="urn:brocade.com:mgmt:brocade-interface" 
+<trunk xmlns="urn:brocade.com:mgmt:brocade-interface"
        xmlns:y="http://brocade.com/ns/rest"
        y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/18%22/switchport/trunk">
   <allowed y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/18%22/switchport/trunk/allowed">  # noqa
@@ -66,7 +70,7 @@ ACCESS_VLAN_RESPONSE = """
 """
 
 TRUNK_NATIVE_VLAN_RESPONSE_NO_VLANS = """
-<trunk xmlns="urn:brocade.com:mgmt:brocade-interface" 
+<trunk xmlns="urn:brocade.com:mgmt:brocade-interface"
        xmlns:y="http://brocade.com/ns/rest"
        y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/10%22/switchport/trunk">
   <allowed y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/10%22/switchport/trunk/allowed">  # noqa
@@ -157,7 +161,7 @@ class TestBrocade(object):
     @pytest.fixture
     def network(self):
         project = model.Project('anvil-nextgen')
-        return model.Network(project, project, True, '102', 'hammernet')
+        return model.Network(project, [project], True, '102', 'hammernet')
 
     def test_get_port_networks(self, switch):
         with requests_mock.mock() as mock:
