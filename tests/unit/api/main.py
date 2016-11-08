@@ -1810,8 +1810,7 @@ class TestQuery_unpopulated_db:
         api.node_register_nic('robocop', 'wlan0', 'DE:AD:BE:EF:20:15')
         api.node_register_tpm_metadata('robocop', 'EK', 'pk')
         api.node_register_tpm_metadata('robocop', 'SHA256', \
-                                       'b5962d8173c14e60259211bcf25d1263c36e0ad
-                                       7da32ba9d07b224eac1834813')
+            'b5962d8173c14e60259211bcf25d1263c36e0ad7da32ba9d07b224eac1834813')
 
         actual = json.loads(api.show_node('robocop'))
         expected = {
@@ -1836,8 +1835,8 @@ class TestQuery_unpopulated_db:
                 },
                 {
                     'label': 'SHA256',
-                    'value': 'b5962d8173c14e60259211bcf25d1263c36e0ad7da32ba9d0
-                    7b224eac1834813',
+                    'value': \
+            'b5962d8173c14e60259211bcf25d1263c36e0ad7da32ba9d07b224eac1834813',
                 },
             ]
         }
