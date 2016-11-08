@@ -541,6 +541,7 @@ class TestNodeRegisterDeleteNic:
         api.node_register_nic('compute-01', 'ipmi', 'DE:AD:BE:EF:20:14')
         api.node_register_nic('compute-02', 'ipmi', 'DE:AD:BE:EF:20:14')
 
+
 class TestNodeRegisterDeleteTPMMetadata:
 
     def test_node_register_tpm_metadata(self):
@@ -550,7 +551,9 @@ class TestNodeRegisterDeleteTPMMetadata:
                   "user": "root",
                   "password": "tapeworm"})
         api.node_register_tpm_metadata('compute-01', 'EK', 'pk')
-        tpm_metadata = api._must_find_n(api._must_find(model.Node, 'compute-01'), model.TPM_metadata, 'EK')
+        tpm_metadata = api._must_find_n(api._must_find(model.Node, \
+                                                       'compute-01'), \
+                                        model.TPM_metadata, 'EK')
         assert tpm_metadata.owner.label == 'compute-01'
 
     def test_node_register_tpm_metadata_no_node(self):
@@ -564,7 +567,9 @@ class TestNodeRegisterDeleteTPMMetadata:
                   "user": "root",
                   "password": "tapeworm"})
         api.node_register_tpm_metadata('compute-01', 'EK', 'pk')
-        tpm_metadata = api._must_find_n(api._must_find(model.Node, 'compute-01'), model.TPM_metadata, 'EK')
+        tpm_metadata = api._must_find_n(api._must_find(model.Node, \
+                                                       'compute-01'),\
+                                        model.TPM_metadata, 'EK')
         with pytest.raises(api.DuplicateError):
             api.node_register_tpm_metadata('compute-01', 'EK', 'pk')
 
@@ -576,7 +581,9 @@ class TestNodeRegisterDeleteTPMMetadata:
                   "password": "tapeworm"})
         api.node_register_tpm_metadata('compute-01', 'EK', 'pk')
         api.node_delete_tpm_metadata('compute-01', 'EK')
-        api._assert_absent_n(api._must_find(model.Node, 'compute-01'), model.TPM_metadata, 'EK')
+        api._assert_absent_n(api._must_find(model.Node, \
+                                            'compute-01'), \
+                             model.TPM_metadata, 'EK')
 
     def test_node_delete_tpm_metadata_tpm_metadata_nexist(self):
         api.node_register('compute-01', obm={
@@ -1802,7 +1809,9 @@ class TestQuery_unpopulated_db:
         api.node_register_nic('robocop', 'eth0', 'DE:AD:BE:EF:20:14')
         api.node_register_nic('robocop', 'wlan0', 'DE:AD:BE:EF:20:15')
         api.node_register_tpm_metadata('robocop', 'EK', 'pk')
-        api.node_register_tpm_metadata('robocop', 'SHA256', 'b5962d8173c14e60259211bcf25d1263c36e0ad7da32ba9d07b224eac1834813')
+        api.node_register_tpm_metadata('robocop', 'SHA256', \
+                                       'b5962d8173c14e60259211bcf25d1263c36e0ad
+                                       7da32ba9d07b224eac1834813')
 
         actual = json.loads(api.show_node('robocop'))
         expected = {
@@ -1827,7 +1836,8 @@ class TestQuery_unpopulated_db:
                 },
                 {
                     'label': 'SHA256',
-                    'value': 'b5962d8173c14e60259211bcf25d1263c36e0ad7da32ba9d07b224eac1834813',
+                    'value': 'b5962d8173c14e60259211bcf25d1263c36e0ad7da32ba9d0
+                    7b224eac1834813',
                 },
             ]
         }
