@@ -377,10 +377,7 @@ def additional_db():
         db.session.add(switch)
         node = db.session.query(Node).filter_by(label='runway_node_0').one()
         db.session.add(TPM_metadata('EK', 'pk', node))
-        db.session.add(TPM_metadata('SHA256', \
-                                'b5962d8173c14e60259211bcf25d1263c36e0ad7da32ba
-                                9d07b224eac1834813', \
-                                node))
+        db.session.add(TPM_metadata('SHA256', 'b5962d8173c14e60259211bcf25d1263c36e0ad7da32ba9d07b224eac1834813', node))
         db.session.commit()
 
 

@@ -133,7 +133,6 @@ class TPM_metadata(db.Model):
         self.value = value
         self.owner = node
 
-
 class Network(db.Model):
     """A link-layer network.
 

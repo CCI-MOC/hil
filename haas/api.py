@@ -423,6 +423,7 @@ def node_detach_network(node, nic, network):
     return '', 202
 
 
+
 @rest_call('PUT', '/TPM_metadata/<tpm_metadata>', Schema({
     'node': basestring, 'value': basestring
 }))
@@ -451,10 +452,9 @@ def node_delete_tpm_metadata(node, tpm_metadata):
     get_auth_backend().require_admin()
     node = _must_find(model.Node, node)
     tpm_metadata = _must_find_n(node, model.TPM_metadata, tpm_metadata)
-    
+   
     db.session.delete(tpm_metadata)
     db.session.commit()
-
 
 # Head Node Code #
 ##################
