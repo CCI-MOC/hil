@@ -103,6 +103,9 @@ migration script. The script will be stored in `haas/migrations/versions`.
 The value of `down_revision` should be the identifier of the previous migration script.
 The value of `branch_labels` should be `('<branch_name>',)` where `branch_name`
 should match what was used in the command to generate the migration script.
+Finally, the value of `branch_lables` in the previous migration script
+(named by `down_revision` in the new one) must be set to `None`. This
+will need to be changed manually.
 
 Sanity check the output; Alembic often does a good job generating scripts, but
 it should not be trusted blindly.
