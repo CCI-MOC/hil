@@ -45,11 +45,7 @@ case "$1" in
     # too old to parse some of the syntax used in keystone's requirements.txt.
     # Make sure we have the latest:
     pip install --upgrade pip
-
-    # FIXME: Workaround for https://github.com/CCI-MOC/hil/issues/675
-    # remove once https://bugs.launchpad.net/oslo.messaging/+bug/1638263 is fixed
-    pip install "kombu>=3.0.25,<4.0"
-
+    
     pip install -r requirements.txt
     pip install .
     pip install uwsgi # To actually run keystone; no webserver in the deps.
