@@ -1,5 +1,6 @@
-from haas.client.base import *
-from haas.client.client_errors import *
+import json
+from haas.client.base import ClientBase
+from haas.client import errors
 
 
 class Project(ClientBase):
@@ -9,60 +10,68 @@ class Project(ClientBase):
         def list(self):
             """ Lists all projects under HIL """
             url = self.object_url('/projects')
-            q = requests.get(url, headers={"Authorization": "Basic %s" % self.auth})
+            q = self.s.get(url)
             if q.ok:
                 return q.json()
             elif q.status_code == 401:
-                raise AuthenticationError("Make sure credentials match chosen authentication backend.")
+                raise errors.AuthenticationError(
+                        "Make sure credentials match "
+                        "chosen authentication backend."
+                      )
 
         def nodes_in(self, project_name):
             """ Lists nodes allocated to project <project_name> """
             self.project_name = project_name
             url = self.object_url('project', self.project_name, 'nodes')
-            q = requests.get(url, headers={"Authorization": "Basic %s" % self.auth})
+            q = self.s.get(url)
             if q.ok:
                 return q.json()
             elif q.status_code == 401:
-                raise AuthenticationError("Invalid credentials.")
+                raise errors.AuthenticationError("Invalid credentials.")
             elif q.status_code == 404:
-                raise NotFoundError("Project %s does not exist." % self.project_name)
-
+                raise errors.NotFoundError(
+                        "Project %s does not exist." % self.project_name
+                        )
 
         def networks_in(self, project_name):
             """ Lists nodes allocated to project <project_name> """
             self.project_name = project_name
             url = self.object_url('project', self.project_name, 'networks')
-            q = requests.get(url, headers={"Authorization": "Basic %s" % self.auth})
+            q = self.s.get(url)
             if q.ok:
                 return q.json()
             elif q.status_code == 401:
-                raise AuthenticationError("Invalid credentials.")
+                raise errors.AuthenticationError("Invalid credentials.")
             elif q.status_code == 404:
-                raise NotFoundError("Project %s does not exist." % self.project_name)
+                raise errors.NotFoundError(
+                        "Project %s does not exist." % self.project_name
+                        )
 
         def create(self, project_name):
             """ Creates a project named <project_name> """
             self.project_name = project_name
             url = self.object_url('project', self.project_name)
-            q = requests.put(url, headers={"Authorization": "Basic %s" % self.auth})
+            q = self.s.put(url)
             if q.ok:
                 return
             elif q.status_code == 401:
-                raise AuthenticationError("Invalid credentials.")
+                raise errors.AuthenticationError("Invalid credentials.")
             elif q.status_code == 409:
-                raise DuplicateError("Project Name not unique.")
+                raise errors.DuplicateError("Project Name not unique.")
 
         def delete(self, project_name):
             """ Deletes a project named <project_name> """
             self.project_name = project_name
             url = self.object_url('project', self.project_name)
-            q = requests.delete(url, headers={"Authorization": "Basic %s" % self.auth})
+            q = self.s.delete(url)
             if q.ok:
                 return
             elif q.status_code == 401:
-                raise AuthenticationError("Invalid credentials.")
+                raise errors.AuthenticationError("Invalid credentials.")
             elif q.status_code == 404:
-                raise NotFoundError("Deletion failed. Project does not exist.")
+                raise errors.NotFoundError(
+                        "Deletion failed. Project does not exist."
+                        )
 
         def connect(self, project_name, node_name):
             """ Adds a node to a project. """
@@ -70,14 +79,16 @@ class Project(ClientBase):
             self.node_name = node_name
 
             url = self.object_url('project', project_name, 'connect_node')
-            payload=json.dumps({'node':node_name})
-            q = requests.post(url, headers={"Authorization": "Basic %s" % self.auth}, data=payload)
+            payload = json.dumps({'node': node_name})
+            q = self.s.post(url, data=payload)
             if q.ok:
                 return
             elif q.status_code == 409:
-                raise DuplicateError("Node is already owned by the project. ")
+                raise errors.DuplicateError(
+                        "Node is already owned by the project. "
+                        )
             elif q.status_code == 404:
-                raise NotFoundError("Node or project does not exist. ")
+                raise errors.NotFoundError("Node or project does not exist.")
 
         def disconnect(self, project_name, node_name):
             """ Adds a node to a project. """
@@ -85,17 +96,12 @@ class Project(ClientBase):
             self.node_name = node_name
 
             url = self.object_url('project', project_name, 'detach_node')
-            payload=json.dumps({'node':node_name})
-            q = requests.post(url, headers={"Authorization": "Basic %s" % self.auth}, data=payload)
+            payload = json.dumps({'node': node_name})
+            q = self.s.post(url, data=payload)
             if q.ok:
                 return
             elif q.status_code == 404:
-                raise NotFoundError("Node or Project does not exist or Node not owned by project")
-
-
-
-
-
-
-
-
+                raise errors.NotFoundError(
+                        "Node or Project does not exist or "
+                        "Node not owned by project"
+                        )
