@@ -3,10 +3,10 @@
 import requests
 import os
 import json
+from haas.client import errors
 from urlparse import urljoin
-#from requests.exceptions import ConnectionError, MissingSchema
 
-from client_errors import *
+
 
 
 class ClientBase(object):
@@ -19,7 +19,7 @@ class ClientBase(object):
     """
 
 
-    def __init__(self, endpoint=None, auth=None):
+    def __init__(self, endpoint=None, sess=None):
         """ Initialize an instance of the library with following parameters.
         endpoint: stands for the http endpoint eg. endpoint=http://127.0.0.1
         user: username as which you wish to connect to HaaS
@@ -27,9 +27,9 @@ class ClientBase(object):
         Currently all this information is fetched from the user's environment.
         """
         self.endpoint = endpoint
-        self.auth = auth
+        self.s = sess
 
-        if None in [self.endpoint, self.auth]:
+        if None in [self.endpoint, self.s]:
             raise LookupError("Insufficient attributes to establish connection with HaaS server")
 
     def object_url(self, *args):

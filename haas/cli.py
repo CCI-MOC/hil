@@ -28,9 +28,9 @@ import abc
 from functools import wraps
 
 ## Hook to the client library
-from haas.client.auth import *
+from haas.client.auth import db_auth
 from haas.client.client import Client
-from haas.client.client_errors import *
+from haas.client import errors
 
 
 ep = os.environ.get('HAAS_ENDPOINT') or "http://127.0.0.1:5000"
@@ -38,9 +38,9 @@ username = "jil" or os.environ.get('HAAS_USERNAME')
 password = "tumbling" or os.environ.get('HAAS_PASSWORD')
 
 
-auth = auth_db(username, password)
+sess = db_auth(username, password)
 
-C = Client(ep, auth) #Initializing client library
+C = Client(ep, sess) #Initializing client library
 
 
 command_dict = {}
@@ -408,7 +408,7 @@ def project_create(project):
     """Create a <project>"""
     try:
         C.project.create(project)
-    except (DuplicateError, AuthenticationError) as e:
+    except (errors.DuplicateError, errors.AuthenticationError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
 
 @cmd
@@ -416,7 +416,7 @@ def project_delete(project):
     """Delete <project>"""
     try:
         C.project.delete(project)
-    except (NotFoundError, AuthenticationError) as e:
+    except (errors.NotFoundError, errors.AuthenticationError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
 
 @cmd
@@ -438,7 +438,7 @@ def project_connect_node(project, node):
     """Connect <node> to <project>"""
     try:
         C.project.connect(project, node)
-    except (NotFoundError, DuplicateError) as e:
+    except (errors.NotFoundError, errors.DuplicateError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
 
 @cmd
@@ -446,7 +446,7 @@ def project_detach_node(project, node):
     """Detach <node> from <project>"""
     try:
         C.project.disconnect(project, node)
-    except (NotFoundError) as e:
+    except (errors.NotFoundError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
 
 
@@ -500,7 +500,7 @@ def node_delete(node):
     """Delete <node>"""
     try:
         C.node.delete(node)
-    except (NotFoundError, BlockedError) as e:
+    except (errors.NotFoundError, errors.BlockedError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
 
 #    url = object_url('node', node)
@@ -512,7 +512,7 @@ def node_power_cycle(node):
     """Power cycle <node>"""
     try:
         C.node.power_cycle(node)
-    except (NotFoundError, BlockedError) as e:
+    except (errors.NotFoundError, errors.BlockedError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
 
 #    url = object_url('node', node, 'power_cycle')
@@ -524,7 +524,7 @@ def node_power_off(node):
     """Power off <node>"""
     try:
         C.node.power_off(node)
-    except (NotFoundError, BlockedError) as e:
+    except (errors.NotFoundError, errors.BlockedError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
 
 
@@ -535,7 +535,7 @@ def node_register_nic(node, nic, macaddr):
     """
     try: 
         C.node.add_nic(node, nic, macaddr)
-    except (NotFoundError, DuplicateError) as e:
+    except (errors.NotFoundError, errors.DuplicateError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
 
 
@@ -544,7 +544,7 @@ def node_delete_nic(node, nic):
     """Delete a <nic> on a <node>"""
     try:
         C.node.remove_nic(node, nic)
-    except(NotFoundError, BlockedError) as e:
+    except(errors.NotFoundError, errors.BlockedError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
 
 #    url = object_url('node', node, 'nic', nic)

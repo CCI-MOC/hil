@@ -1,5 +1,6 @@
-from haas.client.base import *
-from haas.client.client_errors import *
+import json
+from haas.client.base import ClientBase
+from haas.client import errors
 
 
 class Switch(ClientBase):
@@ -9,14 +10,11 @@ class Switch(ClientBase):
     def list(self):
         """ List all nodes that HIL manages """
         url = self.object_url('/switches')
-        q = requests.get(url, headers={"Authorization": "Basic %s" % self.auth})
+        q = self.s.get(url)
         if q.ok:
             return q.json()
         elif q.status_code == 401:
-            raise AuthenticationError("Make sure credentials match chosen authentication backend.")
-
-
-
-
-
-
+            raise errors.AuthenticationError(
+                    "Make sure credentials match "
+                    "chosen authentication backend."
+                    )
