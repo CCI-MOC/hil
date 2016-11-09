@@ -33,14 +33,14 @@ from haas.client.client import Client
 from haas.client import errors
 
 
-ep = os.environ.get('HAAS_ENDPOINT') or "http://127.0.0.1:5000"
-username = "jil" or os.environ.get('HAAS_USERNAME')
-password = "tumbling" or os.environ.get('HAAS_PASSWORD')
+#ep = os.environ.get('HAAS_ENDPOINT') or "http://127.0.0.1:5000"
+#username = "jil" or os.environ.get('HAAS_USERNAME')
+#password = "tumbling" or os.environ.get('HAAS_PASSWORD')
 
 
-sess = db_auth(username, password)
+#sess = db_auth(username, password)
 
-C = Client(ep, sess) #Initializing client library
+#C = Client(ep, sess) #Initializing client library
 
 
 command_dict = {}
@@ -195,13 +195,16 @@ def setup_http_client():
 
     This may be extended with other backends in the future.
     """
-    global http_client
+    #global http_client
     # First try basic auth:
+    ep = os.environ.get('HAAS_ENDPOINT') or "http://127.0.0.1:5000"
     basic_username = os.getenv('HAAS_USERNAME')
     basic_password = os.getenv('HAAS_PASSWORD')
     if basic_username is not None and basic_password is not None:
-        http_client = RequestsHTTPClient()
-        http_client.auth = (basic_username, basic_password)
+        #    http_client = RequestsHTTPClient()
+        #http_client.auth = (basic_username, basic_password)
+        sess = db_auth(username, password)
+        C = Client(ep, sess)
         return
     # Next try keystone:
     try:
@@ -222,12 +225,14 @@ def setup_http_client():
                            user_domain_id=os_user_domain_id,
                            project_domain_id=os_project_domain_id)
         sess = session.Session(auth=auth)
-        http_client = KeystoneHTTPClient(sess)
+#        http_client = KeystoneHTTPClient(sess)
+        C = Client(ep, sess)
         return
     except (ImportError, KeyError):
         pass
     # Finally, fall back to no authentication:
-    http_client = requests.Session()
+    sess = requests.Session()
+    C = Client(ep, sess)
 
 
 class FailedAPICallException(Exception):
