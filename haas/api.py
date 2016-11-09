@@ -1108,7 +1108,7 @@ def show_node(nodename):
                   } for n in node.nics],
         'metadata': [{'label': m.label,
                       'value': m.value,
-                  } for m in node.metadata]
+                      } for m in node.metadata]
     }, sort_keys=True)
 
 

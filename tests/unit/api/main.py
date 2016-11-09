@@ -552,8 +552,8 @@ class TestNodeRegisterDeleteMetadata:
                   "password": "tapeworm"})
         api.node_register_metadata('compute-01', 'EK', 'pk')
         metadata = api._must_find_n(api._must_find(model.Node,
-                                                       'compute-01'),
-                                        model.Metadata, 'EK')
+                                                   'compute-01'),
+                                    model.Metadata, 'EK')
         assert metadata.owner.label == 'compute-01'
 
     def test_node_register_metadata_no_node(self):
@@ -568,8 +568,8 @@ class TestNodeRegisterDeleteMetadata:
                   "password": "tapeworm"})
         api.node_register_metadata('compute-01', 'EK', 'pk')
         metadata = api._must_find_n(api._must_find(model.Node,
-                                                       'compute-01'),
-                                        model.Metadata, 'EK')
+                                                   'compute-01'),
+                                    model.Metadata, 'EK')
         with pytest.raises(api.DuplicateError):
             api.node_register_metadata('compute-01', 'EK', 'pk')
 
