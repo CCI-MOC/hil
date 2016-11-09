@@ -9,11 +9,9 @@ def db_auth(username, password):
     s.auth = (username, password)
     return s
 
+
 def keystone_auth(parameters):
-    """ This functions setup requisites for the  http session when using 
+    """ This functions setup requisites for the  http session when using
     keystone as the aunthentication backend.
     """
     pass
-
-
-

@@ -260,20 +260,20 @@ def populate_server():
             )
     requests.post(
             url_project+'proj-02'+'/connect_node',
-            data = json.dumps({'node': 'node-04'})
+            data=json.dumps({'node': 'node-04'})
             )
     # Adding node  3, 5 to proj-03
     requests.post(
             url_project+'proj-03'+'/connect_node',
-            data = json.dumps({'node': 'node-03'})
+            data=json.dumps({'node': 'node-03'})
             )
     requests.post(
             url_project+'proj-03'+'/connect_node',
-            data = json.dumps({'node': 'node-05'})
+            data=json.dumps({'node': 'node-05'})
             )
 
     # Assigning networks to projects
-    url_network= 'http://127.0.0.1:8888/network/'
+    url_network = 'http://127.0.0.1:8888/network/'
     for i in ['net-01', 'net-02', 'net-03']:
         requests.put(
                 url_network+i,
@@ -283,12 +283,12 @@ def populate_server():
                 )
 
 
-        # -- SETUP -- #
+# -- SETUP --
 @pytest.fixture(scope="session")
 def create_setup(request):
     dir_names = make_config()
     initialize_db()
-    proc = run_server(['haas', 'serve', '8888' ])
+    proc = run_server(['haas', 'serve', '8888'])
     import time
     time.sleep(1)
     populate_server()
@@ -297,6 +297,7 @@ def create_setup(request):
         proc.terminate()
         cleanup(dir_names)
     request.addfinalizer(fin)
+
 
 @pytest.mark.usefixtures("create_setup")
 class Test_Node:
@@ -308,8 +309,10 @@ class Test_Node:
 
     def test_list_nodes_all(self):
         result = C.node.list('all')
-        assert result == [u'node-01', u'node-02', u'node-03', u'node-04',
-                            u'node-05', u'node-06', u'node-07', u'node-08']
+        assert result == [
+                u'node-01', u'node-02', u'node-03', u'node-04', u'node-05',
+                u'node-06', u'node-07', u'node-08'
+                ]
 
     def test_show_node(self):
         result = C.node.show_node('node-07')
@@ -317,15 +320,15 @@ class Test_Node:
 
     def test_power_cycle(self):
         result = C.node.power_cycle('node-07')
-        assert result == None
+        assert result is None
 
     def test_power_off(self):
         result = C.node.power_off('node-07')
-        assert result == None
+        assert result is None
 
     def test_node_add_nic(self):
         result = C.node.add_nic('node-07', 'eth0', 'aa:bb:cc:dd:ee:ff')
-        assert result == None
+        assert result is None
 
     def test_node_add_duplicate_nic(self):
         C.node.add_nic('node-07', 'eth0', 'aa:bb:cc:dd:ee:ff')
@@ -339,14 +342,13 @@ class Test_Node:
     def test_remove_nic(self):
         C.node.add_nic('node-07', 'eth0', 'aa:bb:cc:dd:ee:ff')
         result = C.node.remove_nic('node-07', 'eth0')
-        assert result == None
+        assert result is None
 
     def test_remove_duplicate_nic(self):
         C.node.add_nic('node-07', 'eth0', 'aa:bb:cc:dd:ee:ff')
         C.node.remove_nic('node-07', 'eth0')
         with pytest.raises(errors.NotFoundError):
             C.node.remove_nic('node-07', 'eth0')
-
 
 
 @pytest.mark.usefixtures("create_setup")
@@ -373,7 +375,7 @@ class Test_project:
     def test_project_create(self):
         """ test for creating project. """
         result = C.project.create('dummy-01')
-        assert result == None
+        assert result is None
 
     def test_duplicate_project_create(self):
         """ test for catching duplicate name while creating new project. """
@@ -385,7 +387,7 @@ class Test_project:
         """ test for deleting project. """
         C.project.create('dummy-02')
         result = C.project.delete('dummy-02')
-        assert result == None
+        assert result is None
 
     def test_error_project_delete(self):
         """ test to capture error condition in project delete. """
@@ -396,7 +398,7 @@ class Test_project:
         """ test for connecting node to project. """
         C.project.create('abcd')
         result = C.project.connect('abcd', 'node-06')
-        assert result == None
+        assert result is None
 
     def test_project_connect_node_duplicate(self):
         """ test for erronous reconnecting node to project. """
@@ -418,16 +420,16 @@ class Test_project:
         C.project.create('abcd')
         C.project.connect('abcd', 'node-07')
         result = C.project.disconnect('abcd', 'node-07')
-        assert result == None
-        # ?? This tests takes same time as sum of all the other tests ??
+        assert result is None
 
     def test_project_disconnect_node_nosuchobject(self):
-        """ Test for errors while disconnecting node from project."""
+        """ Test for while disconnecting node from project."""
         C.project.create('abcd')
         with pytest.raises(errors.NotFoundError):
             C.project.disconnect('abcd', 'no-such-node')
         with pytest.raises(errors.NotFoundError):
             C.project.disconnect('no-such-project', 'node-06')
+
 
 @pytest.mark.usefixtures("create_setup")
 class Test_switch:
@@ -437,5 +439,4 @@ class Test_switch:
         result = C.switch.list()
         assert result == [u'brocade-01', u'dell-01', u'mock-01', u'nexus-01']
 
-## End of tests ##
-
+# End of tests ##

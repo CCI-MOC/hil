@@ -7,8 +7,6 @@ from haas.client import errors
 from urlparse import urljoin
 
 
-
-
 class ClientBase(object):
     """ Main class which contains all the methods to
     -- ensure input complies to API requisites
@@ -17,7 +15,6 @@ class ClientBase(object):
     In case of errors recieved from server, it will generate appropriate
     appropriate message.
     """
-
 
     def __init__(self, endpoint=None, sess=None):
         """ Initialize an instance of the library with following parameters.
@@ -30,12 +27,12 @@ class ClientBase(object):
         self.s = sess
 
         if None in [self.endpoint, self.s]:
-            raise LookupError("Insufficient attributes to establish connection with HaaS server")
+            raise LookupError(
+                    "Insufficient attributes to establish "
+                    "connection with HaaS server")
 
     def object_url(self, *args):
         """Generate URL from combining endpoint and args as relative URL"""
         rel = "/".join(args)
         url = urljoin(self.endpoint, rel)
         return url
-
-

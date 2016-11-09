@@ -533,7 +533,7 @@ def node_register_nic(node, nic, macaddr):
     """
     Register existence of a <nic> with the given <macaddr> on the given <node>
     """
-    try: 
+    try:
         C.node.add_nic(node, nic, macaddr)
     except (errors.NotFoundError, errors.DuplicateError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
