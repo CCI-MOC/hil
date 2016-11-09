@@ -116,8 +116,8 @@ class Project(db.Model):
         self.label = label
 
 
-class TPM_metadata(db.Model):
-    """metadata for a Node's TPM
+class Metadata(db.Model):
+    """metadata for a Node
 
     Metadata may a key, a hash, or otherwise
     """

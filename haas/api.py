@@ -423,36 +423,36 @@ def node_detach_network(node, nic, network):
     return '', 202
 
 
-@rest_call('PUT', '/TPM_metadata/<tpm_metadata>', Schema({
+@rest_call('PUT', '/node/<node>/metadata', Schema({
     'node': basestring, 'value': basestring
 }))
-def node_register_tpm_metadata(node, label, value):
-    """Register tpm metadata on a node.
+def node_register_metadata(node, label, value):
+    """Register metadata on a node.
 
     If the label already exists, a DuplicateError will be raised.
     """
     get_auth_backend().require_admin()
     node = _must_find(model.Node, node)
-    _assert_absent_n(node, model.TPM_metadata, label)
-    tpm_metadata = model.TPM_metadata(label, value, node)
+    _assert_absent_n(node, model.Metadata, label)
+    metadata = model.Metadata(label, value, node)
 
-    db.session.add(tpm_metadata)
+    db.session.add(metadata)
     db.session.commit()
 
 
-@rest_call('DELETE', '/node/<node>/TPM_metadata/<tpm_metadata>', Schema({
-    'node': basestring, 'tpm_metadata': basestring,
+@rest_call('DELETE', '/node/<node>/metadata/<metadata>', Schema({
+    'node': basestring, 'metadata': basestring,
 }))
-def node_delete_tpm_metadata(node, tpm_metadata):
-    """Delete a TPM metadata from a node.
+def node_delete_metadata(node, metadata):
+    """Delete a metadata from a node.
 
     If the metadata does not exist, a NotFoundError will be raised.
     """
     get_auth_backend().require_admin()
     node = _must_find(model.Node, node)
-    tpm_metadata = _must_find_n(node, model.TPM_metadata, tpm_metadata)
+    metadata = _must_find_n(node, model.Metadata, metadata)
 
-    db.session.delete(tpm_metadata)
+    db.session.delete(metadata)
     db.session.commit()
 
 
@@ -1106,9 +1106,9 @@ def show_node(nodename):
                                      attachment.network.label)
                                     for attachment in n.attachments]),
                   } for n in node.nics],
-        'tpm_metadata': [{'label': m.label,
-                          'value': m.value,
-                          } for m in node.metadata]
+        'metadata': [{'label': m.label,
+                      'value': m.value,
+                  } for m in node.metadata]
     }, sort_keys=True)
 
 

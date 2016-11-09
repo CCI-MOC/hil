@@ -558,16 +558,16 @@ def headnode_detach_network(headnode, hnic):
 
 
 @cmd
-def tpm_metadata_register(node, label, value):
-    """Register tpm metadata with <label> and <value> with <node> """
-    url = object_url('TPM_metadata', label)
+def metadata_register(node, label, value):
+    """Register metadata with <label> and <value> with <node> """
+    url = object_url('metadata', label)
     do_put(url, data={'value': value, 'node': node})
 
 
 @cmd
-def tpm_key_delete(node, tpm_metadata):
-    """Delete  <tpm_metadata> from a <node>"""
-    url = object_url('node', node, 'TPM_metadata', tpm_metadata)
+def metadata_delete(node, metadata):
+    """Delete  <metadata> from a <node>"""
+    url = object_url('node', node, 'metadata', metadata)
     do_delete(url)
 
 

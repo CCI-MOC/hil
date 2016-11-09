@@ -542,88 +542,63 @@ class TestNodeRegisterDeleteNic:
         api.node_register_nic('compute-02', 'ipmi', 'DE:AD:BE:EF:20:14')
 
 
-class TestNodeRegisterDeleteTPMMetadata:
+class TestNodeRegisterDeleteMetadata:
 
-    def test_node_register_tpm_metadata(self):
+    def test_node_register_metadata(self):
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
                   "user": "root",
                   "password": "tapeworm"})
-        api.node_register_tpm_metadata('compute-01', 'EK', 'pk')
-        tpm_metadata = api._must_find_n(api._must_find(model.Node,
+        api.node_register_metadata('compute-01', 'EK', 'pk')
+        metadata = api._must_find_n(api._must_find(model.Node,
                                                        'compute-01'),
-                                        model.TPM_metadata, 'EK')
-        assert tpm_metadata.owner.label == 'compute-01'
+                                        model.Metadata, 'EK')
+        assert metadata.owner.label == 'compute-01'
 
-    def test_node_register_tpm_metadata_no_node(self):
+    def test_node_register_metadata_no_node(self):
         with pytest.raises(api.NotFoundError):
-            api.node_register_tpm_metadata('compute-01', 'EK', 'pk')
+            api.node_register_metadata('compute-01', 'EK', 'pk')
 
-    def test_node_register_tpm_metadata_duplicate_tpm_metadata(self):
+    def test_node_register_metadata_duplicate_metadata(self):
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
                   "user": "root",
                   "password": "tapeworm"})
-        api.node_register_tpm_metadata('compute-01', 'EK', 'pk')
-        tpm_metadata = api._must_find_n(api._must_find(model.Node,
+        api.node_register_metadata('compute-01', 'EK', 'pk')
+        metadata = api._must_find_n(api._must_find(model.Node,
                                                        'compute-01'),
-                                        model.TPM_metadata, 'EK')
+                                        model.Metadata, 'EK')
         with pytest.raises(api.DuplicateError):
-            api.node_register_tpm_metadata('compute-01', 'EK', 'pk')
+            api.node_register_metadata('compute-01', 'EK', 'pk')
 
-    def test_node_delete_tpm_metadata_success(self):
+    def test_node_delete_metadata_success(self):
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
                   "user": "root",
                   "password": "tapeworm"})
-        api.node_register_tpm_metadata('compute-01', 'EK', 'pk')
-        api.node_delete_tpm_metadata('compute-01', 'EK')
+        api.node_register_metadata('compute-01', 'EK', 'pk')
+        api.node_delete_metadata('compute-01', 'EK')
         api._assert_absent_n(api._must_find(model.Node,
                                             'compute-01'),
-                             model.TPM_metadata, 'EK')
+                             model.Metadata, 'EK')
 
-    def test_node_delete_tpm_metadata_tpm_metadata_nexist(self):
+    def test_node_delete_metadata_metadata_nexist(self):
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
                   "user": "root",
                   "password": "tapeworm"})
         with pytest.raises(api.NotFoundError):
-            api.node_delete_tpm_metadata('compute-01', 'EK')
+            api.node_delete_metadata('compute-01', 'EK')
 
-    def test_node_delete_tpm_metadata_node_nexist(self):
+    def test_node_delete_metadata_node_nexist(self):
         with pytest.raises(api.NotFoundError):
-            api.node_delete_tpm_metadata('compute-01', 'EK')
+            api.node_delete_metadata('compute-01', 'EK')
 
-    def test_node_delete_tpm_metadata_wrong_node(self):
-        api.node_register('compute-01', obm={
-                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                  "host": "ipmihost",
-                  "user": "root",
-                  "password": "tapeworm"})
-        api.node_register('compute-02', obm={
-                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                  "host": "ipmihost",
-                  "user": "root",
-                  "password": "tapeworm"})
-        api.node_register_tpm_metadata('compute-01', 'EK', 'pk')
-        with pytest.raises(api.NotFoundError):
-            api.node_delete_tpm_metadata('compute-02', 'EK')
-
-    def test_node_delete_tpm_metadata_wrong_nexist_node(self):
-        api.node_register('compute-01', obm={
-                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                  "host": "ipmihost",
-                  "user": "root",
-                  "password": "tapeworm"})
-        api.node_register_tpm_metadata('compute-01', 'EK', 'pk')
-        with pytest.raises(api.NotFoundError):
-            api.node_delete_tpm_metadata('compute-02', 'EK')
-
-    def test_node_register_tpm_metadata_diff_nodes(self):
+    def test_node_delete_metadata_wrong_node(self):
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -634,8 +609,33 @@ class TestNodeRegisterDeleteTPMMetadata:
                   "host": "ipmihost",
                   "user": "root",
                   "password": "tapeworm"})
-        api.node_register_tpm_metadata('compute-01', 'EK', 'pk')
-        api.node_register_tpm_metadata('compute-02', 'EK', 'pk')
+        api.node_register_metadata('compute-01', 'EK', 'pk')
+        with pytest.raises(api.NotFoundError):
+            api.node_delete_metadata('compute-02', 'EK')
+
+    def test_node_delete_metadata_wrong_nexist_node(self):
+        api.node_register('compute-01', obm={
+                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                  "host": "ipmihost",
+                  "user": "root",
+                  "password": "tapeworm"})
+        api.node_register_metadata('compute-01', 'EK', 'pk')
+        with pytest.raises(api.NotFoundError):
+            api.node_delete_metadata('compute-02', 'EK')
+
+    def test_node_register_metadata_diff_nodes(self):
+        api.node_register('compute-01', obm={
+                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                  "host": "ipmihost",
+                  "user": "root",
+                  "password": "tapeworm"})
+        api.node_register('compute-02', obm={
+                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                  "host": "ipmihost",
+                  "user": "root",
+                  "password": "tapeworm"})
+        api.node_register_metadata('compute-01', 'EK', 'pk')
+        api.node_register_metadata('compute-02', 'EK', 'pk')
 
 
 class TestNodeConnectDetachNetwork:
@@ -1808,8 +1808,8 @@ class TestQuery_unpopulated_db:
                   "password": "tapeworm"})
         api.node_register_nic('robocop', 'eth0', 'DE:AD:BE:EF:20:14')
         api.node_register_nic('robocop', 'wlan0', 'DE:AD:BE:EF:20:15')
-        api.node_register_tpm_metadata('robocop', 'EK', 'pk')
-        api.node_register_tpm_metadata('robocop', 'SHA256', 'b5962d8173c14')
+        api.node_register_metadata('robocop', 'EK', 'pk')
+        api.node_register_metadata('robocop', 'SHA256', 'b5962d8173c14')
 
         actual = json.loads(api.show_node('robocop'))
         expected = {
@@ -1827,7 +1827,7 @@ class TestQuery_unpopulated_db:
                     "networks": {}
                 }
             ],
-            'tpm_metadata': [
+            'metadata': [
                 {
                     'label': 'EK',
                     'value': 'pk',
@@ -1865,7 +1865,7 @@ class TestQuery_unpopulated_db:
                     "networks": {}
                 }
             ],
-            'tpm_metadata': []
+            'metadata': []
         }
         self._compare_node_dumps(actual, expected)
 
@@ -1915,7 +1915,7 @@ class TestQuery_unpopulated_db:
                     }
                 }
             ],
-            'tpm_metadata': []
+            'metadata': []
         }
         self._compare_node_dumps(actual, expected)
 

@@ -93,7 +93,7 @@ class TestNetwork(ModelTest):
         return Network(pj, [pj], True, '102', 'hammernet')
 
 
-class TestTPMMetadata(ModelTest):
+class TestMetadata(ModelTest):
 
     def sample_obj(self):
         node = Node(label='node-99',
@@ -101,7 +101,7 @@ class TestTPMMetadata(ModelTest):
                              host="ipmihost",
                              user="root",
                              password="tapeworm"))
-        return TPM_metadata('EK', 'pk', node)
+        return Metadata('EK', 'pk', node)
 
 
 class TestNetworkingAction(ModelTest):
