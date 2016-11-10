@@ -493,19 +493,24 @@ The object will have at least the following fields:
 
         * "name", the name/label of the node (string).
         * "project", the name of the project a node belongs to or null if the node does not belong to a project
-        * "nics", a list of nics, each represted by a JSON object having
+        * "nics", a list of nics, each represented by a JSON object having
             at least the following fields:
 
                 - "label", the nic's label.
                 - "macaddr", the nic's mac address.
 		- "networks", a JSON object describing what networks are attached to the nic. The keys are channels and the values are the names of networks attached to those channels.
+	* "metadata", a list of metadata, each represented by a JSON object having the following fields
+
+	  	- "label", the label for the metadata
+		- "value", the value of the metadata
 
 Response body:
 
     {"name": "node1",
 	 "project": "project1",
          "nics": [{"label": "nic1", "macaddr": "01:23:45:67:89", "networks": {"vlan/native": "pxe", "vlan/235": "storage"}},
-                       {"label": "nic2", "macaddr": "12:34:56:78:90", "networks":{"vlan/native": "public"}}]
+                       {"label": "nic2", "macaddr": "12:34:56:78:90", "networks":{"vlan/native": "public"}}],
+	"metadata":[{"label": "EK", "value": "pk"}]
 	}
 
 Authorization requirements:
@@ -603,6 +608,30 @@ Response body:
         "runway",
         ...
     ]
+
+Authorization requirements:
+
+* Administrative access.
+
+#### node_register_metadata
+
+`PUT /node/<node>/metadata`
+
+Register metadata on `<node>`.
+
+Authorization requirements:
+
+* Administrative access.
+
+Possible Errors:
+
+* 409, if the metadata label already exists
+
+#### node_delete_metadata
+
+`DELETE /node/<node>/metadata/<metadata>`
+
+Delete the named `<metadata>` on `<node>`.
 
 Authorization requirements:
 
@@ -823,7 +852,7 @@ Authorization requirements:
 
 * Administrative access.
 
-### switch_register
+#### switch_register
 Register a network switch of type `<type>`
 
 `<type>` (a string) is the type of network switch. The possible values

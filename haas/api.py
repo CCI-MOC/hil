@@ -1067,31 +1067,6 @@ def show_node(nodename):
     """Show the details of a node.
 
     Returns a JSON object representing a node.
-
-    The object will have at least the following fields:
-
-        * "name", the name/label of the node (string).
-        * "project", the name of the project a node belongs to or null if the
-          node does not belong to a project
-        * "nics", a list of nics, each represted by a JSON object having
-            at least the following fields:
-
-                - "label", the nic's label.
-                - "macaddr", the nic's mac address.
-                - "networks", a JSON object describing what networks are
-                  attached to the nic. The keys are channels and the values
-                  are the names of networks attached to those channels.
-
-    Example: '{"name": "node1",
-                "project": "project1",
-                "nics": [{"label": "nic1",
-                          "macaddr": "01:23:45:67:89",
-                          "networks": {"vlan/native": "pxe",
-                             "vlan/235": "storage"}},
-                         {"label": "nic2",
-                          "macaddr": "12:34:56:78:90",
-                          "networks":{"vlan/native": "public"}}]
-              }'
     """
 
     node = _must_find(model.Node, nodename)
