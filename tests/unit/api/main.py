@@ -412,6 +412,25 @@ class TestNodeRegisterDelete:
                   "password": "tapeworm"})
         api._must_find(model.Node, 'node-99')
 
+    def test_node_register_with_metadata(self):
+        api.node_register('node-99', obm={
+                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                  "host": "ipmihost",
+                  "user": "root",
+                  "password": "tapeworm"}, metadata={
+                  "EK": "pk"})
+        api._must_find(model.Node, 'node-99')
+
+    def test_node_register_with_multiple_metadata(self):
+        api.node_register('node-99', obm={
+                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                  "host": "ipmihost",
+                  "user": "root",
+                  "password": "tapeworm"}, metadata={
+                  "EK": "pk",
+                  "SHA256": "b5962d8173c14"})
+        api._must_find(model.Node, 'node-99')
+
     def test_duplicate_node_register(self):
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",

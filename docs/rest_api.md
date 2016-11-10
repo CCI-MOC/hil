@@ -342,7 +342,7 @@ Possible Errors:
 
 #### node_register
 
-Register a node with OBM of <type>
+Register a node with OBM of <type> and optional metadata
 
 <type> (a string) is the type of OBM. The possible value depends on what drivers
 HaaS is configured to use. The remainder of the field are driver-specific;
@@ -353,6 +353,8 @@ see the documentation of the OBM driver in question (read `docs/obm-drivers.md`)
 Request Body:
 	{"obm": { "type": <obm-subtype>,
 		<additional sub-type specific values>}
+	 "metadata": {"label_1": "value_1",
+	 	     "label_2": "value_2"}
 	}
 
 example provided in USING.rst
