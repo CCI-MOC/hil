@@ -238,7 +238,7 @@ def node_register(node, **kwargs):
     cls.validate(kwargs['obm'])
     node_obj = model.Node(label=node, obm=cls(**kwargs['obm']))
     if 'metadata' in kwargs:
-        for label,value in kwargs['metadata'].items():
+        for label, value in kwargs['metadata'].items():
             label = label
             value = value
             metadata_obj = model.Metadata(label, value, node_obj)
