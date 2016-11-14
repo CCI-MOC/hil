@@ -1040,6 +1040,7 @@ def port_detach_nic(switch, port):
 
 
 @rest_call('POST', '/switch/<switch>/port/<path:port>/reset', Schema({
+    'switch': basestring, 'port': basestring,
 }))
 def port_revert(switch, port):
     get_auth_backend().require_admin()
@@ -1053,7 +1054,7 @@ def port_revert(switch, port):
 
     db.session.add(model.NetworkingAction(type='revert_port',
                                           nic=port.nic,
-                                          channel=None,
+                                          channel='',
                                           new_network=None))
     db.session.commit()
 
