@@ -87,14 +87,14 @@ def load_dump(filename):
     upgrade(revision='heads')
 
 
-def fresh_create():
+def fresh_create(make_objects):
     """Create a fresh database, and populate it with an initial set of objects.
 
-    The objects are created via `initial_db`. These objects should be such that
-    a migrated database dump will have the same contents.
+    The objects are created via `make_objects`. These objects should be such
+    that a migrated database dump will have the same contents.
     """
     create_db()
-    initial_db()
+    make_objects()
 
 
 def get_db_state():
@@ -123,8 +123,8 @@ def get_db_state():
     return result
 
 
-@pytest.mark.parametrize('filename,extra_config', [
-    ['flask.sql', {
+@pytest.mark.parametrize('filename,make_objects,extra_config', [
+    ['flask.sql', initial_db, {
         'extensions': {
             'haas.ext.switches.mock': '',
             'haas.ext.switches.nexus': '',
@@ -143,7 +143,7 @@ def get_db_state():
         },
     }],
 ])
-def test_db_eq(filename, extra_config):
+def test_db_eq(filename, make_objects, extra_config):
     """Verify that each function in fns creates the same database."""
 
     config_merge(extra_config)
@@ -164,7 +164,7 @@ def test_db_eq(filename, extra_config):
         return get_db_state()
 
     upgraded = run_fn(lambda: load_dump(filename))
-    fresh = run_fn(fresh_create)
+    fresh = run_fn(lambda: fresh_create(make_objects))
     drop_tables()
 
     def censor_nondeterminism(string):
