@@ -239,8 +239,6 @@ def node_register(node, **kwargs):
     node_obj = model.Node(label=node, obm=cls(**kwargs['obm']))
     if 'metadata' in kwargs:
         for label, value in kwargs['metadata'].items():
-            label = label
-            value = value
             metadata_obj = model.Metadata(label, value, node_obj)
             db.session.add(metadata_obj)
     db.session.add(node_obj)
@@ -429,8 +427,8 @@ def node_detach_network(node, nic, network):
     return '', 202
 
 
-@rest_call('PUT', '/node/<node>/metadata', Schema({
-    'node': basestring, 'value': basestring
+@rest_call('PUT', '/node/<node>/metadata/<label>', Schema({
+    'node': basestring, 'label': basestring, 'value': basestring
 }))
 def node_register_metadata(node, label, value):
     """Register metadata on a node.
@@ -443,6 +441,22 @@ def node_register_metadata(node, label, value):
     metadata = model.Metadata(label, value, node)
 
     db.session.add(metadata)
+    db.session.commit()
+
+
+@rest_call('PUT', '/node/<node>/update/metadata/<label>', Schema({
+    'node': basestring, 'label': basestring, 'value': basestring
+}))
+def node_update_metadata(node, label, value):
+    """update metadata on a node.
+
+    If the metadata does not exist, a NotFoundError will be raised.
+    """
+    get_auth_backend().require_admin()
+    node = _must_find(model.Node, node)
+    metadata = _must_find_n(node, model.Metadata, label)
+    metadata.value = value
+
     db.session.commit()
 
 

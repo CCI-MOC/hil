@@ -560,8 +560,15 @@ def headnode_detach_network(headnode, hnic):
 @cmd
 def metadata_register(node, label, value):
     """Register metadata with <label> and <value> with <node> """
-    url = object_url('metadata', label)
-    do_put(url, data={'value': value, 'node': node})
+    url = object_url('node', node, 'metadata', label)
+    do_put(url, data={'value': value})
+
+
+@cmd
+def metadata_update(node, label, value):
+    """Update metadata with <label> and <value> with <node> """
+    url = object_url('node', node, 'metadata', label)
+    do_put(url, data={'value': value})
 
 
 @cmd

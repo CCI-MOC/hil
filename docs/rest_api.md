@@ -354,7 +354,7 @@ Request Body:
 	{"obm": { "type": <obm-subtype>,
 		<additional sub-type specific values>}
 	 "metadata": {"label_1": "value_1",
-	 	     "label_2": "value_2"}
+	 	     "label_2": "value_2"} (Optional)
 	}
 
 example provided in USING.rst
@@ -501,7 +501,7 @@ The object will have at least the following fields:
                 - "label", the nic's label.
                 - "macaddr", the nic's mac address.
 		- "networks", a JSON object describing what networks are attached to the nic. The keys are channels and the values are the names of networks attached to those channels.
-	* "metadata", a list of metadata, each represented by a JSON object having the following fields
+	* "metadata", a list of metadata, each represented by a JSON object having the following fields:
 
 	  	- "label", the label for the metadata
 		- "value", the value of the metadata
@@ -510,8 +510,10 @@ Response body:
 
     {"name": "node1",
 	 "project": "project1",
-         "nics": [{"label": "nic1", "macaddr": "01:23:45:67:89", "networks": {"vlan/native": "pxe", "vlan/235": "storage"}},
-                       {"label": "nic2", "macaddr": "12:34:56:78:90", "networks":{"vlan/native": "public"}}],
+         "nics": [{"label": "nic1", "macaddr": "01:23:45:67:89", "networks": 
+	 	  {"vlan/native": "pxe", "vlan/235": "storage"}},
+                  {"label": "nic2", "macaddr": "12:34:56:78:90", "networks":
+		  {"vlan/native": "public"}}],
 	"metadata":[{"label": "EK", "value": "pk"}]
 	}
 
@@ -617,9 +619,15 @@ Authorization requirements:
 
 #### node_register_metadata
 
-`PUT /node/<node>/metadata`
+`PUT /node/<node>/metadata/<metadata>`
 
-Register metadata on `<node>`.
+Request Body: 
+
+	{
+		"value": <value>
+	}	
+
+Register `<metadata>` on `<node>`.
 
 Authorization requirements:
 
@@ -628,6 +636,22 @@ Authorization requirements:
 Possible Errors:
 
 * 409, if the metadata label already exists
+
+#### node_update_metadata
+
+`PUT /node/<node>/metadata/<metadata>`
+
+Request Body: 
+
+	{
+		"value": <value>
+	}	
+
+Update `<metadata>` on `<node>`.
+
+Authorization requirements:
+
+* Administrative access.
 
 #### node_delete_metadata
 
