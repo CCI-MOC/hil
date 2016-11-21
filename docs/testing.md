@@ -126,6 +126,9 @@ and has three fields:
   `"pass"`, defining the information needed to talk to the IPMI
   controller of the node.
 
+The tests currently require at least four nodes to be specified in
+`site-layout.json`, each of which must have at least one nic connected
+to the switch.
 
 [1]: http://pytest.org/
 [2]: https://pypi.python.org/pypi/pytest-cov
