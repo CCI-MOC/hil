@@ -94,11 +94,12 @@ relating to specific hardware support, or interacting with headnodes. To
 run the deployment tests, you must do the following:
 
 * Write a `testsuite.cfg` reflecting your environment. Copy
-  `testsuite.cfg.default` and edit. In particular, you will need to load
-  the extensions for your switch drivers and the corresponding network
-  allocator (see `drivers.md`), and specify extension-specific options.
+  `examples/testsuite.cfg-deployment` and edit. In particular, you will
+  need to load the extensions for your switch drivers and the
+  corresponding network allocator (see `drivers.md`), and specify
+  extension-specific options.
 * Write a `site-layout.json` describing the layout of your environment.
-  The file `site-layout.json.example` provides an example. Here is a
+  The file `examples/site-layout.json` provides an example. Here is a
   full description of the file format:
 
 `site-layout.json` must contain a single json object, with two fields:
