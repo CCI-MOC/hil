@@ -1,7 +1,7 @@
 # This is an example testsuite.cfg for running the deployment tests (in
-# ``tests/deployment``). ``site-layout.json`` it is designed to accompany
-# ``site-layout.json`` in this directory. You will most likely have to modify
-# both files according to your local environment.
+# ``tests/deployment``). it is designed to accompany
+# ``site-layout.json`` in this directory. You will most likely have to
+# modify both files according to your local environment.
 [general]
 log_level = debug
 
