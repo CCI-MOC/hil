@@ -641,8 +641,7 @@ admin_calls = [
     (api.port_connect_nic, ['stock_switch_0', 'free_port_0',
                             'free_node_0', 'boot-nic'], {}),
     (api.port_detach_nic, ['stock_switch_0', 'free_node_0_port'], {}),
-    (api.node_register_metadata, ['free_node_0', 'EK', 'pk'], {}),
-    (api.node_update_metadata, ['runway_node_0', 'EK', 'new_pk'], {}),
+    (api.node_set_metadata, ['free_node_0', 'EK', 'pk'], {}),
     (api.node_delete_metadata, ['runway_node_0', 'EK'], {}),
 ]
 

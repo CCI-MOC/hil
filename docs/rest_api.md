@@ -510,11 +510,13 @@ Response body:
 
     {"name": "node1",
 	 "project": "project1",
-         "nics": [{"label": "nic1", "macaddr": "01:23:45:67:89", "networks": 
-	 	  {"vlan/native": "pxe", "vlan/235": "storage"}},
-                  {"label": "nic2", "macaddr": "12:34:56:78:90", "networks":
-		  {"vlan/native": "public"}}],
-	"metadata":[{"label": "EK", "value": "pk"}]
+         "nics": [{"label": "nic1", 
+	 	   "macaddr": "01:23:45:67:89", 
+		   "networks": {"vlan/native": "pxe", "vlan/235": "storage"}},
+                  {"label": "nic2", 
+		   "macaddr": "12:34:56:78:90", 
+		   "networks":{"vlan/native": "public"}}],
+	 "metadata":[{"label": "EK", "value": "pk"}]
 	}
 
 Authorization requirements:
@@ -617,29 +619,9 @@ Authorization requirements:
 
 * Administrative access.
 
-#### node_register_metadata
+#### node_set_metadata
 
-`PUT /node/<node>/metadata/<metadata>`
-
-Request Body: 
-
-	{
-		"value": <value>
-	}	
-
-Register `<metadata>` on `<node>`.
-
-Authorization requirements:
-
-* Administrative access.
-
-Possible Errors:
-
-* 409, if the metadata label already exists
-
-#### node_update_metadata
-
-`PUT /node/<node>/metadata/<metadata>`
+`PUT /node/<node>/metadata/<label>`
 
 Request Body: 
 
@@ -647,7 +629,7 @@ Request Body:
 		"value": <value>
 	}	
 
-Update `<metadata>` on `<node>`.
+Set metadata with `<label>` and `<value>` on `<node>`.
 
 Authorization requirements:
 
@@ -655,9 +637,9 @@ Authorization requirements:
 
 #### node_delete_metadata
 
-`DELETE /node/<node>/metadata/<metadata>`
+`DELETE /node/<node>/metadata/<label>`
 
-Delete the named `<metadata>` on `<node>`.
+Delete metadata with `<label>` on `<node>`.
 
 Authorization requirements:
 

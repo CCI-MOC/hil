@@ -428,49 +428,36 @@ def node_detach_network(node, nic, network):
 
 
 @rest_call('PUT', '/node/<node>/metadata/<label>', Schema({
-    'node': basestring, 'label': basestring, 'value': basestring
+    'node': basestring, 'label': basestring, 'value': object,
 }))
-def node_register_metadata(node, label, value):
+def node_set_metadata(node, label, value):
     """Register metadata on a node.
 
-    If the label already exists, a DuplicateError will be raised.
+    If the label already exists, the value will be updated.
     """
     get_auth_backend().require_admin()
     node = _must_find(model.Node, node)
-    _assert_absent_n(node, model.Metadata, label)
-    metadata = model.Metadata(label, value, node)
-
-    db.session.add(metadata)
+    obj_inner = _namespaced_query(node, model.Metadata, label)
+    if obj_inner is not None:        
+        metadata = _must_find_n(node, model.Metadata, label)
+        metadata.value = value
+    else:
+        metadata = model.Metadata(label, value, node)
+        db.session.add(metadata)
     db.session.commit()
 
 
-@rest_call('PUT', '/node/<node>/update/metadata/<label>', Schema({
-    'node': basestring, 'label': basestring, 'value': basestring
+@rest_call('DELETE', '/node/<node>/metadata/<label>', Schema({
+    'node': basestring, 'label': basestring,
 }))
-def node_update_metadata(node, label, value):
-    """update metadata on a node.
-
-    If the metadata does not exist, a NotFoundError will be raised.
-    """
-    get_auth_backend().require_admin()
-    node = _must_find(model.Node, node)
-    metadata = _must_find_n(node, model.Metadata, label)
-    metadata.value = value
-
-    db.session.commit()
-
-
-@rest_call('DELETE', '/node/<node>/metadata/<metadata>', Schema({
-    'node': basestring, 'metadata': basestring,
-}))
-def node_delete_metadata(node, metadata):
+def node_delete_metadata(node, label):
     """Delete a metadata from a node.
 
     If the metadata does not exist, a NotFoundError will be raised.
     """
     get_auth_backend().require_admin()
     node = _must_find(model.Node, node)
-    metadata = _must_find_n(node, model.Metadata, metadata)
+    metadata = _must_find_n(node, model.Metadata, label)
 
     db.session.delete(metadata)
     db.session.commit()
@@ -1235,7 +1222,7 @@ def _must_find(cls, name):
     """
     obj = db.session.query(cls).filter_by(label=name).first()
     if not obj:
-        raise NotFoundError("%s %s does not exist." % (cls.__name__, name))
+        raise NotFoundError("%s %s does not exist." % (cls.__name_, name))
     return obj
 
 
