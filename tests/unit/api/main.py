@@ -427,7 +427,7 @@ class TestNodeRegisterDelete:
                   "host": "ipmihost",
                   "user": "root",
                   "password": "tapeworm"}, metadata={
-                      "EK": {"val1": 1, "val2": 2}})
+                      "EK": json.dumps({"val1": 1, "val2": 2})})
         api._must_find(model.Node, 'node-99')
 
     def test_node_register_with_multiple_metadata(self):
@@ -605,10 +605,6 @@ class TestNodeRegisterDeleteMetadata:
         with pytest.raises(api.NotFoundError):
             api.node_delete_metadata('free_node_0', 'EK')
 
-    def test_node_update_metadata_metadata_nexist(self):
-        with pytest.raises(api.NotFoundError):
-            api.node_update_metadata('free_node_0', 'EK', 'pk')
-
     def test_node_delete_metadata_node_nexist(self):
         with pytest.raises(api.NotFoundError):
             api.node_delete_metadata('compute-01', 'EK')
@@ -628,7 +624,8 @@ class TestNodeRegisterDeleteMetadata:
         api.node_set_metadata('free_node_1', 'EK', 'pk')
 
     def test_node_set_metadata_non_string(self):
-        api.node_set_metadata('free_node_0', 'JSON', {"val1": 1, "val2": 2})
+        api.node_set_metadata('free_node_0', 'JSON',
+                              json.dumps({"val1": 1, "val2": 2}))
 
 
 class TestNodeConnectDetachNetwork:
@@ -1803,8 +1800,8 @@ class TestQuery_unpopulated_db:
         api.node_register_nic('robocop', 'wlan0', 'DE:AD:BE:EF:20:15')
         api.node_set_metadata('robocop', 'EK', 'pk')
         api.node_set_metadata('robocop', 'SHA256', 'b5962d8173c14e6025921'
-                                   '1bcf25d1263c36e0ad7da32ba9d07b224eac18'
-                                   '34813')
+                              '1bcf25d1263c36e0ad7da32ba9d07b224eac18'
+                              '34813')
 
         actual = json.loads(api.show_node('robocop'))
         expected = {

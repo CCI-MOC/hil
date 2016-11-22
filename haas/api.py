@@ -438,7 +438,7 @@ def node_set_metadata(node, label, value):
     get_auth_backend().require_admin()
     node = _must_find(model.Node, node)
     obj_inner = _namespaced_query(node, model.Metadata, label)
-    if obj_inner is not None:        
+    if obj_inner is not None:
         metadata = _must_find_n(node, model.Metadata, label)
         metadata.value = value
     else:
@@ -1222,7 +1222,7 @@ def _must_find(cls, name):
     """
     obj = db.session.query(cls).filter_by(label=name).first()
     if not obj:
-        raise NotFoundError("%s %s does not exist." % (cls.__name_, name))
+        raise NotFoundError("%s %s does not exist." % (cls.__name__, name))
     return obj
 
 
