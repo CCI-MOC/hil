@@ -440,9 +440,9 @@ def node_set_metadata(node, label, value):
     obj_inner = _namespaced_query(node, model.Metadata, label)
     if obj_inner is not None:
         metadata = _must_find_n(node, model.Metadata, label)
-        metadata.value = value
+        metadata.value = json.dumps(value)
     else:
-        metadata = model.Metadata(label, value, node)
+        metadata = model.Metadata(label, json.dumps(value), node)
         db.session.add(metadata)
     db.session.commit()
 

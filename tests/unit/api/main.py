@@ -413,32 +413,46 @@ class TestNodeRegisterDelete:
         api._must_find(model.Node, 'node-99')
 
     def test_node_register_with_metadata(self):
-        api.node_register('node-99', obm={
-                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                  "host": "ipmihost",
-                  "user": "root",
-                  "password": "tapeworm"}, metadata={
-                  "EK": "pk"})
+        api.node_register('node-99',
+                          obm={
+                              "type": "http://schema.massopencloud.org/haas/v0"
+                                      "/obm/ipmi",
+                              "host": "ipmihost",
+                              "user": "root",
+                              "password": "tapeworm"
+                          },
+                          metadata={
+                              "EK": "pk"
+                          })
         api._must_find(model.Node, 'node-99')
 
     def test_node_register_JSON_metadata(self):
-        api.node_register('node-99', obm={
-                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                  "host": "ipmihost",
-                  "user": "root",
-                  "password": "tapeworm"}, metadata={
-                      "EK": json.dumps({"val1": 1, "val2": 2})})
+        api.node_register('node-99',
+                          obm={
+                              "type": "http://schema.massopencloud.org/haas/v0"
+                                      "/obm/ipmi",
+                              "host": "ipmihost",
+                              "user": "root",
+                              "password": "tapeworm"},
+                          metadata={
+                              "EK": '{"val1": 1, "val2": 2}'
+                          })
         api._must_find(model.Node, 'node-99')
 
     def test_node_register_with_multiple_metadata(self):
-        api.node_register('node-99', obm={
-                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                  "host": "ipmihost",
-                  "user": "root",
-                  "password": "tapeworm"}, metadata={
-                  "EK": "pk",
-                  "SHA256": "b5962d8173c14e60259211bcf25d1263c36e0ad7da32ba9d0"
-                            "7b224eac1834813"})
+        api.node_register('node-99',
+                          obm={
+                              "type": "http://schema.massopencloud.org/haas/v0"
+                                      "/obm/ipmi",
+                              "host": "ipmihost",
+                              "user": "root",
+                              "password": "tapeworm"
+                          },
+                          metadata={
+                              "EK": "pk",
+                              "SHA256": "b5962d8173c14e60259211bcf25d1263c36e0"
+                              "ad7da32ba9d07b224eac1834813"
+                          })
         api._must_find(model.Node, 'node-99')
 
     def test_duplicate_node_register(self):
@@ -588,7 +602,7 @@ class TestNodeRegisterDeleteMetadata:
         metadata = api._must_find_n(api._must_find(model.Node,
                                                    'runway_node_0'),
                                     model.Metadata, 'EK')
-        assert metadata.value == 'new_pk'
+        assert metadata.value == json.dumps('new_pk')
 
     def test_node_set_metadata_no_node(self):
         with pytest.raises(api.NotFoundError):
@@ -1822,12 +1836,12 @@ class TestQuery_unpopulated_db:
             'metadata': [
                 {
                     'label': 'EK',
-                    'value': 'pk',
+                    'value': json.dumps('pk'),
                 },
                 {
                     'label': 'SHA256',
-                    'value': 'b5962d8173c14e60259211bcf25d1263c36e0ad7da32ba9d'
-                    '07b224eac1834813',
+                    'value': json.dumps('b5962d8173c14e60259211bcf25d1263c36e0'
+                                        'ad7da32ba9d07b224eac1834813'),
                 },
             ]
         }
