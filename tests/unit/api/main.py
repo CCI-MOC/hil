@@ -602,7 +602,7 @@ class TestNodeRegisterDeleteMetadata:
         metadata = api._must_find_n(api._must_find(model.Node,
                                                    'runway_node_0'),
                                     model.Metadata, 'EK')
-        assert metadata.value == json.dumps('new_pk')
+        assert json.loads(metadata.value) == 'new_pk'
 
     def test_node_set_metadata_no_node(self):
         with pytest.raises(api.NotFoundError):
@@ -639,7 +639,7 @@ class TestNodeRegisterDeleteMetadata:
 
     def test_node_set_metadata_non_string(self):
         api.node_set_metadata('free_node_0', 'JSON',
-                              json.dumps({"val1": 1, "val2": 2}))
+                              '{"val1": 1, "val2": 2}')
 
 
 class TestNodeConnectDetachNetwork:
@@ -1727,6 +1727,11 @@ class TestQuery_unpopulated_db:
             expected['nics'].remove(nic)
         assert len(expected['nics']) == 0
         actual['nics'] = []
+        for metadata in actual['metadata']:
+            assert metadata in expected['metadata']
+            expected['metadata'].remove(metadata)
+        assert len(expected['metadata']) == 0
+        actual['metadata'] = []
         assert expected == actual
 
     def test_free_nodes(self):

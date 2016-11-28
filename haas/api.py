@@ -239,7 +239,7 @@ def node_register(node, **kwargs):
     node_obj = model.Node(label=node, obm=cls(**kwargs['obm']))
     if 'metadata' in kwargs:
         for label, value in kwargs['metadata'].items():
-            metadata_obj = model.Metadata(label, value, node_obj)
+            metadata_obj = model.Metadata(label, json.dumps(value), node_obj)
             db.session.add(metadata_obj)
     db.session.add(node_obj)
     db.session.commit()
