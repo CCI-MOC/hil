@@ -435,7 +435,7 @@ class TestNodeRegisterDelete:
                               "user": "root",
                               "password": "tapeworm"},
                           metadata={
-                              "EK": '{"val1": 1, "val2": 2}'
+                              "EK": {"val1": 1, "val2": 2}
                           })
         api._must_find(model.Node, 'node-99')
 
@@ -639,7 +639,7 @@ class TestNodeRegisterDeleteMetadata:
 
     def test_node_set_metadata_non_string(self):
         api.node_set_metadata('free_node_0', 'JSON',
-                              '{"val1": 1, "val2": 2}')
+                              {"val1": 1, "val2": 2})
 
 
 class TestNodeConnectDetachNetwork:
