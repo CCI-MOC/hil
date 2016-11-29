@@ -122,9 +122,8 @@ and has three fields:
   * `"switch"`, the name of the switch that the nic is connected to
   * `"port"`, the name/label of the port on the switch that the nic is
     connected to
-* `"ipmi"`, an object with the string fields `"host"`, `"user"`,
-  `"pass"`, defining the information needed to talk to the IPMI
-  controller of the node.
+* `"obm"`, An object with the same set of fields as required by the obm
+  field in the `node_register` API call.
 
 The tests currently require at least four nodes to be specified in
 `site-layout.json`, each of which must have at least one nic connected
