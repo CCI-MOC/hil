@@ -144,7 +144,24 @@ def get_db_state():
     }],
 ])
 def test_db_eq(filename, make_objects, extra_config):
-    """Verify that each function in fns creates the same database."""
+    """Migrating from a snapshot should create the same objects as a new db.
+
+    `make_objects` is a function that, when run against the latest version
+        of a schema, will create some set of objects.
+    `filename` is the name of an sql dump of a previous database, whose
+        contents were created with the then-current version of `make_objects`.
+    `extra_config` specifies modifications to the haas.cfg under which the
+        test is run. this is passed to `config_merge`.
+
+    The test does the following:
+
+        * Restore the database snapshot and run the migration scripts to update
+          its contents to the current schema.
+        * Create a fresh database according to the current schema, and execute
+          `make_objects`.
+        * Compare the two resulting databases. The test passes if and only if
+          they are the same.
+    """
 
     config_merge(extra_config)
     load_extensions()
