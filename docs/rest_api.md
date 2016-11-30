@@ -501,10 +501,7 @@ The object will have at least the following fields:
                 - "label", the nic's label.
                 - "macaddr", the nic's mac address.
 		- "networks", a JSON object describing what networks are attached to the nic. The keys are channels and the values are the names of networks attached to those channels.
-	* "metadata", a list of metadata, each represented by a JSON object having the following fields:
-
-	  	- "label", the label for the metadata
-		- "value", the value of the metadata
+	* "metadata", a dictionary of metadata objects
 
 Response body:
 
@@ -516,7 +513,7 @@ Response body:
                   {"label": "nic2", 
 		   "macaddr": "12:34:56:78:90", 
 		   "networks":{"vlan/native": "public"}}],
-	 "metadata":[{"label": "EK", "value": "pk"}]
+	 "metadata":{"EK":"pk"}
 	}
 
 Authorization requirements:

@@ -1727,11 +1727,12 @@ class TestQuery_unpopulated_db:
             expected['nics'].remove(nic)
         assert len(expected['nics']) == 0
         actual['nics'] = []
-        for metadata in actual['metadata']:
-            assert metadata in expected['metadata']
-            expected['metadata'].remove(metadata)
+        for key, value in actual['metadata'].iteritems():
+            assert key in expected['metadata']
+            assert expected['metadata'][key] == value
+            del expected['metadata'][key]
         assert len(expected['metadata']) == 0
-        actual['metadata'] = []
+        actual['metadata'] = {}
         assert expected == actual
 
     def test_free_nodes(self):
@@ -1838,17 +1839,11 @@ class TestQuery_unpopulated_db:
                     "networks": {}
                 }
             ],
-            'metadata': [
-                {
-                    'label': 'EK',
-                    'value': json.dumps('pk'),
-                },
-                {
-                    'label': 'SHA256',
-                    'value': json.dumps('b5962d8173c14e60259211bcf25d1263c36e0'
-                                        'ad7da32ba9d07b224eac1834813'),
-                },
-            ]
+            'metadata': {
+                'EK': json.dumps('pk'),
+                'SHA256': json.dumps('b5962d8173c14e60259211bcf25d1263c36e0'
+                                     'ad7da32ba9d07b224eac1834813')
+            }
         }
         self._compare_node_dumps(actual, expected)
 
@@ -1877,7 +1872,7 @@ class TestQuery_unpopulated_db:
                     "networks": {}
                 }
             ],
-            'metadata': []
+            'metadata': {}
         }
         self._compare_node_dumps(actual, expected)
 
@@ -1927,7 +1922,7 @@ class TestQuery_unpopulated_db:
                     }
                 }
             ],
-            'metadata': []
+            'metadata': {}
         }
         self._compare_node_dumps(actual, expected)
 

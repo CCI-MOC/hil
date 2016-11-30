@@ -1089,9 +1089,7 @@ def show_node(nodename):
                                      attachment.network.label)
                                     for attachment in n.attachments]),
                   } for n in node.nics],
-        'metadata': [{'label': m.label,
-                      'value': m.value,
-                      } for m in node.metadata]
+        'metadata': {m.label: m.value for m in node.metadata}
     }, sort_keys=True)
 
 
