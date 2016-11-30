@@ -7,7 +7,7 @@ After=network.target
 [Service]
 WorkingDirectory = /etc/
 ExecStart=/usr/bin/create_bridges
-Type=simple
+Type=oneshot
 
 [Install]
 WantedBy=multi-user.target
