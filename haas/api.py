@@ -221,6 +221,7 @@ def network_revoke_project_access(project, network):
         'type': basestring,
         Optional(object): object,
     },
+    Optional('metadata'): object,
 }))
 def node_register(node, **kwargs):
     """Create node.
