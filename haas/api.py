@@ -1039,7 +1039,7 @@ def port_detach_nic(switch, port):
     db.session.commit()
 
 
-@rest_call('POST', '/switch/<switch>/port/<path:port>/reset', Schema({
+@rest_call('POST', '/switch/<switch>/port/<path:port>/revert', Schema({
     'switch': basestring, 'port': basestring,
 }))
 def port_revert(switch, port):
