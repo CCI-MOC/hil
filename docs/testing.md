@@ -94,11 +94,12 @@ relating to specific hardware support, or interacting with headnodes. To
 run the deployment tests, you must do the following:
 
 * Write a `testsuite.cfg` reflecting your environment. Copy
-  `testsuite.cfg.default` and edit. In particular, you will need to load
-  the extensions for your switch drivers and the corresponding network
-  allocator (see `drivers.md`), and specify extension-specific options.
+  `examples/testsuite.cfg-deployment` and edit. In particular, you will
+  need to load the extensions for your switch drivers and the
+  corresponding network allocator (see `drivers.md`), and specify
+  extension-specific options.
 * Write a `site-layout.json` describing the layout of your environment.
-  The file `site-layout.json.example` provides an example. Here is a
+  The file `examples/site-layout.json` provides an example. Here is a
   full description of the file format:
 
 `site-layout.json` must contain a single json object, with two fields:
@@ -121,10 +122,12 @@ and has three fields:
   * `"switch"`, the name of the switch that the nic is connected to
   * `"port"`, the name/label of the port on the switch that the nic is
     connected to
-* `"ipmi"`, an object with the string fields `"host"`, `"user"`,
-  `"pass"`, defining the information needed to talk to the IPMI
-  controller of the node.
+* `"obm"`, An object with the same set of fields as required by the obm
+  field in the `node_register` API call.
 
+The tests currently require at least four nodes to be specified in
+`site-layout.json`, each of which must have at least one nic connected
+to the switch.
 
 [1]: http://pytest.org/
 [2]: https://pypi.python.org/pypi/pytest-cov
