@@ -1009,6 +1009,21 @@ Possible errors:
 * 404, if the port is not attached to a nic
 * 409, if the port is attached to a node which is not free.
 
+#### port_revert
+
+`POST /switch/<switch>/port/<port>/revert`
+
+Detach the port from all networks.
+
+Authorization requirements:
+
+* Administrative access.
+
+Possible errors:
+
+* 404, if there is no nic attached to `port`
+* 409, if there is already a networking action pending on `port`
+
 ## API Extensions
 
 API calls provided by specific extensions. They may not exist in all
