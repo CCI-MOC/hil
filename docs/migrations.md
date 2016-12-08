@@ -101,8 +101,11 @@ the one derived from the HaaS source, and generate its best attempt at a
 migration script. The script will be stored in `haas/migrations/versions`.
 
 The value of `down_revision` should be the identifier of the previous migration script.
-The value of `branch_labels` should be `('<branch_name>',)` where `branch_name` 
+The value of `branch_labels` should be `('<branch_name>',)` where `branch_name`
 should match what was used in the command to generate the migration script.
+Finally, the value of `branch_lables` in the previous migration script
+(named by `down_revision` in the new one) must be set to `None`. This
+will need to be changed manually.
 
 Sanity check the output; Alembic often does a good job generating scripts, but
 it should not be trusted blindly.
@@ -111,33 +114,33 @@ it should not be trusted blindly.
 
 ### State of the Database
 
-For automatic migrations the database being loaded to generate the migration should 
+For automatic migrations the database being loaded to generate the migration should
 match the schema of the current master branch.
-To ensure this, create a new PostgreSQL database and initialise it using 
-`haas-admin db create` while on a branch that is up to date with current HaaS 
-master branch. The command to generate the migration script should then be run 
+To ensure this, create a new PostgreSQL database and initialise it using
+`haas-admin db create` while on a branch that is up to date with current HaaS
+master branch. The command to generate the migration script should then be run
 after checking out the branch that has the changes that the script should be generated for.
 
 ### Renaming Columns
 
-Alembic will not rename a column, instead it will delete the original column 
-and create a new one with the new name. This is an issue as the data will then 
-not be contained in the new column (see Data Migration vs Schema Migration below). 
-To change the name of a column the script should be edited manually to remove the 
-lines dropping the old column and creating one with the new name and replace them 
+Alembic will not rename a column, instead it will delete the original column
+and create a new one with the new name. This is an issue as the data will then
+not be contained in the new column (see Data Migration vs Schema Migration below).
+To change the name of a column the script should be edited manually to remove the
+lines dropping the old column and creating one with the new name and replace them
 with a line altering the column: `op.alter_column(u'<table_name>', '<old_column_name>', new_column_name='<new_column_name>')`
 
 ### [Data Migration][8] vs. Schema Migration
 
-The migrations Alembic generates are schema migrations: they will create/delete tables, 
-columns, and relationships, but they do not populate these with data. This can be an issue, 
-particularly in the case of a new relationship that would apply to existing data. None of 
-the existing data will be accessible via the new relationship unless the data itself is 
-specifically migrated as well. 
+The migrations Alembic generates are schema migrations: they will create/delete tables,
+columns, and relationships, but they do not populate these with data. This can be an issue,
+particularly in the case of a new relationship that would apply to existing data. None of
+the existing data will be accessible via the new relationship unless the data itself is
+specifically migrated as well.
 
-This can be done by directly encoding data within the script and using a command like 
-`bulk_insert()`, executing a SQL statement to SELECT the data and INSERT it into the new 
-column, or by creating a live interaction with the database. 
+This can be done by directly encoding data within the script and using a command like
+`bulk_insert()`, executing a SQL statement to SELECT the data and INSERT it into the new
+column, or by creating a live interaction with the database.
 
 lines 28-32 in ``haas/migrations/versions/89630e3872ec_network_acl.py`` show an example
 of executing a SQL statement then using `bulk_insert()` to migrate data.
