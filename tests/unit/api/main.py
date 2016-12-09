@@ -226,60 +226,6 @@ class TestNetworking:
             api.node_connect_network('node-99', 'eth0', 'hammernet')
 
 
-class Test_port_revert:
-
-    def test_no_nic(self):
-        from haas.ext.switches.mock import LOCAL_STATE
-        initial_db()
-
-        assert LOCAL_STATE['stock_switch_0']['free_port_0'] == {}
-        with pytest.raises(api.NotFoundError):
-            # free_port_0 is not attached to a nic.
-            api.port_revert('stock_switch_0', 'free_port_0')
-        deferred.apply_networking()
-        assert LOCAL_STATE['stock_switch_0']['free_port_0'] == {}
-
-    def test_one_network(self):
-        from haas.ext.switches.mock import LOCAL_STATE
-        initial_db()
-
-        assert LOCAL_STATE['stock_switch_0']['runway_node_0_port'] == {}
-        api.node_connect_network('runway_node_0',
-                                 'nic-with-port',
-                                 'runway_pxe',
-                                 'null')
-        deferred.apply_networking()
-
-        net_id = model.Network.query.filter_by(label='runway_pxe')\
-            .one().network_id
-        assert LOCAL_STATE['stock_switch_0']['runway_node_0_port'] == {
-            'null': net_id,
-        }
-
-        api.port_revert('stock_switch_0', 'runway_node_0_port')
-        deferred.apply_networking()
-
-        assert LOCAL_STATE['stock_switch_0']['runway_node_0_port'] == {}, (
-            "port_revert did not detach the port from the networks!"
-        )
-
-        network = model.Network.query.filter_by(label='runway_pxe').one()
-        assert model.NetworkAttachment.query.filter_by(
-            network_id=network.id,
-        ).first() is None, (
-            "port_revert did not remove the network attachment object in "
-            "the database!"
-        )
-
-    def test_two_networks(self):
-        assert False, (
-            "TODO: We need to test port_revert with more than one network "
-            "attached to the port, but this needs a bit of tweaking since "
-            "right now the null network allocator doesn't allow more than "
-            "one channel. "
-        )
-
-
 class TestProjectConnectDetachNode:
 
     def test_project_connect_node(self):
