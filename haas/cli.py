@@ -28,19 +28,9 @@ import abc
 from functools import wraps
 
 ## Hook to the client library
-from haas.client.auth import db_auth
+from haas.client.auth import db_auth, keystone_auth
 from haas.client.client import Client
 from haas.client import errors
-
-
-#ep = os.environ.get('HAAS_ENDPOINT') or "http://127.0.0.1:5000"
-#username = "jil" or os.environ.get('HAAS_USERNAME')
-#password = "tumbling" or os.environ.get('HAAS_PASSWORD')
-
-
-#sess = db_auth(username, password)
-
-#C = Client(ep, sess) #Initializing client library
 
 
 command_dict = {}
@@ -137,6 +127,7 @@ class KeystoneHTTPClient(HTTPClient):
 
 # An instance of HTTPClient, which will be used to make the request.
 http_client = None
+C = None
 
 
 class InvalidAPIArgumentsException(Exception):
@@ -196,6 +187,7 @@ def setup_http_client():
     This may be extended with other backends in the future.
     """
     #global http_client
+    global C  #initiating the client library
     # First try basic auth:
     ep = os.environ.get('HAAS_ENDPOINT') or "http://127.0.0.1:5000"
     basic_username = os.getenv('HAAS_USERNAME')
@@ -203,13 +195,11 @@ def setup_http_client():
     if basic_username is not None and basic_password is not None:
         #    http_client = RequestsHTTPClient()
         #http_client.auth = (basic_username, basic_password)
-        sess = db_auth(username, password)
+        sess = db_auth(basic_username, basic_password)
         C = Client(ep, sess)
         return
     # Next try keystone:
     try:
-        from keystoneauth1.identity import v3
-        from keystoneauth1 import session
         os_auth_url = os.getenv('OS_AUTH_URL')
         os_password = os.getenv('OS_PASSWORD')
         os_username = os.getenv('OS_USERNAME')
@@ -218,14 +208,10 @@ def setup_http_client():
         os_project_domain_id = os.getenv('OS_PROJECT_DOMAIN_ID') or 'default'
         if None in (os_auth_url, os_username, os_password, os_project_name):
             raise KeyError("Required openstack environment variable not set.")
-        auth = v3.Password(auth_url=os_auth_url,
-                           username=os_username,
-                           password=os_password,
-                           project_name=os_project_name,
-                           user_domain_id=os_user_domain_id,
-                           project_domain_id=os_project_domain_id)
-        sess = session.Session(auth=auth)
-#        http_client = KeystoneHTTPClient(sess)
+        sess = keystone_auth(
+                os_auth_url, os_username, os_password, os_user_domain_id,
+                os_project_name, os_project_domain_id
+                )
         C = Client(ep, sess)
         return
     except (ImportError, KeyError):
@@ -249,6 +235,8 @@ def check_status_code(response):
         sys.stdout.write(response.text + "\n")
 
 
+
+# This should be DELETED. 
 # TODO: This function's name is no longer very accurate.  As soon as it is
 # safe, we should change it to something more generic.
 def object_url(*args):
@@ -285,6 +273,8 @@ def do_get(url, params=None):
 
 def do_delete(url):
     check_status_code(http_client.request('DELETE', url))
+
+# DELETE UPTIL HERE
 
 
 @cmd
@@ -334,13 +324,10 @@ def user_create(username, password, is_admin):
     <is_admin> may be either "admin" or "regular", and determines whether
     the user has administrative priveledges.
     """
-    url = object_url('/auth/basic/user', username)
-    if is_admin not in ('admin', 'regular'):
-        raise TypeError("is_admin must be either 'admin' or 'regular'")
-    do_put(url, data={
-        'password': password,
-        'is_admin': is_admin == 'admin',
-    })
+    try:
+        C.user.create(username, password, is_admin)
+    except (errors.DuplicateError ) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
 
 
 @cmd
@@ -371,8 +358,11 @@ def network_delete(network):
 @cmd
 def user_delete(username):
     """Delete the user <username>"""
-    url = object_url('/auth/basic/user', username)
-    do_delete(url)
+
+    try:
+        C.user.delete(username)
+    except (errors.NotFoundError) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
 
 
 @cmd
@@ -385,14 +375,23 @@ def list_projects():
 @cmd
 def user_add_project(user, project):
     """Add <user> to <project>"""
-    url = object_url('/auth/basic/user', user, 'add_project')
-    do_post(url, data={'project': project})
+    try:
+        C.user.grant_access(user, project)
+    except (errors.NotFoundError, errors.DuplicateError) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
+
+#    url = object_url('/auth/basic/user', user, 'add_project')
+#    do_post(url, data={'project': project})
 
 @cmd
 def user_remove_project(user, project):
     """Remove <user> from <project>"""
-    url = object_url('/auth/basic/user', user, 'remove_project')
-    do_post(url, data={'project': project})
+#    url = object_url('/auth/basic/user', user, 'remove_project')
+#    do_post(url, data={'project': project})
+    try:
+        C.user.remove_access(user, project)
+    except (errors.NotFoundError, errors.DuplicateError) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
 
 @cmd
 def network_grant_project_access(project, network):

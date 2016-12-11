@@ -3,6 +3,7 @@ from haas.client.node import Node
 from haas.client.project import Project
 from haas.client.switch import Switch
 from haas.client.network import Network
+from haas.client.user import User
 from haas.client import auth
 
 
@@ -15,3 +16,4 @@ class Client(object):
         self.project = Project(self.endpoint, self.s)
         self.switch = Switch(self.endpoint, self.s)
         self.network = Network(self.endpoint, self.s)
+        self.user = User(self.endpoint, self.s)

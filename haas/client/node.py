@@ -5,11 +5,13 @@ from haas.client import errors
 
 class Node(ClientBase):
     """ Consists of calls to query and manipulate node related
-    objects and relations """
+    objects and relations.
+    """
 
     def list(self, is_free):
         """ List all nodes that HIL manages """
-        url = self.object_url('nodes', is_free)
+        self.is_free = is_free
+        url = self.object_url('nodes', self.is_free)
         q = self.s.get(url)
         if q.ok:
             return q.json()
@@ -22,14 +24,14 @@ class Node(ClientBase):
         """ Shows attributes of a given node """
 
         self.node_name = node_name
-        url = self.object_url('node', node_name)
+        url = self.object_url('node', self.node_name)
         q = self.s.get(url)
         return q.json()
 
     def delete(self, node_name):
         """ Deletes the node from database. """
         self.node_name = node_name
-        url = self.object_url('node', node_name)
+        url = self.object_url('node', self.node_name)
         q = self.s.delete(url)
         if q.ok:
             return
@@ -61,7 +63,7 @@ class Node(ClientBase):
     def power_off(self, node_name):
         """ Power offs the <node> """
         self.node_name = node_name
-        url = self.object_url('node', node_name, 'power_off')
+        url = self.object_url('node', self.node_name, 'power_off')
         q = self.s.post(url)
         if q.ok:
             return
@@ -81,8 +83,8 @@ class Node(ClientBase):
         self.node_name = node_name
         self.nic_name = nic_name
         self.macaddr = macaddr
-        url = self.object_url('node', node_name, 'nic', nic_name)
-        payload = json.dumps({'macaddr': macaddr})
+        url = self.object_url('node', self.node_name, 'nic', self.nic_name)
+        payload = json.dumps({'macaddr': self.macaddr})
         q = self.s.put(url, data=payload)
         if q.ok:
             return
@@ -99,7 +101,7 @@ class Node(ClientBase):
         """ remove a <nic> from <node>"""
         self.node_name = node_name
         self.nic_name = nic_name
-        url = self.object_url('node', node_name, 'nic', nic_name)
+        url = self.object_url('node', self.node_name, 'nic', self.nic_name)
         q = self.s.delete(url)
         if q.ok:
             return

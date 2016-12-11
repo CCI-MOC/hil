@@ -1,5 +1,4 @@
 import json
-
 from haas.client.base import ClientBase
 from haas.client import errors
 
