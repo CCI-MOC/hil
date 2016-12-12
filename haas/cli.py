@@ -333,26 +333,31 @@ def user_create(username, password, is_admin):
 @cmd
 def network_create(network, owner, access, net_id):
     """Create a link-layer <network>.  See docs/networks.md for details"""
-    url = object_url('network', network)
-    do_put(url, data={'owner': owner,
-                      'access': access,
-                      'net_id': net_id})
+
+    try:
+        C.network.create(network, owner, access, net_id)
+    except (errors.DuplicateError, errors.NotFoundError) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
 
 
 @cmd
 def network_create_simple(network, project):
     """Create <network> owned by project.  Specific case of network_create"""
-    url = object_url('network', network)
-    do_put(url, data={'owner': project,
-                      'access': project,
-                      'net_id': ""})
+    try:
+        C.network.create(network, project, project, "")
+    except (errors.DuplicateError, errors.NotFoundError) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
 
 
 @cmd
 def network_delete(network):
     """Delete a <network>"""
-    url = object_url('network', network)
-    do_delete(url)
+#    url = object_url('network', network)
+#    do_delete(url)
+    try:
+        C.network.delete(network)
+    except (errors.NotFoundError) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
 
 
 @cmd
@@ -396,15 +401,24 @@ def user_remove_project(user, project):
 @cmd
 def network_grant_project_access(project, network):
     """Add <project> to <network> access"""
-    url = object_url('network', network, 'access', project)
-    do_put(url)
+#    url = object_url('network', network, 'access', project)
+#    do_put(url)
+    try:
+        C.network.grant_access(project, network)
+    except (errors.NotFoundError, errors.DuplicateError) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
+
 
 
 @cmd
 def network_revoke_project_access(project, network):
     """Remove <project> from <network> access"""
-    url = object_url('network', network, 'access', project)
-    do_delete(url)
+#    url = object_url('network', network, 'access', project)
+#    do_delete(url)
+    try:
+        C.network.revoke_access(project, network)
+    except (errors.NotFoundError) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
 
 
 @cmd
@@ -551,9 +565,6 @@ def node_delete_nic(node, nic):
     except(errors.NotFoundError, errors.BlockedError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
 
-#    url = object_url('node', node, 'nic', nic)
-#    do_delete(url)
-
 
 @cmd
 def headnode_create_hnic(headnode, nic):
@@ -569,19 +580,28 @@ def headnode_delete_hnic(headnode, nic):
     do_delete(url)
 
 
+
 @cmd
 def node_connect_network(node, nic, network, channel):
     """Connect <node> to <network> on given <nic> and <channel>"""
-    url = object_url('node', node, 'nic', nic, 'connect_network')
-    do_post(url, data={'network': network,
-                       'channel': channel})
+#    url = object_url('node', node, 'nic', nic, 'connect_network')
+#    do_post(url, data={'network': network,
+#                       'channel': channel})
 
+    try:
+        C.node.connect_network(node, nic, network, channel)
+    except(errors.NotFoundError, errors.DuplicateError) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
 
 @cmd
 def node_detach_network(node, nic, network):
     """Detach <node> from the given <network> on the given <nic>"""
-    url = object_url('node', node, 'nic', nic, 'detach_network')
-    do_post(url, data={'network': network})
+#    url = object_url('node', node, 'nic', nic, 'detach_network')
+#    do_post(url, data={'network': network})
+    try:
+        C.node.detach_network(node, nic, network)
+    except(errors.NotFoundError) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
 
 
 @cmd
@@ -675,8 +695,6 @@ def list_switches():
     """List all switches"""
     q = C.switch.list()
     sys.stdout.write('%s switches :    ' %len(q) + " ".join(q) + '\n')
-#    url = object_url('switches')
-#    do_get(url)
 
 
 @cmd

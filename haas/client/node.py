@@ -28,6 +28,25 @@ class Node(ClientBase):
         q = self.s.get(url)
         return q.json()
 
+
+    def register(self, node, subtype, *args):
+        """ Register a node with appropriate OBM driver. """
+#       Registering a node requires apriori knowledge of the 
+#       available OBM driver and its corresponding arguments.
+#       We assume that the HIL administrator is aware as to which
+#       Node requires which OBM, and knows arguments required
+#       for successful node registration. 
+
+        self.node = node
+        self.subtype = subtype
+        obm_api = "http://schema.massopencloud.org/haas/v0/obm/"
+        obm_types = ["ipmi", "mock"]
+#       FIXME: In future obm_types should be dynamically fetched
+#        from haas.cfg, need a new api call for querying available
+#        and currently active drivers for HIL
+        pass
+
+
     def delete(self, node_name):
         """ Deletes the node from database. """
         self.node_name = node_name
@@ -114,10 +133,52 @@ class Node(ClientBase):
                     "Cannot delete nic, diconnect it from network first"
                     )
 
-    def connect_network(self, node_name, nic, network, channel):
+    def connect_network(self, node, nic, network, channel):
         """ Connect <node> to <network> on given <nic> and <channel>"""
-        pass
 
-    def disconnect_network(self, node_name, nic, network):
+        self.node = node
+        self.nic = nic
+        self.network = network
+        self.channel = channel
+
+        url = self.object_url(
+                'node', self.node, 'nic', self.nic, 'connect_network'
+                )
+        payload = json.dumps({
+            'network': self.network, 'channel': self.channel
+            })
+        q = self.s.post(url, payload)
+        if q.ok:
+            return
+        if q.status_code == 409:
+            raise errors.DuplicateError(
+                    "Operation Failed. Relationship already exists. "
+                    )
+        if q.status_code == 404:
+            raise errors.NotFoundError(
+                    "Resource or relationship does not exist. "
+                    )
+
+
+
+
+    def detach_network(self, node, nic, network):
         """ Disconnect <node> from <network> on the given <nic>. """
-        pass
+
+        self.node = node
+        self.nic = nic
+        self.network = network
+
+        url = self.object_url(
+                'node', self.node, 'nic', self.nic, 'detach_network'
+                )
+        payload = json.dumps({ 'network': self.network })
+        q = self.s.post(url, payload)
+        if q.ok:
+            return
+        if q.status_code == 404:
+            raise errors.NotFoundError(
+                    "Resource or relationship does not exist. "
+                    )
+
+

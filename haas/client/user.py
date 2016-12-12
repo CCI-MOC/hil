@@ -28,6 +28,10 @@ class User(ClientBase):
         q = self.s.put(url, data=payload)
         if q.ok:
             return
+        elif q.status_code == 401:
+            raise errors.AuthenticationError( 
+                    "You do not have rights for user creation "
+                    )
         elif q.status_code == 409:
             raise errors.DuplicateError( "User already exists. ")
 

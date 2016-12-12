@@ -109,9 +109,6 @@ def make_config():
             '[database]',
             'uri = sqlite:///%s/haas.db' % tmpdir,
             '[extensions]',
-            'haas.ext.auth.null =',
-            'haas.ext.network_allocators.null =',
-            '[extensions]',
             'haas.ext.switches.mock =',
             'haas.ext.auth.null =',
             'haas.ext.switches.nexus =',
@@ -438,5 +435,23 @@ class Test_switch:
     def test_list_switches(self):
         result = C.switch.list()
         assert result == [u'brocade-01', u'dell-01', u'mock-01', u'nexus-01']
+
+@pytest.mark.usefixtures("create_setup")
+class Test_user:
+    """ Tests user related client calls."""
+
+    def test_user_create(self):
+        """ Test user creation. """
+
+        result1 = C.user.create('bob', 'pass1234', 'admin')
+        result2 = C.user.create('bob', 'pass1234', 'regular')
+        assert result1 is None
+        assert result2 is None
+
+
+
+
+
+
 
 # End of tests ##
