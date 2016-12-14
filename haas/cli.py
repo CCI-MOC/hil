@@ -352,8 +352,6 @@ def network_create_simple(network, project):
 @cmd
 def network_delete(network):
     """Delete a <network>"""
-#    url = object_url('network', network)
-#    do_delete(url)
     try:
         C.network.delete(network)
     except (errors.NotFoundError) as e:
@@ -521,9 +519,6 @@ def node_delete(node):
     except (errors.NotFoundError, errors.BlockedError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
 
-#    url = object_url('node', node)
-#    do_delete(url)
-
 
 @cmd
 def node_power_cycle(node):
@@ -532,9 +527,6 @@ def node_power_cycle(node):
         C.node.power_cycle(node)
     except (errors.NotFoundError, errors.BlockedError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
-
-#    url = object_url('node', node, 'power_cycle')
-#    do_post(url)
 
 
 @cmd
@@ -584,10 +576,6 @@ def headnode_delete_hnic(headnode, nic):
 @cmd
 def node_connect_network(node, nic, network, channel):
     """Connect <node> to <network> on given <nic> and <channel>"""
-#    url = object_url('node', node, 'nic', nic, 'connect_network')
-#    do_post(url, data={'network': network,
-#                       'channel': channel})
-
     try:
         C.node.connect_network(node, nic, network, channel)
     except(errors.NotFoundError, errors.DuplicateError) as e:
@@ -596,8 +584,6 @@ def node_connect_network(node, nic, network, channel):
 @cmd
 def node_detach_network(node, nic, network):
     """Detach <node> from the given <network> on the given <nic>"""
-#    url = object_url('node', node, 'nic', nic, 'detach_network')
-#    do_post(url, data={'network': network})
     try:
         C.node.detach_network(node, nic, network)
     except(errors.NotFoundError) as e:
@@ -686,8 +672,6 @@ def switch_register(switch, subtype, *args):
 @cmd
 def switch_delete(switch):
     """Delete a <switch> """
-#    url = object_url('switch', switch)
-#    do_delete(url)
     try:
         C.switch.delete(switch)
     except(errors.NotFoundError, BlockedError) as e:
@@ -805,9 +789,8 @@ def show_node(node):
     FIXME: Recursion should be implemented to the output.
     """
     q = C.node.show_node(node)
-    print q
-#    for item in q.items():
-#        sys.stdout.write("{}\t  :  {}\n".format(item[0], item[1]))
+    for item in q.items():
+        sys.stdout.write("{}\t  :  {}\n".format(item[0], item[1]))
 
 
 @cmd
