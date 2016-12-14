@@ -78,14 +78,15 @@ class Project(ClientBase):
             self.project_name = project_name
             self.node_name = node_name
 
-            url = self.object_url('project', project_name, 'connect_node')
-            payload = json.dumps({'node': node_name})
+            url = self.object_url('project', self.project_name, 'connect_node')
+            payload = json.dumps({'node': self.node_name})
             q = self.s.post(url, data=payload)
             if q.ok:
                 return
-            elif q.status_code == 409:
-                raise errors.DuplicateError(
-                        "Node is already owned by the project. "
+            elif q.status_code == 423:
+                raise errors.BlockedError(
+                        "Not a free node. Only free nodes can be added to a "
+                        "project. "
                         )
             elif q.status_code == 404:
                 raise errors.NotFoundError("Node or project does not exist.")

@@ -150,16 +150,20 @@ class Node(ClientBase):
         q = self.s.post(url, payload)
         if q.ok:
             return
-        if q.status_code == 409:
-            raise errors.DuplicateError(
-                    "Operation Failed. Relationship already exists. "
-                    )
         if q.status_code == 404:
             raise errors.NotFoundError(
                     "Resource or relationship does not exist. "
                     )
-
-
+        if q.status_code == 409:
+            raise errors.DuplicateError( "A network is already attached.")
+        if q.status_code == 412:
+            raise errors.ProjectMismatchError(
+                    "Project does not have access to either resource. "
+                    )
+        if q.status_code == 423:
+            raise errors.BlockedError(
+                    "Networking operations pending on this nic. "
+                    )
 
 
     def detach_network(self, node, nic, network):
@@ -176,9 +180,13 @@ class Node(ClientBase):
         q = self.s.post(url, payload)
         if q.ok:
             return
-        if q.status_code == 404:
+        if q.status_code == 400:
             raise errors.NotFoundError(
-                    "Resource or relationship does not exist. "
+                    "No such network attached to the nic. "
+                    )
+        if q.status_code == 423:
+            raise errors.BlockedError(
+                    "Networking operations pending on this nic. "
                     )
 
 

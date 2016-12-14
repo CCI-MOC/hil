@@ -1,4 +1,5 @@
 import requests
+import keystoneauth1.identity
 from keystoneauth1.identity import v3
 from keystoneauth1 import session
 

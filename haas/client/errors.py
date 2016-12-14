@@ -9,3 +9,6 @@ class DuplicateError(Exception):
 
 class BlockedError(Exception):
     pass
+
+class ProjectMismatchError(Exception):
+    pass

@@ -98,9 +98,9 @@ def make_config():
     os.chdir(tmpdir)
     with open('haas.cfg', 'w') as f:
         config = '\n'.join([
-            '[general]'
-            'log_level = debug',
-
+            '[general]',
+            '[devel]',
+            'dry_run=True',
             '[auth]',
             'require_authentication = False',
 
@@ -116,7 +116,7 @@ def make_config():
             'haas.ext.switches.brocade =',
             'haas.ext.obm.mock =',
             'haas.ext.obm.ipmi =',
-            'haas.ext.network_allocators.null =',
+            'haas.ext.network_allocators.vlan_pool =',
             '[haas.ext.network_allocators.vlan_pool]',
             'vlans = 1001-1040',
 
@@ -212,12 +212,18 @@ def populate_server():
     requests.put(url_node+'node-07', data=json.dumps({"obm": obminfo7}))
     requests.put(url_node+'node-08', data=json.dumps({"obm": obminfo8}))
 
+    # Adding nics to nodes
+    for i in range(1, 8):
+        requests.put(url_node+'node-0'+`i`+'/nic/eth0',
+                data=json.dumps({"macaddr":"aa:bb:cc:dd:ee:0"+`i`}))
+
+
     # Adding Projects proj-01 - proj-03
     for i in ["proj-01", "proj-02", "proj-03"]:
         requests.put('http://127.0.0.1:8888/project/'+i)
 
     # Adding switches one for each driver
-    url = 'http://127.0.0.1:8888/switch/'
+    url_switch = 'http://127.0.0.1:8888/switch/'
     api_name = 'http://schema.massopencloud.org/haas/v0/switches/'
 
     dell_param = {
@@ -238,10 +244,23 @@ def populate_server():
             'interface_type': 'TenGigabitEthernet'
             }
 
-    requests.put(url+'dell-01', data=json.dumps(dell_param))
-    requests.put(url+'nexus-01', data=json.dumps(nexus_param))
-    requests.put(url+'mock-01', data=json.dumps(mock_param))
-    requests.put(url+'brocade-01', data=json.dumps(brocade_param))
+    requests.put(url_switch+'dell-01', data=json.dumps(dell_param))
+    requests.put(url_switch+'nexus-01', data=json.dumps(nexus_param))
+    requests.put(url_switch+'mock-01', data=json.dumps(mock_param))
+    requests.put(url_switch+'brocade-01', data=json.dumps(brocade_param))
+
+    #Adding ports to the mock switch, Connect nics to ports:
+    for i in range(1, 8):
+        requests.put(url_switch+'mock-01/port/gi1/0/'+`i`)
+        requests.post(url_switch+'mock-01/port/gi1/0/'+`i`+'/connect_nic',
+                data=json.dumps({'node':'node-0'+`i`, 'nic': 'eth0'}))
+
+#Adding port gi1/0/8 to switch mock-01 without connecting it to any node.
+    requests.put(url_switch+'mock-01/port/gi1/0/8')
+
+    # Adding Projects proj-01 - proj-03
+    for i in ["proj-01", "proj-02", "proj-03"]:
+        requests.put('http://127.0.0.1:8888/project/'+i)
 
     # Allocating nodes to projects
     url_project = 'http://127.0.0.1:8888/project/'
@@ -279,19 +298,30 @@ def populate_server():
                     )
                 )
 
+    for i in ['net-04', 'net-05']:
+        requests.put(
+                url_network+i,
+                data=json.dumps(
+                    {"owner": "proj-02", "access": "proj-02", "net_id": ""}
+                    )
+                )
+
+
 
 # -- SETUP --
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module", autouse=True)
 def create_setup(request):
     dir_names = make_config()
     initialize_db()
-    proc = run_server(['haas', 'serve', '8888'])
+    proc1 = run_server(['haas', 'serve', '8888'])
+    proc2 = run_server(['haas', 'serve_networks'])
     import time
     time.sleep(1)
     populate_server()
 
     def fin():
-        proc.terminate()
+        proc1.terminate()
+        proc2.terminate()
         cleanup(dir_names)
     request.addfinalizer(fin)
 
@@ -313,7 +343,10 @@ class Test_Node:
 
     def test_show_node(self):
         result = C.node.show_node('node-07')
-        assert result == {u'name': u'node-07', u'nics': [], u'project': None}
+        assert result == {
+                u'project': None, u'nics': [{u'macaddr': u'aa:bb:cc:dd:ee:07',
+            u'networks': {}, u'label': u'eth0'}], u'name': u'node-07'
+                }
 
     def test_power_cycle(self):
         result = C.node.power_cycle('node-07')
@@ -324,28 +357,41 @@ class Test_Node:
         assert result is None
 
     def test_node_add_nic(self):
-        result = C.node.add_nic('node-07', 'eth0', 'aa:bb:cc:dd:ee:ff')
+        result = C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff')
         assert result is None
 
     def test_node_add_duplicate_nic(self):
-        C.node.add_nic('node-07', 'eth0', 'aa:bb:cc:dd:ee:ff')
+        C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff')
         with pytest.raises(errors.DuplicateError):
-            C.node.add_nic('node-07', 'eth0', 'aa:bb:cc:dd:ee:ff')
+            C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff')
 
     def test_nosuch_node_add_nic(self):
         with pytest.raises(errors.NotFoundError):
             C.node.add_nic('abcd', 'eth0', 'aa:bb:cc:dd:ee:ff')
 
     def test_remove_nic(self):
-        C.node.add_nic('node-07', 'eth0', 'aa:bb:cc:dd:ee:ff')
-        result = C.node.remove_nic('node-07', 'eth0')
+        C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff')
+        result = C.node.remove_nic('node-08', 'eth0')
         assert result is None
 
     def test_remove_duplicate_nic(self):
-        C.node.add_nic('node-07', 'eth0', 'aa:bb:cc:dd:ee:ff')
-        C.node.remove_nic('node-07', 'eth0')
+        C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff')
+        C.node.remove_nic('node-08', 'eth0')
         with pytest.raises(errors.NotFoundError):
-            C.node.remove_nic('node-07', 'eth0')
+            C.node.remove_nic('node-08', 'eth0')
+
+    def test_node_connect_network(self):
+        result = C.node.connect_network(
+                'node-01', 'eth0', 'net-01', 'vlan/native'
+                )
+        assert result is None
+
+#FIXME: I spent some time on this test. Looks like the pytest
+#framework kills the network server before it can detach network. 
+#    def test_node_detach_network(self):
+#        C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
+#        result = C.node.detach_network('node-04', 'eth0', 'net-04')
+#        assert result is None
 
 
 @pytest.mark.usefixtures("create_setup")
@@ -400,9 +446,9 @@ class Test_project:
     def test_project_connect_node_duplicate(self):
         """ test for erronous reconnecting node to project. """
         C.project.create('abcd')
-        C.project.connect('abcd', 'node-06')
-        with pytest.raises(errors.DuplicateError):
-            C.project.connect('abcd', 'node-06')
+        C.project.connect('abcd', 'node-08')
+        with pytest.raises(errors.BlockedError):
+            C.project.connect('abcd', 'node-08')
 
     def test_project_connect_node_nosuchobject(self):
         """ test for connecting no such node or project """

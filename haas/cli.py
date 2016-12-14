@@ -456,7 +456,7 @@ def project_connect_node(project, node):
     """Connect <node> to <project>"""
     try:
         C.project.connect(project, node)
-    except (errors.NotFoundError, errors.DuplicateError) as e:
+    except (errors.NotFoundError, errors.BlockedError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
 
 @cmd
@@ -686,8 +686,13 @@ def switch_register(switch, subtype, *args):
 @cmd
 def switch_delete(switch):
     """Delete a <switch> """
-    url = object_url('switch', switch)
-    do_delete(url)
+#    url = object_url('switch', switch)
+#    do_delete(url)
+    try:
+        C.switch.delete(switch)
+    except(errors.NotFoundError, BlockedError) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
+
 
 
 @cmd
@@ -769,8 +774,15 @@ def list_project_networks(project):
 @cmd
 def show_switch(switch):
     """Display information about <switch>"""
-    url = object_url('switch', switch)
-    do_get(url)
+#    url = object_url('switch', switch)
+#    do_get(url)
+    try:
+        q = C.switch.show(switch)
+        sys.stdout.write('All switches {}\t:    {}\n'.format(len(q), " ".join(q)))
+        sys.stdout.write(q.json())
+    except(errors.NotFoundError) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
+
 
 
 @cmd
@@ -793,8 +805,9 @@ def show_node(node):
     FIXME: Recursion should be implemented to the output.
     """
     q = C.node.show_node(node)
-    for item in q.items():
-        sys.stdout.write("{}\t  :  {}\n".format(item[0], item[1]))
+    print q
+#    for item in q.items():
+#        sys.stdout.write("{}\t  :  {}\n".format(item[0], item[1]))
 
 
 @cmd
