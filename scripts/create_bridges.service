@@ -1,0 +1,13 @@
+[Unit]
+Description=Service to create bridges
+Before=libvirtd.service
+After=network-online.target 
+After=network.target
+
+[Service]
+WorkingDirectory = /etc/
+ExecStart=/usr/bin/create_bridges
+Type=oneshot
+
+[Install]
+WantedBy=multi-user.target
