@@ -20,7 +20,7 @@ class Node(ClientBase):
                   "Make sure credentials match chosen authentication backend."
                   )
 
-    def show_node(self, node_name):
+    def show(self, node_name):
         """ Shows attributes of a given node """
 
         self.node_name = node_name
@@ -188,5 +188,28 @@ class Node(ClientBase):
             raise errors.BlockedError(
                     "Networking operations pending on this nic. "
                     )
+
+    def show_console(self, node):
+        """ Display console log for <node> """
+        pass
+
+
+    def start_console(self, node):
+        """ Start logging console output from <node> """
+        url = object_url('node', node, 'console')
+        if q.ok:
+            return
+
+
+    def stop_console(self, node):
+        """ Stop logging console output from <node> and delete the log"""
+        url = object_url('node', node, 'console')
+        q = self.s.delete(url)
+        if q.ok:
+            return
+
+
+
+
 
 

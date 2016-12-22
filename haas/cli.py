@@ -27,7 +27,7 @@ import abc
 
 from functools import wraps
 
-## Hook to the client library
+# Hook to the client library
 from haas.client.auth import db_auth, keystone_auth
 from haas.client.client import Client
 from haas.client import errors
@@ -186,17 +186,20 @@ def setup_http_client():
 
     This may be extended with other backends in the future.
     """
-    #global http_client
-    global C  #initiating the client library
+    global http_client
+    global C  # initiating the client library
     # First try basic auth:
     ep = os.environ.get('HAAS_ENDPOINT') or "http://127.0.0.1:5000"
     basic_username = os.getenv('HAAS_USERNAME')
     basic_password = os.getenv('HAAS_PASSWORD')
     if basic_username is not None and basic_password is not None:
-        #    http_client = RequestsHTTPClient()
-        #http_client.auth = (basic_username, basic_password)
+        # For calls using the client library
         sess = db_auth(basic_username, basic_password)
         C = Client(ep, sess)
+        # For calls with no client library support yet.
+        # Includes all headnode calls; registration of nodes and switches.
+        http_client = RequestsHTTPClient()
+        http_client.auth = (basic_username, basic_password)
         return
     # Next try keystone:
     try:
@@ -234,11 +237,11 @@ def check_status_code(response):
     else:
         sys.stdout.write(response.text + "\n")
 
-
-
-# This should be DELETED. 
+# Function object_url should be DELETED.
 # TODO: This function's name is no longer very accurate.  As soon as it is
 # safe, we should change it to something more generic.
+
+
 def object_url(*args):
     # Prefer an environmental variable for getting the endpoint if available.
     url = os.environ.get('HAAS_ENDPOINT')
@@ -274,7 +277,7 @@ def do_get(url, params=None):
 def do_delete(url):
     check_status_code(http_client.request('DELETE', url))
 
-# DELETE UPTIL HERE
+# DELETE UPTIL HERE once all calls have client library support.
 
 
 @cmd
@@ -326,14 +329,13 @@ def user_create(username, password, is_admin):
     """
     try:
         C.user.create(username, password, is_admin)
-    except (errors.DuplicateError ) as e:
+    except (errors.DuplicateError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
 
 
 @cmd
 def network_create(network, owner, access, net_id):
     """Create a link-layer <network>.  See docs/networks.md for details"""
-
     try:
         C.network.create(network, owner, access, net_id)
     except (errors.DuplicateError, errors.NotFoundError) as e:
@@ -361,7 +363,6 @@ def network_delete(network):
 @cmd
 def user_delete(username):
     """Delete the user <username>"""
-
     try:
         C.user.delete(username)
     except (errors.NotFoundError) as e:
@@ -372,7 +373,7 @@ def user_delete(username):
 def list_projects():
     """List all projects"""
     q = C.project.list()
-    sys.stdout.write('%s Projects :    ' %len(q) + " ".join(q) + '\n')
+    sys.stdout.write('%s Projects :    ' % len(q) + " ".join(q) + '\n')
 
 
 @cmd
@@ -383,36 +384,28 @@ def user_add_project(user, project):
     except (errors.NotFoundError, errors.DuplicateError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
 
-#    url = object_url('/auth/basic/user', user, 'add_project')
-#    do_post(url, data={'project': project})
 
 @cmd
 def user_remove_project(user, project):
     """Remove <user> from <project>"""
-#    url = object_url('/auth/basic/user', user, 'remove_project')
-#    do_post(url, data={'project': project})
     try:
         C.user.remove_access(user, project)
     except (errors.NotFoundError, errors.DuplicateError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
 
+
 @cmd
 def network_grant_project_access(project, network):
     """Add <project> to <network> access"""
-#    url = object_url('network', network, 'access', project)
-#    do_put(url)
     try:
         C.network.grant_access(project, network)
     except (errors.NotFoundError, errors.DuplicateError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
 
 
-
 @cmd
 def network_revoke_project_access(project, network):
     """Remove <project> from <network> access"""
-#    url = object_url('network', network, 'access', project)
-#    do_delete(url)
     try:
         C.network.revoke_access(project, network)
     except (errors.NotFoundError) as e:
@@ -427,6 +420,7 @@ def project_create(project):
     except (errors.DuplicateError, errors.AuthenticationError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
 
+
 @cmd
 def project_delete(project):
     """Delete <project>"""
@@ -435,12 +429,14 @@ def project_delete(project):
     except (errors.NotFoundError, errors.AuthenticationError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
 
+
 @cmd
 def headnode_create(headnode, project, base_img):
     """Create a <headnode> in a <project> with <base_img>"""
     url = object_url('headnode', headnode)
     do_put(url, data={'project': project,
                       'base_img': base_img})
+
 
 @cmd
 def headnode_delete(headnode):
@@ -456,6 +452,7 @@ def project_connect_node(project, node):
         C.project.connect(project, node)
     except (errors.NotFoundError, errors.BlockedError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
+
 
 @cmd
 def project_detach_node(project, node):
@@ -572,7 +569,6 @@ def headnode_delete_hnic(headnode, nic):
     do_delete(url)
 
 
-
 @cmd
 def node_connect_network(node, nic, network, channel):
     """Connect <node> to <network> on given <nic> and <channel>"""
@@ -580,6 +576,7 @@ def node_connect_network(node, nic, network, channel):
         C.node.connect_network(node, nic, network, channel)
     except(errors.NotFoundError, errors.DuplicateError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
+
 
 @cmd
 def node_detach_network(node, nic, network):
@@ -678,41 +675,50 @@ def switch_delete(switch):
         sys.stderr.write('Error: %s\n' % e.message)
 
 
-
 @cmd
 def list_switches():
     """List all switches"""
     q = C.switch.list()
-    sys.stdout.write('%s switches :    ' %len(q) + " ".join(q) + '\n')
+    sys.stdout.write('%s switches :    ' % len(q) + " ".join(q) + '\n')
 
 
 @cmd
 def port_register(switch, port):
     """Register a <port> with <switch> """
-    url = object_url('switch', switch, 'port', port)
-    do_put(url)
+    try:
+        C.port.register(switch, port)
+    except(errors.DuplicateError) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
 
 
 @cmd
 def port_delete(switch, port):
     """Delete a <port> from a <switch>"""
-    url = object_url('switch', switch, 'port', port)
-    do_delete(url)
+    try:
+        C.port.delete(switch, port)
+    except(errors.NotFoundError) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
 
 
 @cmd
 def port_connect_nic(switch, port, node, nic):
     """Connect a <port> on a <switch> to a <nic> on a <node>"""
-    url = object_url('switch', switch, 'port', port, 'connect_nic')
-    do_post(url, data={'node': node, 'nic': nic})
+    try:
+        C.port.connect_nic(switch, port, node, nic)
+    except(errors.DuplicateError) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
 
 
 @cmd
 def port_detach_nic(switch, port):
     """Detach a <port> on a <switch> from whatever's connected to it"""
-    url = object_url('switch', switch, 'port', port, 'detach_nic')
-    do_post(url)
+#    url = object_url('switch', switch, 'port', port, 'detach_nic')
+#    do_post(url)
 
+    try:
+        C.port.detach_nic(switch, port)
+    except(errors.NotFoundError) as e:
+        sys.stderr.write('Error: %s\n' % e.message)
 
 @cmd
 def list_network_attachments(network, project):
@@ -738,49 +744,52 @@ def list_nodes(is_free):
     if is_free == 'all':
         sys.stdout.write('All nodes {}\t:    {}\n'.format(len(q), " ".join(q)))
     elif is_free == 'free':
-        sys.stdout.write('Free nodes {}\t:    {}\n'.format(len(q), " ".join(q)))
+        sys.stdout.write('Free nodes {}\t:   {}\n'.format(len(q), " ".join(q)))
     else:
         sys.stdout.write('Error: {} is an invalid argument\n'.format(is_free))
+
 
 @cmd
 def list_project_nodes(project):
     """List all nodes attached to a <project>"""
     q = C.project.nodes_in(project)
-    sys.stdout.write('Nodes allocated to %s:    ' %project + " ".join(q) + '\n')
+    sys.stdout.write('Nodes allocated to %s:  ' % project + " ".join(q) + '\n')
+
 
 @cmd
 def list_project_networks(project):
     """List all networks attached to a <project>"""
     q = C.project.networks_in(project)
-    sys.stdout.write("Networks allocated to {}\t:   {}\n".format(project, " ".join(q)))
+    sys.stdout.write(
+            "Networks allocated to {}\t:   {}\n".format(project, " ".join(q))
+            )
 
 
 @cmd
 def show_switch(switch):
     """Display information about <switch>"""
-#    url = object_url('switch', switch)
-#    do_get(url)
     try:
         q = C.switch.show(switch)
-        sys.stdout.write('All switches {}\t:    {}\n'.format(len(q), " ".join(q)))
-        sys.stdout.write(q.json())
+        for item in q.items():
+            sys.stdout.write("{}\t  :  {}\n".format(item[0], item[1]))
     except(errors.NotFoundError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
-
 
 
 @cmd
 def list_networks():
     """List all networks"""
-    url = object_url('networks')
-    do_get(url)
+    q = C.network.list()
+    for item in q.items():
+        sys.stdout.write("{}\t  :  {}\n".format(item[0], item[1]))
 
 
 @cmd
 def show_network(network):
     """Display information about <network>"""
-    q = C.project.networks_in(project)
-    sys.stdout.write("Networks allocated to {}\t:   {}\n".format(project, " ".join(q)))
+    q = C.network.show(network)
+    for item in q.items():
+        sys.stdout.write("{}\t  :  {}\n".format(item[0], item[1]))
 
 
 @cmd
@@ -788,7 +797,7 @@ def show_node(node):
     """Display information about a <node>
     FIXME: Recursion should be implemented to the output.
     """
-    q = C.node.show_node(node)
+    q = C.node.show(node)
     for item in q.items():
         sys.stdout.write("{}\t  :  {}\n".format(item[0], item[1]))
 
@@ -824,15 +833,12 @@ def show_console(node):
 @cmd
 def start_console(node):
     """Start logging console output from <node>"""
-    url = object_url('node', node, 'console')
-    do_put(url)
-
+    q = C.node.start_console(node)
 
 @cmd
 def stop_console(node):
     """Stop logging console output from <node> and delete the log"""
-    url = object_url('node', node, 'console')
-    do_delete(url)
+    q = C.node.stop_console(node)
 
 
 @cmd

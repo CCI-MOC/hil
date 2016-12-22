@@ -20,7 +20,7 @@ class Switch(ClientBase):
                     )
 
     def register(self, switch, subtype, *args):
-        """ Registers a switch with name <switch> and 
+        """ Registers a switch with name <switch> and
         model <subtype> , and relevant arguments  in <*args>
         """
 #       It is assumed that the HIL administrator is aware of 
@@ -59,5 +59,62 @@ class Switch(ClientBase):
                     "Operation failed. No such switch."
                     )
 
+
+class Port(ClientBase):
+    """ Port related operations. """
+
+    def register(self, switch, port):
+        """Register a <port> with <switch>. """
+        self.switch = switch
+        self.port = port
+
+        url = self.object_url('switch', switch, 'port', port)
+        q = self.s.put(url)
+        if q.ok:
+            return
+        elif q.status_code == 409:
+            raise errors.DuplicateError( "Port name not unique. ")
+
+
+    def delete(self, switch, port):
+        """ Deletes information of the <port> for <switch> """
+        self.switch = switch
+        self.port = port
+
+        url = self.object_url('switch', switch, 'port', port)
+        q = self.s.delete(url)
+        if q.ok:
+            return
+        elif q.status_code == 404:
+            raise errors.NotFoundError( "Port name not found. ")
+
+    def connect_nic(self, switch, port, node, nic):
+        """ Connects <port> of <switch> to <nic> of <node>. """
+        self.switch = switch
+        self.port = port
+        self.node = node
+        self.nic = nic
+
+        url = self.object_url('switch', switch, 'port', port, 'connect_nic')
+        payload = json.dumps({ 'node': self.node, 'nic': self.nic })
+        q = self.s.post(url, payload)
+        if q.ok:
+            return
+        elif q.status_code == 409:
+            raise errors.DuplicateError( "Port or Nic already connected. ")
+
+
+    def detach_nic(self, switch, port):
+        """" Detaches <port> of <switch>. """
+        self.switch = switch
+        self.port = port
+        url = self.object_url('switch', switch, 'port', port, 'detach_nic')
+        q = self.s.post(url)
+        if q.ok:
+            return
+        elif q.status_code == 404:
+            raise errors.NotFoundError(
+                    "Operation Failed. The relationship does not exist. "
+                    )
 
 

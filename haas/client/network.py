@@ -9,7 +9,7 @@ class Network(ClientBase):
 
         def list(self):
             """ Lists all projects under HIL """
-            url = self.object_url('/networks')
+            url = self.object_url('networks')
             q = self.s.get(url)
             if q.ok:
                 return q.json()
@@ -18,6 +18,23 @@ class Network(ClientBase):
                         "Make sure credentials match "
                         "chosen authentication backend."
                         )
+        def show(self, network):
+            """ Shows attributes of a network. """
+            self.network = network
+            url = self.object_url('network', self.network)
+            q = self.s.get(url)
+            if q.ok:
+                return q.json()
+            elif q.status_code == 401:
+                raise errors.AuthenticationError(
+                        "Make sure credential match."
+                        "chosen authentication backend."
+                        )
+            elif q.status_code == 404:
+                raise errors.NotFoundError(
+                        "Network does not exist."
+                        )
+
 
         def create(self, network, owner, access, net_id):
             """ Create a link-layer <network>. See docs/networks.md for
@@ -30,7 +47,7 @@ class Network(ClientBase):
             self.net_id = net_id
 
             url = self.object_url('network', self.network)
-            payload = json.dumps({ 
+            payload = json.dumps({
                 'owner': self.owner, 'access': self.access, 'net_id': self.net_id
                 })
             q = self.s.put(url, data=payload)
