@@ -27,7 +27,6 @@ import abc
 
 from functools import wraps
 
-# Hook to the client library
 from haas.client.auth import db_auth, keystone_auth
 from haas.client.client import Client
 from haas.client import errors

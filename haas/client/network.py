@@ -4,7 +4,7 @@ from haas.client import errors
 
 
 class Network(ClientBase):
-        """ Consists of calls to query and manipulate project related
+        """ Consists of calls to query and manipulate network related
             objects and relations """
 
         def list(self):

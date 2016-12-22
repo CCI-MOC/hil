@@ -76,7 +76,8 @@ class Node(ClientBase):
                     )
         elif q.status_code == 500:
             raise errors.NotFoundError(
-                    "Operation Failed. Contact your system administrator"
+                    "Operation Failed. This is a server-side problem. "
+                    "Contact your HIL Administrator. "
                     )
 
     def power_off(self, node_name):
@@ -98,7 +99,7 @@ class Node(ClientBase):
                     )
 
     def add_nic(self, node_name, nic_name, macaddr):
-        """ adds a <nic> from <node>"""
+        """ adds a <nic> to <node>"""
         self.node_name = node_name
         self.nic_name = nic_name
         self.macaddr = macaddr

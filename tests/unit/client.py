@@ -29,7 +29,6 @@ from subprocess import check_call, Popen
 from urlparse import urljoin
 import requests
 from requests.exceptions import ConnectionError
-# Hook to the client library
 from haas.client.base import ClientBase
 from haas.client.auth import db_auth
 from haas.client.client import Client

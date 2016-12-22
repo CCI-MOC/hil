@@ -19,8 +19,9 @@ class ClientBase(object):
     def __init__(self, endpoint=None, sess=None):
         """ Initialize an instance of the library with following parameters.
         endpoint: stands for the http endpoint eg. endpoint=http://127.0.0.1
+        sess: depending on the authentication backend (db vs keystone) the 
+        parameters required to make up the session vary.
         user: username as which you wish to connect to HaaS
-        password: password for the 'user' as decribed above.
         Currently all this information is fetched from the user's environment.
         """
         self.endpoint = endpoint
@@ -28,8 +29,9 @@ class ClientBase(object):
 
         if None in [self.endpoint, self.s]:
             raise LookupError(
-                    "Insufficient attributes to establish "
-                    "connection with HaaS server")
+                    "Incomplete client parameters (username, password, etc) "
+                    "supplied to set up connection with HaaS server"
+                    )
 
     def object_url(self, *args):
         """Generate URL from combining endpoint and args as relative URL"""

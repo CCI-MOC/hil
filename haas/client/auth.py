@@ -6,7 +6,7 @@ from keystoneauth1 import session
 
 def db_auth(username, password):
     """ For database as authentication backend, this function prepares
-    the default http client session using requests module.
+    the default client session.
     """
     s = requests.Session()
     s.auth = (username, password)
