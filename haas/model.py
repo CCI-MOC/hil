@@ -287,6 +287,13 @@ class Obm(db.Model):
 
         assert False, "Subclasses MUST override the power_off method "
 
+    def set_bootdev(self):
+        """sets bootdevice to disk.
+
+        Exact implementation is left to the subclasses.
+        """
+        assert False, "Subclasses MUST override the set_bootdev method " 
+
     def start_console(self):
         """Starts logging to the console. """
         assert False, "Subclasses MUST override the start_console method"

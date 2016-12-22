@@ -87,6 +87,11 @@ class Ipmi(Obm):
             raise OBMError('Could not power off node %s', self.label)
 
     @no_dry_run
+    def set_bootdev(self):
+        if self._ipmitool(['chassis', 'bootdev', 'disk','options=persistent']) != 0:
+            raise OBMError('Couldnt change bootdev  %s', self.label)
+
+    @no_dry_run
     def start_console(self):
         """Starts logging the IPMI console."""
 

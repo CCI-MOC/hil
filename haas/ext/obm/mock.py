@@ -56,6 +56,10 @@ class MockObm(Obm):
         return
 
     @no_dry_run
+    def set_bootdev(self):
+        return
+
+    @no_dry_run
     def start_console(self):
         return
 
