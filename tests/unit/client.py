@@ -342,7 +342,7 @@ class Test_Node:
                 ]
 
     def test_show_node(self):
-        result = C.node.show_node('node-07')
+        result = C.node.show('node-07')
         assert result == {
                 u'project': None, u'nics': [{u'macaddr': u'aa:bb:cc:dd:ee:07',
             u'networks': {}, u'label': u'eth0'}], u'name': u'node-07'
@@ -385,6 +385,15 @@ class Test_Node:
                 'node-01', 'eth0', 'net-01', 'vlan/native'
                 )
         assert result is None
+
+    def test_node_start_console(self):
+        result = C.node.start_console('node-01')
+        assert result is None
+
+    def test_node_stop_console(self):
+        result = C.node.stop_console('node-01')
+        assert result is None
+
 
 #FIXME: I spent some time on this test. Looks like the pytest
 #framework kills the network server before it can detach network. 
@@ -481,6 +490,48 @@ class Test_switch:
     def test_list_switches(self):
         result = C.switch.list()
         assert result == [u'brocade-01', u'dell-01', u'mock-01', u'nexus-01']
+
+    def test_show_switch(self):
+        result = C.switch.show('dell-01')
+        assert result == {u'name': u'dell-01', u'ports': []}
+
+    def test_delete_switch(self):
+        result = C.switch.delete('nexus-01')
+        assert result == None
+
+
+@pytest.mark.usefixtures("create_setup")
+class Test_port:
+    """ Tests port related client calls."""
+
+    def test_port_register(self):
+        result = C.port.register('dell-01', 'gi1/0/5')
+        assert result == None
+
+    def test_port_dupregister(self):
+        C.port.register('dell-01', 'gi1/0/6')
+        with pytest.raises(errors.DuplicateError):
+            C.port.register('dell-01', 'gi1/0/6')
+
+
+    def test_port_delete(self):
+        C.port.register('dell-01', 'gi1/0/5')
+        result = C.port.delete('dell-01', 'gi1/0/5')
+        assert result == None
+
+
+    def test_port_deleteerror(self):
+        C.port.register('dell-01', 'gi1/0/6')
+        C.port.delete('dell-01', 'gi1/0/6')
+        with pytest.raises(errors.NotFoundError):
+            C.port.delete('dell-01', 'gi1/0/6')
+
+
+    def test_port_connect_nic(self):
+        C.port.register('dell-01', 'abcd')
+        result = C.port.connect_nic('dell-01', 'abcd', 'node-08', 'eth0')
+        assert result == None
+
 
 @pytest.mark.usefixtures("create_setup")
 class Test_user:

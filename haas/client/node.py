@@ -196,14 +196,17 @@ class Node(ClientBase):
 
     def start_console(self, node):
         """ Start logging console output from <node> """
-        url = object_url('node', node, 'console')
+        self.node = node
+        url = self.object_url('node', self.node, 'console')
+        q = self.s.put(url)
         if q.ok:
             return
 
 
     def stop_console(self, node):
         """ Stop logging console output from <node> and delete the log"""
-        url = object_url('node', node, 'console')
+        self.node = node
+        url = self.object_url('node', self.node, 'console')
         q = self.s.delete(url)
         if q.ok:
             return
