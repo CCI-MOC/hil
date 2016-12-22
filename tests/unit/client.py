@@ -533,21 +533,41 @@ class Test_port:
         assert result == None
 
 
+    def test_port_connect_nic_error(self):
+        C.port.register('dell-01', 'abcd')
+        C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:08')
+        C.port.connect_nic('dell-01', 'abcd', 'node-08', 'eth0')
+        with pytest.raises(errors.DuplicateError):
+            C.port.connect_nic('dell-01', 'abcd', 'node-08', 'eth0')
+
+
+    def test_port_detach_nic(self):
+        C.port.register('dell-01', 'gi1/0/11')
+        C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:08')
+        C.port.connect_nic('dell-01', 'gi1/0/11', 'node-08', 'eth0')
+        result = C.port.detach_nic('dell-01', 'gi1/0/11')
+        assert result == None
+
+
+    def test_port_detach_nic_error(self):
+        C.port.register('dell-01', 'gi1/0/11')
+        C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:08')
+        C.port.connect_nic('dell-01', 'gi1/0/11', 'node-08', 'eth0')
+        C.port.detach_nic('dell-01', 'gi1/0/11')
+        with pytest.raises(errors.NotFoundError):
+            C.port.detach_nic('dell-01', 'gi1/0/11')
+
+
 @pytest.mark.usefixtures("create_setup")
 class Test_user:
     """ Tests user related client calls."""
 
     def test_user_create(self):
         """ Test user creation. """
-
-        result1 = C.user.create('bob', 'pass1234', 'admin')
+        result1 = C.user.create('bill', 'pass1234', 'regular')
         result2 = C.user.create('bob', 'pass1234', 'regular')
         assert result1 is None
         assert result2 is None
-
-
-
-
 
 
 
