@@ -499,6 +499,13 @@ def node_power_off(node):
 
 
 @cmd
+def node_set_bootdev(node):
+    """Power off <node>"""
+    url = object_url('node', node, 'set_bootdev')
+    do_post(url)
+
+
+@cmd
 def node_register_nic(node, nic, macaddr):
     """
     Register existence of a <nic> with the given <macaddr> on the given <node>

@@ -263,6 +263,17 @@ def node_power_off(node):
     node.obm.power_off()
 
 
+@rest_call('POST', '/node/<node>/set_bootdev', Schema({'node': basestring}))
+def set_bootdev(node):
+    auth_backend = get_auth_backend()
+    node = _must_find(model.Node, node)
+    if node.project is None:
+        auth_backend.require_admin()
+    else:
+        auth_backend.require_project_access(node.project)
+    node.obm.set_bootdev()
+
+
 @rest_call('DELETE', '/node/<node>', Schema({'node': basestring}))
 def node_delete(node):
     """Delete node.
