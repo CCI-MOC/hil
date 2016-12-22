@@ -199,7 +199,50 @@ contains ``haas.cfg``. This pre-allocation is easier to reason about
 than on-demand creation, and allows HaaS to be run as an unprivileged user,
 but it also causes some limitations.  For instance, because of this, headnodes
 can only be connected to networks with allocated VLANs.  The bridges must also
-be pre-allocated again on each boot. For now, the recomended approach is to add::
+be pre-allocated again on each boot. For now, the recommened method is to use 
+``systemd``.  A ``systemd`` service for running the ``create_bridges`` script is available 
+in the 'scripts' directory.
+
+Name of the service is: ``create_bridges.service``
+
+Name of the script is: ``create_bridges``
+
+Centos:
+^^^^^^^
+
+Centos uses systemd to controll all its processes.
+
+Place the file ``create_bridges.service`` under:
+``/usr/lib/systemd/system/``
+
+Ubuntu:
+^^^^^^^
+Systemd is available from Ubuntu 15.04 onwards and LTS version 16.04 will ship with systemd by default.
+
+Edit the ``create_bridges.service`` file and change the ExecStart
+to 
+``/usr/local/bin/create_bridges``
+
+Place the file ``create_bridges.service`` under:
+``/lib/systemd/system/``
+
+Starting the service:
+^^^^^^^^^^^^^^^^^^^^^
+
+Following commands will start the daemon:
+``systemctl daemon-reload``
+``systemctl start create_bridges.service``
+
+You can check the status using:
+``systemctl status create_bridges.service``
+
+To auto-start the service on boot (recommended):
+``systemctl enable create_bridges.service``
+
+For systems that do not support systemd:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can add the following line::
 
   (cd /etc && create_bridges)
 
