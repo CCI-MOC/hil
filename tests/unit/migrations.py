@@ -154,7 +154,7 @@ def get_db_state():
         inspector.reflecttable(tbl, None)
         rows = db.session.query(tbl).all()
         result[name] = {
-            'schema': schema,
+            'schema': sorted(schema),
             'rows': sorted(rows),
         }
 
