@@ -170,7 +170,7 @@ the file manually, doing the following:
   - row_security
 - Delete all statements using the keywords GRANT, REVOKE, or EXTENSION.
   These will cause permission errors if your database user is not root.
-- Delete all statements of the form ``ALTER TABLE ... SET OWNER TO
+- Delete all statements of the form ``ALTER TABLE ... OWNER TO
   ...``; these may cause failures if the connection details on the
   machine which runs the tests are different from yours, since the
   refer to specific database users/roles.

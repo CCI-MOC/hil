@@ -41,8 +41,6 @@ CREATE TABLE alembic_version (
 );
 
 
-ALTER TABLE alembic_version OWNER TO hil;
-
 --
 -- Name: headnode; Type: TABLE; Schema: public; Owner: hil
 --
@@ -57,8 +55,6 @@ CREATE TABLE headnode (
 );
 
 
-ALTER TABLE headnode OWNER TO hil;
-
 --
 -- Name: headnode_id_seq; Type: SEQUENCE; Schema: public; Owner: hil
 --
@@ -70,8 +66,6 @@ CREATE SEQUENCE headnode_id_seq
     NO MAXVALUE
     CACHE 1;
 
-
-ALTER TABLE headnode_id_seq OWNER TO hil;
 
 --
 -- Name: headnode_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
@@ -92,7 +86,6 @@ CREATE TABLE hnic (
 );
 
 
-ALTER TABLE hnic OWNER TO hil;
 
 --
 -- Name: hnic_id_seq; Type: SEQUENCE; Schema: public; Owner: hil
@@ -106,7 +99,6 @@ CREATE SEQUENCE hnic_id_seq
     CACHE 1;
 
 
-ALTER TABLE hnic_id_seq OWNER TO hil;
 
 --
 -- Name: hnic_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
@@ -127,7 +119,6 @@ CREATE TABLE mock_obm (
 );
 
 
-ALTER TABLE mock_obm OWNER TO hil;
 
 --
 -- Name: mock_switch; Type: TABLE; Schema: public; Owner: hil
@@ -141,7 +132,6 @@ CREATE TABLE mock_switch (
 );
 
 
-ALTER TABLE mock_switch OWNER TO hil;
 
 --
 -- Name: network; Type: TABLE; Schema: public; Owner: hil
@@ -156,7 +146,6 @@ CREATE TABLE network (
 );
 
 
-ALTER TABLE network OWNER TO hil;
 
 --
 -- Name: network_attachment; Type: TABLE; Schema: public; Owner: hil
@@ -170,7 +159,6 @@ CREATE TABLE network_attachment (
 );
 
 
-ALTER TABLE network_attachment OWNER TO hil;
 
 --
 -- Name: network_attachment_id_seq; Type: SEQUENCE; Schema: public; Owner: hil
@@ -184,7 +172,6 @@ CREATE SEQUENCE network_attachment_id_seq
     CACHE 1;
 
 
-ALTER TABLE network_attachment_id_seq OWNER TO hil;
 
 --
 -- Name: network_attachment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
@@ -205,7 +192,6 @@ CREATE SEQUENCE network_id_seq
     CACHE 1;
 
 
-ALTER TABLE network_id_seq OWNER TO hil;
 
 --
 -- Name: network_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
@@ -224,7 +210,6 @@ CREATE TABLE network_projects (
 );
 
 
-ALTER TABLE network_projects OWNER TO hil;
 
 --
 -- Name: networking_action; Type: TABLE; Schema: public; Owner: hil
@@ -238,7 +223,6 @@ CREATE TABLE networking_action (
 );
 
 
-ALTER TABLE networking_action OWNER TO hil;
 
 --
 -- Name: networking_action_id_seq; Type: SEQUENCE; Schema: public; Owner: hil
@@ -252,7 +236,6 @@ CREATE SEQUENCE networking_action_id_seq
     CACHE 1;
 
 
-ALTER TABLE networking_action_id_seq OWNER TO hil;
 
 --
 -- Name: networking_action_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
@@ -274,7 +257,6 @@ CREATE TABLE nic (
 );
 
 
-ALTER TABLE nic OWNER TO hil;
 
 --
 -- Name: nic_id_seq; Type: SEQUENCE; Schema: public; Owner: hil
@@ -288,7 +270,6 @@ CREATE SEQUENCE nic_id_seq
     CACHE 1;
 
 
-ALTER TABLE nic_id_seq OWNER TO hil;
 
 --
 -- Name: nic_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
@@ -309,7 +290,6 @@ CREATE TABLE node (
 );
 
 
-ALTER TABLE node OWNER TO hil;
 
 --
 -- Name: node_id_seq; Type: SEQUENCE; Schema: public; Owner: hil
@@ -323,7 +303,6 @@ CREATE SEQUENCE node_id_seq
     CACHE 1;
 
 
-ALTER TABLE node_id_seq OWNER TO hil;
 
 --
 -- Name: node_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
@@ -342,7 +321,6 @@ CREATE TABLE obm (
 );
 
 
-ALTER TABLE obm OWNER TO hil;
 
 --
 -- Name: obm_id_seq; Type: SEQUENCE; Schema: public; Owner: hil
@@ -356,7 +334,6 @@ CREATE SEQUENCE obm_id_seq
     CACHE 1;
 
 
-ALTER TABLE obm_id_seq OWNER TO hil;
 
 --
 -- Name: obm_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
@@ -376,7 +353,6 @@ CREATE TABLE port (
 );
 
 
-ALTER TABLE port OWNER TO hil;
 
 --
 -- Name: port_id_seq; Type: SEQUENCE; Schema: public; Owner: hil
@@ -390,7 +366,6 @@ CREATE SEQUENCE port_id_seq
     CACHE 1;
 
 
-ALTER TABLE port_id_seq OWNER TO hil;
 
 --
 -- Name: port_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
@@ -409,7 +384,6 @@ CREATE TABLE project (
 );
 
 
-ALTER TABLE project OWNER TO hil;
 
 --
 -- Name: project_id_seq; Type: SEQUENCE; Schema: public; Owner: hil
@@ -423,7 +397,6 @@ CREATE SEQUENCE project_id_seq
     CACHE 1;
 
 
-ALTER TABLE project_id_seq OWNER TO hil;
 
 --
 -- Name: project_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
@@ -443,7 +416,6 @@ CREATE TABLE switch (
 );
 
 
-ALTER TABLE switch OWNER TO hil;
 
 --
 -- Name: switch_id_seq; Type: SEQUENCE; Schema: public; Owner: hil
@@ -457,9 +429,6 @@ CREATE SEQUENCE switch_id_seq
     CACHE 1;
 
 
-ALTER TABLE switch_id_seq OWNER TO hil;
-
---
 -- Name: switch_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
 --
 
