@@ -8,6 +8,7 @@ Create Date: 2016-11-14 14:57:19.247255
 
 from alembic import op
 import sqlalchemy as sa
+from haas.model import NetworkingAction
 
 
 # revision identifiers, used by Alembic.
@@ -17,9 +18,16 @@ branch_labels = ('haas',)
 
 
 def upgrade():
+    # We first introduce the table with null 'type' fields allowed.
+    # Any existing actions will have null type fields, so we then
+    # update them to 'modify_port', which was previously the only
+    # possible action. Then, we add the NOT NULL constraint once
+    # we know it won't run afoul of any existing rows.
     op.add_column('networking_action',
                   sa.Column('type', sa.String(),
-                            nullable=False))
+                            nullable=True))
+    op.execute(sa.update(NetworkingAction).values({'type': 'modify_port'}))
+    op.alter_column('networking_action', 'type', nullable=False)
 
 
 def downgrade():
