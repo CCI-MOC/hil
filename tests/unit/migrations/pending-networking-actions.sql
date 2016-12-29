@@ -18,9 +18,7 @@
 -- `create_pending_actions_db` in `tests/unit/migrations.py`, as of the
 -- commit:
 --
--- TODO: put a commit hash here. The above function is being introduced in the
--- *same* commit as this comment, so we can't know the right commit hash; this
--- comment will be replaced with the correct hash in the following commit.
+-- be03e9938a846004d45b3bb7be98ac539451f057
 
 SET statement_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
