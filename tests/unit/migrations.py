@@ -153,9 +153,24 @@ def get_db_state():
         tbl = db.Table(name, metadata)
         inspector.reflecttable(tbl, None)
         rows = db.session.query(tbl).all()
+
+        # the inspector gives us the schema as a list, and the rows
+        # as a list of tuples. the columns in each row are matched
+        # up with the schema by position, but this may vary
+        # (acceptably) depending on when migration scripts are run.
+        # So, we normalize this by converting both to dictionaries
+        # with the column names as keys.
+        row_dicts = []
+        for row in rows:
+            row_dicts.append({})
+            for i in range(len(row)):
+                row_dicts[-1][schema[i]['name']] = row[i]
+
+        schema = dict((col['name'], col) for col in schema)
+
         result[name] = {
-            'schema': sorted(schema),
-            'rows': sorted(rows),
+            'schema': schema,
+            'rows': sorted(row_dicts),
         }
 
     return result
