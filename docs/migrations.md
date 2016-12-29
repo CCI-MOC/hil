@@ -167,6 +167,7 @@ the file manually, doing the following:
   `option_name` is any of:
   - idle_in_transaction_session_timeout
   - lock_timeout
+  - row_security
 - Delete all statements using the keywords GRANT, REVOKE, or EXTENSION.
   These will cause permission errors if your database user is not root.
 - Delete all statements of the form ``ALTER TABLE ... SET OWNER TO
