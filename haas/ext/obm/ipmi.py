@@ -83,7 +83,7 @@ class Ipmi(Obm):
 
     @no_dry_run
     def power_off(self):
-        if self._ipmitool(['chassis', 'power','off']) != 0:
+        if self._ipmitool(['chassis', 'power', 'off']) != 0:
             raise OBMError('Could not power off node %s', self.label)
 
     @no_dry_run
