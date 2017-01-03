@@ -498,9 +498,10 @@ def node_power_off(node):
     do_post(url)
 
 
+
 @cmd
 def node_set_bootdev(node):
-    """Power off <node>"""
+    """Set persistent boot dev. node_set_bootdev node"""
     url = object_url('node', node, 'set_bootdev')
     do_post(url)
 
