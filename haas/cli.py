@@ -498,7 +498,6 @@ def node_power_off(node):
     do_post(url)
 
 
-
 @cmd
 def node_set_bootdev(node, dev):
     """Sets <node> to boot from <dev> persistenly"""

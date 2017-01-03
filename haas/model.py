@@ -292,7 +292,7 @@ class Obm(db.Model):
 
         Exact implementation is left to the subclasses.
         """
-        assert False, "Subclasses MUST override the set_bootdev method " 
+        assert False, "Subclasses MUST override the set_bootdev method "
 
     def start_console(self):
         """Starts logging to the console. """
