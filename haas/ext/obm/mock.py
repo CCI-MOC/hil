@@ -56,7 +56,7 @@ class MockObm(Obm):
         return
 
     @no_dry_run
-    def set_bootdev(self):
+    def set_bootdev(self, dev):
         return
 
     @no_dry_run

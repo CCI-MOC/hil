@@ -500,9 +500,9 @@ def node_power_off(node):
 
 
 @cmd
-def node_set_bootdev(node):
-    """Set persistent boot dev. node_set_bootdev node"""
-    url = object_url('node', node, 'set_bootdev')
+def node_set_bootdev(node, dev):
+    """Sets <node> to boot from <dev> persistenly"""
+    url = object_url('node', node, 'dev', dev, 'set_bootdev')
     do_post(url)
 
 
