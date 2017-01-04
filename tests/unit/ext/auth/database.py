@@ -5,13 +5,23 @@ from haas.flaskapp import app
 from haas.model import db
 from haas.errors import AuthorizationError
 from haas.rest import init_auth, local
-from haas.ext.auth.database import User, user_create, user_delete, \
-    user_add_project, user_remove_project
 import flask
 import pytest
 import unittest
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
+
+
+@pytest.fixture
+def dbauth():
+    from haas.ext.auth import database
+    return database
+
+
+class DBAuthTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.dbauth = dbauth()
 
 
 @pytest.fixture
@@ -35,15 +45,15 @@ def configure():
 
 
 @pytest.fixture
-def initial_db(request):
+def initial_db(request, dbauth):
     fresh_database(request)
     with app.app_context():
-        alice = User(label='alice',
-                     password='secret',
-                     is_admin=True)
-        bob = User(label='bob',
-                   password='password',
-                   is_admin=False)
+        alice = dbauth.User(label='alice',
+                            password='secret',
+                            is_admin=True)
+        bob = dbauth.User(label='bob',
+                          password='password',
+                          is_admin=False)
 
         db.session.add(alice)
         db.session.add(bob)
@@ -122,31 +132,35 @@ def use_fixtures(auth_fixture):
 
 
 @use_fixtures('admin_auth')
-class TestUserCreateDelete(unittest.TestCase):
+class TestUserCreateDelete(DBAuthTestCase):
     """Tests for user_create and user_delete."""
 
+    def setUp(self):
+        from haas.ext.auth import database as dbauth
+        self.dbauth = dbauth
+
     def test_new_user(self):
-        api._assert_absent(User, 'charlie')
-        user_create('charlie', 'foo')
+        api._assert_absent(self.dbauth.User, 'charlie')
+        self.dbauth.user_create('charlie', 'foo')
 
     def test_duplicate_user(self):
-        user_create('charlie', 'secret')
+        self.dbauth.user_create('charlie', 'secret')
         with pytest.raises(api.DuplicateError):
-                user_create('charlie', 'password')
+            self.dbauth.user_create('charlie', 'password')
 
     def test_delete_user(self):
-        user_create('charlie', 'foo')
-        user_delete('charlie')
+        self.dbauth.user_create('charlie', 'foo')
+        self.dbauth.user_delete('charlie')
 
     def test_delete_missing_user(self):
         with pytest.raises(api.NotFoundError):
-            user_delete('charlie')
+            self.dbauth.user_delete('charlie')
 
     def test_delete_user_twice(self):
-        user_create('charlie', 'foo')
-        user_delete('charlie')
+        self.dbauth.user_create('charlie', 'foo')
+        self.dbauth.user_delete('charlie')
         with pytest.raises(api.NotFoundError):
-            user_delete('charlie')
+            self.dbauth.user_delete('charlie')
 
     def _new_user(self, is_admin):
         """Helper method for creating/switching to a new user.
@@ -161,58 +175,58 @@ class TestUserCreateDelete(unittest.TestCase):
         Once the user has been created, the authentication info will be
         changed to that user.
         """
-        user_create('charlie', 'foo', is_admin=is_admin)
+        self.dbauth.user_create('charlie', 'foo', is_admin=is_admin)
         flask.request = FakeAuthRequest('charlie', 'foo')
-        local.auth = User.query.filter_by(label='charlie').one()
+        local.auth = self.dbauth.User.query.filter_by(label='charlie').one()
 
     def test_new_admin_can_admin(self):
         """Verify that a newly created admin can actually do admin stuff."""
         self._new_user(is_admin=True)
-        user_delete('charlie')
+        self.dbauth.user_delete('charlie')
 
     def test_new_non_admin_cannot_admin(self):
         """Verify that a newly created regular user can't do admin stuff."""
         self._new_user(is_admin=False)
         with pytest.raises(AuthorizationError):
-            user_delete('charlie')
+            self.dbauth.user_delete('charlie')
 
 
 @use_fixtures('admin_auth')
-class TestUserAddRemoveProject(unittest.TestCase):
+class TestUserAddRemoveProject(DBAuthTestCase):
     """Tests for user_add_project/user_remove_project."""
 
     def test_user_add_project(self):
-        user_create('charlie', 'secret')
+        self.dbauth.user_create('charlie', 'secret')
         api.project_create('acme-corp')
-        user_add_project('charlie', 'acme-corp')
-        user = api._must_find(User, 'charlie')
+        self.dbauth.user_add_project('charlie', 'acme-corp')
+        user = api._must_find(self.dbauth.User, 'charlie')
         project = api._must_find(model.Project, 'acme-corp')
         assert project in user.projects
         assert user in project.users
 
     def test_user_remove_project(self):
-        user_create('charlie', 'secret')
+        self.dbauth.user_create('charlie', 'secret')
         api.project_create('acme-corp')
-        user_add_project('charlie', 'acme-corp')
-        user_remove_project('charlie', 'acme-corp')
-        user = api._must_find(User, 'charlie')
+        self.dbauth.user_add_project('charlie', 'acme-corp')
+        self.dbauth.user_remove_project('charlie', 'acme-corp')
+        user = api._must_find(self.dbauth.User, 'charlie')
         project = api._must_find(model.Project, 'acme-corp')
         assert project not in user.projects
         assert user not in project.users
 
     def test_duplicate_user_add_project(self):
-        user_create('charlie', 'secret')
+        self.dbauth.user_create('charlie', 'secret')
         api.project_create('acme-corp')
-        user_add_project('charlie', 'acme-corp')
+        self.dbauth.user_add_project('charlie', 'acme-corp')
         with pytest.raises(api.DuplicateError):
-            user_add_project('charlie', 'acme-corp')
+            self.dbauth.user_add_project('charlie', 'acme-corp')
 
     def test_bad_user_remove_project(self):
         """Tests that removing a user from a project they're not in fails."""
-        user_create('charlie', 'secret')
+        self.dbauth.user_create('charlie', 'secret')
         api.project_create('acme-corp')
         with pytest.raises(api.NotFoundError):
-            user_remove_project('charlie', 'acme-corp')
+            self.dbauth.user_remove_project('charlie', 'acme-corp')
 
 
 @pytest.mark.usefixtures('configure', 'initial_db')
@@ -224,16 +238,16 @@ class TestUserModel(ModelTest):
     """
 
     def sample_obj(self):
-        return User('charlie', 'secret')
+        return dbauth().User('charlie', 'secret')
 
 
 admin_calls = [
-    (user_create, ['charlie', '1337']),
-    (user_create, ['charlie', '1337', False]),
-    (user_create, ['charlie', '1337', True]),
-    (user_delete, ['bob']),
-    (user_add_project, ['bob', 'runway']),
-    (user_remove_project, ['alice', 'runway']),
+    ('user_create', ['charlie', '1337']),
+    ('user_create', ['charlie', '1337', False]),
+    ('user_create', ['charlie', '1337', True]),
+    ('user_delete', ['bob']),
+    ('user_add_project', ['bob', 'runway']),
+    ('user_remove_project', ['alice', 'runway']),
 ]
 
 
@@ -241,6 +255,8 @@ admin_calls = [
 @use_fixtures('admin_auth')
 def test_admin_succeed(fn, args):
     """Verify that an admin-only call succeds when invoked by an admin."""
+    from haas.ext.auth import database as dbauth
+    fn = getattr(dbauth, fn)
     fn(*args)
 
 
@@ -250,6 +266,8 @@ def test_admin_runway_fail(fn, args):
     """
     Verify that an admin-only call fails when invoked by a non-admin user.
     """
+    from haas.ext.auth import database as dbauth
+    fn = getattr(dbauth, fn)
     with pytest.raises(AuthorizationError):
         fn(*args)
 
@@ -260,5 +278,7 @@ def test_admin_noauth_fail(fn, args):
     """
     Verify that an admin-only call fails when invoked without authentication.
     """
+    from haas.ext.auth import database as dbauth
+    fn = getattr(dbauth, fn)
     with pytest.raises(AuthorizationError):
         fn(*args)

@@ -46,3 +46,14 @@ def test_no_raise_non_haas(level, loggername):
     logger = logging.getLogger(loggername)
     logfn = getattr(logger, level)
     logfn("Somebody else's bug.")
+
+
+def test_dont_pollute_other_tests_extensions():
+    """Regression test for #697."""
+    import sys
+    for name in sys.modules.keys():
+        assert not name.startswith('haas.ext.'), (
+            "No extensions should have been loaded, but %r was. This may "
+            "mean that tests are polluting each others' set of loaded "
+            "extensions." % name
+        )
