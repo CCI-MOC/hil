@@ -88,8 +88,8 @@ class Ipmi(Obm):
 
     @no_dry_run
     def set_bootdev(self, dev):
-        if self._ipmitool(['chassis', 'bootdev', dev, 
-                        'options=persistent']) != 0:
+        if self._ipmitool(['chassis', 'bootdev', dev,
+                          'options=persistent']) != 0:
             raise OBMError('Coult not set boot device')
 
     @no_dry_run
