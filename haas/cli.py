@@ -502,12 +502,11 @@ def node_power_off(node):
 def node_set_bootdev(node, dev):
     """
     Sets <node> to boot from <dev> persistenly
+
     eg; haas node_set_bootdev dell-23 pxe
-    supported values for <dev> are:
-    none, pxe, disk, safe, diag, cdrom, bios, floppy
     """
-    url = object_url('node', node, 'dev', dev, 'set_bootdev')
-    do_post(url)
+    url = object_url('node', node, 'bootdev')
+    do_put(url, data={'bootdev':dev})
 
 
 @cmd
