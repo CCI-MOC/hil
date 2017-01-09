@@ -418,28 +418,9 @@ PXE. If the node is powered off, this turns it on.
 
 #### node_set_bootdev
 
-`POST /node/<node>/dev/<dev>/set_bootdev`
+`Put /node/<node>/bootdev`
 
 Sets the nodes next boot device persistently
-
-device <dev> can be set to:
-
-  none  : Do not change boot device order
-  
-  pxe   : Force PXE boot
-  
-  disk  : Force boot from default Hard-drive
-  
-  safe  : Force boot from default Hard-drive, request Safe Mode
-  
-  diag  : Force boot from Diagnostic Partition
-  
-  cdrom : Force boot from CD/DVD
-  
-  bios  : Force boot into BIOS Setup
-  
-  floppy: Force boot from Floppy/primary removable media
-
 
 #### node_power_off
 
