@@ -506,7 +506,7 @@ def node_set_bootdev(node, dev):
     eg; haas node_set_bootdev dell-23 pxe
     """
     url = object_url('node', node, 'bootdev')
-    do_put(url, data={'bootdev':dev})
+    do_put(url, data={'bootdev': dev})
 
 
 @cmd
