@@ -18,11 +18,13 @@ def test_add_list_delete_projects():
     projects = output.split(" ")
     assert PROJECT1 not in projects
     assert PROJECT2 not in projects
+    projects.remove('\n')  # remove \n from list
     size = len(projects)
 
     subprocess.check_call(['haas', 'project_create', PROJECT1])
     output = subprocess.check_output(['haas', 'list_projects'])
     projects = output.split(" ")
+    projects = map(str.strip, projects)  # strips off \n from project name
     assert PROJECT1 in projects
     assert PROJECT2 not in projects
     assert len(projects) == size + 1
@@ -30,6 +32,7 @@ def test_add_list_delete_projects():
     subprocess.check_call(['haas', 'project_delete', PROJECT1])
     output = subprocess.check_output(['haas', 'list_projects'])
     projects = output.split(" ")
+    projects.remove('\n')  # remove \n from list
     assert PROJECT1 not in projects
     assert PROJECT2 not in projects
     assert len(projects) == size
