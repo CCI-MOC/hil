@@ -208,6 +208,8 @@ class TestBrocade(object):
                                                new_network=network,
                                                channel='vlan/native')
         with requests_mock.mock() as mock:
+            url_switch = switch._construct_url(INTERFACE1)
+            mock.post(url_switch)
             url_mode = switch._construct_url(INTERFACE1, suffix='mode')
             mock.put(url_mode)
             url_tag = switch._construct_url(INTERFACE1,
@@ -219,9 +221,9 @@ class TestBrocade(object):
             switch.apply_networking(action_native)
 
             assert mock.called
-            assert mock.call_count == 3
-            assert mock.request_history[0].text == TRUNK_PAYLOAD
-            assert mock.request_history[2].text == TRUNK_NATIVE_PAYLOAD
+            assert mock.call_count == 4
+            assert mock.request_history[1].text == TRUNK_PAYLOAD
+            assert mock.request_history[3].text == TRUNK_NATIVE_PAYLOAD
 
         # Test action to remove a native network
         action_rm_native = model.NetworkingAction(nic=nic,
@@ -242,6 +244,8 @@ class TestBrocade(object):
                                              new_network=network,
                                              channel='vlan/102')
         with requests_mock.mock() as mock:
+            url_switch = switch._construct_url(INTERFACE1)
+            mock.post(url_switch)
             url_mode = switch._construct_url(INTERFACE1,
                                              suffix='mode')
             mock.put(url_mode)
@@ -252,9 +256,9 @@ class TestBrocade(object):
             switch.apply_networking(action_vlan)
 
             assert mock.called
-            assert mock.call_count == 2
-            assert mock.request_history[0].text == TRUNK_PAYLOAD
-            assert mock.request_history[1].text == TRUNK_VLAN_PAYLOAD
+            assert mock.call_count == 3
+            assert mock.request_history[1].text == TRUNK_PAYLOAD
+            assert mock.request_history[2].text == TRUNK_VLAN_PAYLOAD
 
         # Test action to remove a vlan
         action_rm_vlan = model.NetworkingAction(nic=nic,
