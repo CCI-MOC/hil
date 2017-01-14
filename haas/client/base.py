@@ -19,7 +19,7 @@ class ClientBase(object):
     def __init__(self, endpoint=None, sess=None):
         """ Initialize an instance of the library with following parameters.
         endpoint: stands for the http endpoint eg. endpoint=http://127.0.0.1
-        sess: depending on the authentication backend (db vs keystone) the 
+        sess: depending on the authentication backend (db vs keystone) the
         parameters required to make up the session vary.
         user: username as which you wish to connect to HaaS
         Currently all this information is fetched from the user's environment.

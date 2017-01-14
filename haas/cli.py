@@ -719,6 +719,7 @@ def port_detach_nic(switch, port):
     except(errors.NotFoundError) as e:
         sys.stderr.write('Error: %s\n' % e.message)
 
+
 @cmd
 def list_network_attachments(network, project):
     """List nodes connected to a network
@@ -833,6 +834,7 @@ def show_console(node):
 def start_console(node):
     """Start logging console output from <node>"""
     q = C.node.start_console(node)
+
 
 @cmd
 def stop_console(node):
