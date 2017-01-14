@@ -163,127 +163,129 @@ def populate_server():
     api_nodename = 'http://schema.massopencloud.org/haas/v0/obm/'
 
     obminfo1 = {
-            "type": api_nodename+'ipmi', "host": "10.10.0.01",
+            "type": api_nodename + 'ipmi', "host": "10.10.0.01",
             "user": "ipmi_u", "password": "pass1234"
             }
 
     obminfo2 = {
-            "type": api_nodename+'ipmi', "host": "10.10.0.02",
+            "type": api_nodename + 'ipmi', "host": "10.10.0.02",
             "user": "ipmi_u", "password": "pass1234"
             }
 
     obminfo3 = {
-            "type": api_nodename+'ipmi', "host": "10.10.0.03",
+            "type": api_nodename + 'ipmi', "host": "10.10.0.03",
             "user": "ipmi_u", "password": "pass1234"
             }
 
     obminfo4 = {
-            "type": api_nodename+'ipmi', "host": "10.10.0.04",
+            "type": api_nodename + 'ipmi', "host": "10.10.0.04",
             "user": "ipmi_u", "password": "pass1234"
             }
 
     obminfo5 = {
-            "type": api_nodename+'ipmi', "host": "10.10.0.05",
+            "type": api_nodename + 'ipmi', "host": "10.10.0.05",
             "user": "ipmi_u", "password": "pass1234"
             }
 
     obminfo6 = {
-            "type": api_nodename+'ipmi', "host": "10.10.0.06",
+            "type": api_nodename + 'ipmi', "host": "10.10.0.06",
             "user": "ipmi_u", "password": "pass1234"
             }
 
     obminfo7 = {
-            "type": api_nodename+'mock', "host": "10.10.0.07",
+            "type": api_nodename + 'mock', "host": "10.10.0.07",
             "user": "ipmi_u", "password": "pass1234"
             }
 
     obminfo8 = {
-            "type": api_nodename+'mock', "host": "10.10.0.08",
+            "type": api_nodename + 'mock', "host": "10.10.0.08",
             "user": "ipmi_u", "password": "pass1234"
             }
 
-    requests.put(url_node+'node-01', data=json.dumps({"obm": obminfo1}))
-    requests.put(url_node+'node-02', data=json.dumps({"obm": obminfo2}))
-    requests.put(url_node+'node-03', data=json.dumps({"obm": obminfo3}))
-    requests.put(url_node+'node-04', data=json.dumps({"obm": obminfo4}))
-    requests.put(url_node+'node-05', data=json.dumps({"obm": obminfo5}))
-    requests.put(url_node+'node-06', data=json.dumps({"obm": obminfo6}))
-    requests.put(url_node+'node-07', data=json.dumps({"obm": obminfo7}))
-    requests.put(url_node+'node-08', data=json.dumps({"obm": obminfo8}))
+    requests.put(url_node + 'node-01', data=json.dumps({"obm": obminfo1}))
+    requests.put(url_node + 'node-02', data=json.dumps({"obm": obminfo2}))
+    requests.put(url_node + 'node-03', data=json.dumps({"obm": obminfo3}))
+    requests.put(url_node + 'node-04', data=json.dumps({"obm": obminfo4}))
+    requests.put(url_node + 'node-05', data=json.dumps({"obm": obminfo5}))
+    requests.put(url_node + 'node-06', data=json.dumps({"obm": obminfo6}))
+    requests.put(url_node + 'node-07', data=json.dumps({"obm": obminfo7}))
+    requests.put(url_node + 'node-08', data=json.dumps({"obm": obminfo8}))
 
     # Adding nics to nodes
     for i in range(1, 8):
-        requests.put(url_node+'node-0'+`i`+'/nic/eth0',
-                data=json.dumps({"macaddr":"aa:bb:cc:dd:ee:0"+`i`}))
-
+        requests.put(url_node + 'node-0' + repr(i) + '/nic/eth0',
+                     data=json.dumps({"macaddr": "aa:bb:cc:dd:ee:0" + repr(i)})
+                     )
 
     # Adding Projects proj-01 - proj-03
     for i in ["proj-01", "proj-02", "proj-03"]:
-        requests.put('http://127.0.0.1:8888/project/'+i)
+        requests.put('http://127.0.0.1:8888/project/' + i)
 
     # Adding switches one for each driver
     url_switch = 'http://127.0.0.1:8888/switch/'
     api_name = 'http://schema.massopencloud.org/haas/v0/switches/'
 
     dell_param = {
-            'type': api_name+'powerconnect55xx', 'hostname': 'dell-01',
+            'type': api_name + 'powerconnect55xx', 'hostname': 'dell-01',
             'username': 'root', 'password': 'root1234'
             }
     nexus_param = {
-            'type': api_name+'nexus', 'hostname': 'nexus-01',
+            'type': api_name + 'nexus', 'hostname': 'nexus-01',
             'username': 'root', 'password': 'root1234', 'dummy_vlan': '333'
             }
     mock_param = {
-            'type': api_name+'mock', 'hostname': 'mockSwitch-01',
+            'type': api_name + 'mock', 'hostname': 'mockSwitch-01',
             'username': 'root', 'password': 'root1234'
             }
     brocade_param = {
-            'type': api_name+'brocade', 'hostname': 'brocade-01',
+            'type': api_name + 'brocade', 'hostname': 'brocade-01',
             'username': 'root', 'password': 'root1234',
             'interface_type': 'TenGigabitEthernet'
             }
 
-    requests.put(url_switch+'dell-01', data=json.dumps(dell_param))
-    requests.put(url_switch+'nexus-01', data=json.dumps(nexus_param))
-    requests.put(url_switch+'mock-01', data=json.dumps(mock_param))
-    requests.put(url_switch+'brocade-01', data=json.dumps(brocade_param))
+    requests.put(url_switch + 'dell-01', data=json.dumps(dell_param))
+    requests.put(url_switch + 'nexus-01', data=json.dumps(nexus_param))
+    requests.put(url_switch + 'mock-01', data=json.dumps(mock_param))
+    requests.put(url_switch + 'brocade-01', data=json.dumps(brocade_param))
 
-    #Adding ports to the mock switch, Connect nics to ports:
+    # Adding ports to the mock switch, Connect nics to ports:
     for i in range(1, 8):
-        requests.put(url_switch+'mock-01/port/gi1/0/'+`i`)
-        requests.post(url_switch+'mock-01/port/gi1/0/'+`i`+'/connect_nic',
-                data=json.dumps({'node':'node-0'+`i`, 'nic': 'eth0'}))
+        requests.put(url_switch + 'mock-01/port/gi1/0/' + repr(i))
+        requests.post(url_switch + 'mock-01/port/gi1/0/' + repr(i) + ('/',
+                      'connect_nic'), data=json.dumps(
+                      {'node': 'node-0' + repr(i), 'nic': 'eth0'}
+                      ))
 
-#Adding port gi1/0/8 to switch mock-01 without connecting it to any node.
-    requests.put(url_switch+'mock-01/port/gi1/0/8')
+# Adding port gi1/0/8 to switch mock-01 without connecting it to any node.
+    requests.put(url_switch + 'mock-01/port/gi1/0/8')
 
     # Adding Projects proj-01 - proj-03
     for i in ["proj-01", "proj-02", "proj-03"]:
-        requests.put('http://127.0.0.1:8888/project/'+i)
+        requests.put('http://127.0.0.1:8888/project/' + i)
 
     # Allocating nodes to projects
     url_project = 'http://127.0.0.1:8888/project/'
     # Adding nodes 1 to proj-01
     requests.post(
-            url_project+'proj-01'+'/connect_node',
+            url_project + 'proj-01' + '/connect_node',
             data=json.dumps({'node': 'node-01'})
             )
     # Adding nodes 2, 4 to proj-02
     requests.post(
-            url_project+'proj-02'+'/connect_node',
+            url_project + 'proj-02' + '/connect_node',
             data=json.dumps({'node': 'node-02'})
             )
     requests.post(
-            url_project+'proj-02'+'/connect_node',
+            url_project + 'proj-02' + '/connect_node',
             data=json.dumps({'node': 'node-04'})
             )
     # Adding node  3, 5 to proj-03
     requests.post(
-            url_project+'proj-03'+'/connect_node',
+            url_project + 'proj-03' + '/connect_node',
             data=json.dumps({'node': 'node-03'})
             )
     requests.post(
-            url_project+'proj-03'+'/connect_node',
+            url_project + 'proj-03' + '/connect_node',
             data=json.dumps({'node': 'node-05'})
             )
 
@@ -291,7 +293,7 @@ def populate_server():
     url_network = 'http://127.0.0.1:8888/network/'
     for i in ['net-01', 'net-02', 'net-03']:
         requests.put(
-                url_network+i,
+                url_network + i,
                 data=json.dumps(
                     {"owner": "proj-01", "access": "proj-01", "net_id": ""}
                     )
@@ -299,12 +301,11 @@ def populate_server():
 
     for i in ['net-04', 'net-05']:
         requests.put(
-                url_network+i,
+                url_network + i,
                 data=json.dumps(
                     {"owner": "proj-02", "access": "proj-02", "net_id": ""}
                     )
                 )
-
 
 
 # -- SETUP --
@@ -343,9 +344,11 @@ class Test_Node:
     def test_show_node(self):
         result = C.node.show('node-07')
         assert result == {
-                u'project': None, u'nics': [{u'macaddr': u'aa:bb:cc:dd:ee:07',
-            u'networks': {}, u'label': u'eth0'}], u'name': u'node-07'
-                }
+                          u'project': None,
+                          u'nics': [{u'macaddr': u'aa:bb:cc:dd:ee:07',
+                                     u'networks': {}, u'label': u'eth0'}],
+                          u'name': u'node-07'
+                          }
 
     def test_power_cycle(self):
         result = C.node.power_cycle('node-07')
@@ -394,12 +397,12 @@ class Test_Node:
         assert result is None
 
 
-#FIXME: I spent some time on this test. Looks like the pytest
-#framework kills the network server before it can detach network. 
-#    def test_node_detach_network(self):
-#        C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
-#        result = C.node.detach_network('node-04', 'eth0', 'net-04')
-#        assert result is None
+# FIXME: I spent some time on this test. Looks like the pytest
+# framework kills the network server before it can detach network.
+# def test_node_detach_network(self):
+# C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
+# result = C.node.detach_network('node-04', 'eth0', 'net-04')
+# assert result is None
 
 
 @pytest.mark.usefixtures("create_setup")
@@ -496,7 +499,8 @@ class Test_switch:
 
     def test_delete_switch(self):
         result = C.switch.delete('nexus-01')
-        assert result == None
+        if result is None:
+            raise AssertionError()
 
 
 @pytest.mark.usefixtures("create_setup")
@@ -505,19 +509,19 @@ class Test_port:
 
     def test_port_register(self):
         result = C.port.register('dell-01', 'gi1/0/5')
-        assert result == None
+        if result is None:
+            raise AssertionError()
 
     def test_port_dupregister(self):
         C.port.register('dell-01', 'gi1/0/6')
         with pytest.raises(errors.DuplicateError):
             C.port.register('dell-01', 'gi1/0/6')
 
-
     def test_port_delete(self):
         C.port.register('dell-01', 'gi1/0/5')
         result = C.port.delete('dell-01', 'gi1/0/5')
-        assert result == None
-
+        if result is None:
+            raise AssertionError()
 
     def test_port_deleteerror(self):
         C.port.register('dell-01', 'gi1/0/6')
@@ -525,12 +529,11 @@ class Test_port:
         with pytest.raises(errors.NotFoundError):
             C.port.delete('dell-01', 'gi1/0/6')
 
-
     def test_port_connect_nic(self):
         C.port.register('dell-01', 'abcd')
         result = C.port.connect_nic('dell-01', 'abcd', 'node-08', 'eth0')
-        assert result == None
-
+        if result is None:
+            raise AssertionError()
 
     def test_port_connect_nic_error(self):
         C.port.register('dell-01', 'abcd')
@@ -539,14 +542,13 @@ class Test_port:
         with pytest.raises(errors.DuplicateError):
             C.port.connect_nic('dell-01', 'abcd', 'node-08', 'eth0')
 
-
     def test_port_detach_nic(self):
         C.port.register('dell-01', 'gi1/0/11')
         C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:08')
         C.port.connect_nic('dell-01', 'gi1/0/11', 'node-08', 'eth0')
         result = C.port.detach_nic('dell-01', 'gi1/0/11')
-        assert result == None
-
+        if result is None:
+            raise AssertionError()
 
     def test_port_detach_nic_error(self):
         C.port.register('dell-01', 'gi1/0/11')
@@ -565,9 +567,10 @@ class Test_user:
         """ Test user creation. """
         result1 = C.user.create('bill', 'pass1234', 'regular')
         result2 = C.user.create('bob', 'pass1234', 'regular')
-        assert result1 is None
-        assert result2 is None
+        if result1 is None:
+            raise AssertionError()
 
-
+        if result2 is None:
+            raise AssertionError()
 
 # End of tests ##
