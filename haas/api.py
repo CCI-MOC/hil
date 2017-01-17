@@ -264,7 +264,7 @@ def node_power_off(node):
 
 
 @rest_call('PUT', '/node/<node>/bootdev', Schema({
-    'node': basestring, 'bootdev': Or('pxe','disk','none','bios'),
+    'node': basestring, 'bootdev': Or('pxe', 'disk', 'none'),
 }))
 def node_set_bootdev(node, bootdev):
     auth_backend = get_auth_backend()
