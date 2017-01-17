@@ -18,6 +18,7 @@ class Network(ClientBase):
                         "Make sure credentials match "
                         "chosen authentication backend."
                         )
+
         def show(self, network):
             """ Shows attributes of a network. """
             self.network = network
@@ -35,7 +36,6 @@ class Network(ClientBase):
                         "Network does not exist."
                         )
 
-
         def create(self, network, owner, access, net_id):
             """ Create a link-layer <network>. See docs/networks.md for
             details.
@@ -48,7 +48,8 @@ class Network(ClientBase):
 
             url = self.object_url('network', self.network)
             payload = json.dumps({
-                'owner': self.owner, 'access': self.access, 'net_id': self.net_id
+                'owner': self.owner, 'access': self.access,
+                'net_id': self.net_id
                 })
             q = self.s.put(url, data=payload)
             if q.ok:
@@ -96,10 +97,8 @@ class Network(ClientBase):
                         "Access relationship already exists. "
                         )
 
-
         def revoke_access(self, project, network):
             """ Removes access of <network> from <project>. """
-
 
             self.project = project
             self.network = network
@@ -115,5 +114,3 @@ class Network(ClientBase):
                         "Operation failed. Resource or relationship "
                         "does not exist. "
                         )
-
-

@@ -214,7 +214,8 @@ def populate_server():
     # Adding nics to nodes
     for i in range(1, 8):
         requests.put(url_node + 'node-0' + repr(i) + '/nic/eth0',
-                data=json.dumps({"macaddr": "aa:bb:cc:dd:ee:0" + repr(i)}))
+                     data=json.dumps({"macaddr": "aa:bb:cc:dd:ee:0" + repr(i)})
+                     )
 
     # Adding Projects proj-01 - proj-03
     for i in ["proj-01", "proj-02", "proj-03"]:
@@ -247,14 +248,15 @@ def populate_server():
     requests.put(url_switch + 'mock-01', data=json.dumps(mock_param))
     requests.put(url_switch + 'brocade-01', data=json.dumps(brocade_param))
 
-    #Adding ports to the mock switch, Connect nics to ports:
+    # Adding ports to the mock switch, Connect nics to ports:
     for i in range(1, 8):
         requests.put(url_switch + 'mock-01/port/gi1/0/' + repr(i))
-        requests.post(url_switch + 'mock-01/port/gi1/0/' + repr(i)
-                + '/connect_nic',
-                data=json.dumps({'node': 'node-0' + repr(i), 'nic': 'eth0'}))
+        requests.post(url_switch + 'mock-01/port/gi1/0/' + repr(i) + ('/',
+                      'connect_nic'), data=json.dumps(
+                      {'node': 'node-0' + repr(i), 'nic': 'eth0'}
+                      ))
 
-#Adding port gi1/0/8 to switch mock-01 without connecting it to any node.
+# Adding port gi1/0/8 to switch mock-01 without connecting it to any node.
     requests.put(url_switch + 'mock-01/port/gi1/0/8')
 
     # Adding Projects proj-01 - proj-03
@@ -342,9 +344,11 @@ class Test_Node:
     def test_show_node(self):
         result = C.node.show('node-07')
         assert result == {
-                u'project': None, u'nics': [{u'macaddr': u'aa:bb:cc:dd:ee:07',
-            u'networks': {}, u'label': u'eth0'}], u'name': u'node-07'
-                }
+                          u'project': None,
+                          u'nics': [{u'macaddr': u'aa:bb:cc:dd:ee:07',
+                                     u'networks': {}, u'label': u'eth0'}],
+                          u'name': u'node-07'
+                          }
 
     def test_power_cycle(self):
         result = C.node.power_cycle('node-07')
@@ -393,12 +397,12 @@ class Test_Node:
         assert result is None
 
 
-#FIXME: I spent some time on this test. Looks like the pytest
-#framework kills the network server before it can detach network.
-#def test_node_detach_network(self):
-#C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
-#    result = C.node.detach_network('node-04', 'eth0', 'net-04')
-#    assert result is None
+# FIXME: I spent some time on this test. Looks like the pytest
+# framework kills the network server before it can detach network.
+# def test_node_detach_network(self):
+# C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
+# result = C.node.detach_network('node-04', 'eth0', 'net-04')
+# assert result is None
 
 
 @pytest.mark.usefixtures("create_setup")
@@ -495,7 +499,8 @@ class Test_switch:
 
     def test_delete_switch(self):
         result = C.switch.delete('nexus-01')
-        assert result == None
+        if result is None:
+            raise AssertionError()
 
 
 @pytest.mark.usefixtures("create_setup")
@@ -504,7 +509,8 @@ class Test_port:
 
     def test_port_register(self):
         result = C.port.register('dell-01', 'gi1/0/5')
-        assert result == None
+        if result is None:
+            raise AssertionError()
 
     def test_port_dupregister(self):
         C.port.register('dell-01', 'gi1/0/6')
@@ -514,7 +520,8 @@ class Test_port:
     def test_port_delete(self):
         C.port.register('dell-01', 'gi1/0/5')
         result = C.port.delete('dell-01', 'gi1/0/5')
-        assert result == None
+        if result is None:
+            raise AssertionError()
 
     def test_port_deleteerror(self):
         C.port.register('dell-01', 'gi1/0/6')
@@ -525,7 +532,8 @@ class Test_port:
     def test_port_connect_nic(self):
         C.port.register('dell-01', 'abcd')
         result = C.port.connect_nic('dell-01', 'abcd', 'node-08', 'eth0')
-        assert result == None
+        if result is None:
+            raise AssertionError()
 
     def test_port_connect_nic_error(self):
         C.port.register('dell-01', 'abcd')
@@ -539,7 +547,8 @@ class Test_port:
         C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:08')
         C.port.connect_nic('dell-01', 'gi1/0/11', 'node-08', 'eth0')
         result = C.port.detach_nic('dell-01', 'gi1/0/11')
-        assert result == None
+        if result is None:
+            raise AssertionError()
 
     def test_port_detach_nic_error(self):
         C.port.register('dell-01', 'gi1/0/11')
@@ -558,9 +567,10 @@ class Test_user:
         """ Test user creation. """
         result1 = C.user.create('bill', 'pass1234', 'regular')
         result2 = C.user.create('bob', 'pass1234', 'regular')
-        assert result1 is None
-        assert result2 is None
+        if result1 is None:
+            raise AssertionError()
 
-
+        if result2 is None:
+            raise AssertionError()
 
 # End of tests ##

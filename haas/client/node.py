@@ -28,14 +28,13 @@ class Node(ClientBase):
         q = self.s.get(url)
         return q.json()
 
-
     def register(self, node, subtype, *args):
         """ Register a node with appropriate OBM driver. """
-#       Registering a node requires apriori knowledge of the 
+#       Registering a node requires apriori knowledge of the
 #       available OBM driver and its corresponding arguments.
 #       We assume that the HIL administrator is aware as to which
 #       Node requires which OBM, and knows arguments required
-#       for successful node registration. 
+#       for successful node registration.
 
         self.node = node
         self.subtype = subtype
@@ -45,7 +44,6 @@ class Node(ClientBase):
 #        from haas.cfg, need a new api call for querying available
 #        and currently active drivers for HIL
         pass
-
 
     def delete(self, node_name):
         """ Deletes the node from database. """
@@ -156,7 +154,7 @@ class Node(ClientBase):
                     "Resource or relationship does not exist. "
                     )
         if q.status_code == 409:
-            raise errors.DuplicateError( "A network is already attached.")
+            raise errors.DuplicateError("A network is already attached.")
         if q.status_code == 412:
             raise errors.ProjectMismatchError(
                     "Project does not have access to either resource. "
@@ -165,7 +163,6 @@ class Node(ClientBase):
             raise errors.BlockedError(
                     "Networking operations pending on this nic. "
                     )
-
 
     def detach_network(self, node, nic, network):
         """ Disconnect <node> from <network> on the given <nic>. """
@@ -177,7 +174,7 @@ class Node(ClientBase):
         url = self.object_url(
                 'node', self.node, 'nic', self.nic, 'detach_network'
                 )
-        payload = json.dumps({ 'network': self.network })
+        payload = json.dumps({'network': self.network})
         q = self.s.post(url, payload)
         if q.ok:
             return
@@ -194,7 +191,6 @@ class Node(ClientBase):
         """ Display console log for <node> """
         pass
 
-
     def start_console(self, node):
         """ Start logging console output from <node> """
         self.node = node
@@ -203,7 +199,6 @@ class Node(ClientBase):
         if q.ok:
             return
 
-
     def stop_console(self, node):
         """ Stop logging console output from <node> and delete the log"""
         self.node = node
@@ -211,9 +206,3 @@ class Node(ClientBase):
         q = self.s.delete(url)
         if q.ok:
             return
-
-
-
-
-
-

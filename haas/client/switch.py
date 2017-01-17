@@ -23,8 +23,8 @@ class Switch(ClientBase):
         """ Registers a switch with name <switch> and
         model <subtype> , and relevant arguments  in <*args>
         """
-#       It is assumed that the HIL administrator is aware of 
-#       of the switches HIL will control and has read the 
+#       It is assumed that the HIL administrator is aware of
+#       of the switches HIL will control and has read the
 #       HIL documentation to use appropriate flags to register
 #       it with HIL.
 
@@ -73,8 +73,7 @@ class Port(ClientBase):
         if q.ok:
             return
         elif q.status_code == 409:
-            raise errors.DuplicateError( "Port name not unique. ")
-
+            raise errors.DuplicateError("Port name not unique.")
 
     def delete(self, switch, port):
         """ Deletes information of the <port> for <switch> """
@@ -86,7 +85,7 @@ class Port(ClientBase):
         if q.ok:
             return
         elif q.status_code == 404:
-            raise errors.NotFoundError( "Port name not found. ")
+            raise errors.NotFoundError("Port name not found.")
 
     def connect_nic(self, switch, port, node, nic):
         """ Connects <port> of <switch> to <nic> of <node>. """
@@ -96,13 +95,12 @@ class Port(ClientBase):
         self.nic = nic
 
         url = self.object_url('switch', switch, 'port', port, 'connect_nic')
-        payload = json.dumps({ 'node': self.node, 'nic': self.nic })
+        payload = json.dumps({'node': self.node, 'nic': self.nic})
         q = self.s.post(url, payload)
         if q.ok:
             return
         elif q.status_code == 409:
-            raise errors.DuplicateError( "Port or Nic already connected. ")
-
+            raise errors.DuplicateError("Port or Nic already connected.")
 
     def detach_nic(self, switch, port):
         """" Detaches <port> of <switch>. """
@@ -116,5 +114,3 @@ class Port(ClientBase):
             raise errors.NotFoundError(
                     "Operation Failed. The relationship does not exist. "
                     )
-
-

@@ -94,9 +94,9 @@ class BlockedError(APIError):
     some other change.  For example, deletion is blocked until the components
     are deleted, and possibly until the dirty flag is cleared as well.
     """
-    status_code = 423  # was 409, 
-    # This seems to be the closest code for this situation 
-    # For description read, 
+    status_code = 423  # was 409,
+    # This seems to be the closest code for this situation
+    # For description read,
     # http://www.restpatterns.org/HTTP_Status_Codes/423_-_Locked
 
 
