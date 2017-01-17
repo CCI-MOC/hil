@@ -18,7 +18,7 @@ TODO: Spec out and document what sanitization is required.
 """
 import json
 
-from schema import Schema, Optional
+from schema import Schema, Optional, Or
 
 from haas import model
 from haas.model import db
@@ -264,7 +264,7 @@ def node_power_off(node):
 
 
 @rest_call('PUT', '/node/<node>/bootdev', Schema({
-    'node': basestring, 'bootdev': basestring,
+    'node': basestring, 'bootdev': Or('pxe','disk','none','bios'),
 }))
 def node_set_bootdev(node, bootdev):
     auth_backend = get_auth_backend()
