@@ -59,11 +59,11 @@ def test_class_resolver():
 
 def test_class_Obm():
     build_class_map_for(Obm)
-    assert concrete_class_for(Obm, mockapi_name+"obm/mock") \
+    assert concrete_class_for(Obm, mockapi_name + "obm/mock") \
         is haas.ext.obm.mock.MockObm
 
 
 def test_class_Switch():
     build_class_map_for(Switch)
-    assert concrete_class_for(Switch, mockapi_name+"switches/mock") \
+    assert concrete_class_for(Switch, mockapi_name + "switches/mock") \
         is haas.ext.switches.mock.MockSwitch
