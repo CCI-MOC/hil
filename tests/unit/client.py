@@ -251,8 +251,8 @@ def populate_server():
     # Adding ports to the mock switch, Connect nics to ports:
     for i in range(1, 8):
         requests.put(url_switch + 'mock-01/port/gi1/0/' + repr(i))
-        requests.post(url_switch + 'mock-01/port/gi1/0/' + repr(i) + ('/',
-                      'connect_nic'), data=json.dumps(
+        requests.post(url_switch + 'mock-01/port/gi1/0/' + repr(i) + '/'
+                      'connect_nic', data=json.dumps(
                       {'node': 'node-0' + repr(i), 'nic': 'eth0'}
                       ))
 
