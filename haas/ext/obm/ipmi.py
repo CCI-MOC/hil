@@ -88,6 +88,9 @@ class Ipmi(Obm):
 
     @no_dry_run
     def set_bootdev(self, dev):
+        valid_bootdevices = ['disk', 'pxe', 'none']
+        if dev not in valid_bootdevices:
+            raise OBMError('Invald boot device')
         if self._ipmitool(['chassis', 'bootdev', dev,
                           'options=persistent']) != 0:
             raise OBMError('Could not set boot device')

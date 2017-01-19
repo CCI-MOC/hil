@@ -418,9 +418,17 @@ PXE. If the node is powered off, this turns it on.
 
 #### node_set_bootdev
 
-`Put /node/<node>/bootdev`
+`PUT /node/<node>/bootdev`
 
-Sets the nodes next boot device persistently
+Sets the node's next boot device persistently
+
+##### For IPMI devices
+
+The valid/allowed boot devices are:
+
+* pxe : do a pxe boot (network boot)
+* disk: boot from local hard disk
+* none: to reset boot order to default. 
 
 #### node_power_off
 

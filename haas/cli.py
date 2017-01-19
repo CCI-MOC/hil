@@ -504,9 +504,9 @@ def node_set_bootdev(node, dev):
     Sets <node> to boot from <dev> persistenly
 
     eg; haas node_set_bootdev dell-23 pxe
-    for ipmi OBMs, dev can be set to disk, pxe, or none
+    for IPMI, dev can be set to disk, pxe, or none
     """
-    url = object_url('node', node, 'bootdev')
+    url = object_url('node', node, 'boot_device')
     do_put(url, data={'bootdev': dev})
 
 
