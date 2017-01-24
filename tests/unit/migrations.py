@@ -16,7 +16,7 @@ The general approach is as follows:
 
 """
 import pytest
-from haas import server
+from haas import api, server
 from haas.test_common import config_testsuite, config_merge, initial_db, \
     fail_on_log_warnings
 from haas.config import cfg, load_extensions
@@ -28,6 +28,44 @@ from os import path
 import re
 from pprint import pformat
 import difflib
+
+MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/v0/switches/mock'
+MOCK_OBM_TYPE = 'http://schema.massopencloud.org/haas/v0/obm/mock'
+
+
+def create_pending_actions_db():
+    """Create database objects including a pending NetworkingAction.
+
+    The first version of this function was used to create the dump
+    'pending-networking-actions.sql'.
+    """
+    # At a minimum we need a project, node, nic, switch, port, and network:
+    api.project_create('runway')
+    api.node_register(
+        'node-1',
+        obm={
+            'type': MOCK_OBM_TYPE,
+            'user': 'user',
+            'host': 'host',
+            'password': 'pass',
+        },
+    )
+    api.node_register_nic('node-1', 'pxe', 'de:ad:be:ef:20:16')
+    api.switch_register('sw0',
+                        type=MOCK_SWITCH_TYPE,
+                        username='user',
+                        hostname='host',
+                        password='pass',
+                        )
+    api.switch_register_port('sw0', 'gi1/0/4')
+    api.port_connect_nic('sw0', 'gi1/0/4', 'node-1', 'pxe')
+    api.project_connect_node('runway', 'node-1')
+    api.network_create('runway_pxe', 'runway', 'runway', '')
+
+    # Queue up a networking action. Importantly, we do *not* call
+    # deferred.apply_networking, as that would flush the action and
+    # remove it from the database.
+    api.node_connect_network('node-1', 'pxe', 'runway_pxe')
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
@@ -140,6 +178,14 @@ def get_db_state():
         },
         'haas.ext.network_allocators.vlan_pool': {
             'vlans': '100-200, 300-500',
+        },
+    }],
+    ['pending-networking-actions.sql', create_pending_actions_db, {
+        'extensions': {
+            'haas.ext.obm.mock': '',
+            'haas.ext.switches.mock': '',
+            'haas.ext.auth.null': '',
+            'haas.ext.network_allocators.null': '',
         },
     }],
 ])
