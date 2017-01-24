@@ -87,11 +87,47 @@ Please note that the documentation is a mix of Markdown and reStructured Text,
 since the latter is preferred by the python and OpenStack communities and the
 former was what was originally used.
 
+References
+----------
+
+If you would like to learn more about HIL's design or cite it in a publication, please refer to:
+
+    Jason Hennessey, Sahil Tikale, Ata Turk, Emine Ugur Kaynar, Chris Hill, Peter Desnoyers, and Orran Krieger. 2016. `HIL: Designing an Exokernel for the Data Center <https://open.bu.edu/handle/2144/19198>`_. In Proceedings of the Seventh ACM Symposium on Cloud Computing (SoCC '16). DOI: `10.1145/2987550.2987588 <https://dx.doi.org/10.1145/2987550.2987588>`_
+
+
+Bibtex:
+
+.. code:: bib
+
+  @inproceedings{hil-designing-an-exokernel,
+  author = {Hennessey, Jason and Tikale, Sahil and Turk, Ata and Kaynar, Emine Ugur and Hill, Chris and Desnoyers, Peter and Krieger, Orran},
+  title = {HIL: Designing an Exokernel for the Data Center},
+  booktitle = {Proceedings of the Seventh ACM Symposium on Cloud Computing},
+  series = {SoCC '16},
+  year = {2016},
+  isbn = {978-1-4503-4525-5},
+  location = {Santa Clara, CA, USA},
+  pages = {155--168},
+  numpages = {14},
+  url = {https://doi.acm.org/10.1145/2987550.2987588},
+  doi = {10.1145/2987550.2987588},
+  acmid = {2987588},
+  publisher = {ACM},
+  address = {New York, NY, USA},
+  keywords = {IaaS, PaaS, bare metal, cloud computing, datacenter management, exokernel},
+  }
+
+An early short paper on HIL (then called "Hardware as a Service/HaaS"):
+
+    Jason Hennessey, Chris Hill, Ian Denhardt, Viggnesh Venugopal, George Silvis, Orran Krieger, and Peter Desnoyers, `Hardware as a service - enabling dynamic, user-level bare metal provisioning of pools of data center resources. <https://open.bu.edu/handle/2144/11221>`_ in 2014 IEEE High Performance Extreme Computing Conference, Waltham, MA, USA, 2014.
+
+Other work that has involved HIL can be found on the Mass Open Cloud `papers page <https://info.massopencloud.org/publicationsandtalks/>`_.
+
 Mass Open Cloud
 ===============
 
 This project is part of the larger `Massachusetts Open Cloud
-<http://www.massopencloud.org>`_. For a description of the team and other
+<https://info.massopencloud.org>`_. For a description of the team and other
 information, see
 `<https://github.com/CCI-MOC/moc-public/blob/master/README.md>`_.
 
