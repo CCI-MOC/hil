@@ -94,6 +94,17 @@ class TestNetwork(ModelTest):
         return Network(pj, [pj], True, '102', 'hammernet')
 
 
+class TestMetadata(ModelTest):
+
+    def sample_obj(self):
+        node = Node(label='node-99',
+                    obm=Ipmi(type=Ipmi.api_name,
+                             host="ipmihost",
+                             user="root",
+                             password="tapeworm"))
+        return Metadata('EK', 'pk', node)
+
+
 class TestNetworkingAction(ModelTest):
 
     def sample_obj(self):

@@ -221,6 +221,7 @@ def network_revoke_project_access(project, network):
         'type': basestring,
         Optional(object): object,
     },
+    Optional('metadata'): object,
 }))
 def node_register(node, **kwargs):
     """Create node.
@@ -237,6 +238,10 @@ def node_register(node, **kwargs):
         raise BadArgumentError('%r is not a valid OBM type.' % obm_type)
     cls.validate(kwargs['obm'])
     node_obj = model.Node(label=node, obm=cls(**kwargs['obm']))
+    if 'metadata' in kwargs:
+        for label, value in kwargs['metadata'].items():
+            metadata_obj = model.Metadata(label, json.dumps(value), node_obj)
+            db.session.add(metadata_obj)
     db.session.add(node_obj)
     db.session.commit()
 
@@ -421,6 +426,42 @@ def node_detach_network(node, nic, network):
                                           new_network=None))
     db.session.commit()
     return '', 202
+
+
+@rest_call('PUT', '/node/<node>/metadata/<label>', Schema({
+    'node': basestring, 'label': basestring, 'value': object,
+}))
+def node_set_metadata(node, label, value):
+    """Register metadata on a node.
+
+    If the label already exists, the value will be updated.
+    """
+    get_auth_backend().require_admin()
+    node = _must_find(model.Node, node)
+    obj_inner = _namespaced_query(node, model.Metadata, label)
+    if obj_inner is not None:
+        metadata = _must_find_n(node, model.Metadata, label)
+        metadata.value = json.dumps(value)
+    else:
+        metadata = model.Metadata(label, json.dumps(value), node)
+        db.session.add(metadata)
+    db.session.commit()
+
+
+@rest_call('DELETE', '/node/<node>/metadata/<label>', Schema({
+    'node': basestring, 'label': basestring,
+}))
+def node_delete_metadata(node, label):
+    """Delete a metadata from a node.
+
+    If the metadata does not exist, a NotFoundError will be raised.
+    """
+    get_auth_backend().require_admin()
+    node = _must_find(model.Node, node)
+    metadata = _must_find_n(node, model.Metadata, label)
+
+    db.session.delete(metadata)
+    db.session.commit()
 
 
 # Head Node Code #
@@ -1034,31 +1075,6 @@ def show_node(nodename):
     """Show the details of a node.
 
     Returns a JSON object representing a node.
-
-    The object will have at least the following fields:
-
-        * "name", the name/label of the node (string).
-        * "project", the name of the project a node belongs to or null if the
-          node does not belong to a project
-        * "nics", a list of nics, each represted by a JSON object having
-            at least the following fields:
-
-                - "label", the nic's label.
-                - "macaddr", the nic's mac address.
-                - "networks", a JSON object describing what networks are
-                  attached to the nic. The keys are channels and the values
-                  are the names of networks attached to those channels.
-
-    Example: '{"name": "node1",
-                "project": "project1",
-                "nics": [{"label": "nic1",
-                          "macaddr": "01:23:45:67:89",
-                          "networks": {"vlan/native": "pxe",
-                             "vlan/235": "storage"}},
-                         {"label": "nic2",
-                          "macaddr": "12:34:56:78:90",
-                          "networks":{"vlan/native": "public"}}]
-              }'
     """
 
     node = _must_find(model.Node, nodename)
@@ -1073,6 +1089,7 @@ def show_node(nodename):
                                      attachment.network.label)
                                     for attachment in n.attachments]),
                   } for n in node.nics],
+        'metadata': {m.label: m.value for m in node.metadata}
     }, sort_keys=True)
 
 

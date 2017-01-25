@@ -558,6 +558,20 @@ def headnode_detach_network(headnode, hnic):
 
 
 @cmd
+def metadata_set(node, label, value):
+    """Register metadata with <label> and <value> with <node> """
+    url = object_url('node', node, 'metadata', label)
+    do_put(url, data={'value': value})
+
+
+@cmd
+def metadata_delete(node, label):
+    """Delete metadata with <label> from a <node>"""
+    url = object_url('node', node, 'metadata', label)
+    do_delete(url)
+
+
+@cmd
 def switch_register(switch, subtype, *args):
     """Register a switch with name <switch> and
     <subtype>, <hostname>, <username>,  <password>
