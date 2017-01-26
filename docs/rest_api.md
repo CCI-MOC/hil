@@ -418,7 +418,7 @@ PXE. If the node is powered off, this turns it on.
 
 #### node_set_bootdev
 
-`PUT /node/<node>/bootdev`
+`PUT /node/<node>/boot_device`
 
 Sets the node's next boot device persistently
 

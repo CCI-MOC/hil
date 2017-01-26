@@ -627,6 +627,7 @@ admin_calls = [
     # tested in project_calls, below.
     (api.node_power_cycle, ['free_node_0'], {}),
     (api.node_power_off, ['free_node_0'], {}),
+    (api.node_set_bootdev, ['free_node_0'],{'bootdev': {'none'}}),
 
     (api.project_delete, ['empty-project'], {}),
 
@@ -652,6 +653,7 @@ project_calls = [
     # admin_calls, above.
     (api.node_power_cycle, ['runway_node_0'], {}),
     (api.node_power_off, ['runway_node_0'], {}),
+    (api.node_set_bootdev, ['runway_node_0'], {'bootdev': {'none'}}),
 
     (api.project_connect_node, ['runway', 'free_node_0'], {}),
     (api.project_detach_node, ['runway', 'runway_node_0'], {}),
