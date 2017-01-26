@@ -342,7 +342,7 @@ Possible Errors:
 
 #### node_register
 
-Register a node with OBM of <type> and optional metadata
+Register a node with OBM of <type>
 
 <type> (a string) is the type of OBM. The possible value depends on what drivers
 HaaS is configured to use. The remainder of the field are driver-specific;
@@ -353,8 +353,6 @@ see the documentation of the OBM driver in question (read `docs/obm-drivers.md`)
 Request Body:
 	{"obm": { "type": <obm-subtype>,
 		<additional sub-type specific values>}
-	 "metadata": {"label_1": "value_1",
-	 	     "label_2": "value_2"} (Optional)
 	}
 
 example provided in USING.rst
@@ -495,25 +493,19 @@ The object will have at least the following fields:
 
         * "name", the name/label of the node (string).
         * "project", the name of the project a node belongs to or null if the node does not belong to a project
-        * "nics", a list of nics, each represented by a JSON object having
+        * "nics", a list of nics, each represted by a JSON object having
             at least the following fields:
 
                 - "label", the nic's label.
                 - "macaddr", the nic's mac address.
 		- "networks", a JSON object describing what networks are attached to the nic. The keys are channels and the values are the names of networks attached to those channels.
-	* "metadata", a dictionary of metadata objects
 
 Response body:
 
     {"name": "node1",
 	 "project": "project1",
-         "nics": [{"label": "nic1", 
-	 	   "macaddr": "01:23:45:67:89", 
-		   "networks": {"vlan/native": "pxe", "vlan/235": "storage"}},
-                  {"label": "nic2", 
-		   "macaddr": "12:34:56:78:90", 
-		   "networks":{"vlan/native": "public"}}],
-	 "metadata":{"EK":"pk"}
+         "nics": [{"label": "nic1", "macaddr": "01:23:45:67:89", "networks": {"vlan/native": "pxe", "vlan/235": "storage"}},
+                       {"label": "nic2", "macaddr": "12:34:56:78:90", "networks":{"vlan/native": "public"}}]
 	}
 
 Authorization requirements:
@@ -611,32 +603,6 @@ Response body:
         "runway",
         ...
     ]
-
-Authorization requirements:
-
-* Administrative access.
-
-#### node_set_metadata
-
-`PUT /node/<node>/metadata/<label>`
-
-Request Body: 
-
-	{
-		"value": <value>
-	}	
-
-Set metadata with `<label>` and `<value>` on `<node>`.
-
-Authorization requirements:
-
-* Administrative access.
-
-#### node_delete_metadata
-
-`DELETE /node/<node>/metadata/<label>`
-
-Delete metadata with `<label>` on `<node>`.
 
 Authorization requirements:
 
@@ -857,7 +823,7 @@ Authorization requirements:
 
 * Administrative access.
 
-#### switch_register
+### switch_register
 Register a network switch of type `<type>`
 
 `<type>` (a string) is the type of network switch. The possible values

@@ -116,24 +116,6 @@ class Project(db.Model):
         self.label = label
 
 
-class Metadata(db.Model):
-    """metadata for a Node
-
-    Metadata may a key, a hash, or otherwise
-    """
-    id = db.Column(db.Integer, primary_key=True)
-    label = db.Column(db.String, nullable=False)
-    value = db.Column(db.String)
-    owner_id = db.Column(db.ForeignKey('node.id'), nullable=False)
-    owner = db.relationship('Node', backref=db.backref('metadata'))
-
-    def __init__(self, label, value, node):
-        """Create a key with the given label."""
-        self.label = label
-        self.value = value
-        self.owner = node
-
-
 class Network(db.Model):
     """A link-layer network.
 
