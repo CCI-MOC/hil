@@ -97,6 +97,7 @@ class TestNetwork(ModelTest):
 class TestMetadata(ModelTest):
 
     def sample_obj(self):
+        from haas.ext.obm.ipmi import Ipmi
         node = Node(label='node-99',
                     obm=Ipmi(type=Ipmi.api_name,
                              host="ipmihost",
