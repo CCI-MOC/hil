@@ -97,13 +97,13 @@ class TestNetwork(ModelTest):
 class TestMetadata(ModelTest):
 
     def sample_obj(self):
-         from haas.ext.obm.ipmi import Ipmi
-         return Node(label='node-99',
-                     obm=Ipmi(type=Ipmi.api_name,
-                              host="ipmihost",
-                              user="root",
-                              password="tapeworm"))
-         return Metadata('EK', 'pk', node)
+        from haas.ext.obm.ipmi import Ipmi
+        return Node(label='node-99',
+                    obm=Ipmi(type=Ipmi.api_name,
+                             host="ipmihost",
+                             user="root",
+                             password="tapeworm"))
+        return Metadata('EK', 'pk', node)
 
 
 class TestNetworkingAction(ModelTest):
