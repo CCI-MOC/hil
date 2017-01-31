@@ -29,11 +29,11 @@ class User(ClientBase):
         if q.ok:
             return
         elif q.status_code == 401:
-            raise errors.AuthenticationError( 
-                    "You do not have rights for user creation "
+            raise errors.AuthenticationError(
+                    "You do not have rights for user creation"
                     )
         elif q.status_code == 409:
-            raise errors.DuplicateError( "User already exists. ")
+            raise errors.DuplicateError("User already exists.")
 
     def delete(self, username):
         """Deletes the user <username>. """
@@ -47,15 +47,16 @@ class User(ClientBase):
                     "User deletion failed. No such user. "
                     )
 
-
     def grant_access(self, user, project):
         """Grants permission to <user> to access resources of <project>. """
-     #Note: Named such so that in future we can have granular access to projects
-     #like "grant_read_access", "grant_write_access", "grant_all_access", etc
+        # Note: Named such so that in future we can have granular
+        # access to projects
+        # like "grant_read_access", "grant_write_access",
+        # "grant_all_access", etc
         self.user = user
         self.project = project
         url = self.object_url('/auth/basic/user', self.user, 'add_project')
-        payload = json.dumps({ 'project': self.project })
+        payload = json.dumps({'project': self.project})
         q = self.s.post(url, data=payload)
         if q.ok:
             return
@@ -68,14 +69,12 @@ class User(ClientBase):
                     "Access already granted. Duplicate operation. "
                     )
 
-
-
     def remove_access(self, user, project):
         """ Removes all access of <user> to <project>. """
         self.user = user
         self.project = project
         url = self.object_url('/auth/basic/user', self.user, 'remove_project')
-        payload = json.dumps({ 'project': self.project })
+        payload = json.dumps({'project': self.project})
         q = self.s.post(url, data=payload)
         if q.ok:
             return
@@ -84,9 +83,3 @@ class User(ClientBase):
                     "Operation failed. Either user; project or their "
                     "relationship does not exist. "
                     )
-
-
-
-
-
-

@@ -54,13 +54,17 @@ def _wet(func):
 
 
 # Actual test cases:
-def test_dry_function(): _dry(_function)
+def test_dry_function():
+    _dry(_function)
 
 
-def test_wet_function(): _wet(_function)
+def test_wet_function():
+    _wet(_function)
 
 
-def test_dry_method(): _dry(_method)
+def test_dry_method():
+    _dry(_method)
 
 
-def test_wet_method(): _wet(_method)
+def test_wet_method():
+    _wet(_method)
