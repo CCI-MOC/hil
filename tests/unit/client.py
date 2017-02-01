@@ -160,16 +160,18 @@ def populate_server():
     url_node = 'http://127.0.0.1:8888/node/'
     api_nodename = 'http://schema.massopencloud.org/haas/v0/obm/'
 
-
     for i in range(1, 9):
         obminfo = {
                 "type": api_nodename + 'ipmi', "host": "10.10.0.0"+repr(i),
                 "user": "ipmi_u", "password": "pass1234"
                 }
-        requests.put(url_node + 'node-0'+repr(i),
-                data=json.dumps({"obm": obminfo}))
-        requests.put(url_node + 'node-0' + repr(i) + '/nic/eth0',
-                     data=json.dumps({"macaddr": "aa:bb:cc:dd:ee:0" + repr(i)})
+        requests.put(
+                url_node + 'node-0'+repr(i), data=json.dumps({"obm": obminfo})
+                )
+        requests.put(
+                url_node + 'node-0' + repr(i) + '/nic/eth0', data=json.dumps(
+                            {"macaddr": "aa:bb:cc:dd:ee:0" + repr(i)}
+                            )
                      )
 
     # Adding Projects proj-01 - proj-03
