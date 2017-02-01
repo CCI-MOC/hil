@@ -93,7 +93,8 @@ class Node(ClientBase):
                     )
         elif q.status_code == 500:
             raise errors.NotFoundError(
-                    "Operation Failed. Contact your system administrator"
+                    "Operation Failed. This is a server-side problem. "
+                    "Contact your HIL Administrator. "
                     )
 
     def add_nic(self, node_name, nic_name, macaddr):

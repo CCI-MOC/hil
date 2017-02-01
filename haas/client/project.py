@@ -91,7 +91,7 @@ class Project(ClientBase):
             elif q.status_code == 404:
                 raise errors.NotFoundError("Node or project does not exist.")
 
-        def disconnect(self, project_name, node_name):
+        def detach(self, project_name, node_name):
             """ Adds a node to a project. """
             self.project_name = project_name
             self.node_name = node_name

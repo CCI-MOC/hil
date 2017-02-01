@@ -16,11 +16,9 @@
 import haas
 from haas import model, api, deferred, server, config
 from haas.model import db
-from haas.test_common import *
 from haas.network_allocator import get_network_allocator
 import pytest
 import json
-
 import requests
 import os
 import tempfile
@@ -162,57 +160,14 @@ def populate_server():
     url_node = 'http://127.0.0.1:8888/node/'
     api_nodename = 'http://schema.massopencloud.org/haas/v0/obm/'
 
-    obminfo1 = {
-            "type": api_nodename + 'ipmi', "host": "10.10.0.01",
-            "user": "ipmi_u", "password": "pass1234"
-            }
 
-    obminfo2 = {
-            "type": api_nodename + 'ipmi', "host": "10.10.0.02",
-            "user": "ipmi_u", "password": "pass1234"
-            }
-
-    obminfo3 = {
-            "type": api_nodename + 'ipmi', "host": "10.10.0.03",
-            "user": "ipmi_u", "password": "pass1234"
-            }
-
-    obminfo4 = {
-            "type": api_nodename + 'ipmi', "host": "10.10.0.04",
-            "user": "ipmi_u", "password": "pass1234"
-            }
-
-    obminfo5 = {
-            "type": api_nodename + 'ipmi', "host": "10.10.0.05",
-            "user": "ipmi_u", "password": "pass1234"
-            }
-
-    obminfo6 = {
-            "type": api_nodename + 'ipmi', "host": "10.10.0.06",
-            "user": "ipmi_u", "password": "pass1234"
-            }
-
-    obminfo7 = {
-            "type": api_nodename + 'mock', "host": "10.10.0.07",
-            "user": "ipmi_u", "password": "pass1234"
-            }
-
-    obminfo8 = {
-            "type": api_nodename + 'mock', "host": "10.10.0.08",
-            "user": "ipmi_u", "password": "pass1234"
-            }
-
-    requests.put(url_node + 'node-01', data=json.dumps({"obm": obminfo1}))
-    requests.put(url_node + 'node-02', data=json.dumps({"obm": obminfo2}))
-    requests.put(url_node + 'node-03', data=json.dumps({"obm": obminfo3}))
-    requests.put(url_node + 'node-04', data=json.dumps({"obm": obminfo4}))
-    requests.put(url_node + 'node-05', data=json.dumps({"obm": obminfo5}))
-    requests.put(url_node + 'node-06', data=json.dumps({"obm": obminfo6}))
-    requests.put(url_node + 'node-07', data=json.dumps({"obm": obminfo7}))
-    requests.put(url_node + 'node-08', data=json.dumps({"obm": obminfo8}))
-
-    # Adding nics to nodes
-    for i in range(1, 8):
+    for i in range(1, 9):
+        obminfo = {
+                "type": api_nodename + 'ipmi', "host": "10.10.0.0"+repr(i),
+                "user": "ipmi_u", "password": "pass1234"
+                }
+        requests.put(url_node + 'node-0'+repr(i),
+                data=json.dumps({"obm": obminfo}))
         requests.put(url_node + 'node-0' + repr(i) + '/nic/eth0',
                      data=json.dumps({"macaddr": "aa:bb:cc:dd:ee:0" + repr(i)})
                      )
@@ -359,10 +314,12 @@ class Test_Node:
         assert result is None
 
     def test_node_add_nic(self):
+        C.node.remove_nic('node-08', 'eth0')
         result = C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff')
         assert result is None
 
     def test_node_add_duplicate_nic(self):
+        C.node.remove_nic('node-08', 'eth0')
         C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff')
         with pytest.raises(errors.DuplicateError):
             C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff')
@@ -372,12 +329,10 @@ class Test_Node:
             C.node.add_nic('abcd', 'eth0', 'aa:bb:cc:dd:ee:ff')
 
     def test_remove_nic(self):
-        C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff')
         result = C.node.remove_nic('node-08', 'eth0')
         assert result is None
 
     def test_remove_duplicate_nic(self):
-        C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff')
         C.node.remove_nic('node-08', 'eth0')
         with pytest.raises(errors.NotFoundError):
             C.node.remove_nic('node-08', 'eth0')
@@ -469,20 +424,20 @@ class Test_project:
         with pytest.raises(errors.NotFoundError):
             C.project.connect('no-such-project', 'node-06')
 
-    def test_project_disconnect_node(self):
-        """ Test for correctly disconnecting node from project."""
+    def test_project_detach_node(self):
+        """ Test for correctly detaching node from project."""
         C.project.create('abcd')
         C.project.connect('abcd', 'node-07')
-        result = C.project.disconnect('abcd', 'node-07')
+        result = C.project.detach('abcd', 'node-07')
         assert result is None
 
-    def test_project_disconnect_node_nosuchobject(self):
-        """ Test for while disconnecting node from project."""
+    def test_project_detach_node_nosuchobject(self):
+        """ Test for while detaching node from project."""
         C.project.create('abcd')
         with pytest.raises(errors.NotFoundError):
-            C.project.disconnect('abcd', 'no-such-node')
+            C.project.detach('abcd', 'no-such-node')
         with pytest.raises(errors.NotFoundError):
-            C.project.disconnect('no-such-project', 'node-06')
+            C.project.detach('no-such-project', 'node-06')
 
 
 @pytest.mark.usefixtures("create_setup")
@@ -533,21 +488,18 @@ class Test_port:
 
     def test_port_connect_nic_error(self):
         C.port.register('dell-01', 'abcd')
-        C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:08')
         C.port.connect_nic('dell-01', 'abcd', 'node-08', 'eth0')
         with pytest.raises(errors.DuplicateError):
             C.port.connect_nic('dell-01', 'abcd', 'node-08', 'eth0')
 
     def test_port_detach_nic(self):
         C.port.register('dell-01', 'gi1/0/11')
-        C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:08')
         C.port.connect_nic('dell-01', 'gi1/0/11', 'node-08', 'eth0')
         result = C.port.detach_nic('dell-01', 'gi1/0/11')
         assert result is None
 
     def test_port_detach_nic_error(self):
         C.port.register('dell-01', 'gi1/0/11')
-        C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:08')
         C.port.connect_nic('dell-01', 'gi1/0/11', 'node-08', 'eth0')
         C.port.detach_nic('dell-01', 'gi1/0/11')
         with pytest.raises(errors.NotFoundError):
