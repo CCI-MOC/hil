@@ -202,3 +202,6 @@ class _Session(_console.Session):
                 networks.append(('vlan/native', native))
             result[k] = networks
         return result
+
+    def disable_port(self):
+        assert False, "unimplemented"

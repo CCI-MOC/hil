@@ -25,7 +25,7 @@ import requests
 import schema
 
 from haas.migrations import paths
-from haas.model import db, Switch
+from haas.model import db, Switch, Port
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'brocade')
 
@@ -60,32 +60,45 @@ class Brocade(Switch):
     def disconnect(self):
         pass
 
-    def apply_networking(self, action):
+    def modify_port(self, port, channel, network_id):
         """ Apply a NetworkingAction to the switch.
 
         Args:
             action: NetworkingAction to apply to the switch.
         """
-        interface = action.nic.port.label
-        channel = action.channel
+        # XXX: We ought to be able to do a Port.query ... one() here, but
+        # there's somthing I(zenhack)  don't understand going on with when
+        # things are committed in the tests for this driver, and we don't
+        # get any results that way. We should figure out what's going on with
+        # that test and change this.
+        (port,) = filter(lambda p: p.label == port, self.ports)
+        interface = port.label
 
         if channel == 'vlan/native':
-            if action.new_network is None:
+            if network_id is None:
                 self._remove_native_vlan(interface)
             else:
-                self._set_native_vlan(interface,
-                                      action.new_network.network_id)
+                self._set_native_vlan(interface, network_id)
         else:
             match = re.match(re.compile(r'vlan/(\d+)'), channel)
             assert match is not None, "HaaS passed an invalid channel to the" \
                 " switch!"
             vlan_id = match.groups()[0]
 
-            if action.new_network is None:
+            if network_id is None:
                 self._remove_vlan_from_trunk(interface, vlan_id)
             else:
-                assert action.new_network.network_id == vlan_id
+                assert network_id == vlan_id
                 self._add_vlan_to_trunk(interface, vlan_id)
+
+    def port_revert(self, port):
+        # TODO: there is likely a more efficient way to do this; we may want
+        # to inspect the brocade documentation to see if there's a way to
+        # clear the port without doing every vlan individually.
+        vlans = self._get_vlans()
+        for _, vlan in vlans:
+            self._remove_vlan_from_trunk()
+        self._remove_native_vlan()
 
     def get_port_networks(self, ports):
         """Get port configurations of the switch.

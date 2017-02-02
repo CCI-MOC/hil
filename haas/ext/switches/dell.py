@@ -156,6 +156,9 @@ class _Session(_console.Session):
             result[k] = networks
         return result
 
+    def disable_port(self):
+        assert False, "Unimplemented"
+
     def _port_configs(self, ports):
         result = {}
         for port in ports:
