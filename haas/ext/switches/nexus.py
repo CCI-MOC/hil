@@ -204,4 +204,5 @@ class _Session(_console.Session):
         return result
 
     def disable_port(self):
-        assert False, "unimplemented"
+        self.console.sendline('sw trunk allowed vlan none')
+        self.console.sendline('sw trunk native vlan ' + self.dummy_vlan)
