@@ -688,7 +688,7 @@ def list_network_attachments(network, project):
     if project == "all":
         do_get(url)
     else:
-        do_get(url, data={'project': project})
+        do_get(url, params={'project': project})
 
 
 @cmd
