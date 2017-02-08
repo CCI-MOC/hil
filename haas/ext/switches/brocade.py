@@ -259,12 +259,12 @@ class Brocade(Switch):
         # Double quotes are necessary in the url because switch ports contain
         # forward slashes (/), ex. 101/0/10 is encoded as "101/0/10".
         return '%(hostname)s/rest/config/running/interface/' \
-            '%(interface_type)s/%%22%(interface)s%%22/%(suffix)s' \
+            '%(interface_type)s/%%22%(interface)s%%22%(suffix)s' \
             % {
                   'hostname': self.hostname,
                   'interface_type': self.interface_type,
                   'interface': interface,
-                  'suffix': 'switchport/%s' % suffix if suffix else ''
+                  'suffix': '/switchport/%s' % suffix if suffix else ''
             }
 
     @property

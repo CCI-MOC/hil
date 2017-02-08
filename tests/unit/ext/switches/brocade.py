@@ -274,3 +274,14 @@ class TestBrocade(object):
             assert mock.called
             assert mock.call_count == 1
             assert mock.request_history[0].text == TRUNK_REMOVE_VLAN_PAYLOAD
+
+    def test_construct_url(self, switch):
+        assert switch._construct_url('1/0/4') == (
+            'http://example.com/rest/config/running/interface/'
+            'TenGigabitEthernet/%221/0/4%22'
+        )
+
+        assert switch._construct_url('1/0/4', suffix='mode') == (
+            'http://example.com/rest/config/running/interface/'
+            'TenGigabitEthernet/%221/0/4%22/switchport/mode'
+        )
