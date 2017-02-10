@@ -11,15 +11,17 @@
 # IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
-"""Unit tests for headnodes.
+"""Deployment tests for ipmi driver.
 
-These require an actual libvirt daemon (and full HaaS setup), and are
+These require an actual HaaS setup with a real node, and are
 somewhat particular to the MOC's development environment. They may be
 difficult to run in other contexts.
 """
 
-from haas.test_common import *
-from haas import config, server, rest
+from haas.test_common import config, config_testsuite, fresh_database, \
+    fail_on_log_warnings, with_request_context, site_layout
+from haas.model import Node
+from haas import config, server, api
 import pytest
 
 
@@ -40,14 +42,13 @@ def server_init():
 
 
 with_request_context = pytest.yield_fixture(with_request_context)
+site_layout = pytest.fixture(site_layout)
 
-
-headnode_cleanup = pytest.fixture(headnode_cleanup)
 pytestmark = pytest.mark.usefixtures('configure',
                                      'server_init',
                                      'fresh_database',
                                      'with_request_context',
-                                     'headnode_cleanup')
+                                     'site_layout')
 
 
 class TestIpmi():
@@ -67,3 +68,10 @@ class TestIpmi():
         nodes = self.collect_nodes()
         for node in nodes:
             api.node_power_off(node.label)
+
+    def test_node_set_bootdev(self):
+        nodes = self.collect_nodes()
+        for node in nodes:
+            api.node_set_bootdev(node.label, 'pxe')
+            api.node_set_bootdev(node.label, 'disk')
+            api.node_set_bootdev(node.label, 'none')
