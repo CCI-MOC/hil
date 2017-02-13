@@ -60,14 +60,12 @@ class TestIpmi:
     def test_node_set_bootdev(self):
         """Check that node_set_bootdev throws error for invalid devices."""
 
-        api.project_create('anvil-nextgen')
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
                   "user": "root",
                   "password": "tapeworm"})
-        api.project_connect_node('anvil-nextgen', 'node-99')
 
-        # throw BadArgumentError for a valid bootdevice
+        # throw BadArgumentError for an invalid bootdevice
         with pytest.raises(api.BadArgumentError):
             api.node_set_bootdev('node-99', 'invalid-device')
