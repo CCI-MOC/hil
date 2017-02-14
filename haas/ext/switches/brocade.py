@@ -91,7 +91,7 @@ class Brocade(Switch):
                 assert network_id == vlan_id
                 self._add_vlan_to_trunk(interface, vlan_id)
 
-    def port_revert(self, port):
+    def revert_port(self, port):
         # TODO: there is likely a more efficient way to do this; we may want
         # to inspect the brocade documentation to see if there's a way to
         # clear the port without doing every vlan individually.
