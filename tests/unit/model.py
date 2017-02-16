@@ -23,7 +23,6 @@
 
 from haas.model import *
 from haas import config
-from haas.ext.obm.ipmi import Ipmi
 
 from haas.test_common import fresh_database, config_testsuite, ModelTest, \
     fail_on_log_warnings
@@ -47,6 +46,7 @@ pytestmark = pytest.mark.usefixtures('configure', 'fresh_database')
 class TestNic(ModelTest):
 
     def sample_obj(self):
+        from haas.ext.obm.ipmi import Ipmi
         return Nic(Node(label='node-99',
                         obm=Ipmi(type=Ipmi.api_name,
                                  host="ipmihost",
@@ -58,6 +58,7 @@ class TestNic(ModelTest):
 class TestNode(ModelTest):
 
     def sample_obj(self):
+        from haas.ext.obm.ipmi import Ipmi
         return Node(label='node-99',
                     obm=Ipmi(type=Ipmi.api_name,
                              host="ipmihost",
@@ -93,9 +94,22 @@ class TestNetwork(ModelTest):
         return Network(pj, [pj], True, '102', 'hammernet')
 
 
+class TestMetadata(ModelTest):
+
+    def sample_obj(self):
+        from haas.ext.obm.ipmi import Ipmi
+        node = Node(label='node-99',
+                    obm=Ipmi(type=Ipmi.api_name,
+                             host="ipmihost",
+                             user="root",
+                             password="tapeworm"))
+        return Metadata('EK', 'pk', node)
+
+
 class TestNetworkingAction(ModelTest):
 
     def sample_obj(self):
+        from haas.ext.obm.ipmi import Ipmi
         nic = Nic(Node(label='node-99',
                        obm=Ipmi(type=Ipmi.api_name,
                                 host="ipmihost",

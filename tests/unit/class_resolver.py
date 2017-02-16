@@ -1,13 +1,17 @@
 import haas
 from haas.class_resolver import *
 from haas.model import *
-from haas.ext.obm import mock
-from haas.ext.switches import mock
 from haas.test_common import fail_on_log_warnings
 import pytest
 
 mockapi_name = 'http://schema.massopencloud.org/haas/v0/'
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
+
+
+@pytest.fixture(autouse=True)
+def mock_extensions():
+    from haas.ext.obm import mock
+    from haas.ext.switches import mock
 
 
 class Food(object):

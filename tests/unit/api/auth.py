@@ -20,8 +20,8 @@ from haas.errors import AuthorizationError, BadArgumentError, \
 from haas.test_common import config_testsuite, config_merge, fresh_database, \
     with_request_context, additional_db, fail_on_log_warnings
 
-from haas.ext.switches.mock import MockSwitch
-from haas.ext.obm.mock import MockObm
+MOCK_OBM_API_NAME = 'http://schema.massopencloud.org/haas/v0/obm/mock'
+MOCK_SWITCH_API_NAME = 'http://schema.massopencloud.org/haas/v0/switches/mock'
 
 
 def auth_call_test(fn, error, admin, project, args, kwargs={}):
@@ -611,7 +611,7 @@ def test_auth_call(kwargs):
 
 admin_calls = [
     (api.node_register, ['new_node'], {'obm': {
-              "type": MockObm.api_name,
+              "type": MOCK_OBM_API_NAME,
               "host": "ipmihost",
               "user": "root",
               "password": "tapeworm"}}),
@@ -630,7 +630,7 @@ admin_calls = [
 
     (api.project_delete, ['empty-project'], {}),
 
-    (api.switch_register, ['new-switch', MockSwitch.api_name], {
+    (api.switch_register, ['new-switch', MOCK_SWITCH_API_NAME], {
         'hostname': 'oak-ridge',
         'username': 'alice',
         'password': 'changeme',
@@ -641,6 +641,8 @@ admin_calls = [
     (api.port_connect_nic, ['stock_switch_0', 'free_port_0',
                             'free_node_0', 'boot-nic'], {}),
     (api.port_detach_nic, ['stock_switch_0', 'free_node_0_port'], {}),
+    (api.node_set_metadata, ['free_node_0', 'EK', 'pk'], {}),
+    (api.node_delete_metadata, ['runway_node_0', 'EK'], {}),
 ]
 
 

@@ -32,13 +32,13 @@ from haas.dev_support import no_dry_run
 import uuid
 import xml.etree.ElementTree
 
-db = SQLAlchemy(app)
-
 # without setting this explicitly, we get a warning that this option
 # will default to disabled in future versions (due to incurring a lot
 # of overhed). We aren't using the relevant functionality, so let's
 # just opt-in to the change now:
 app.config.update(SQLALCHEMY_TRACK_MODIFICATIONS=False)
+
+db = SQLAlchemy(app)
 
 
 def init_db(uri=None):
@@ -114,6 +114,24 @@ class Project(db.Model):
     def __init__(self, label):
         """Create a project with the given label."""
         self.label = label
+
+
+class Metadata(db.Model):
+    """metadata for a Node
+
+    Metadata may a key, a hash, or otherwise
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    label = db.Column(db.String, nullable=False)
+    value = db.Column(db.String)
+    owner_id = db.Column(db.ForeignKey('node.id'), nullable=False)
+    owner = db.relationship('Node', backref=db.backref('metadata'))
+
+    def __init__(self, label, value, node):
+        """Create a key with the given label."""
+        self.label = label
+        self.value = value
+        self.owner = node
 
 
 class Network(db.Model):

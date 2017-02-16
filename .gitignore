@@ -10,4 +10,5 @@ dist
 *.db
 /haas.cfg
 /testsuite.cfg
+/site-layout.json
 /.cache

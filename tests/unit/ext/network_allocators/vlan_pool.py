@@ -2,7 +2,6 @@ from haas.config import load_extensions
 from haas.flaskapp import app
 from haas.model import db
 from haas.migrations import create_db
-from haas.ext.network_allocators.vlan_pool import Vlan
 from haas import api, model, server
 from haas.test_common import *
 import pytest
@@ -52,6 +51,7 @@ def test_populate_dirty_db():
     """
     # The fresh_database fixture will have created a clean database for us. We
     # just tweak it and then re-run create_db
+    from haas.ext.network_allocators.vlan_pool import Vlan
     with app.app_context():
         # flag vlan 100 as in-use, just so the db isn't quite pristine.
         vlan100 = Vlan.query.filter_by(vlan_no=100)

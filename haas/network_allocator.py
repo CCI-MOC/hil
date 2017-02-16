@@ -93,8 +93,8 @@ def set_network_allocator(network_allocator):
     """
     global _network_allocator
     if _network_allocator is not None:
-        sys.exit(_("Fatal Error: set_network_allocator() called twice."
-                   "Make sure you don't have conflicting extensions loaded."))
+        sys.exit("Fatal Error: set_network_allocator() called twice."
+                 "Make sure you don't have conflicting extensions loaded.")
 
     _network_allocator = network_allocator
 
