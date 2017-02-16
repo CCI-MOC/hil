@@ -1,5 +1,5 @@
 import json
-from haas.client.base import ClientBase, check_response
+from haas.client.base import ClientBase
 from haas.client import errors
 
 
