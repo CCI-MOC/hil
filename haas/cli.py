@@ -227,6 +227,13 @@ class FailedAPICallException(Exception):
     pass
 
 
+def check_clientlib_response(fun, *fun_args):
+    try:
+        return fun(*fun_args)
+    except Exception as e:
+        sys.stderr.write('Error: %s\n' % e.message)
+
+
 def check_status_code(response):
     if response.status_code < 200 or response.status_code >= 300:
         sys.stderr.write('Unexpected status code: %d\n' % response.status_code)
@@ -378,10 +385,11 @@ def list_projects():
 @cmd
 def user_add_project(user, project):
     """Add <user> to <project>"""
-    try:
-        C.user.grant_access(user, project)
-    except (errors.NotFoundError, errors.DuplicateError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(C.user.grant_access, user, project)
+#    try:
+#        C.user.grant_access(user, project)
+#    except (errors.NotFoundError, errors.DuplicateError) as e:
+#        sys.stderr.write('Error: %s\n' % e.message)
 
 
 @cmd
@@ -414,19 +422,13 @@ def network_revoke_project_access(project, network):
 @cmd
 def project_create(project):
     """Create a <project>"""
-    try:
-        C.project.create(project)
-    except (errors.DuplicateError, errors.AuthenticationError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(C.project.create, project)
 
 
 @cmd
 def project_delete(project):
     """Delete <project>"""
-    try:
-        C.project.delete(project)
-    except (errors.NotFoundError, errors.AuthenticationError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(C.project.delete, project)
 
 
 @cmd
@@ -447,19 +449,13 @@ def headnode_delete(headnode):
 @cmd
 def project_connect_node(project, node):
     """Connect <node> to <project>"""
-    try:
-        C.project.connect(project, node)
-    except (errors.NotFoundError, errors.BlockedError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(C.project.connect, project, node)
 
 
 @cmd
 def project_detach_node(project, node):
     """Detach <node> from <project>"""
-    try:
-        C.project.disconnect(project, node)
-    except (errors.NotFoundError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(C.project.detach, project, node)
 
 
 @cmd
@@ -752,17 +748,25 @@ def list_nodes(is_free):
 @cmd
 def list_project_nodes(project):
     """List all nodes attached to a <project>"""
-    q = C.project.nodes_in(project)
-    sys.stdout.write('Nodes allocated to %s:  ' % project + " ".join(q) + '\n')
+    try:
+        q = C.project.nodes_in(project)
+        sys.stdout.write(
+                'Nodes allocated to %s:  ' % project + " ".join(q) + '\n'
+                )
+    except Exception as e:
+        sys.stderr.write('Error: %s\n' % e.message)
 
 
 @cmd
 def list_project_networks(project):
     """List all networks attached to a <project>"""
-    q = C.project.networks_in(project)
-    sys.stdout.write(
+    try:
+        q = C.project.networks_in(project)
+        sys.stdout.write(
             "Networks allocated to {}\t:   {}\n".format(project, " ".join(q))
             )
+    except Exception as e:
+        sys.stderr.write('Error: %s\n' % e.message)
 
 
 @cmd

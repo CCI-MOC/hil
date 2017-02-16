@@ -391,7 +391,7 @@ class Test_project:
     def test_duplicate_project_create(self):
         """ test for catching duplicate name while creating new project. """
         C.project.create('dummy-01')
-        with pytest.raises(errors.DuplicateError):
+        with pytest.raises(Exception):
             C.project.create('dummy-01')
 
     def test_project_delete(self):
@@ -402,7 +402,7 @@ class Test_project:
 
     def test_error_project_delete(self):
         """ test to capture error condition in project delete. """
-        with pytest.raises(errors.NotFoundError):
+        with pytest.raises(Exception):
             C.project.delete('dummy-03')
 
     def test_project_connect_node(self):
@@ -415,15 +415,15 @@ class Test_project:
         """ test for erronous reconnecting node to project. """
         C.project.create('abcd')
         C.project.connect('abcd', 'node-08')
-        with pytest.raises(errors.BlockedError):
+        with pytest.raises(Exception):
             C.project.connect('abcd', 'node-08')
 
     def test_project_connect_node_nosuchobject(self):
         """ test for connecting no such node or project """
         C.project.create('abcd')
-        with pytest.raises(errors.NotFoundError):
+        with pytest.raises(Exception):
             C.project.connect('abcd', 'no-such-node')
-        with pytest.raises(errors.NotFoundError):
+        with pytest.raises(Exception):
             C.project.connect('no-such-project', 'node-06')
 
     def test_project_detach_node(self):
@@ -436,9 +436,9 @@ class Test_project:
     def test_project_detach_node_nosuchobject(self):
         """ Test for while detaching node from project."""
         C.project.create('abcd')
-        with pytest.raises(errors.NotFoundError):
+        with pytest.raises(Exception):
             C.project.detach('abcd', 'no-such-node')
-        with pytest.raises(errors.NotFoundError):
+        with pytest.raises(Exception):
             C.project.detach('no-such-project', 'node-06')
 
 

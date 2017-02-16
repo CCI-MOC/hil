@@ -16,3 +16,7 @@ class BlockedError(Exception):
 
 class ProjectMismatchError(Exception):
     pass
+
+
+class FailedAPICallException(Exception):
+    pass

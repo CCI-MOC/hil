@@ -80,9 +80,7 @@ class ProjectMismatchError(APIError):
     """An exception indicating that the resources given don't belong to the
     same project.
     """
-    status_code = 412  # was 409. 412 is appropriate here.
-    # For description read,
-    # http://www.restpatterns.org/HTTP_Status_Codes/412_-_Precondition_Failed
+    status_code = 409  # Conflict
 
 
 class AuthorizationError(APIError):
@@ -94,10 +92,7 @@ class BlockedError(APIError):
     some other change.  For example, deletion is blocked until the components
     are deleted, and possibly until the dirty flag is cleared as well.
     """
-    status_code = 423  # was 409,
-    # This seems to be the closest code for this situation
-    # For description read,
-    # http://www.restpatterns.org/HTTP_Status_Codes/423_-_Locked
+    status_code = 409  # Conflict
 
 
 class IllegalStateError(APIError):
