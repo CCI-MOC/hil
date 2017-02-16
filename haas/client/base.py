@@ -7,10 +7,6 @@ from haas.client import errors
 from urlparse import urljoin
 
 
-def check_response(response):
-    return response.json()
-
-
 class ClientBase(object):
     """ Main class which contains all the methods to
     -- ensure input complies to API requisites
@@ -42,17 +38,6 @@ class ClientBase(object):
         rel = "/".join(args)
         url = urljoin(self.endpoint, rel)
         return url
-
-    def check_status_code(self, response):
-        if response.status_code < 200 or response.status_code >= 300:
-            sys.stderr.write(
-                    'Unexpected status code: %d\n' % response.status_code
-                    )
-            sys.stderr.write('Response text: \n')
-            sys.stderr.write(response.text + "\n")
-            raise FailedAPICallException()
-        else:
-            sys.stdout.write(response.text + "\n")
 
     def check_response(self, response):
         self.res = response
