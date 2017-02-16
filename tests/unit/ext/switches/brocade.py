@@ -99,6 +99,8 @@ TRUNK_NATIVE_VLAN_RESPONSE_WITH_VLANS = """
 </trunk>
 """
 
+SWITCHPORT_PAYLOAD = '<switchport></switchport>'
+
 TRUNK_PAYLOAD = '<mode><vlan-mode>trunk</vlan-mode></mode>'
 
 TRUNK_NATIVE_PAYLOAD = '<trunk><native-vlan>102</native-vlan></trunk>'
@@ -222,6 +224,7 @@ class TestBrocade(object):
 
             assert mock.called
             assert mock.call_count == 4
+            assert mock.request_history[0].text == SWITCHPORT_PAYLOAD
             assert mock.request_history[1].text == TRUNK_PAYLOAD
             assert mock.request_history[3].text == TRUNK_NATIVE_PAYLOAD
 
@@ -257,6 +260,7 @@ class TestBrocade(object):
 
             assert mock.called
             assert mock.call_count == 3
+            assert mock.request_history[0].text == SWITCHPORT_PAYLOAD
             assert mock.request_history[1].text == TRUNK_PAYLOAD
             assert mock.request_history[2].text == TRUNK_VLAN_PAYLOAD
 
