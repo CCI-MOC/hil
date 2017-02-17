@@ -72,6 +72,19 @@ class TestIpmi():
     def test_node_set_bootdev(self):
         nodes = self.collect_nodes()
         for node in nodes:
+            # change a node's bootdevice to a valid boot device
             api.node_set_bootdev(node.label, 'pxe')
             api.node_set_bootdev(node.label, 'disk')
             api.node_set_bootdev(node.label, 'none')
+            # set the bootdevice to something invalid
+            with pytest.raises(api.BadArgumentError):
+                api.node_set_bootdev(node.label, 'invalid-device')
+
+        # register a node with erroneous ipmi details to raise OBMError
+        api.node_register('node-99-z4qa63', obm={
+                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                  "host": "ipmihost",
+                  "user": "root",
+                  "password": "tapeworm"})
+        with pytest.raises(api.OBMError):
+            api.node_set_bootdev('node-99-z4qa63', 'none')

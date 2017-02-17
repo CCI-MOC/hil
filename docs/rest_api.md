@@ -422,6 +422,15 @@ PXE. If the node is powered off, this turns it on.
 
 Sets the node's next boot device persistently
 
+The request body consists of JSON with a `bootdev` argument:
+
+Request body:
+    {
+
+    'bootdev': <boot device>
+
+    }
+
 ##### For IPMI devices
 
 The valid/allowed boot devices are:
