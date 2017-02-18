@@ -227,7 +227,14 @@ class FailedAPICallException(Exception):
     pass
 
 
-def check_clientlib_response(fun, *fun_args):
+def check_clientlib_response(fun):
+    try:
+        return fun()
+    except Exception as e:
+        sys.stderr.write('Error: %s\n' % e.message)
+
+
+def clientlib_response(fun, *fun_args):
     try:
         return fun(*fun_args)
     except Exception as e:
@@ -333,102 +340,84 @@ def user_create(username, password, is_admin):
     <is_admin> may be either "admin" or "regular", and determines whether
     the user has administrative priveledges.
     """
-    try:
-        C.user.create(username, password, is_admin)
-    except (errors.DuplicateError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(
+            lambda: C.user.create(username, password, is_admin)
+            )
 
 
 @cmd
 def network_create(network, owner, access, net_id):
     """Create a link-layer <network>.  See docs/networks.md for details"""
-    try:
-        C.network.create(network, owner, access, net_id)
-    except (errors.DuplicateError, errors.NotFoundError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(
+            lambda: C.network.create(network, owner, access, net_id)
+            )
 
 
 @cmd
 def network_create_simple(network, project):
     """Create <network> owned by project.  Specific case of network_create"""
-    try:
-        C.network.create(network, project, project, "")
-    except (errors.DuplicateError, errors.NotFoundError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(
+            lambda: C.network.create(network, project, project, "")
+            )
 
 
 @cmd
 def network_delete(network):
     """Delete a <network>"""
-    try:
-        C.network.delete(network)
-    except (errors.NotFoundError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(
+            lambda: C.network.delete(network)
+            )
 
 
 @cmd
 def user_delete(username):
     """Delete the user <username>"""
-    try:
-        C.user.delete(username)
-    except (errors.NotFoundError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(
+            lambda: C.user.delete(username)
+            )
 
 
 @cmd
 def list_projects():
     """List all projects"""
-    q = C.project.list()
+    q = check_clientlib_response(lambda: C.project.list())
     sys.stdout.write('%s Projects :    ' % len(q) + " ".join(q) + '\n')
 
 
 @cmd
 def user_add_project(user, project):
     """Add <user> to <project>"""
-    check_clientlib_response(C.user.grant_access, user, project)
-#    try:
-#        C.user.grant_access(user, project)
-#    except (errors.NotFoundError, errors.DuplicateError) as e:
-#        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(lambda: C.user.grant_access(user, project))
 
 
 @cmd
 def user_remove_project(user, project):
     """Remove <user> from <project>"""
-    try:
-        C.user.remove_access(user, project)
-    except (errors.NotFoundError, errors.DuplicateError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(lambda: C.user.remove_access(user, project))
 
 
 @cmd
 def network_grant_project_access(project, network):
     """Add <project> to <network> access"""
-    try:
-        C.network.grant_access(project, network)
-    except (errors.NotFoundError, errors.DuplicateError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(lambda: C.network.grant_access(project, network))
 
 
 @cmd
 def network_revoke_project_access(project, network):
     """Remove <project> from <network> access"""
-    try:
-        C.network.revoke_access(project, network)
-    except (errors.NotFoundError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(lambda: C.network.revoke_access(project, network))
 
 
 @cmd
 def project_create(project):
     """Create a <project>"""
-    check_clientlib_response(C.project.create, project)
+    check_clientlib_response(lambda: C.project.create(project))
 
 
 @cmd
 def project_delete(project):
     """Delete <project>"""
-    check_clientlib_response(C.project.delete, project)
+    check_clientlib_response(lambda: C.project.delete(project))
 
 
 @cmd
@@ -506,28 +495,19 @@ def node_register(node, subtype, *args):
 @cmd
 def node_delete(node):
     """Delete <node>"""
-    try:
-        C.node.delete(node)
-    except (errors.NotFoundError, errors.BlockedError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(lambda: C.node.delete(node))
 
 
 @cmd
 def node_power_cycle(node):
     """Power cycle <node>"""
-    try:
-        C.node.power_cycle(node)
-    except (errors.NotFoundError, errors.BlockedError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(lambda: C.node.power_cycle(node))
 
 
 @cmd
 def node_power_off(node):
     """Power off <node>"""
-    try:
-        C.node.power_off(node)
-    except (errors.NotFoundError, errors.BlockedError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(lambda: C.node.power_off(node))
 
 
 @cmd
@@ -535,19 +515,13 @@ def node_register_nic(node, nic, macaddr):
     """
     Register existence of a <nic> with the given <macaddr> on the given <node>
     """
-    try:
-        C.node.add_nic(node, nic, macaddr)
-    except (errors.NotFoundError, errors.DuplicateError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(lambda: C.node.add_nic(node, nic, macaddr))
 
 
 @cmd
 def node_delete_nic(node, nic):
     """Delete a <nic> on a <node>"""
-    try:
-        C.node.remove_nic(node, nic)
-    except(errors.NotFoundError, errors.BlockedError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_client_lib(lambda: C.node.remove_nic(node, nic))
 
 
 @cmd
@@ -567,19 +541,15 @@ def headnode_delete_hnic(headnode, nic):
 @cmd
 def node_connect_network(node, nic, network, channel):
     """Connect <node> to <network> on given <nic> and <channel>"""
-    try:
-        C.node.connect_network(node, nic, network, channel)
-    except(errors.NotFoundError, errors.DuplicateError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_client_lib(
+            lambda: C.node.connect_network(node, nic, network,channel)
+            )
 
 
 @cmd
 def node_detach_network(node, nic, network):
     """Detach <node> from the given <network> on the given <nic>"""
-    try:
-        C.node.detach_network(node, nic, network)
-    except(errors.NotFoundError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(lambda: C.node.detach_network(node, nic, network))
 
 
 @cmd
@@ -678,56 +648,38 @@ def switch_register(switch, subtype, *args):
 @cmd
 def switch_delete(switch):
     """Delete a <switch> """
-    try:
-        C.switch.delete(switch)
-    except(errors.NotFoundError, BlockedError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(lambda: C.switch.delete(switch))
 
 
 @cmd
 def list_switches():
     """List all switches"""
-    q = C.switch.list()
+    q = check_clientlib_response(lambda: C.switch.list())
     sys.stdout.write('%s switches :    ' % len(q) + " ".join(q) + '\n')
 
 
 @cmd
 def port_register(switch, port):
     """Register a <port> with <switch> """
-    try:
-        C.port.register(switch, port)
-    except(errors.DuplicateError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(lambda: C.port.register(switch, port))
 
 
 @cmd
 def port_delete(switch, port):
     """Delete a <port> from a <switch>"""
-    try:
-        C.port.delete(switch, port)
-    except(errors.NotFoundError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(lambda: C.port.delete(switch, port))
 
 
 @cmd
 def port_connect_nic(switch, port, node, nic):
     """Connect a <port> on a <switch> to a <nic> on a <node>"""
-    try:
-        C.port.connect_nic(switch, port, node, nic)
-    except(errors.DuplicateError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(lambda: C.port.connect_nic(switch, port, node, nic))
 
 
 @cmd
 def port_detach_nic(switch, port):
     """Detach a <port> on a <switch> from whatever's connected to it"""
-#    url = object_url('switch', switch, 'port', port, 'detach_nic')
-#    do_post(url)
-
-    try:
-        C.port.detach_nic(switch, port)
-    except(errors.NotFoundError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    check_clientlib_response(lambda: C.port.detach_nic(switch, port))
 
 
 @cmd
@@ -750,7 +702,7 @@ def list_nodes(is_free):
     <is_free> may be either "all" or "free", and determines whether
         to list all nodes or all free nodes.
     """
-    q = C.node.list(is_free)
+    q = check_clientlib_response(lambda: C.node.list(is_free))
     if is_free == 'all':
         sys.stdout.write('All nodes {}\t:    {}\n'.format(len(q), " ".join(q)))
     elif is_free == 'free':
@@ -762,42 +714,31 @@ def list_nodes(is_free):
 @cmd
 def list_project_nodes(project):
     """List all nodes attached to a <project>"""
-    try:
-        q = C.project.nodes_in(project)
-        sys.stdout.write(
-                'Nodes allocated to %s:  ' % project + " ".join(q) + '\n'
-                )
-    except Exception as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    q = check_clientlib_response(lambda: C.project.nodes_in(project))
+    sys.stdout.write('Nodes allocated to %s:  ' % project + " ".join(q) + '\n')
 
 
 @cmd
 def list_project_networks(project):
     """List all networks attached to a <project>"""
-    try:
-        q = C.project.networks_in(project)
-        sys.stdout.write(
+    q = check_clientlib_response(lambda: C.project.networks_in(project))
+    sys.stdout.write(
             "Networks allocated to {}\t:   {}\n".format(project, " ".join(q))
             )
-    except Exception as e:
-        sys.stderr.write('Error: %s\n' % e.message)
 
 
 @cmd
 def show_switch(switch):
     """Display information about <switch>"""
-    try:
-        q = C.switch.show(switch)
-        for item in q.items():
-            sys.stdout.write("{}\t  :  {}\n".format(item[0], item[1]))
-    except(errors.NotFoundError) as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+    q = check_clientlib_response(lambda: C.switch.show(switch))
+    for item in q.items():
+        sys.stdout.write("{}\t  :  {}\n".format(item[0], item[1]))
 
 
 @cmd
 def list_networks():
     """List all networks"""
-    q = C.network.list()
+    q = check_clientlib_response(lambda: C.network.list())
     for item in q.items():
         sys.stdout.write("{}\t  :  {}\n".format(item[0], item[1]))
 
@@ -805,7 +746,7 @@ def list_networks():
 @cmd
 def show_network(network):
     """Display information about <network>"""
-    q = C.network.show(network)
+    q = check_clientlib_response(lambda: C.network.show(network))
     for item in q.items():
         sys.stdout.write("{}\t  :  {}\n".format(item[0], item[1]))
 
@@ -815,7 +756,7 @@ def show_node(node):
     """Display information about a <node>
     FIXME: Recursion should be implemented to the output.
     """
-    q = C.node.show(node)
+    q = check_clientlib_response(lambda: C.node.show(node))
     for item in q.items():
         sys.stdout.write("{}\t  :  {}\n".format(item[0], item[1]))
 
@@ -851,13 +792,13 @@ def show_console(node):
 @cmd
 def start_console(node):
     """Start logging console output from <node>"""
-    q = C.node.start_console(node)
+    q = check_clientlib_response(lambda: C.node.start_console(node))
 
 
 @cmd
 def stop_console(node):
     """Stop logging console output from <node> and delete the log"""
-    q = C.node.stop_console(node)
+    q = check_clientlib_response(lambda: C.node.stop_console(node))
 
 
 @cmd
