@@ -49,7 +49,3 @@ class ClientBase(object):
         else:
             e = self.res.json()
             raise errors.FailedAPICallException(e['msg'])
-
-    def do_get(self, url, params=None):
-        self.url = url
-        self.check_response(self.s.get(url))
