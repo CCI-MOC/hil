@@ -10,31 +10,13 @@ class Network(ClientBase):
         def list(self):
             """ Lists all projects under HIL """
             url = self.object_url('networks')
-            q = self.s.get(url)
-            if q.ok:
-                return q.json()
-            elif q.status_code == 401:
-                raise errors.AuthenticationError(
-                        "Make sure credentials match "
-                        "chosen authentication backend."
-                        )
+            return self.check_response(self.s.get(url))
 
         def show(self, network):
             """ Shows attributes of a network. """
             self.network = network
             url = self.object_url('network', self.network)
-            q = self.s.get(url)
-            if q.ok:
-                return q.json()
-            elif q.status_code == 401:
-                raise errors.AuthenticationError(
-                        "Make sure credential match."
-                        "chosen authentication backend."
-                        )
-            elif q.status_code == 404:
-                raise errors.NotFoundError(
-                        "Network does not exist."
-                        )
+            return self.check_response(self.s.get(url))
 
         def create(self, network, owner, access, net_id):
             """ Create a link-layer <network>. See docs/networks.md for
@@ -51,30 +33,14 @@ class Network(ClientBase):
                 'owner': self.owner, 'access': self.access,
                 'net_id': self.net_id
                 })
-            q = self.s.put(url, data=payload)
-            if q.ok:
-                return
-            elif q.status_code == 409:
-                raise errors.DuplicateError(
-                        "Network name already exists. "
-                        )
-            elif q.status_code == 404:
-                raise errors.NotFoundError(
-                        "Operation failed. Missing Parameters. "
-                        )
+            return self.check_response(self.s.put(url, data=payload))
 
         def delete(self, network):
             """ Delete a <network>. """
 
             self.network = network
             url = self.object_url('network', self.network)
-            q = self.s.delete(url)
-            if q.ok:
-                return
-            elif q.status_code == 404:
-                raise errors.NotFoundError(
-                        "Operation failed. No such network. "
-                        )
+            return self.check_response(self.s.delete(url))
 
         def grant_access(self, project, network):
             """ Grants <project> access to <network>. """
@@ -85,17 +51,7 @@ class Network(ClientBase):
             url = self.object_url(
                     'network', self.network, 'access', self.project
                     )
-            q = self.s.put(url)
-            if q.ok:
-                return
-            elif q.status_code == 404:
-                raise errors.NotFoundError(
-                        "Operation failed. Resource does not exist. "
-                        )
-            elif q.status_code == 409:
-                raise errors.DuplicateError(
-                        "Access relationship already exists. "
-                        )
+            return self.check_response(self.s.put(url))
 
         def revoke_access(self, project, network):
             """ Removes access of <network> from <project>. """
@@ -106,11 +62,4 @@ class Network(ClientBase):
             url = self.object_url(
                     'network', self.network, 'access', self.project
                     )
-            q = self.s.delete(url)
-            if q.ok:
-                return
-            elif q.status_code == 404:
-                raise errors.NotFoundError(
-                        "Operation failed. Resource or relationship "
-                        "does not exist. "
-                        )
+            return self.check_response(self.s.delete(url))

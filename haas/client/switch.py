@@ -10,14 +10,7 @@ class Switch(ClientBase):
     def list(self):
         """ List all nodes that HIL manages """
         url = self.object_url('/switches')
-        q = self.s.get(url)
-        if q.ok:
-            return q.json()
-        elif q.status_code == 401:
-            raise errors.AuthenticationError(
-                    "Make sure credentials match "
-                    "chosen authentication backend."
-                    )
+        return self.check_response(self.s.get(url))
 
     def register(self, switch, subtype, *args):
         """ Registers a switch with name <switch> and
@@ -33,31 +26,14 @@ class Switch(ClientBase):
     def delete(self, switch):
         self.switch = switch
         url = self.object_url('switch', self.switch)
-        q = self.s.delete(url)
-        if q.ok:
-            return
-        elif q.status_code == 404:
-            raise errors.NotFoundError(
-                    " Operation failed. Resource does not exist."
-                    )
-        elif q.status_code == 409:
-            raise errors.BlockedError(
-                    " Operation failed. Cannot delete switch."
-                    " Delete its ports first."
-                    )
+        return self.check_response(self.s.delete(url))
 
     def show(self, switch):
         """ Shows attributes of <switch>. """
 
         self.switch = switch
         url = self.object_url('switch', self.switch)
-        q = self.s.get(url)
-        if q.ok:
-            return q.json()
-        elif q.status_code == 404:
-            raise errors.NotFoundError(
-                    "Operation failed. No such switch."
-                    )
+        return self.check_response(self.s.get(url))
 
 
 class Port(ClientBase):
@@ -69,11 +45,7 @@ class Port(ClientBase):
         self.port = port
 
         url = self.object_url('switch', switch, 'port', port)
-        q = self.s.put(url)
-        if q.ok:
-            return
-        elif q.status_code == 409:
-            raise errors.DuplicateError("Port name not unique.")
+        return self.check_response(self.s.put(url))
 
     def delete(self, switch, port):
         """ Deletes information of the <port> for <switch> """
@@ -81,11 +53,7 @@ class Port(ClientBase):
         self.port = port
 
         url = self.object_url('switch', switch, 'port', port)
-        q = self.s.delete(url)
-        if q.ok:
-            return
-        elif q.status_code == 404:
-            raise errors.NotFoundError("Port name not found.")
+        return self.check_response(self.s.delete(url))
 
     def connect_nic(self, switch, port, node, nic):
         """ Connects <port> of <switch> to <nic> of <node>. """
@@ -96,21 +64,11 @@ class Port(ClientBase):
 
         url = self.object_url('switch', switch, 'port', port, 'connect_nic')
         payload = json.dumps({'node': self.node, 'nic': self.nic})
-        q = self.s.post(url, payload)
-        if q.ok:
-            return
-        elif q.status_code == 409:
-            raise errors.DuplicateError("Port or Nic already connected.")
+        return self.check_response(self.s.post(url, payload))
 
     def detach_nic(self, switch, port):
         """" Detaches <port> of <switch>. """
         self.switch = switch
         self.port = port
         url = self.object_url('switch', switch, 'port', port, 'detach_nic')
-        q = self.s.post(url)
-        if q.ok:
-            return
-        elif q.status_code == 404:
-            raise errors.NotFoundError(
-                    "Operation Failed. The relationship does not exist. "
-                    )
+        return self.check_response(self.s.post(url))

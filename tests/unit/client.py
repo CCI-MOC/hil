@@ -23,6 +23,7 @@ import requests
 import os
 import tempfile
 import subprocess
+import time
 from subprocess import check_call, Popen
 from urlparse import urljoin
 import requests
@@ -99,15 +100,15 @@ def make_config():
             '[devel]',
             'dry_run=True',
             '[auth]',
-            'require_authentication = False',
+            'require_authentication = True',
 
             '[headnode]',
             'base_imgs = base-headnode, img1, img2, img3, img4',
             '[database]',
             'uri = sqlite:///%s/haas.db' % tmpdir,
             '[extensions]',
+            'haas.ext.auth.database =',
             'haas.ext.switches.mock =',
-            'haas.ext.auth.null =',
             'haas.ext.switches.nexus =',
             'haas.ext.switches.dell =',
             'haas.ext.switches.brocade =',
@@ -137,6 +138,7 @@ def cleanup((tmpdir, cwd)):
 def initialize_db():
     """ Creates an  database as defined in haas.cfg."""
     check_call(['haas-admin', 'db', 'create'])
+    check_call(['haas', 'create_admin_user', username, password])
 
 
 def run_server(cmd):
@@ -155,20 +157,22 @@ def populate_server():
     Once the server is started, this function will populate some mock objects
     to faciliate testing of the client library
     """
+    sess = requests.Session()
+    sess.auth = (username, password)
 
     # Adding nodes, node-01 - node-06
     url_node = 'http://127.0.0.1:8888/node/'
     api_nodename = 'http://schema.massopencloud.org/haas/v0/obm/'
 
-    for i in range(1, 9):
+    for i in range(1, 10):
         obminfo = {
                 "type": api_nodename + 'ipmi', "host": "10.10.0.0"+repr(i),
                 "user": "ipmi_u", "password": "pass1234"
                 }
-        requests.put(
+        sess.put(
                 url_node + 'node-0'+repr(i), data=json.dumps({"obm": obminfo})
                 )
-        requests.put(
+        sess.put(
                 url_node + 'node-0' + repr(i) + '/nic/eth0', data=json.dumps(
                             {"macaddr": "aa:bb:cc:dd:ee:0" + repr(i)}
                             )
@@ -176,7 +180,7 @@ def populate_server():
 
     # Adding Projects proj-01 - proj-03
     for i in ["proj-01", "proj-02", "proj-03"]:
-        requests.put('http://127.0.0.1:8888/project/' + i)
+        sess.put('http://127.0.0.1:8888/project/' + i)
 
     # Adding switches one for each driver
     url_switch = 'http://127.0.0.1:8888/switch/'
@@ -200,48 +204,50 @@ def populate_server():
             'interface_type': 'TenGigabitEthernet'
             }
 
-    requests.put(url_switch + 'dell-01', data=json.dumps(dell_param))
-    requests.put(url_switch + 'nexus-01', data=json.dumps(nexus_param))
-    requests.put(url_switch + 'mock-01', data=json.dumps(mock_param))
-    requests.put(url_switch + 'brocade-01', data=json.dumps(brocade_param))
+    sess.put(url_switch + 'dell-01', data=json.dumps(dell_param))
+    sess.put(url_switch + 'nexus-01', data=json.dumps(nexus_param))
+    sess.put(url_switch + 'mock-01', data=json.dumps(mock_param))
+    sess.put(url_switch + 'brocade-01', data=json.dumps(brocade_param))
 
     # Adding ports to the mock switch, Connect nics to ports:
     for i in range(1, 8):
-        requests.put(url_switch + 'mock-01/port/gi1/0/' + repr(i))
-        requests.post(url_switch + 'mock-01/port/gi1/0/' + repr(i) + '/'
-                      'connect_nic', data=json.dumps(
-                      {'node': 'node-0' + repr(i), 'nic': 'eth0'}
-                      ))
+        sess.put(url_switch + 'mock-01/port/gi1/0/' + repr(i))
+        sess.post(
+                url_switch + 'mock-01/port/gi1/0/' + repr(i) + '/connect_nic',
+                data=json.dumps(
+                    {'node': 'node-0' + repr(i), 'nic': 'eth0'}
+                    )
+                )
 
 # Adding port gi1/0/8 to switch mock-01 without connecting it to any node.
-    requests.put(url_switch + 'mock-01/port/gi1/0/8')
+    sess.put(url_switch + 'mock-01/port/gi1/0/8')
 
     # Adding Projects proj-01 - proj-03
     for i in ["proj-01", "proj-02", "proj-03"]:
-        requests.put('http://127.0.0.1:8888/project/' + i)
+        sess.put('http://127.0.0.1:8888/project/' + i)
 
     # Allocating nodes to projects
     url_project = 'http://127.0.0.1:8888/project/'
     # Adding nodes 1 to proj-01
-    requests.post(
+    sess.post(
             url_project + 'proj-01' + '/connect_node',
             data=json.dumps({'node': 'node-01'})
             )
     # Adding nodes 2, 4 to proj-02
-    requests.post(
+    sess.post(
             url_project + 'proj-02' + '/connect_node',
             data=json.dumps({'node': 'node-02'})
             )
-    requests.post(
+    sess.post(
             url_project + 'proj-02' + '/connect_node',
             data=json.dumps({'node': 'node-04'})
             )
     # Adding node  3, 5 to proj-03
-    requests.post(
+    sess.post(
             url_project + 'proj-03' + '/connect_node',
             data=json.dumps({'node': 'node-03'})
             )
-    requests.post(
+    sess.post(
             url_project + 'proj-03' + '/connect_node',
             data=json.dumps({'node': 'node-05'})
             )
@@ -249,7 +255,7 @@ def populate_server():
     # Assigning networks to projects
     url_network = 'http://127.0.0.1:8888/network/'
     for i in ['net-01', 'net-02', 'net-03']:
-        requests.put(
+        sess.put(
                 url_network + i,
                 data=json.dumps(
                     {"owner": "proj-01", "access": "proj-01", "net_id": ""}
@@ -257,7 +263,7 @@ def populate_server():
                 )
 
     for i in ['net-04', 'net-05']:
-        requests.put(
+        sess.put(
                 url_network + i,
                 data=json.dumps(
                     {"owner": "proj-02", "access": "proj-02", "net_id": ""}
@@ -266,13 +272,12 @@ def populate_server():
 
 
 # -- SETUP --
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def create_setup(request):
     dir_names = make_config()
     initialize_db()
     proc1 = run_server(['haas', 'serve', '8888'])
     proc2 = run_server(['haas', 'serve_networks'])
-    import time
     time.sleep(1)
     populate_server()
 
@@ -284,18 +289,18 @@ def create_setup(request):
 
 
 @pytest.mark.usefixtures("create_setup")
-class Test_Node:
+class Test_node:
     """ Tests Node related client calls. """
 
     def test_list_nodes_free(self):
         result = C.node.list('free')
-        assert result == [u'node-06', u'node-07', u'node-08']
+        assert result == [u'node-06', u'node-07', u'node-08', u'node-09']
 
     def test_list_nodes_all(self):
         result = C.node.list('all')
         assert result == [
                 u'node-01', u'node-02', u'node-03', u'node-04', u'node-05',
-                u'node-06', u'node-07', u'node-08'
+                u'node-06', u'node-07', u'node-08', u'node-09'
                 ]
 
     def test_show_node(self):
@@ -309,8 +314,8 @@ class Test_Node:
                         u'networks': {}, u'label': u'eth0'
                         }
                     ],
-                        u'name': u'node-07'
-                        }
+                u'name': u'node-07'
+                }
 
     def test_power_cycle(self):
         result = C.node.power_cycle('node-07')
@@ -328,11 +333,11 @@ class Test_Node:
     def test_node_add_duplicate_nic(self):
         C.node.remove_nic('node-08', 'eth0')
         C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff')
-        with pytest.raises(errors.DuplicateError):
+        with pytest.raises(Exception):
             C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff')
 
     def test_nosuch_node_add_nic(self):
-        with pytest.raises(errors.NotFoundError):
+        with pytest.raises(Exception):
             C.node.add_nic('abcd', 'eth0', 'aa:bb:cc:dd:ee:ff')
 
     def test_remove_nic(self):
@@ -341,7 +346,7 @@ class Test_Node:
 
     def test_remove_duplicate_nic(self):
         C.node.remove_nic('node-08', 'eth0')
-        with pytest.raises(errors.NotFoundError):
+        with pytest.raises(Exception):
             C.node.remove_nic('node-08', 'eth0')
 
     def test_node_connect_network(self):
@@ -395,14 +400,14 @@ class Test_project:
 
     def test_duplicate_project_create(self):
         """ test for catching duplicate name while creating new project. """
-        C.project.create('dummy-01')
+        C.project.create('dummy-02')
         with pytest.raises(Exception):
-            C.project.create('dummy-01')
+            C.project.create('dummy-02')
 
     def test_project_delete(self):
         """ test for deleting project. """
-        C.project.create('dummy-02')
-        result = C.project.delete('dummy-02')
+        C.project.create('dummy-03')
+        result = C.project.delete('dummy-03')
         assert result is None
 
     def test_error_project_delete(self):
@@ -412,37 +417,37 @@ class Test_project:
 
     def test_project_connect_node(self):
         """ test for connecting node to project. """
-        C.project.create('abcd')
-        result = C.project.connect('abcd', 'node-06')
+        C.project.create('proj-04')
+        result = C.project.connect('proj-04', 'node-06')
         assert result is None
 
     def test_project_connect_node_duplicate(self):
         """ test for erronous reconnecting node to project. """
-        C.project.create('abcd')
-        C.project.connect('abcd', 'node-08')
+        C.project.create('proj-05')
+        C.project.connect('proj-05', 'node-07')
         with pytest.raises(Exception):
-            C.project.connect('abcd', 'node-08')
+            C.project.connect('proj-05', 'node-07')
 
     def test_project_connect_node_nosuchobject(self):
         """ test for connecting no such node or project """
-        C.project.create('abcd')
+        C.project.create('proj-06')
         with pytest.raises(Exception):
-            C.project.connect('abcd', 'no-such-node')
+            C.project.connect('proj-06', 'no-such-node')
         with pytest.raises(Exception):
             C.project.connect('no-such-project', 'node-06')
 
     def test_project_detach_node(self):
         """ Test for correctly detaching node from project."""
-        C.project.create('abcd')
-        C.project.connect('abcd', 'node-07')
-        result = C.project.detach('abcd', 'node-07')
+        C.project.create('proj-07')
+        C.project.connect('proj-07', 'node-08')
+        result = C.project.detach('proj-07', 'node-08')
         assert result is None
 
     def test_project_detach_node_nosuchobject(self):
         """ Test for while detaching node from project."""
-        C.project.create('abcd')
+        C.project.create('proj-08')
         with pytest.raises(Exception):
-            C.project.detach('abcd', 'no-such-node')
+            C.project.detach('proj-08', 'no-such-node')
         with pytest.raises(Exception):
             C.project.detach('no-such-project', 'node-06')
 
@@ -469,48 +474,46 @@ class Test_port:
     """ Tests port related client calls."""
 
     def test_port_register(self):
-        result = C.port.register('dell-01', 'gi1/0/5')
+        result = C.port.register('mock-01', 'gi1/1/1')
         assert result is None
 
     def test_port_dupregister(self):
-        C.port.register('dell-01', 'gi1/0/6')
-        with pytest.raises(errors.DuplicateError):
-            C.port.register('dell-01', 'gi1/0/6')
+        C.port.register('mock-01', 'gi1/1/2')
+        with pytest.raises(Exception):
+            C.port.register('mock-01', 'gi1/1/2')
 
     def test_port_delete(self):
-        C.port.register('dell-01', 'gi1/0/5')
-        result = C.port.delete('dell-01', 'gi1/0/5')
+        C.port.register('mock-01', 'gi1/1/3')
+        result = C.port.delete('mock-01', 'gi1/1/3')
         assert result is None
 
-    def test_port_deleteerror(self):
-        C.port.register('dell-01', 'gi1/0/6')
-        C.port.delete('dell-01', 'gi1/0/6')
-        with pytest.raises(errors.NotFoundError):
-            C.port.delete('dell-01', 'gi1/0/6')
+    def test_port_delete_error(self):
+        C.port.register('mock-01', 'gi1/1/4')
+        C.port.delete('mock-01', 'gi1/1/4')
+        with pytest.raises(Exception):
+            C.port.delete('mock-01', 'gi1/1/4')
 
     def test_port_connect_nic(self):
-        C.port.register('dell-01', 'abcd')
-        result = C.port.connect_nic('dell-01', 'abcd', 'node-08', 'eth0')
+        C.port.register('mock-01', 'gi1/1/5')
+        result = C.port.connect_nic('mock-01', 'gi1/1/5', 'node-08', 'eth0')
         assert result is None
 
     def test_port_connect_nic_error(self):
-        C.port.register('dell-01', 'abcd')
-        C.port.connect_nic('dell-01', 'abcd', 'node-08', 'eth0')
-        with pytest.raises(errors.DuplicateError):
-            C.port.connect_nic('dell-01', 'abcd', 'node-08', 'eth0')
+        C.port.register('mock-01', 'gi1/1/6')
+        C.port.connect_nic('mock-01', 'gi1/1/6', 'node-09', 'eth0')
+        with pytest.raises(Exception):
+            C.port.connect_nic('mock-01', 'gi1/1/6', 'node-08', 'eth0')
 
     def test_port_detach_nic(self):
-        C.port.register('dell-01', 'gi1/0/11')
-        C.port.connect_nic('dell-01', 'gi1/0/11', 'node-08', 'eth0')
-        result = C.port.detach_nic('dell-01', 'gi1/0/11')
+        C.port.register('mock-01', 'gi1/1/7')
+        C.port.connect_nic('mock-01', 'gi1/1/7', 'node-09', 'eth0')
+        result = C.port.detach_nic('mock-01', 'gi1/1/7')
         assert result is None
 
     def test_port_detach_nic_error(self):
-        C.port.register('dell-01', 'gi1/0/11')
-        C.port.connect_nic('dell-01', 'gi1/0/11', 'node-08', 'eth0')
-        C.port.detach_nic('dell-01', 'gi1/0/11')
-        with pytest.raises(errors.NotFoundError):
-            C.port.detach_nic('dell-01', 'gi1/0/11')
+        C.port.register('mock-01', 'gi1/1/8')
+        with pytest.raises(Exception):
+            C.port.detach_nic('mock-01', 'gi1/1/8')
 
 
 @pytest.mark.usefixtures("create_setup")
@@ -519,9 +522,144 @@ class Test_user:
 
     def test_user_create(self):
         """ Test user creation. """
-        result1 = C.user.create('bill', 'pass1234', 'regular')
-        result2 = C.user.create('bob', 'pass1234', 'regular')
+        result1 = C.user.create('billy', 'pass1234', 'admin')
+        result2 = C.user.create('bobby', 'pass1234', 'regular')
         assert result1 is None
         assert result2 is None
+
+    def test_user_create_duplicate(self):
+        """ Test duplicate user creation. """
+        C.user.create('bill', 'pass1234', 'regular')
+        with pytest.raises(Exception):
+            C.user.create('bill', 'pass1234', 'regular')
+
+    def test_user_delete(self):
+        """ Test user deletion. """
+        C.user.create('jack', 'pass1234', 'admin')
+        result = C.user.delete('jack')
+        assert result is None
+
+    def test_user_delete_error(self):
+        """ Test error condition in user deletion. """
+        C.user.create('Ata', 'pass1234', 'admin')
+        C.user.delete('Ata')
+        with pytest.raises(Exception):
+            C.user.delete('Ata')
+
+    def test_user_grant_access(self):
+        """ test granting user access to project. """
+        C.project.create('proj-sample')
+        C.user.create('Sam', 'pass1234', 'regular')
+        result = C.user.grant_access('Sam', 'proj-sample')
+        assert result is None
+
+    def test_user_grant_access_error(self):
+        """Test error condition while granting user access to a project."""
+        C.project.create('test-proj01')
+        C.user.create('sam01', 'pass1234', 'regular')
+        C.user.grant_access('sam01', 'test-proj01')
+        with pytest.raises(Exception):
+            C.user.grant_access('sam01', 'test-proj01')
+
+    def test_user_revoke_access(self):
+        """Test revoking user's access to a project. """
+        C.project.create('test-proj02')
+        C.user.create('sam02', 'pass1234', 'regular')
+        C.user.grant_access('sam02', 'test-proj02')
+        result = C.user.revoke_access('sam02', 'test-proj02')
+        assert result is None
+
+    def test_user_revoke_access_error(self):
+        """Test error condition while revoking user access to a project. """
+        C.project.create('test-proj03')
+        C.user.create('sam03', 'pass1234', 'regular')
+        C.user.create('xxxx', 'pass1234', 'regular')
+        C.user.grant_access('sam03', 'test-proj03')
+        C.user.revoke_access('sam03', 'test-proj03')
+        with pytest.raises(Exception):
+            C.user.revoke_access('sam03', 'test_proj03')
+
+
+@pytest.mark.usefixtures("create_setup")
+class Test_network:
+    """ Tests network related client calls. """
+
+    def test_network_list(self):
+        """ Test list of networks. """
+        result = C.network.list()
+        assert result == {
+                u'net-01': {u'network_id': u'1001', u'projects': [u'proj-01']},
+                u'net-02': {u'network_id': u'1002', u'projects': [u'proj-01']},
+                u'net-03': {u'network_id': u'1003', u'projects': [u'proj-01']},
+                u'net-04': {u'network_id': u'1004', u'projects': [u'proj-02']},
+                u'net-05': {u'network_id': u'1005', u'projects': [u'proj-02']}
+                }
+
+    def test_network_show(self):
+        """ Test show network. """
+        result = C.network.show('net-01')
+        assert result == {
+                u'access': [u'proj-01'],
+                u'channels': [u'vlan/native', u'vlan/1001'],
+                u'name': u'net-01',
+                u'owner': u'proj-01'
+                }
+
+    def test_network_create(self):
+        """ Test create network. """
+        result = C.network.create('net-abcd', 'proj-01', 'proj-01', '')
+        assert result is None
+
+    def test_network_create_duplicate(self):
+        """ Test error condition in create network. """
+        C.network.create('net-123', 'proj-01', 'proj-01', '')
+        with pytest.raises(Exception):
+            C.network.create('net-123', 'proj-01', 'proj-01', '')
+
+    def test_network_delete(self):
+        """ Test network deletion """
+        C.network.create('net-xyz', 'proj-01', 'proj-01', '')
+        result = C.network.delete('net-xyz')
+        assert result is None
+
+    def test_network_delete_duplicate(self):
+        """ Test error condition in delete network. """
+        C.network.create('net-xyz', 'proj-01', 'proj-01', '')
+        C.network.delete('net-xyz')
+        with pytest.raises(Exception):
+            C.network.delete('net-xyz')
+
+    def test_network_grant_project_access(self):
+        """ Test granting  a project access to a network. """
+        C.network.create('newnet01', 'admin', '', '')
+        result1 = C.network.grant_access('proj-02', 'newnet01')
+        result2 = C.network.grant_access('proj-03', 'newnet01')
+        assert result1 is None
+        assert result2 is None
+
+    def test_network_grant_project_access_error(self):
+        """ Test error while granting a project access to a network. """
+        C.network.create('newnet04', 'admin', '', '')
+        C.network.grant_access('proj-02', 'newnet04')
+        with pytest.raises(Exception):
+            C.network.grant_access('proj-02', 'newnet04')
+
+    def test_network_revoke_project_access(self):
+        """ Test revoking a project's access to a network. """
+        C.network.create('newnet02', 'admin', '', '')
+        C.network.grant_access('proj-02', 'newnet02')
+        result = C.network.revoke_access('proj-02', 'newnet02')
+        assert result is None
+
+    def test_network_revoke_project_access_error(self):
+        """
+        Test error condition when revoking project's access to a network.
+        """
+        C.network.create('newnet03', 'admin', '', '')
+        C.network.grant_access('proj-02', 'newnet03')
+        C.network.revoke_access('proj-02', 'newnet03')
+        with pytest.raises(Exception):
+            C.network.revoke_access('proj-02', 'newnet03')
+
 
 # End of tests ##

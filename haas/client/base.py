@@ -44,8 +44,8 @@ class ClientBase(object):
         if self.res.ok:
             if response.request.method == 'GET':
                 return self.res.json()
-            else:
-                return  # For methods PUT, POST, DELETE
+            else:  # For methods PUT, POST, DELETE
+                return
         else:
             e = self.res.json()
             raise errors.FailedAPICallException(e['msg'])
