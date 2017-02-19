@@ -301,11 +301,16 @@ class Test_Node:
     def test_show_node(self):
         result = C.node.show('node-07')
         assert result == {
-                          u'project': None,
-                          u'nics': [{u'macaddr': u'aa:bb:cc:dd:ee:07',
-                                     u'networks': {}, u'label': u'eth0'}],
-                          u'name': u'node-07'
-                          }
+                u'metadata': {},
+                u'project': None,
+                u'nics': [
+                    {
+                        u'macaddr': u'aa:bb:cc:dd:ee:07',
+                        u'networks': {}, u'label': u'eth0'
+                        }
+                    ],
+                        u'name': u'node-07'
+                        }
 
     def test_power_cycle(self):
         result = C.node.power_cycle('node-07')
