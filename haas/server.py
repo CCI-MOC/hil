@@ -4,7 +4,6 @@ import sys
 # call it directly from this module:
 from haas import model, api, auth
 from haas.model import db
-from haas.migrations import create_db
 from haas.class_resolver import build_class_map_for
 from haas.network_allocator import get_network_allocator
 
