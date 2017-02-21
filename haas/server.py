@@ -38,6 +38,23 @@ def validate_state():
                  "the auth backend.")
 
 
+def check_db_schema():
+    """Make sure the database schema is present and up-to-date.
+
+    If not, an error message is printed and the program is aborted.
+
+    This is separate from validate_state() for two reasons:
+
+    * it needs to happen after model.init_db() is called.
+    * validate_state is run by things other than the server itself
+      (e.g. haas-admin), which don't need the db to be set up correctly
+    """
+    tablenames = db.inspect(db.engine).get_table_names()
+    if 'alembic_version' not in tablenames:
+        sys.exit("ERROR: Database schema is not initialized; have you run "
+                 "haas-admin db create?")
+
+
 def stop_orphan_consoles():
     """Stop any orphaned console logging processes.
 
@@ -50,7 +67,7 @@ def stop_orphan_consoles():
         node.obm.delete_console()
 
 
-def init(stop_consoles=False):
+def init():
     """Set up the api server's internal state.
 
     This is a convenience wrapper that calls the other setup routines in
@@ -59,5 +76,3 @@ def init(stop_consoles=False):
     register_drivers()
     validate_state()
     model.init_db()
-    if stop_consoles:
-        stop_orphan_consoles()

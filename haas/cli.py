@@ -295,7 +295,9 @@ def serve(port):
     # We need to import api here so that the functions within it get registered
     # (via `rest_call`), though we don't use it directly:
     from haas import model, api, rest
-    server.init(stop_consoles=True)
+    server.init()
+    server.check_db_schema()
+    server.stop_orphan_consoles()
     rest.serve(port, debug=debug)
 
 
@@ -308,6 +310,7 @@ def serve_networks():
     server.register_drivers()
     server.validate_state()
     model.init_db()
+    server.check_db_schema()
     while True:
         # Empty the journal until it's empty; then delay so we don't tight
         # loop.

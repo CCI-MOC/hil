@@ -6,7 +6,7 @@ import pytest
 import tempfile
 import os
 import signal
-from subprocess import check_call, Popen
+from subprocess import check_call, Popen, CalledProcessError
 from time import sleep
 from haas.test_common import fail_on_log_warnings
 
@@ -79,3 +79,13 @@ def test_serve():
 def test_serve_networks():
     check_call(['haas-admin', 'db', 'create'])
     assert runs_for_seconds(['haas', 'serve_networks'], seconds=1)
+
+
+def test_serve_no_db():
+    with pytest.raises(CalledProcessError):
+        check_call(['haas', 'serve', '5000'])
+
+
+def test_serve_networks_no_db():
+    with pytest.raises(CalledProcessError):
+        check_call(['haas', 'serve_networks'])
