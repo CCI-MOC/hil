@@ -592,9 +592,9 @@ def switch_register(switch, subtype, *args):
                 "dummy_vlan": args[3]}
         else:
             sys.stderr.write('ERROR: subtype ' + subtype +
-                               ' requires exactly 4 arguments\n'
-                               '<hostname> <username> <password>'
-                               '<dummy_vlan_no>\n')
+                             ' requires exactly 4 arguments\n'
+                             '<hostname> <username> <password>'
+                             '<dummy_vlan_no>\n')
             return
     elif subtype == "mock":
         if len(args) == 3:
@@ -610,9 +610,9 @@ def switch_register(switch, subtype, *args):
             switchinfo = {"type": switch_api + subtype, "hostname": args[0],
                           "username": args[1], "password": args[2]}
         else:
-            sys.stderr.write(_('ERROR: subtype ' + subtype +
-                               ' requires exactly 3 arguments\n'
-                               '<hostname> <username> <password>\n'))
+            sys.stderr.write('ERROR: subtype ' + subtype +
+                             ' requires exactly 3 arguments\n'
+                             '<hostname> <username> <password>\n')
             return
     elif subtype == "brocade":
         if len(args) == 4:
@@ -621,13 +621,13 @@ def switch_register(switch, subtype, *args):
                           "interface_type": args[3]}
         else:
             sys.stderr.write('ERROR: subtype ' + subtype +
-                               ' requires exactly 4 arguments\n'
-                               '<hostname> <username> <password> '
-                               '<interface_type>\n'
-                               'NOTE: interface_type refers '
-                               'to the speed of the switchports\n '
-                               'ex. TenGigabitEthernet, FortyGigabitEthernet, '
-                               'etc.\n')
+                             ' requires exactly 4 arguments\n'
+                             '<hostname> <username> <password> '
+                             '<interface_type>\n'
+                             'NOTE: interface_type refers '
+                             'to the speed of the switchports\n '
+                             'ex. TenGigabitEthernet, FortyGigabitEthernet, '
+                             'etc.\n')
             return
     else:
         sys.stderr.write('ERROR: Invalid subtype supplied\n')
