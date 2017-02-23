@@ -13,24 +13,20 @@ class User(ClientBase):
     <privilege> may by either "admin" or "regular", and determines whether a
     user is authorized for administrative privileges
     """
-        self.username = username
-        self.password = password
-        self.privilege = privilege
-        url = self.object_url('/auth/basic/user', self.username)
+        url = self.object_url('/auth/basic/user', username)
 
         if privilege not in('admin', 'regular'):
             raise TypeError(
                 "invalid privilege type: must be either  'admin' or 'regular'."
                 )
         payload = json.dumps({
-                'password': self.password, 'is_admin': privilege == 'admin',
+                'password': password, 'is_admin': privilege == 'admin',
                 })
         return self.check_response(self.s.put(url, data=payload))
 
     def delete(self, username):
         """Deletes the user <username>. """
-        self.username = username
-        url = self.object_url('/auth/basic/user', self.username)
+        url = self.object_url('/auth/basic/user', username)
         return self.check_response(self.s.delete(url))
 
     def grant_access(self, user, project):
@@ -39,16 +35,12 @@ class User(ClientBase):
         # access to projects
         # like "grant_read_access", "grant_write_access",
         # "grant_all_access", etc
-        self.user = user
-        self.project = project
-        url = self.object_url('/auth/basic/user', self.user, 'add_project')
-        payload = json.dumps({'project': self.project})
+        url = self.object_url('/auth/basic/user', user, 'add_project')
+        payload = json.dumps({'project': project})
         return self.check_response(self.s.post(url, data=payload))
 
     def revoke_access(self, user, project):
         """ Removes all access of <user> to <project>. """
-        self.user = user
-        self.project = project
-        url = self.object_url('/auth/basic/user', self.user, 'remove_project')
-        payload = json.dumps({'project': self.project})
+        url = self.object_url('/auth/basic/user', user, 'remove_project')
+        payload = json.dumps({'project': project})
         return self.check_response(self.s.post(url, data=payload))

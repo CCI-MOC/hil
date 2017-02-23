@@ -10,16 +10,13 @@ class Node(ClientBase):
 
     def list(self, is_free):
         """ List all nodes that HIL manages """
-        self.is_free = is_free
-        url = self.object_url('nodes', self.is_free)
+        url = self.object_url('nodes', is_free)
         return self.check_response(self.s.get(url))
 
     def show(self, node_name):
         """ Shows attributes of a given node """
 
-        self.node_name = node_name
-        url = self.object_url('node', self.node_name)
-        q = self.s.get(url)
+        url = self.object_url('node', node_name)
         return self.check_response(self.s.get(url))
 
     def register(self, node, subtype, *args):
@@ -30,8 +27,6 @@ class Node(ClientBase):
 #       Node requires which OBM, and knows arguments required
 #       for successful node registration.
 
-        self.node = node
-        self.subtype = subtype
         obm_api = "http://schema.massopencloud.org/haas/v0/obm/"
         obm_types = ["ipmi", "mock"]
 #       FIXME: In future obm_types should be dynamically fetched
@@ -41,65 +36,46 @@ class Node(ClientBase):
 
     def delete(self, node_name):
         """ Deletes the node from database. """
-        self.node_name = node_name
-        url = self.object_url('node', self.node_name)
+        url = self.object_url('node', node_name)
         return check_response(self.s.delete(url))
 
     def power_cycle(self, node_name):
         """ Power cycles the <node> """
-        self.node_name = node_name
         url = self.object_url('node', node_name, 'power_cycle')
         return self.check_response(self.s.post(url))
 
     def power_off(self, node_name):
         """ Power offs the <node> """
-        self.node_name = node_name
-        url = self.object_url('node', self.node_name, 'power_off')
+        url = self.object_url('node', node_name, 'power_off')
         return self.check_response(self.s.post(url))
 
     def add_nic(self, node_name, nic_name, macaddr):
         """ adds a <nic> to <node>"""
-        self.node_name = node_name
-        self.nic_name = nic_name
-        self.macaddr = macaddr
-        url = self.object_url('node', self.node_name, 'nic', self.nic_name)
-        payload = json.dumps({'macaddr': self.macaddr})
+        url = self.object_url('node', node_name, 'nic', nic_name)
+        payload = json.dumps({'macaddr': macaddr})
         return self.check_response(self.s.put(url, data=payload))
 
     def remove_nic(self, node_name, nic_name):
         """ remove a <nic> from <node>"""
-        self.node_name = node_name
-        self.nic_name = nic_name
-        url = self.object_url('node', self.node_name, 'nic', self.nic_name)
+        url = self.object_url('node', node_name, 'nic', nic_name)
         return self.check_response(self.s.delete(url))
 
     def connect_network(self, node, nic, network, channel):
         """ Connect <node> to <network> on given <nic> and <channel>"""
-
-        self.node = node
-        self.nic = nic
-        self.network = network
-        self.channel = channel
-
         url = self.object_url(
-                'node', self.node, 'nic', self.nic, 'connect_network'
+                'node', node, 'nic', nic, 'connect_network'
                 )
         payload = json.dumps({
-            'network': self.network, 'channel': self.channel
+            'network': network, 'channel': channel
             })
         return self.check_response(self.s.post(url, payload))
 
     def detach_network(self, node, nic, network):
         """ Disconnect <node> from <network> on the given <nic>. """
-
-        self.node = node
-        self.nic = nic
-        self.network = network
-
         url = self.object_url(
-                'node', self.node, 'nic', self.nic, 'detach_network'
+                'node', node, 'nic', nic, 'detach_network'
                 )
-        payload = json.dumps({'network': self.network})
+        payload = json.dumps({'network': network})
         return self.check_response(self.s.post(url, payload))
 
     def show_console(self, node):
@@ -108,12 +84,10 @@ class Node(ClientBase):
 
     def start_console(self, node):
         """ Start logging console output from <node> """
-        self.node = node
-        url = self.object_url('node', self.node, 'console')
+        url = self.object_url('node', node, 'console')
         return self.check_response(self.s.put(url))
 
     def stop_console(self, node):
         """ Stop logging console output from <node> and delete the log"""
-        self.node = node
-        url = self.object_url('node', self.node, 'console')
+        url = self.object_url('node', node, 'console')
         return self.check_response(self.s.delete(url))

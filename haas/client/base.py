@@ -40,12 +40,11 @@ class ClientBase(object):
         return url
 
     def check_response(self, response):
-        self.res = response
-        if self.res.ok:
+        if response.ok:
             if response.request.method == 'GET':
-                return self.res.json()
+                return response.json()
             else:  # For methods PUT, POST, DELETE
                 return
         else:
-            e = self.res.json()
+            e = response.json()
             raise errors.FailedAPICallException(e['msg'])
