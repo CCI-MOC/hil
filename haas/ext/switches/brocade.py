@@ -95,10 +95,10 @@ class Brocade(Switch):
         # TODO: there is likely a more efficient way to do this; we may want
         # to inspect the brocade documentation to see if there's a way to
         # clear the port without doing every vlan individually.
-        vlans = self._get_vlans()
+        vlans = self._get_vlans(port)
         for _, vlan in vlans:
-            self._remove_vlan_from_trunk()
-        self._remove_native_vlan()
+            self._remove_vlan_from_trunk(port, vlan)
+        self._remove_native_vlan(port)
 
     def get_port_networks(self, ports):
         """Get port configurations of the switch.
