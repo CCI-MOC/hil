@@ -426,9 +426,7 @@ The request body consists of JSON with a `bootdev` argument:
 
 Request body:
     {
-
-    'bootdev': <boot device>
-
+    	"bootdev": <boot device>
     }
 
 ##### For IPMI devices
