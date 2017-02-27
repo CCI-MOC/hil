@@ -272,7 +272,7 @@ def populate_server():
 
 
 # -- SETUP --
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module")
 def create_setup(request):
     dir_names = make_config()
     initialize_db()
@@ -280,11 +280,13 @@ def create_setup(request):
     proc2 = run_server(['haas', 'serve_networks'])
     time.sleep(1)
     populate_server()
+    print("coming from create_setup")
 
     def fin():
         proc1.terminate()
         proc2.terminate()
         cleanup(dir_names)
+        print("tearing down HIL setup")
     request.addfinalizer(fin)
 
 

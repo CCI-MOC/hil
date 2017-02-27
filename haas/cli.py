@@ -542,7 +542,7 @@ def headnode_delete_hnic(headnode, nic):
 def node_connect_network(node, nic, network, channel):
     """Connect <node> to <network> on given <nic> and <channel>"""
     check_client_lib(
-            lambda: C.node.connect_network(node, nic, network,channel)
+            lambda: C.node.connect_network(node, nic, network, channel)
             )
 
 
@@ -673,7 +673,9 @@ def port_delete(switch, port):
 @cmd
 def port_connect_nic(switch, port, node, nic):
     """Connect a <port> on a <switch> to a <nic> on a <node>"""
-    check_clientlib_response(lambda: C.port.connect_nic(switch, port, node, nic))
+    check_clientlib_response(
+            lambda: C.port.connect_nic(switch, port, node, nic)
+            )
 
 
 @cmd
