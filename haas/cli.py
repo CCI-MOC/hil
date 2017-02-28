@@ -234,13 +234,6 @@ def check_clientlib_response(fun):
         sys.stderr.write('Error: %s\n' % e.message)
 
 
-def clientlib_response(fun, *fun_args):
-    try:
-        return fun(*fun_args)
-    except Exception as e:
-        sys.stderr.write('Error: %s\n' % e.message)
-
-
 def check_status_code(response):
     if response.status_code < 200 or response.status_code >= 300:
         sys.stderr.write('Unexpected status code: %d\n' % response.status_code)
