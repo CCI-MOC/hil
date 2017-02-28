@@ -699,11 +699,11 @@ def list_nodes(is_free):
     """
     q = check_clientlib_response(lambda: C.node.list(is_free))
     if is_free == 'all':
-        sys.stdout.write('All nodes {}\t:    {}\n'.format(len(q), " ".join(q)))
+        sys.stdout.write('All nodes %s\t:    %s\n' % (len(q), " ".join(q)))
     elif is_free == 'free':
-        sys.stdout.write('Free nodes {}\t:   {}\n'.format(len(q), " ".join(q)))
+        sys.stdout.write('Free nodes %s\t:   %s\n' % (len(q), " ".join(q)))
     else:
-        sys.stdout.write('Error: {} is an invalid argument\n'.format(is_free))
+        sys.stdout.write('Error: %s is an invalid argument\n' % (is_free))
 
 
 @cmd
@@ -718,7 +718,7 @@ def list_project_networks(project):
     """List all networks attached to a <project>"""
     q = check_clientlib_response(lambda: C.project.networks_in(project))
     sys.stdout.write(
-            "Networks allocated to {}\t:   {}\n".format(project, " ".join(q))
+            "Networks allocated to %s\t:   %s\n" % (project, " ".join(q))
             )
 
 
@@ -727,7 +727,7 @@ def show_switch(switch):
     """Display information about <switch>"""
     q = check_clientlib_response(lambda: C.switch.show(switch))
     for item in q.items():
-        sys.stdout.write("{}\t  :  {}\n".format(item[0], item[1]))
+        sys.stdout.write("%s\t  :  %s\n" % (item[0], item[1]))
 
 
 @cmd
@@ -735,7 +735,7 @@ def list_networks():
     """List all networks"""
     q = check_clientlib_response(lambda: C.network.list())
     for item in q.items():
-        sys.stdout.write("{}\t  :  {}\n".format(item[0], item[1]))
+        sys.stdout.write('%s \t : %s\n' % (item[0], item[1]))
 
 
 @cmd
@@ -743,7 +743,7 @@ def show_network(network):
     """Display information about <network>"""
     q = check_clientlib_response(lambda: C.network.show(network))
     for item in q.items():
-        sys.stdout.write("{}\t  :  {}\n".format(item[0], item[1]))
+        sys.stdout.write("%s\t  :  %s\n" % (item[0], item[1]))
 
 
 @cmd
@@ -753,7 +753,7 @@ def show_node(node):
     """
     q = check_clientlib_response(lambda: C.node.show(node))
     for item in q.items():
-        sys.stdout.write("{}\t  :  {}\n".format(item[0], item[1]))
+        sys.stdout.write("%s\t  :  %s\n" % (item[0], item[1]))
 
 
 @cmd
