@@ -380,13 +380,13 @@ def list_projects():
 @cmd
 def user_add_project(user, project):
     """Add <user> to <project>"""
-    check_clientlib_response(lambda: C.user.grant_access(user, project))
+    check_clientlib_response(lambda: C.user.add(user, project))
 
 
 @cmd
 def user_remove_project(user, project):
     """Remove <user> from <project>"""
-    check_clientlib_response(lambda: C.user.remove_access(user, project))
+    check_clientlib_response(lambda: C.user.remove(user, project))
 
 
 @cmd

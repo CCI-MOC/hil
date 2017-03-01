@@ -4,39 +4,41 @@ from haas.client import errors
 
 
 class Project(ClientBase):
-        """ Consists of calls to query and manipulate project related
-            objects and relations """
+        """Consists of calls to query and manipulate project related
+
+        objects and relations.
+        """
 
         def list(self):
-            """ Lists all projects under HIL """
+            """Lists all projects under HIL """
 
             url = self.object_url('/projects')
             return self.check_response(self.s.get(url))
 
         def nodes_in(self, project_name):
-            """ Lists nodes allocated to project <project_name> """
+            """Lists nodes allocated to project <project_name> """
             url = self.object_url('project', project_name, 'nodes')
             return self.check_response(self.s.get(url))
 
         def networks_in(self, project_name):
-            """ Lists nodes allocated to project <project_name> """
+            """Lists nodes allocated to project <project_name> """
             url = self.object_url(
                     'project', project_name, 'networks'
                     )
             return self.check_response(self.s.get(url))
 
         def create(self, project_name):
-            """ Creates a project named <project_name> """
+            """Creates a project named <project_name> """
             url = self.object_url('project', project_name)
             return self.check_response(self.s.put(url))
 
         def delete(self, project_name):
-            """ Deletes a project named <project_name> """
+            """Deletes a project named <project_name> """
             url = self.object_url('project', project_name)
             return self.check_response(self.s.delete(url))
 
         def connect(self, project_name, node_name):
-            """ Adds a node to a project. """
+            """Adds a node to a project. """
             url = self.object_url(
                     'project', project_name, 'connect_node'
                     )
@@ -46,7 +48,7 @@ class Project(ClientBase):
                     )
 
         def detach(self, project_name, node_name):
-            """ Adds a node to a project. """
+            """Adds a node to a project. """
             url = self.object_url('project', project_name, 'detach_node')
             self.payload = json.dumps({'node': node_name})
             return self.check_response(
