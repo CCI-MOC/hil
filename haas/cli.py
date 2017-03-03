@@ -135,25 +135,33 @@ def cmd(f):
     wrong number of arguments, and thirdly generates a 'usage' description and
     puts it in the usage dictionary.
     """
+
+    # Build the 'usage' info for the help:
+    args, varargs, _, _ = inspect.getargspec(f)
+    num_args = len(args)  # used later to validate passed args.
+    showee = [f.__name__] + ['<%s>' % name for name in args]
+    args = ' '.join(['<%s>' % name for name in args])
+    if varargs:
+        showee += ['<%s...>' % varargs]
+    usage_dict[f.__name__] = ' '.join(showee)
+
     @wraps(f)
     def wrapped(*args, **kwargs):
         try:
+            # For commands which accept a variable number of arguments,
+            # num_args is the *minimum* required arguments; there is no
+            # maximum. For other commands, there must be *exactly* `num_args`
+            # arguments:
+            if len(args) < num_args or not varargs and len(args) > num_args:
+                raise InvalidAPIArgumentsException()
             f(*args, **kwargs)
-        except TypeError:
-            # TODO TypeError is probably too broad here.
+        except InvalidAPIArgumentsException as e:
+            if e.message != '':
+                sys.stderr.write(e.message + '\n\n')
             sys.stderr.write('Invalid arguements.  Usage:\n')
             help(f.__name__)
-            raise InvalidAPIArgumentsException()
-    command_dict[f.__name__] = wrapped
 
-    def get_usage(f):
-        args, varargs, _, _ = inspect.getargspec(f)
-        showee = [f.__name__] + ['<%s>' % name for name in args]
-        args = ' '.join(['<%s>' % name for name in args])
-        if varargs:
-            showee += ['<%s...>' % varargs]
-        return ' '.join(showee)
-    usage_dict[f.__name__] = get_usage(f)
+    command_dict[f.__name__] = wrapped
     return wrapped
 
 
@@ -273,7 +281,9 @@ def serve(port):
             schema.Use(int),
             lambda n: MIN_PORT_NUMBER <= n <= MAX_PORT_NUMBER).validate(port)
     except schema.SchemaError:
-        sys.exit('Error: Invaid port. Must be in the range 1-65535.')
+        raise InvalidAPIArgumentsException(
+            'Error: Invaid port. Must be in the range 1-65535.'
+        )
     except Exception as e:
         sys.exit('Unxpected Error!!! \n %s' % e)
 
@@ -315,7 +325,9 @@ def user_create(username, password, is_admin):
     """
     url = object_url('/auth/basic/user', username)
     if is_admin not in ('admin', 'regular'):
-        raise TypeError("is_admin must be either 'admin' or 'regular'")
+        raise InvalidAPIArgumentsException(
+            "is_admin must be either 'admin' or 'regular'"
+        )
     do_put(url, data={
         'password': password,
         'is_admin': is_admin == 'admin',
@@ -699,7 +711,9 @@ def list_nodes(is_free):
         to list all nodes or all free nodes.
     """
     if is_free not in ('all', 'free'):
-        raise TypeError("is_free must be either 'all' or 'free'")
+        raise InvalidAPIArgumentsException(
+            "is_free must be either 'all' or 'free'"
+        )
     url = object_url('nodes', is_free)
     do_get(url)
 
