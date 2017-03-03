@@ -80,6 +80,9 @@ setup(name='haas',
       #
       # [1]: http://semver.org
       # [2]: https://packaging.python.org/en/latest/distributing/#choosing-a-versioning-scheme  # noqa
+      #
+      # For Flask-SQLAlchemy, we are using non-standard semver bounds as
+      # release 2.2 is backwards-incompatible.
       install_requires=['Flask-SQLAlchemy>=2.1,<2.2',
                         'Flask-Migrate>=1.8,<2.0',
                         'Flask-Script>=2.0.5,<3.0',
