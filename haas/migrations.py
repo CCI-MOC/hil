@@ -23,7 +23,7 @@ command = MigrateCommand
 
 
 @migrate.configure
-def _configure_alembic(config):
+def configure_alembic(config):
     """Customize alembic configuration."""
     # Configure the path for version scripts to include all of the directories
     # named in the `paths` dictionary, above:
@@ -35,7 +35,7 @@ def _configure_alembic(config):
 # Alembic will create this table itself if need be when doing "stamp" in the
 # create_db  function below, but unless we declare it, db.drop_all() won't
 # know about it, and will leave us with a one-table database.
-_alembic_version_table = db.Table(
+AlembicVersion = db.Table(
     'alembic_version', db.metadata,
     db.Column('version_num', db.String(32), nullable=False)
 )

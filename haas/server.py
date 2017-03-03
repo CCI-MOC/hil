@@ -2,10 +2,13 @@
 import sys
 # api must be loaded to register the api callbacks, even though we don't
 # call it directly from this module:
-from haas import model, api, auth
+from haas import model, api, auth, migrations
 from haas.model import db
 from haas.class_resolver import build_class_map_for
 from haas.network_allocator import get_network_allocator
+from alembic.config import Config
+from alembic.script import ScriptDirectory
+from os import path
 
 
 def register_drivers():
@@ -53,6 +56,19 @@ def check_db_schema():
     if 'alembic_version' not in tablenames:
         sys.exit("ERROR: Database schema is not initialized; have you run "
                  "haas-admin db create?")
+
+    cfg_path = path.join(path.dirname(__file__), 'migrations',  'alembic.ini')
+    cfg = Config(cfg_path)
+    migrations.configure_alembic(cfg)
+    cfg.set_main_option('script_location', path.dirname(cfg_path))
+    script_dir = ScriptDirectory.from_config(cfg)
+
+    expected_heads = set(script_dir.get_heads())
+    actual_heads = {row[0] for row in
+                    db.session.query(migrations.AlembicVersion).all()}
+    if expected_heads != actual_heads:
+        sys.exit("ERROR: Database schema version is incorrect; try "
+                 "running haas-admin db upgrade heads.")
 
 
 def stop_orphan_consoles():
