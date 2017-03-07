@@ -13,7 +13,7 @@
 # governing permissions and limitations under the License.
 
 """This module implements the HaaS command line tool."""
-from haas import config, server
+from haas import config, server, migrations
 from haas.config import cfg
 
 import inspect
@@ -296,7 +296,7 @@ def serve(port):
     # (via `rest_call`), though we don't use it directly:
     from haas import model, api, rest
     server.init()
-    server.check_db_schema()
+    migrations.check_db_schema()
     server.stop_orphan_consoles()
     rest.serve(port, debug=debug)
 
@@ -310,7 +310,7 @@ def serve_networks():
     server.register_drivers()
     server.validate_state()
     model.init_db()
-    server.check_db_schema()
+    migrations.check_db_schema()
     while True:
         # Empty the journal until it's empty; then delay so we don't tight
         # loop.
