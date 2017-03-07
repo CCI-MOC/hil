@@ -92,12 +92,7 @@ class Brocade(Switch):
                 self._add_vlan_to_trunk(interface, vlan_id)
 
     def revert_port(self, port):
-        # TODO: there is likely a more efficient way to do this; we may want
-        # to inspect the brocade documentation to see if there's a way to
-        # clear the port without doing every vlan individually.
-        vlans = self._get_vlans(port)
-        for _, vlan in vlans:
-            self._remove_vlan_from_trunk(port, vlan)
+        self._remove_all_vlans_from_trunk(port, vlan)
         self._remove_native_vlan(port)
 
     def get_port_networks(self, ports):
@@ -227,6 +222,11 @@ class Brocade(Switch):
         url = self._construct_url(interface, suffix='trunk/allowed/vlan')
         payload = '<vlan><remove>%s</remove></vlan>' % vlan
         self._make_request('PUT', url, data=payload)
+
+    def _remove_all_vlans_from_trunk(self, interface, vlan):
+        url = self._construct_url(interface, suffix='trunk/allowed/vlan')
+        payload = '<vlan><none>true</none></vlan>' % vlan
+        requests.put(url, data=payload, auth=self._auth)
 
     def _set_native_vlan(self, interface, vlan):
         """ Set the native vlan of an interface.
