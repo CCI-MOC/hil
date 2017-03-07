@@ -68,3 +68,14 @@ class TestIpmi:
         # throw BadArgumentError for an invalid bootdevice
         with pytest.raises(api.BadArgumentError):
             api.node_set_bootdev('node-99', 'invalid-device')
+
+    def test_require_legal_bootdev(self):
+        from haas.ext.obm import ipmi
+        instance = ipmi.Ipmi(
+                  host="ipmihost",
+                  user="root",
+                  password="tapeworm")
+        instance.require_legal_bootdev("none")
+
+        with pytest.raises(api.BadArgumentError):
+            instance.require_legal_bootdev("not_valid_bootdev")

@@ -273,6 +273,9 @@ def node_set_bootdev(node, bootdev):
         auth_backend.require_admin()
     else:
         auth_backend.require_project_access(node.project)
+
+    node.obm.require_legal_bootdev(bootdev)
+
     node.obm.set_bootdev(bootdev)
 
 

@@ -55,7 +55,9 @@ class MockObm(Obm):
     def power_off(self):
         return
 
-    @no_dry_run
+    def require_legal_bootdev(self, dev):
+        return
+
     def set_bootdev(self, dev):
         return
 
