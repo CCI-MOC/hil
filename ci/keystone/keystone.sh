@@ -46,6 +46,10 @@ case "$1" in
     # Make sure we have the latest:
     pip install --upgrade pip
     
+    # The latest oslo.policy requires a weird version of requests that
+    # conflicts with other things as of 2017/03/07. See #734
+    pip install 'oslo.policy<1.19.0'
+
     pip install -r requirements.txt
     pip install .
     pip install uwsgi # To actually run keystone; no webserver in the deps.
