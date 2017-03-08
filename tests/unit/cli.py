@@ -6,7 +6,8 @@ import pytest
 import tempfile
 import os
 import signal
-from subprocess import check_call, Popen, CalledProcessError
+from subprocess import check_call, check_output, Popen, CalledProcessError, \
+    STDOUT
 from time import sleep
 from haas.test_common import fail_on_log_warnings
 
@@ -81,11 +82,16 @@ def test_serve_networks():
     assert runs_for_seconds(['haas', 'serve_networks'], seconds=1)
 
 
-def test_serve_no_db():
-    with pytest.raises(CalledProcessError):
-        check_call(['haas', 'serve', '5000'])
-
-
-def test_serve_networks_no_db():
-    with pytest.raises(CalledProcessError):
-        check_call(['haas', 'serve_networks'])
+@pytest.mark.parametrize('command', [
+    ['haas', 'serve', '5000'],
+    ['haas', 'serve_networks'],
+])
+def test_db_init_error(command):
+    try:
+        check_output(command, stderr=STDOUT)
+        assert False, 'Should have failed, but exited successfully.'
+    except CalledProcessError as e:
+        assert 'Database schema is not initialized' in e.output, (
+            'Should have printed an error re: database initialization, '
+            'but printed %r' % e.output
+        )
