@@ -1,0 +1,100 @@
+{
+    "switches": [
+        {
+            "switch": "mock-0",
+            "type": "http://schema.massopencloud.org/haas/v0/switches/mock",
+            "hostname": "mock-0.example.com",
+            "username": "alice",
+            "password": "secret"
+        },
+        {
+            "switch": "mock-1",
+            "type": "http://schema.massopencloud.org/haas/v0/switches/mock",
+            "hostname": "mock-0.example.com",
+            "username": "alice",
+            "password": "secret"
+        }
+    ],
+    "nodes" : [
+        {
+            "name": "node-0",
+            "nics": [
+                {
+                    "name": "nic1",
+                    "mac" : "de:ad:be:ef:20:14",
+                    "port": "gi1/0/1",
+                    "switch": "mock-0"
+                },
+                {
+                    "name": "nic2",
+                    "mac" : "de:ad:be:ef:20:15",
+                    "port": "gi1/0/2",
+                    "switch": "mock-1"
+                }
+            ],
+            "obm": {
+							  "type": "http://schema.massopencloud.org/haas/v0/obm/mock",
+                "host": "192.168.1.1",
+                "user": "foo",
+                "password": "bar"
+            }
+        },
+        {
+            "name": "node-1",
+            "nics": [
+                {
+                    "name": "nic1",
+                    "mac" : "de:ad:be:ef:20:16",
+                    "port": "gi1/0/3",
+                    "switch": "mock-1"
+                }
+            ],
+            "obm": {
+							  "type": "http://schema.massopencloud.org/haas/v0/obm/mock",
+                "host": "192.168.1.2",
+                "user": "foo",
+                "password": "bar"
+            }
+        },
+        {
+            "name": "node-2",
+            "nics": [
+                {
+                    "name": "nic1",
+                    "mac" : "de:ad:be:ef:20:14",
+                    "port": "gi1/0/4",
+                    "switch": "mock-0"
+                },
+                {
+                    "name": "nic2",
+                    "mac" : "de:ad:be:ef:20:15",
+                    "port": "gi1/0/5",
+                    "switch": "mock-1"
+                }
+            ],
+            "obm": {
+							  "type": "http://schema.massopencloud.org/haas/v0/obm/mock",
+                "host": "192.168.1.1",
+                "user": "foo",
+                "password": "bar"
+            }
+        },
+        {
+            "name": "node-3",
+            "nics": [
+                {
+                    "name": "nic1",
+                    "mac" : "de:ad:be:ef:20:16",
+                    "port": "gi1/0/6",
+                    "switch": "mock-1"
+                }
+            ],
+            "obm": {
+							  "type": "http://schema.massopencloud.org/haas/v0/obm/mock",
+                "host": "192.168.1.2",
+                "user": "foo",
+                "password": "bar"
+            }
+        }
+    ]
+}

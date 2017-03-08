@@ -85,6 +85,15 @@ driver-dependant, below are the details for each of these switches.
 
 ### Powerconnect driver
 
+#### Switch preperation
+
+A few commands are necessary to run on the switch before it can be used with HIL.
+
+1. Every VLAN that could be used on the switch must first be enabled on the switch itself. This is distinct from adding a VLAN to a port. To enable all VLANs to work with the switch, run this command (note that it seems to time out or something, but it just takes a while):
+
+   configure
+   vlan 2-4094
+
 #### switch_register
 
 To register a Dell Powerconnect switch, the ``"type"`` field of the

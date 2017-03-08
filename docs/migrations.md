@@ -160,12 +160,17 @@ loaded via SQLAlchemy; the default is not valid SQL and takes advantage
 of specific features of the ``psql`` command. You will also need to edit
 the file manually, doing the following:
 
-- If the option lock_timeout is set (``SET lock_timeout = ...``), remove
-  that statement; the version of postgres used by Travis doesn't support
-  it, so it will cause failures. It also isn't required.
+- It is likely that the system you're developing on will have a newer
+  version of postgres than what travis uses, so you may need to remove
+  statements setting options that don't exist int he older versions.
+  Delete any statements of the form ``SET option_name =  ...``, where
+  `option_name` is any of:
+  - idle_in_transaction_session_timeout
+  - lock_timeout
+  - row_security
 - Delete all statements using the keywords GRANT, REVOKE, or EXTENSION.
   These will cause permission errors if your database user is not root.
-- Delete all statements of the form ``ALTER TABLE ... SET OWNER TO
+- Delete all statements of the form ``ALTER TABLE ... OWNER TO
   ...``; these may cause failures if the connection details on the
   machine which runs the tests are different from yours, since the
   refer to specific database users/roles.

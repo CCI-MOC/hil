@@ -15,9 +15,7 @@
 import pytest
 import requests_mock
 
-from haas.ext.switches import brocade
 from haas import model
-from haas.ext.obm.ipmi import Ipmi
 from haas.test_common import fail_on_log_warnings
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
@@ -138,6 +136,7 @@ class TestBrocade(object):
     """
     @pytest.fixture()
     def switch(self):
+        from haas.ext.switches import brocade
         return brocade.Brocade(
             hostname='http://example.com',
             username='admin',
@@ -147,6 +146,7 @@ class TestBrocade(object):
 
     @pytest.fixture()
     def nic(self):
+        from haas.ext.obm.ipmi import Ipmi
         return model.Nic(
             model.Node(
                 label='node-99',

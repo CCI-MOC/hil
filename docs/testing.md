@@ -88,10 +88,11 @@ our travis-ci configuration.
 
 The deployment tests (`tests/deployment`) are a set of unit tests which
 are most useful when executed in an environment with real hardware and a
-libvirtd instance available. As such, these are *not* run by our
-travis-ci configuration. They should be run before merging any patch
-relating to specific hardware support, or interacting with headnodes. To
-run the deployment tests, you must do the following:
+libvirtd instance available. Some of these are executed by our travis-ci
+configuration using mock drivers, but (obviously) not against real
+hardware. They should be run before merging any patch relating to
+specific hardware support, or interacting with headnodes. To run the
+deployment tests, you must do the following:
 
 * Write a `testsuite.cfg` reflecting your environment. Copy
   `examples/testsuite.cfg-deployment` and edit. In particular, you will
