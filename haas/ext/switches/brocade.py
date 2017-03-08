@@ -92,7 +92,7 @@ class Brocade(Switch):
                 self._add_vlan_to_trunk(interface, vlan_id)
 
     def revert_port(self, port):
-        self._remove_all_vlans_from_trunk(port, vlan)
+        self._remove_all_vlans_from_trunk(port)
         self._remove_native_vlan(port)
 
     def get_port_networks(self, ports):
@@ -223,9 +223,9 @@ class Brocade(Switch):
         payload = '<vlan><remove>%s</remove></vlan>' % vlan
         self._make_request('PUT', url, data=payload)
 
-    def _remove_all_vlans_from_trunk(self, interface, vlan):
+    def _remove_all_vlans_from_trunk(self, interface):
         url = self._construct_url(interface, suffix='trunk/allowed/vlan')
-        payload = '<vlan><none>true</none></vlan>' % vlan
+        payload = '<vlan><none>true</none></vlan>'
         requests.put(url, data=payload, auth=self._auth)
 
     def _set_native_vlan(self, interface, vlan):
