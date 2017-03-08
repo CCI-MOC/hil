@@ -86,6 +86,7 @@ one exception is NICs, where the label is unique only on a per-node basis.
     # IPMI-based operations on nodes
 
     node_power_cycle           <node_label>
+    node_set_bootdev           <node_label> <boot_device>
 
     start_console              <node_label>
     show_console               <node_label>

@@ -511,6 +511,18 @@ def node_power_off(node):
 
 
 @cmd
+def node_set_bootdev(node, dev):
+    """
+    Sets <node> to boot from <dev> persistenly
+
+    eg; haas node_set_bootdev dell-23 pxe
+    for IPMI, dev can be set to disk, pxe, or none
+    """
+    url = object_url('node', node, 'boot_device')
+    do_put(url, data={'bootdev': dev})
+
+
+@cmd
 def node_register_nic(node, nic, macaddr):
     """
     Register existence of a <nic> with the given <macaddr> on the given <node>
