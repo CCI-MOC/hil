@@ -59,3 +59,9 @@ haas.ext.auth.null =
 # project_name = admin
 # admin_user = admin
 # admin_password = s3cr3t
+
+[switch_mode]
+mode = ALWAYS
+# mode = DISCONNECT
+# mode = ALWAYS
+# mode = DISCONNECT
