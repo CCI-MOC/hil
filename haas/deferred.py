@@ -57,7 +57,7 @@ def apply_networking():
             switch_sessions[switch.label].apply_networking(action)
         else:
             logging.getLogger(__name__).warn(
-                'Not modifying NIC %s; NIC is not on a port.' %
+                'Not modifying NIC %s; NIC is not on a port.',
                 nic.label)
 
     # Close all of our sessions:

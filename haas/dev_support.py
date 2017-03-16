@@ -42,7 +42,7 @@ def no_dry_run(f):
     def wrapper(*args, **kwargs):
         if have_dry_run():
             logger = logging.getLogger(__name__)
-            logger.info('dry run, not executing: %s.%s(*%r,**%r)' %
+            logger.info('dry run, not executing: %s.%s(*%r,**%r)',
                         (f.__module__, f.__name__, args, kwargs))
             return None
         else:

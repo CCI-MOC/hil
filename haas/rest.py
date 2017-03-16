@@ -268,7 +268,7 @@ def _rest_wrapper(f, schema):
         kwargs = _do_validation(schema, kwargs)
 
         init_auth()
-        logger.info('API call: %s(%s)' %
+        logger.info('API call: %s(%s)',
                     (f.__name__, _format_arglist(**kwargs)))
 
         ret = f(**kwargs)

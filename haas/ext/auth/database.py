@@ -144,10 +144,10 @@ class DatabaseAuthBackend(auth.AuthBackend):
         user = api._must_find(User, authorization.username)
         if user.verify_password(authorization.password):
             local.auth = user
-            logger.info("Successful authentication for user %r" % user.label)
+            logger.info("Successful authentication for user %r", user.label)
             return True
         else:
-            logger.info("Failed authentication for user %r" % user.label)
+            logger.info("Failed authentication for user %r", user.label)
             return False
 
     def _have_admin(self):
