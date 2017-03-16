@@ -5,6 +5,11 @@ from os.path import basename, dirname, isdir, join
 from os import listdir
 
 
+# Root of the repository. Note that this is relative to this file,
+# so if this file is moved, this may need to be changed:
+source_root = dirname(dirname(__file__))
+
+
 def test_logger_format_strings():
     """Scan for proper use of logger format strings
 
@@ -38,6 +43,9 @@ def test_logger_format_strings():
             # like .venv; it's unlikely to have version python
             # source files in it, so we skip it.
             return
+        if filename == join(source_root, 'ci', 'keystone'):
+            # Don't lint the keystone source code.
+            return
 
         if filename.endswith('.py') or filename.endswith('.wsgi'):
             with open(filename) as f:
@@ -47,9 +55,7 @@ def test_logger_format_strings():
             for child in listdir(filename):
                 _visit_file(join(filename, child))
 
-    # The parent directory, which is the root of the source tree.
-    # If this file is moved, this may need to be changed:
-    _visit_file(dirname(dirname(__file__)))
+    _visit_file(source_root)
 
 
 class LogCallVisitor(ast.NodeVisitor):
