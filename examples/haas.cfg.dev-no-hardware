@@ -60,8 +60,6 @@ haas.ext.auth.null =
 # admin_user = admin
 # admin_password = s3cr3t
 
-[switch_mode]
-mode = ALWAYS
-# mode = DISCONNECT
-# mode = ALWAYS
-# mode = DISCONNECT
+#dell switch configuration; uncomment to save switch config file
+# [dell]
+# save = TRUE

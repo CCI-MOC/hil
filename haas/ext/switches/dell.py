@@ -27,7 +27,6 @@ from haas.migrations import paths
 from haas.ext.switches import _console
 from os.path import dirname, join
 from haas.config import cfg
-import time
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'dell')
 
@@ -96,8 +95,6 @@ class _Session(_console.Session):
     def exit_if_prompt(self):
         self._sendline('exit')
         self._sendline('exit')
-        if cfg.get('switch_mode', 'mode') == 'ALWAYS':
-                    self._save_running_config()
 
     def enable_vlan(self, vlan_id):
         self._sendline('sw mode trunk')
@@ -117,8 +114,9 @@ class _Session(_console.Session):
         self._sendline('sw trunk native vlan none')
 
     def disconnect(self):
-        if cfg.get('switch_mode', 'mode') == 'DISCONNECT':
-            self._save_running_config()
+        if cfg.has_option('dell', 'save'):
+            if cfg.getboolean('dell', 'save'):
+                self._save_running_config()
         self._sendline('exit')
         self.console.expect(pexpect.EOF)
         logger.debug('Logged out of switch %r', self.switch)
@@ -198,6 +196,7 @@ class _Session(_console.Session):
         """saves the running config to startup config"""
 
         self._sendline('copy running-config startup-config')
-        time.sleep(1)
+        self.console.expect('Overwrite file ')
         self._sendline('y')
-        time.sleep(7)
+        self.console.expect('Copy succeeded')
+        logger.debug('Copy succeeded')
