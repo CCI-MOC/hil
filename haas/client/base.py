@@ -3,8 +3,11 @@
 import requests
 import os
 import json
-from haas.client import errors
 from urlparse import urljoin
+
+
+class FailedAPICallException(Exception):
+    pass
 
 
 class ClientBase(object):
@@ -17,7 +20,7 @@ class ClientBase(object):
     appropriate message.
     """
 
-    def __init__(self, endpoint=None, sess=None):
+    def __init__(self, endpoint, httpClient):
         """ Initialize an instance of the library with following parameters.
 
        endpoint: stands for the http endpoint eg. endpoint=http://127.0.0.1
@@ -27,13 +30,7 @@ class ClientBase(object):
        Currently all this information is fetched from the user's environment.
         """
         self.endpoint = endpoint
-        self.s = sess
-
-        if None in [self.endpoint, self.s]:
-            raise LookupError(
-                    "Incomplete client parameters (username, password, etc) "
-                    "supplied to set up connection with HaaS server"
-                    )
+        self.httpClient = httpClient
 
     def object_url(self, *args):
         """Generate URL from combining endpoint and args as relative URL"""
@@ -49,4 +46,4 @@ class ClientBase(object):
                 return
         else:
             e = response.json()
-            raise errors.FailedAPICallException(e['msg'])
+            raise FailedAPICallException(e['msg'])

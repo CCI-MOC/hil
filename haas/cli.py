@@ -23,12 +23,11 @@ import requests
 import sys
 import urllib
 import schema
-import abc
 
 from functools import wraps
 
 from haas.client.auth import db_auth, keystone_auth
-from haas.client.client import Client
+from haas.client.client import Client, RequestsHTTPClient, KeystoneHTTPClient
 from haas.client import errors
 
 
@@ -36,92 +35,6 @@ command_dict = {}
 usage_dict = {}
 MIN_PORT_NUMBER = 1
 MAX_PORT_NUMBER = 2**16 - 1
-
-
-class HTTPClient(object):
-    """An HTTP client.
-
-    Makes HTTP requests on behalf of the HaaS CLI. Responsible for adding
-    authentication information to the request.
-    """
-
-    __metaclass__ = abc.ABCMeta
-
-    @abc.abstractmethod
-    def request(method, url, data=None, params=None):
-        """Make an HTTP request
-
-        Makes an HTTP request on URL `url` with method `method`, request body
-        `data`(if supplied) and query parameter `params`(if supplied). May add
-        authentication or other backend-specific information to the request.
-
-        Parameters
-        ----------
-
-        method : str
-            The HTTP method to use, e.g. 'GET', 'PUT', 'POST'...
-        url : str
-            The URL to act on
-        data : str, optional
-            The body of the request
-        params : dictionary, optional
-            The query parameter, e.g. {'key1': 'val1', 'key2': 'val2'},
-            dictionary key can't be `None`
-
-        Returns
-        -------
-
-        requests.Response
-            The HTTP response
-        """
-
-
-class RequestsHTTPClient(requests.Session, HTTPClient):
-    """An HTTPClient which uses the requests library.
-
-    Note that this doesn't do anything over `requests.Session`; that
-    class already implements the required interface. We declare it only
-    for clarity.
-    """
-
-
-class KeystoneHTTPClient(HTTPClient):
-    """An HTTPClient which authenticates with Keystone.
-
-    This uses an instance of python-keystoneclient's Session class
-    to do its work.
-    """
-
-    def __init__(self, session):
-        """Create a KeystoneHTTPClient
-
-        Parameters
-        ----------
-
-        session : keystoneauth1.Session
-            A keystone session to make the requests with
-        """
-        self.session = session
-
-    def request(self, method, url, data=None, params=None):
-        """Make an HTTP request using keystone for authentication.
-
-        Smooths over the differences between python-keystoneclient's
-        request method that specified by HTTPClient
-        """
-        # We have to import this here, since we can't assume the library
-        # is available from global scope.
-        from keystoneauth1.exceptions.http import HttpError
-
-        try:
-            # The order of these parameters is different that what
-            # we expect, but the names are the same:
-            return self.session.request(method=method,
-                                        url=url,
-                                        data=data,
-                                        params=params)
-        except HttpError as e:
-            return e.response
 
 
 # An instance of HTTPClient, which will be used to make the request.
@@ -200,13 +113,12 @@ def setup_http_client():
     basic_username = os.getenv('HAAS_USERNAME')
     basic_password = os.getenv('HAAS_PASSWORD')
     if basic_username is not None and basic_password is not None:
-        # For calls using the client library
-        sess = db_auth(basic_username, basic_password)
-        C = Client(ep, sess)
         # For calls with no client library support yet.
         # Includes all headnode calls; registration of nodes and switches.
         http_client = RequestsHTTPClient()
         http_client.auth = (basic_username, basic_password)
+        # For calls using the client library
+        C = Client(ep, http_client)
         return
     # Next try keystone:
     try:
@@ -218,17 +130,22 @@ def setup_http_client():
         os_project_domain_id = os.getenv('OS_PROJECT_DOMAIN_ID') or 'default'
         if None in (os_auth_url, os_username, os_password, os_project_name):
             raise KeyError("Required openstack environment variable not set.")
-        sess = keystone_auth(
-                os_auth_url, os_username, os_password, os_user_domain_id,
-                os_project_name, os_project_domain_id
-                )
-        C = Client(ep, sess)
+        auth = v3.Password(auth_url=os_auth_url,
+                           username=os_username,
+                           password=os_password,
+                           project_name=os_project_name,
+                           user_domain_id=os_user_domain_id,
+                           project_domain_id=os_project_domain_id)
+        sess = session.Session(auth=auth)
+        http_client = KeystoneHTTPClient(sess)
+        # For calls using the client library
+        C = Client(ep, http_client)
         return
     except (ImportError, KeyError):
         pass
     # Finally, fall back to no authentication:
-    sess = requests.Session()
-    C = Client(ep, sess)
+    http_client = requests.Session()
+    C = Client(ep, http_client)
 
 
 class FailedAPICallException(Exception):

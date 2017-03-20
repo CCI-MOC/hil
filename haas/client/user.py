@@ -1,6 +1,5 @@
 import json
 from haas.client.base import ClientBase
-from haas.client import errors
 
 
 class User(ClientBase):
@@ -25,21 +24,29 @@ class User(ClientBase):
         payload = json.dumps({
                 'password': password, 'is_admin': privilege == 'admin',
                 })
-        return self.check_response(self.s.put(url, data=payload))
+        return self.check_response(
+                self.httpClient.request("PUT", url, data=payload)
+                )
 
     def delete(self, username):
         """Deletes the user <username>. """
         url = self.object_url('/auth/basic/user', username)
-        return self.check_response(self.s.delete(url))
+        return self.check_response(
+                self.httpClient.request("DELETE", url)
+                )
 
     def add(self, user, project):
         """Adds <user> to a <project>. """
         url = self.object_url('/auth/basic/user', user, 'add_project')
         payload = json.dumps({'project': project})
-        return self.check_response(self.s.post(url, data=payload))
+        return self.check_response(
+                self.httpClient.request("POST", url, data=payload)
+                )
 
     def remove(self, user, project):
         """Removes all access of <user> to <project>. """
         url = self.object_url('/auth/basic/user', user, 'remove_project')
         payload = json.dumps({'project': project})
-        return self.check_response(self.s.post(url, data=payload))
+        return self.check_response(
+                self.httpClient.request("POST", url, data=payload)
+                )

@@ -34,7 +34,7 @@ from haas.client.client import Client
 from haas.client import errors
 
 
-ep = "http://127.0.0.1:8888" or os.environ.get('HAAS_ENDPOINT')
+ep = "http://127.0.0.1:8000" or os.environ.get('HAAS_ENDPOINT')
 username = "hil_user" or os.environ.get('HAAS_USERNAME')
 password = "hil_pass1234" or os.environ.get('HAAS_PASSWORD')
 
@@ -60,19 +60,19 @@ class Test_ClientBase:
     def test_init_error(self):
         try:
             x = ClientBase()
-        except LookupError:
+        except TypeError:
             assert True
 
 # FIX ME: The test may vary based on which backend session is used.
 #    def test_correct_init(self):
 #        x = ClientBase(ep, 'some_base64_string')
-#        assert x.endpoint == "http://127.0.0.1:8888"
+#        assert x.endpoint == "http://127.0.0.1:8000"
 #        assert x.auth == "some_base64_string"
 
     def test_object_url(self):
         x = ClientBase(ep, 'some_base64_string')
         y = x.object_url('abc', '123', 'xy23z')
-        assert y == 'http://127.0.0.1:8888/abc/123/xy23z'
+        assert y == 'http://127.0.0.1:8000/abc/123/xy23z'
 
 # For testing the client library we need a running HIL server, with dummy
 # objects populated. Following classes accomplish that end.
@@ -144,7 +144,7 @@ def initialize_db():
 def run_server(cmd):
     """This function starts a haas server.
     The arguments in 'cmd' will be a list of arguments like required to start a
-    haas server like ['haas', 'serve', '8888']
+    haas server like ['haas', 'serve', '8000']
     It will return a handle which can be used to terminate the server when
     tests finish.
     """
@@ -161,7 +161,7 @@ def populate_server():
     sess.auth = (username, password)
 
     # Adding nodes, node-01 - node-06
-    url_node = 'http://127.0.0.1:8888/node/'
+    url_node = 'http://127.0.0.1:8000/node/'
     api_nodename = 'http://schema.massopencloud.org/haas/v0/obm/'
 
     for i in range(1, 10):
@@ -180,10 +180,10 @@ def populate_server():
 
     # Adding Projects proj-01 - proj-03
     for i in ["proj-01", "proj-02", "proj-03"]:
-        sess.put('http://127.0.0.1:8888/project/' + i)
+        sess.put('http://127.0.0.1:8000/project/' + i)
 
     # Adding switches one for each driver
-    url_switch = 'http://127.0.0.1:8888/switch/'
+    url_switch = 'http://127.0.0.1:8000/switch/'
     api_name = 'http://schema.massopencloud.org/haas/v0/switches/'
 
     dell_param = {
@@ -224,10 +224,10 @@ def populate_server():
 
     # Adding Projects proj-01 - proj-03
     for i in ["proj-01", "proj-02", "proj-03"]:
-        sess.put('http://127.0.0.1:8888/project/' + i)
+        sess.put('http://127.0.0.1:8000/project/' + i)
 
     # Allocating nodes to projects
-    url_project = 'http://127.0.0.1:8888/project/'
+    url_project = 'http://127.0.0.1:8000/project/'
     # Adding nodes 1 to proj-01
     sess.post(
             url_project + 'proj-01' + '/connect_node',
@@ -253,7 +253,7 @@ def populate_server():
             )
 
     # Assigning networks to projects
-    url_network = 'http://127.0.0.1:8888/network/'
+    url_network = 'http://127.0.0.1:8000/network/'
     for i in ['net-01', 'net-02', 'net-03']:
         sess.put(
                 url_network + i,
@@ -276,7 +276,7 @@ def populate_server():
 def create_setup(request):
     dir_names = make_config()
     initialize_db()
-    proc1 = run_server(['haas', 'serve', '8888'])
+    proc1 = run_server(['haas', 'serve', '8000'])
     proc2 = run_server(['haas', 'serve_networks'])
     time.sleep(1)
     populate_server()

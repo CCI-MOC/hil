@@ -99,5 +99,4 @@ setup(name='haas',
                         'pep8>=1.7.0',
                         'requests_mock>=1.0.0,<2.0',
                         'lxml>=3.6.0,<4.0',
-                        'keystoneauth1>=2.16,<3.0',
                         ])
