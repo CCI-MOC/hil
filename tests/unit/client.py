@@ -30,7 +30,6 @@ import requests
 from requests.exceptions import ConnectionError
 from haas.client.base import ClientBase
 from haas.client.client import Client, RequestsHTTPClient, KeystoneHTTPClient
-from haas.client import errors
 
 
 ep = "http://127.0.0.1:8000" or os.environ.get('HAAS_ENDPOINT')
