@@ -61,11 +61,6 @@ class Brocade(Switch):
         pass
 
     def modify_port(self, port, channel, network_id):
-        """ Apply a NetworkingAction to the switch.
-
-        Args:
-            action: NetworkingAction to apply to the switch.
-        """
         # XXX: We ought to be able to do a Port.query ... one() here, but
         # there's somthing I(zenhack)  don't understand going on with when
         # things are committed in the tests for this driver, and we don't
@@ -224,6 +219,11 @@ class Brocade(Switch):
         self._make_request('PUT', url, data=payload)
 
     def _remove_all_vlans_from_trunk(self, interface):
+        """ Remove all vlan from a trunk port.
+
+        Args:
+            interface: interface to remove the vlan from
+        """
         url = self._construct_url(interface, suffix='trunk/allowed/vlan')
         payload = '<vlan><none>true</none></vlan>'
         requests.put(url, data=payload, auth=self._auth)
