@@ -104,8 +104,9 @@ class Brocade(Switch):
         """
         response = {}
         for port in ports:
-            response[port] = filter(None, [self._get_native_vlan(port)]) \
-                             + self._get_vlans(port)
+            response[port] = filter(None,
+                                    [self._get_native_vlan(port.label)]) \
+                                    + self._get_vlans(port.label)
         return response
 
     def _get_mode(self, interface):
@@ -252,9 +253,6 @@ class Brocade(Switch):
         # % escapes the % character.
         # Double quotes are necessary in the url because switch ports contain
         # forward slashes (/), ex. 101/0/10 is encoded as "101/0/10".
-        if not isinstance(interface, basestring):
-            interface = interface.label
-
         return '%(hostname)s/rest/config/running/interface/' \
             '%(interface_type)s/%%22%(interface)s%%22/switchport/%(suffix)s' \
             % {

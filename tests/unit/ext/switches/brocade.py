@@ -165,25 +165,30 @@ class TestBrocade(object):
 
     def test_get_port_networks(self, switch):
         with requests_mock.mock() as mock:
+
+            PORT1 = model.Port(label=INTERFACE1, switch=switch)
+            PORT2 = model.Port(label=INTERFACE2, switch=switch)
+            PORT3 = model.Port(label=INTERFACE3, switch=switch)
+
             mock.get(switch._construct_url(INTERFACE1, suffix='trunk'),
                      text=TRUNK_NATIVE_VLAN_RESPONSE_WITH_VLANS)
             mock.get(switch._construct_url(INTERFACE2, suffix='trunk'),
                      text=TRUNK_NATIVE_VLAN_RESPONSE_NO_VLANS)
             mock.get(switch._construct_url(INTERFACE3, suffix='trunk'),
                      text=TRUNK_VLAN_RESPONSE)
-            response = switch.get_port_networks([INTERFACE1,
-                                                 INTERFACE2,
-                                                 INTERFACE3])
+            response = switch.get_port_networks([PORT1,
+                                                 PORT2,
+                                                 PORT3])
             assert response == {
-                INTERFACE1: [('vlan/native', '10'),
-                             ('vlan/4001', '4001'),
-                             ('vlan/4025', '4025')],
-                INTERFACE2: [('vlan/native', '10')],
-                INTERFACE3: [('vlan/1', '1'),
-                             ('vlan/4001', '4001'),
-                             ('vlan/4004', '4004'),
-                             ('vlan/4025', '4025'),
-                             ('vlan/4050', '4050')]
+                PORT1: [('vlan/native', '10'),
+                        ('vlan/4001', '4001'),
+                        ('vlan/4025', '4025')],
+                PORT2: [('vlan/native', '10')],
+                PORT3: [('vlan/1', '1'),
+                        ('vlan/4001', '4001'),
+                        ('vlan/4004', '4004'),
+                        ('vlan/4025', '4025'),
+                        ('vlan/4050', '4050')]
             }
 
     def test_get_mode(self, switch):
