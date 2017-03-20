@@ -418,6 +418,27 @@ Authorization requirements:
 Power cycle the node named `<node>`, and set it's next boot device to
 PXE. If the node is powered off, this turns it on.
 
+#### node_set_bootdev
+
+`PUT /node/<node>/boot_device`
+
+Sets the node's next boot device persistently
+
+The request body consists of JSON with a `bootdev` argument:
+
+Request body:
+    {
+    	"bootdev": <boot device>
+    }
+
+##### For IPMI devices
+
+The valid/allowed boot devices are:
+
+* pxe : do a pxe boot (network boot)
+* disk: boot from local hard disk
+* none: to reset boot order to default. 
+
 #### node_power_off
 
 `POST /node/<node>/power_off`

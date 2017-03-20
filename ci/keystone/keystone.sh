@@ -45,8 +45,11 @@ case "$1" in
     # too old to parse some of the syntax used in keystone's requirements.txt.
     # Make sure we have the latest:
     pip install --upgrade pip
-    
-    pip install -r requirements.txt
+
+    # Use the constraints file to provide an upper bound for package versions.
+    pip install \
+        -r requirements.txt \
+        -c https://git.openstack.org/cgit/openstack/requirements/plain/upper-constraints.txt?h=${keystone_commit}
     pip install .
     pip install uwsgi # To actually run keystone; no webserver in the deps.
 
@@ -60,7 +63,9 @@ case "$1" in
     pid=$!
     # Doing this after launching keystone will give it plenty of time to get
     # started without adding any wasteful calls to sleep:
-    pip install python-openstackclient
+    pip install -c https://git.openstack.org/cgit/openstack/requirements/plain/upper-constraints.txt?h=${keystone_commit} \
+        python-openstackclient
+
     source ../keystonerc # for $OS_PASSWORD
     ADMIN_PASSWORD=s3cr3t ./tools/sample_data.sh
 

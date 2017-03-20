@@ -548,38 +548,38 @@ class Test_user:
         with pytest.raises(Exception):
             C.user.delete('Ata')
 
-    def test_user_grant_access(self):
-        """ test granting user access to project. """
+    def test_user_add(self):
+        """ test adding a user to a project. """
         C.project.create('proj-sample')
         C.user.create('Sam', 'pass1234', 'regular')
-        result = C.user.grant_access('Sam', 'proj-sample')
+        result = C.user.add('Sam', 'proj-sample')
         assert result is None
 
-    def test_user_grant_access_error(self):
+    def test_user_add_error(self):
         """Test error condition while granting user access to a project."""
         C.project.create('test-proj01')
         C.user.create('sam01', 'pass1234', 'regular')
-        C.user.grant_access('sam01', 'test-proj01')
+        C.user.add('sam01', 'test-proj01')
         with pytest.raises(Exception):
-            C.user.grant_access('sam01', 'test-proj01')
+            C.user.add('sam01', 'test-proj01')
 
-    def test_user_revoke_access(self):
+    def test_user_remove(self):
         """Test revoking user's access to a project. """
         C.project.create('test-proj02')
         C.user.create('sam02', 'pass1234', 'regular')
-        C.user.grant_access('sam02', 'test-proj02')
-        result = C.user.revoke_access('sam02', 'test-proj02')
+        C.user.add('sam02', 'test-proj02')
+        result = C.user.remove('sam02', 'test-proj02')
         assert result is None
 
-    def test_user_revoke_access_error(self):
+    def test_user_remove_error(self):
         """Test error condition while revoking user access to a project. """
         C.project.create('test-proj03')
         C.user.create('sam03', 'pass1234', 'regular')
         C.user.create('xxxx', 'pass1234', 'regular')
-        C.user.grant_access('sam03', 'test-proj03')
-        C.user.revoke_access('sam03', 'test-proj03')
+        C.user.add('sam03', 'test-proj03')
+        C.user.remove('sam03', 'test-proj03')
         with pytest.raises(Exception):
-            C.user.revoke_access('sam03', 'test_proj03')
+            C.user.remove('sam03', 'test_proj03')
 
 
 @pytest.mark.usefixtures("create_setup")

@@ -1,8 +1,12 @@
-from flask_migrate import Migrate, MigrateCommand, stamp
+from flask_migrate import Migrate, MigrateCommand
 from haas.flaskapp import app
 from haas.model import db
 from haas.network_allocator import get_network_allocator
 from os.path import join, dirname
+import sys
+
+from alembic.config import Config
+from alembic.script import ScriptDirectory
 
 # This is a dictionary mapping the names of modules to directories containing
 # their alembic version scripts. Extensions may add entries to this with their
@@ -35,10 +39,19 @@ def _configure_alembic(config):
 # Alembic will create this table itself if need be when doing "stamp" in the
 # create_db  function below, but unless we declare it, db.drop_all() won't
 # know about it, and will leave us with a one-table database.
-_alembic_version_table = db.Table(
+AlembicVersion = db.Table(
     'alembic_version', db.metadata,
     db.Column('version_num', db.String(32), nullable=False)
 )
+
+
+def _expected_heads():
+    cfg_path = join(dirname(__file__), 'migrations',  'alembic.ini')
+    cfg = Config(cfg_path)
+    _configure_alembic(cfg)
+    cfg.set_main_option('script_location', dirname(cfg_path))
+    script_dir = ScriptDirectory.from_config(cfg)
+    return set(script_dir.get_heads())
 
 
 def create_db():
@@ -49,9 +62,30 @@ def create_db():
     """
     with app.app_context():
         db.create_all()
-        for head in paths.keys():
+        for head in _expected_heads():
             # Record the version of each branch. Each extension which uses the
             # database will have its own branch.
-            stamp(revision=head)
+            db.session.execute(
+                AlembicVersion.insert().values(version_num=head)
+            )
         get_network_allocator().populate()
         db.session.commit()
+
+
+def check_db_schema():
+    """Verify that the database schema is present and up-to-date.
+
+    If not, an error message is printed and the program is aborted.
+    """
+    tablenames = db.inspect(db.engine).get_table_names()
+
+    if 'alembic_version' not in tablenames:
+        sys.exit("ERROR: Database schema is not initialized; have you run "
+                 "haas-admin db create?")
+
+    actual_heads = {row[0] for row in
+                    db.session.query(AlembicVersion).all()}
+
+    if _expected_heads() != actual_heads:
+        sys.exit("ERROR: Database schema version is incorrect; try "
+                 "running haas-admin db upgrade heads.")

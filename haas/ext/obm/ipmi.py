@@ -20,13 +20,15 @@ import subprocess
 import logging
 
 from haas.model import db, Obm
-from haas.errors import OBMError
+from haas.errors import OBMError, BadArgumentError
 from haas.dev_support import no_dry_run
 from subprocess import call, check_call, Popen, PIPE
 import os
 
 
 class Ipmi(Obm):
+    valid_bootdevices = ['disk', 'pxe', 'none']
+
     id = db.Column(db.Integer, db.ForeignKey('obm.id'), primary_key=True)
     host = db.Column(db.String, nullable=False)
     user = db.Column(db.String, nullable=False)
@@ -85,6 +87,17 @@ class Ipmi(Obm):
     def power_off(self):
         if self._ipmitool(['chassis', 'power', 'off']) != 0:
             raise OBMError('Could not power off node %s', self.label)
+
+    def require_legal_bootdev(self, dev):
+        if dev not in self.valid_bootdevices:
+            raise BadArgumentError('Invald boot device')
+
+    @no_dry_run
+    def set_bootdev(self, dev):
+        self.require_legal_bootdev(dev)
+        if self._ipmitool(['chassis', 'bootdev', dev,
+                          'options=persistent']) != 0:
+            raise OBMError('Could not set boot device')
 
     @no_dry_run
     def start_console(self):
