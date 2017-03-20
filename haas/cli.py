@@ -26,9 +26,7 @@ import schema
 
 from functools import wraps
 
-from haas.client.auth import db_auth, keystone_auth
 from haas.client.client import Client, RequestsHTTPClient, KeystoneHTTPClient
-from haas.client import errors
 
 
 command_dict = {}
@@ -87,6 +85,8 @@ def cmd(f):
 def setup_http_client():
     """Set `http_client` to a valid instance of `HTTPClient`
 
+    and pass it as parameter to initialize the client library.
+
     Sets http_client to an object which makes HTTP requests with
     authentication. It chooses an authentication backend as follows:
 
@@ -105,6 +105,10 @@ def setup_http_client():
     3. Oterwise, do not supply authentication information.
 
     This may be extended with other backends in the future.
+
+    `http_client` is also passed as a parameter to the client library.
+    Until all calls are moved to client library, this will support
+    both ways of intereacting with HIL.
     """
     global http_client
     global C  # initiating the client library

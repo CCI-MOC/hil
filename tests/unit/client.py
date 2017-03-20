@@ -29,8 +29,7 @@ from urlparse import urljoin
 import requests
 from requests.exceptions import ConnectionError
 from haas.client.base import ClientBase
-from haas.client.auth import db_auth
-from haas.client.client import Client
+from haas.client.client import Client, RequestsHTTPClient, KeystoneHTTPClient
 from haas.client import errors
 
 
@@ -38,18 +37,12 @@ ep = "http://127.0.0.1:8000" or os.environ.get('HAAS_ENDPOINT')
 username = "hil_user" or os.environ.get('HAAS_USERNAME')
 password = "hil_pass1234" or os.environ.get('HAAS_PASSWORD')
 
-sess = db_auth(username, password)
-C = Client(ep, sess)  # Initializing client library
+http_client = RequestsHTTPClient()
+http_client.auth = (username, password)
+C = Client(ep, http_client)  # Initializing client library
 MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/v0/switches/mock'
 OBM_TYPE_MOCK = 'http://schema.massopencloud.org/haas/v0/obm/mock'
 OBM_TYPE_IPMI = 'http://schema.massopencloud.org/haas/v0/obm/ipmi'
-
-
-# Following tests check if the client library is initialized correctly
-
-def test_db_auth():
-    sess = db_auth(username, password)
-    assert sess.auth == (username, password)
 
 
 class Test_ClientBase:
