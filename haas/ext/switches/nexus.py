@@ -155,10 +155,13 @@ class _Session(_console.Session):
         pattern = re.compile(r'Ethernet(\d+)/(\d+)')
         for k, v in info.iteritems():
             match = re.match(pattern, k)
+            # sometimes switch has custom interface names, so we skip those
+            if match is None:
+                continue
             # TODO: We should verify there is in fact a match (there always
             # should be, but let's be paranoid).
             switch, port = match.groups()
-            names_result['ethernet %s/%s' % (switch, port)] = v
+            names_result['Ethernet%s/%s' % (switch, port)] = v
 
         result = {}
         for port in ports:
