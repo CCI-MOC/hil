@@ -121,13 +121,13 @@ class Brocade(Switch):
 
         """
         url = self._construct_url(interface, suffix='mode')
-        response = requests.get(url, auth=self._auth)
+        response = self._make_request('GET', url)
         root = etree.fromstring(response.text)
         mode = root.find(self._construct_tag('vlan-mode')).text
         return mode
 
-    def _set_mode(self, interface, mode):
-        """ Set the mode of an interface.
+    def _enable_and_set_mode(self, interface, mode):
+        """ Enables switching and sets the mode of an interface.
 
         Args:
             interface: interface to set the mode of
@@ -136,10 +136,16 @@ class Brocade(Switch):
         Raises: AssertionError if mode is invalid.
 
         """
+        # Enable switching
+        url = self._construct_url(interface)
+        payload = '<switchport></switchport>'
+        self._make_request('POST', url, data=payload)
+
+        # Set the interface mode
         if mode in ['access', 'trunk']:
             url = self._construct_url(interface, suffix='mode')
             payload = '<mode><vlan-mode>%s</vlan-mode></mode>' % mode
-            requests.put(url, data=payload, auth=self._auth)
+            self._make_request('PUT', url, data=payload)
         else:
             raise AssertionError('Invalid mode')
 
@@ -156,7 +162,7 @@ class Brocade(Switch):
         """
         try:
             url = self._construct_url(interface, suffix='trunk')
-            response = requests.get(url, auth=self._auth)
+            response = self._make_request('GET', url)
             root = etree.fromstring(response.text)
             vlans = root.\
                 find(self._construct_tag('allowed')).\
@@ -176,7 +182,7 @@ class Brocade(Switch):
         """
         try:
             url = self._construct_url(interface, suffix='trunk')
-            response = requests.get(url, auth=self._auth)
+            response = self._make_request('GET', url)
             root = etree.fromstring(response.text)
             vlan = root.find(self._construct_tag('native-vlan')).text
             return ('vlan/native', vlan)
@@ -192,10 +198,10 @@ class Brocade(Switch):
             interface: interface to add the vlan to
             vlan: vlan to add
         """
-        self._set_mode(interface, 'trunk')
+        self._enable_and_set_mode(interface, 'trunk')
         url = self._construct_url(interface, suffix='trunk/allowed/vlan')
         payload = '<vlan><add>%s</vlan></vlan>' % vlan
-        requests.put(url, data=payload, auth=self._auth)
+        self._make_request('PUT', url, data=payload)
 
     def _remove_vlan_from_trunk(self, interface, vlan):
         """ Remove a vlan from a trunk port.
@@ -206,7 +212,7 @@ class Brocade(Switch):
         """
         url = self._construct_url(interface, suffix='trunk/allowed/vlan')
         payload = '<vlan><remove>%s</remove></vlan>' % vlan
-        requests.put(url, data=payload, auth=self._auth)
+        self._make_request('PUT', url, data=payload)
 
     def _set_native_vlan(self, interface, vlan):
         """ Set the native vlan of an interface.
@@ -215,11 +221,11 @@ class Brocade(Switch):
             interface: interface to set the native vlan to
             vlan: vlan to set as the native vlan
         """
-        self._set_mode(interface, 'trunk')
+        self._enable_and_set_mode(interface, 'trunk')
         self._disable_native_tag(interface)
         url = self._construct_url(interface, suffix='trunk')
         payload = '<trunk><native-vlan>%s</native-vlan></trunk>' % vlan
-        requests.put(url, data=payload, auth=self._auth)
+        self._make_request('PUT', url, data=payload)
 
     def _remove_native_vlan(self, interface):
         """ Remove the native vlan from an interface.
@@ -228,7 +234,7 @@ class Brocade(Switch):
             interface: interface to remove the native vlan from
         """
         url = self._construct_url(interface, suffix='trunk/native-vlan')
-        requests.delete(url, auth=self._auth)
+        self._make_request('DELETE', url)
 
     def _disable_native_tag(self, interface):
         """ Disable tagging of the native vlan
@@ -238,9 +244,9 @@ class Brocade(Switch):
 
         """
         url = self._construct_url(interface, suffix='trunk/tag/native-vlan')
-        response = requests.delete(url, auth=self._auth)
+        self._make_request('DELETE', url)
 
-    def _construct_url(self, interface, suffix=None):
+    def _construct_url(self, interface, suffix=''):
         """ Construct the API url for a specific interface appending suffix.
 
         Args:
@@ -254,12 +260,12 @@ class Brocade(Switch):
         # Double quotes are necessary in the url because switch ports contain
         # forward slashes (/), ex. 101/0/10 is encoded as "101/0/10".
         return '%(hostname)s/rest/config/running/interface/' \
-            '%(interface_type)s/%%22%(interface)s%%22/switchport/%(suffix)s' \
+            '%(interface_type)s/%%22%(interface)s%%22%(suffix)s' \
             % {
                   'hostname': self.hostname,
                   'interface_type': self.interface_type,
                   'interface': interface,
-                  'suffix': suffix
+                  'suffix': '/switchport/%s' % suffix if suffix else ''
             }
 
     @property
@@ -270,3 +276,9 @@ class Brocade(Switch):
     def _construct_tag(name):
         """ Construct the xml tag by prepending the brocade tag prefix. """
         return '{urn:brocade.com:mgmt:brocade-interface}%s' % name
+
+    def _make_request(self, method, url, data=None):
+        r = requests.request(method, url, data=data, auth=self._auth)
+        if r.status_code >= 400:
+            logger.error('Bad Request to switch. Response: %s' % r.text)
+        return r
