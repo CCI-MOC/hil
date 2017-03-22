@@ -84,11 +84,14 @@ class Session(object):
         if channel == 'vlan/native':
             old_native = NetworkAttachment.query.filter_by(
                 channel='vlan/native',
-                nic_id=port.nic.id).one().network.network_id
-            if network_id is None:
-                self.disable_native(old_native)
-            else:
+                nic_id=port.nic.id).first()
+            if old_native is not None:
+                old_native = old_native.network.network_id
+
+            if network_id is not None:
                 self.set_native(old_native, network_id)
+            elif old_native is not None:
+                self.disable_native(old_native)
         else:
             match = re.match(_CHANNEL_RE, channel)
             # TODO: I'd be more okay with this assertion if it weren't possible
