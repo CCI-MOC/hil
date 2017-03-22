@@ -365,13 +365,13 @@ def headnode_delete(headnode):
 @cmd
 def project_connect_node(project, node):
     """Connect <node> to <project>"""
-    check_clientlib_response(C.project.connect, project, node)
+    check_clientlib_response(lambda: C.project.connect(project, node))
 
 
 @cmd
 def project_detach_node(project, node):
     """Detach <node> from <project>"""
-    check_clientlib_response(C.project.detach, project, node)
+    check_clientlib_response(lambda: C.project.detach(project, node))
 
 
 @cmd
@@ -695,7 +695,11 @@ def show_network(network):
 @cmd
 def show_node(node):
     """Display information about a <node>
+
     FIXME: Recursion should be implemented to the output.
+    The output of show_node is a dictionary that can be list of list, having
+    multiple nics and networks. More meta data about node could be shown
+    via this call. So this is a note for developers that will work on CLI.
     """
     q = check_clientlib_response(lambda: C.node.show(node))
     for item in q.items():
