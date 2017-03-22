@@ -104,8 +104,9 @@ class Brocade(Switch):
         """
         response = {}
         for port in ports:
-            response[port] = filter(None, [self._get_native_vlan(port)]) \
-                             + self._get_vlans(port)
+            response[port] = filter(None,
+                                    [self._get_native_vlan(port.label)]) \
+                                    + self._get_vlans(port.label)
         return response
 
     def _get_mode(self, interface):
