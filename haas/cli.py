@@ -697,10 +697,12 @@ def show_node(node):
     """Display information about a <node>
 
     FIXME: Recursion should be implemented to the output.
-    The output of show_node is a dictionary that can be list of list, having
-    multiple nics and networks. More meta data about node could be shown
-    via this call. So this is a note for developers that will work on CLI.
     """
+#    The output of show_node is a dictionary that can be list of list, having
+#    multiple nics and networks. More metadata about node could be shown
+#    via this call. Suggestion to future developers of CLI to use
+#    recursion in the call for output of such metadata.
+
     q = check_clientlib_response(lambda: C.node.show(node))
     for item in q.items():
         sys.stdout.write("%s\t  :  %s\n" % (item[0], item[1]))
