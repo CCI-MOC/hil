@@ -88,7 +88,8 @@ class Brocade(Switch):
 
     def revert_port(self, port):
         self._remove_all_vlans_from_trunk(port)
-        self._remove_native_vlan(port)
+        if self._get_native_vlan(port) is not None:
+            self._remove_native_vlan(port)
 
     def get_port_networks(self, ports):
         """Get port configurations of the switch.
