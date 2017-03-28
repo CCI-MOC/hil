@@ -203,3 +203,17 @@ class _Session(_console.Session):
             logger.debug('Copy succeeded')
         except:
             logger.debug('Copy failed')
+
+    def _get_config(self, config_type):
+        """returns the requested configuration file from the switch"""
+
+        try:
+            self._sendline('terminal datadump')
+            self.console.expect('console.*')
+            self._sendline('show ' + config_type + '-config')
+            self.console.expect('console.*')
+            config = self.console.before
+            self._sendline('no terminal datadump')
+            return config
+        except:
+            logger.error('config couldnt be read')

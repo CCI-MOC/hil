@@ -273,6 +273,15 @@ class NetworkTest:
                 len(nodes))
         return nodes
 
+    def get_config(self, config_type):
+        """returns the switch configuration file"""
+
+        switch = Switch.query.one()
+        session = switch.session()
+        config = session._get_config(config_type)
+        config = config.split("\n", 1)[1]
+        return config
+
 
 def site_layout():
     """Load the file site-layout.json, and populate the database accordingly.
