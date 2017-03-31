@@ -65,11 +65,9 @@ pytestmark = pytest.mark.usefixtures('configure',
 def not_dell():
     """open the site-layout file to see if we don't have a dell switch"""
 
-    layout_data = open('site-layout.json')
-    layout = json.load(layout_data)
-    layout_data.close()
-    for switch in layout['switches']:
-        return switch['type'] != DELL
+    with open('site-layout.json') as layout_data:
+        layout = json.load(layout_data)
+    return layout['switches'][0]['type'] != DELL
 
 
 @pytest.mark.skipif(not_dell(), reason="Skipping because not a dell switch")
