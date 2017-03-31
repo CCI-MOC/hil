@@ -114,9 +114,9 @@ class _Session(_console.Session):
         self._sendline('sw trunk native vlan none')
 
     def disconnect(self):
-        if cfg.has_option('dell', 'save'):
-            if cfg.getboolean('dell', 'save'):
-                self._save_running_config()
+        if (cfg.has_option('haas.ext.switches.dell', 'save') and
+           cfg.getboolean('haas.ext.switches.dell', 'save')):
+            self._save_running_config()
         self._sendline('exit')
         self.console.expect(pexpect.EOF)
         logger.debug('Logged out of switch %r', self.switch)
@@ -195,25 +195,20 @@ class _Session(_console.Session):
     def _save_running_config(self):
         """saves the running config to startup config"""
 
-        try:
-            self._sendline('copy running-config startup-config')
-            self.console.expect('Overwrite file ')
-            self._sendline('y')
-            self.console.expect('Copy succeeded')
-            logger.debug('Copy succeeded')
-        except:
-            logger.debug('Copy failed')
+        self._sendline('copy running-config startup-config')
+        self.console.expect('Overwrite file ')
+        self._sendline('y')
+        self.console.expect('Copy succeeded')
+        logger.debug('Copy succeeded')
 
     def _get_config(self, config_type):
         """returns the requested configuration file from the switch"""
 
-        try:
-            self._sendline('terminal datadump')
-            self.console.expect('console.*')
-            self._sendline('show ' + config_type + '-config')
-            self.console.expect('console.*')
-            config = self.console.before
-            self._sendline('no terminal datadump')
-            return config
-        except:
-            logger.error('config couldnt be read')
+        self._sendline('terminal datadump')
+        self.console.expect('console.*')
+        self._sendline('show ' + config_type + '-config')
+        self.console.expect('console.*')
+        config = self.console.before
+        config = config.split("\n", 1)[1]
+        self._sendline('no terminal datadump')
+        return config

@@ -1,4 +1,4 @@
-# Copyright 2013-2014 Massachusetts Open Cloud Contributors
+# Copyright 2013-2017 Massachusetts Open Cloud Contributors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the
@@ -14,19 +14,26 @@
 
 """Deployment Tests - These tests are intended for our
 internal setup only and will most likely not work on
-other HaaS configurations. These tests are for dell and cisco switches"""
+other HaaS configurations. This test is for the dell switch only"""
+
 
 from haas import api, model, deferred, server
 from haas.model import db
-from haas.test_common import *
+from haas.test_common import config, config_testsuite, fresh_database, \
+    fail_on_log_warnings, with_request_context, site_layout, config_merge, \
+    NetworkTest, network_create_simple
+
 import pytest
+import json
+
+DELL = 'http://schema.massopencloud.org/haas/v0/switches/powerconnect55xx'
 
 
 @pytest.fixture
 def configure():
     config_testsuite()
     config_merge({
-        'dell': {
+        'haas.ext.switches.dell': {
             'save': 'True'
          }
     })
@@ -54,7 +61,30 @@ pytestmark = pytest.mark.usefixtures('configure',
                                      'site_layout')
 
 
-class TestNativeNetwork(NetworkTest):
+@pytest.fixture
+def not_dell():
+    """open the site-layout file to see if we don't have a dell switch"""
+
+    layout_data = open('site-layout.json')
+    layout = json.load(layout_data)
+    layout_data.close()
+    for switch in layout['switches']:
+        return switch['type'] != DELL
+
+
+@pytest.mark.skipif(not_dell(), reason="Skipping because not a dell switch")
+class TestSwitchSavingToFlash(NetworkTest):
+    """ saves the running config to the flash memory. Test is only for the dell
+        switch"""
+
+    def get_config(self, config_type):
+        """returns the switch configuration file"""
+
+        switch = model.Switch.query.one()
+        session = switch.session()
+        config = session._get_config(config_type)
+        session.disconnect()
+        return config
 
     def test_saving_config_file(self):
 
