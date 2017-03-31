@@ -139,7 +139,8 @@ class Brocade(Switch):
         # Enable switching
         url = self._construct_url(interface)
         payload = '<switchport></switchport>'
-        self._make_request('POST', url, data=payload, log=False)
+        self._make_request('POST', url, data=payload,
+                           acceptable_error_codes=[409])
 
         # Set the interface mode
         if mode in ['access', 'trunk']:
@@ -244,7 +245,7 @@ class Brocade(Switch):
 
         """
         url = self._construct_url(interface, suffix='trunk/tag/native-vlan')
-        self._make_request('DELETE', url, log=False)
+        self._make_request('DELETE', url, acceptable_error_codes=[404])
 
     def _construct_url(self, interface, suffix=''):
         """ Construct the API url for a specific interface appending suffix.
@@ -277,8 +278,11 @@ class Brocade(Switch):
         """ Construct the xml tag by prepending the brocade tag prefix. """
         return '{urn:brocade.com:mgmt:brocade-interface}%s' % name
 
-    def _make_request(self, method, url, data=None, log=True):
+    def _make_request(self, method, url, data=None,
+                      acceptable_error_codes=None):
         r = requests.request(method, url, data=data, auth=self._auth)
-        if (r.status_code >= 400 and log):
+        acceptable_error_codes = acceptable_error_codes or []
+        if r.status_code >= 400 and \
+           r.status_code not in acceptable_error_codes:
             logger.error('Bad Request to switch. Response: %s' % r.text)
         return r
