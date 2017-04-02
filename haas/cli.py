@@ -160,7 +160,7 @@ def check_clientlib_response(fun):
     try:
         return fun()
     except Exception as e:
-        sys.stderr.write('Error: %s\n' % e.message)
+        sys.exit('Error: %s\n' % e.message)
 
 
 def check_status_code(response):
@@ -739,13 +739,13 @@ def show_console(node):
 @cmd
 def start_console(node):
     """Start logging console output from <node>"""
-    q = check_clientlib_response(lambda: C.node.start_console(node))
+    check_clientlib_response(lambda: C.node.start_console(node))
 
 
 @cmd
 def stop_console(node):
     """Stop logging console output from <node> and delete the log"""
-    q = check_clientlib_response(lambda: C.node.stop_console(node))
+    check_clientlib_response(lambda: C.node.stop_console(node))
 
 
 @cmd
