@@ -27,6 +27,7 @@ import schema
 from functools import wraps
 
 from haas.client.client import Client, RequestsHTTPClient, KeystoneHTTPClient
+from haas.client.base import FailedAPICallException
 
 
 command_dict = {}
@@ -150,10 +151,6 @@ def setup_http_client():
     # Finally, fall back to no authentication:
     http_client = requests.Session()
     C = Client(ep, http_client)
-
-
-class FailedAPICallException(Exception):
-    pass
 
 
 def check_clientlib_response(fun):

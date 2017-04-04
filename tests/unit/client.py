@@ -28,7 +28,7 @@ from subprocess import check_call, Popen
 from urlparse import urljoin
 import requests
 from requests.exceptions import ConnectionError
-from haas.client.base import ClientBase
+from haas.client.base import ClientBase, FailedAPICallException
 from haas.client.client import Client, RequestsHTTPClient, KeystoneHTTPClient
 
 
@@ -48,7 +48,7 @@ class Test_ClientBase:
     """Tests client initialization and object_url creation. """
 
     def test_init_error(self):
-        with pytest.raises(Exception):
+        with pytest.raises(TypeError):
             x = ClientBase()
 
     def test_object_url(self):
@@ -293,11 +293,11 @@ class Test_node:
     def test_node_add_duplicate_nic(self):
         C.node.remove_nic('node-08', 'eth0')
         C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff')
-        with pytest.raises(Exception):
+        with pytest.raises(FailedAPICallException):
             C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff')
 
     def test_nosuch_node_add_nic(self):
-        with pytest.raises(Exception):
+        with pytest.raises(FailedAPICallException):
             C.node.add_nic('abcd', 'eth0', 'aa:bb:cc:dd:ee:ff')
 
     def test_remove_nic(self):
@@ -305,7 +305,7 @@ class Test_node:
 
     def test_remove_duplicate_nic(self):
         C.node.remove_nic('node-08', 'eth0')
-        with pytest.raises(Exception):
+        with pytest.raises(FailedAPICallException):
             C.node.remove_nic('node-08', 'eth0')
 
     def test_node_connect_network(self):
@@ -360,7 +360,7 @@ class Test_project:
     def test_duplicate_project_create(self):
         """ test for catching duplicate name while creating new project. """
         C.project.create('dummy-02')
-        with pytest.raises(Exception):
+        with pytest.raises(FailedAPICallException):
             C.project.create('dummy-02')
 
     def test_project_delete(self):
@@ -370,7 +370,7 @@ class Test_project:
 
     def test_error_project_delete(self):
         """ test to capture error condition in project delete. """
-        with pytest.raises(Exception):
+        with pytest.raises(FailedAPICallException):
             C.project.delete('dummy-03')
 
     def test_project_connect_node(self):
@@ -382,15 +382,15 @@ class Test_project:
         """ test for erronous reconnecting node to project. """
         C.project.create('proj-05')
         C.project.connect('proj-05', 'node-07')
-        with pytest.raises(Exception):
+        with pytest.raises(FailedAPICallException):
             C.project.connect('proj-05', 'node-07')
 
     def test_project_connect_node_nosuchobject(self):
         """ test for connecting no such node or project """
         C.project.create('proj-06')
-        with pytest.raises(Exception):
+        with pytest.raises(FailedAPICallException):
             C.project.connect('proj-06', 'no-such-node')
-        with pytest.raises(Exception):
+        with pytest.raises(FailedAPICallException):
             C.project.connect('no-such-project', 'node-06')
 
     def test_project_detach_node(self):
@@ -402,9 +402,9 @@ class Test_project:
     def test_project_detach_node_nosuchobject(self):
         """ Test for while detaching node from project."""
         C.project.create('proj-08')
-        with pytest.raises(Exception):
+        with pytest.raises(FailedAPICallException):
             C.project.detach('proj-08', 'no-such-node')
-        with pytest.raises(Exception):
+        with pytest.raises(FailedAPICallException):
             C.project.detach('no-such-project', 'node-06')
 
 
@@ -433,7 +433,7 @@ class Test_port:
 
     def test_port_dupregister(self):
         C.port.register('mock-01', 'gi1/1/2')
-        with pytest.raises(Exception):
+        with pytest.raises(FailedAPICallException):
             C.port.register('mock-01', 'gi1/1/2')
 
     def test_port_delete(self):
@@ -443,7 +443,7 @@ class Test_port:
     def test_port_delete_error(self):
         C.port.register('mock-01', 'gi1/1/4')
         C.port.delete('mock-01', 'gi1/1/4')
-        with pytest.raises(Exception):
+        with pytest.raises(FailedAPICallException):
             C.port.delete('mock-01', 'gi1/1/4')
 
     def test_port_connect_nic(self):
@@ -455,7 +455,7 @@ class Test_port:
     def test_port_connect_nic_error(self):
         C.port.register('mock-01', 'gi1/1/6')
         C.port.connect_nic('mock-01', 'gi1/1/6', 'node-09', 'eth0')
-        with pytest.raises(Exception):
+        with pytest.raises(FailedAPICallException):
             C.port.connect_nic('mock-01', 'gi1/1/6', 'node-08', 'eth0')
 
     def test_port_detach_nic(self):
@@ -465,7 +465,7 @@ class Test_port:
 
     def test_port_detach_nic_error(self):
         C.port.register('mock-01', 'gi1/1/8')
-        with pytest.raises(Exception):
+        with pytest.raises(FailedAPICallException):
             C.port.detach_nic('mock-01', 'gi1/1/8')
 
 
@@ -481,7 +481,7 @@ class Test_user:
     def test_user_create_duplicate(self):
         """ Test duplicate user creation. """
         C.user.create('bill', 'pass1234', 'regular')
-        with pytest.raises(Exception):
+        with pytest.raises(FailedAPICallException):
             C.user.create('bill', 'pass1234', 'regular')
 
     def test_user_delete(self):
@@ -493,7 +493,7 @@ class Test_user:
         """ Test error condition in user deletion. """
         C.user.create('Ata', 'pass1234', 'admin')
         C.user.delete('Ata')
-        with pytest.raises(Exception):
+        with pytest.raises(FailedAPICallException):
             C.user.delete('Ata')
 
     def test_user_add(self):
@@ -507,7 +507,7 @@ class Test_user:
         C.project.create('test-proj01')
         C.user.create('sam01', 'pass1234', 'regular')
         C.user.add('sam01', 'test-proj01')
-        with pytest.raises(Exception):
+        with pytest.raises(FailedAPICallException):
             C.user.add('sam01', 'test-proj01')
 
     def test_user_remove(self):
@@ -524,7 +524,7 @@ class Test_user:
         C.user.create('xxxx', 'pass1234', 'regular')
         C.user.add('sam03', 'test-proj03')
         C.user.remove('sam03', 'test-proj03')
-        with pytest.raises(Exception):
+        with pytest.raises(FailedAPICallException):
             C.user.remove('sam03', 'test_proj03')
 
 
@@ -558,7 +558,7 @@ class Test_network:
     def test_network_create_duplicate(self):
         """ Test error condition in create network. """
         C.network.create('net-123', 'proj-01', 'proj-01', '')
-        with pytest.raises(Exception):
+        with pytest.raises(FailedAPICallException):
             C.network.create('net-123', 'proj-01', 'proj-01', '')
 
     def test_network_delete(self):
@@ -570,7 +570,7 @@ class Test_network:
         """ Test error condition in delete network. """
         C.network.create('net-xyz', 'proj-01', 'proj-01', '')
         C.network.delete('net-xyz')
-        with pytest.raises(Exception):
+        with pytest.raises(FailedAPICallException):
             C.network.delete('net-xyz')
 
     def test_network_grant_project_access(self):
@@ -583,7 +583,7 @@ class Test_network:
         """ Test error while granting a project access to a network. """
         C.network.create('newnet04', 'admin', '', '')
         C.network.grant_access('proj-02', 'newnet04')
-        with pytest.raises(Exception):
+        with pytest.raises(FailedAPICallException):
             C.network.grant_access('proj-02', 'newnet04')
 
     def test_network_revoke_project_access(self):
@@ -599,5 +599,5 @@ class Test_network:
         C.network.create('newnet03', 'admin', '', '')
         C.network.grant_access('proj-02', 'newnet03')
         C.network.revoke_access('proj-02', 'newnet03')
-        with pytest.raises(Exception):
+        with pytest.raises(FailedAPICallException):
             C.network.revoke_access('proj-02', 'newnet03')
