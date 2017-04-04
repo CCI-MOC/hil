@@ -308,30 +308,33 @@ class Test_node:
         with pytest.raises(FailedAPICallException):
             C.node.remove_nic('node-08', 'eth0')
 
-    def test_node_connect_network(self):
-        assert C.node.connect_network(
-                'node-01', 'eth0', 'net-01', 'vlan/native'
-                ) is None
-
     def test_node_start_console(self):
         assert C.node.start_console('node-01') is None
 
     def test_node_stop_console(self):
         assert C.node.stop_console('node-01') is None
 
+    def test_node_connect_network(self):
+        assert C.node.connect_network(
+                'node-01', 'eth0', 'net-01', 'vlan/native'
+                ) is None
 
-# FIXME: I spent some time on this test. Looks like the pytest
-# framework kills the network server before it can detach network.
-# Explanation: The test is unreliable because of following reasons.
-# When using a real switch driver for network, haas network server
-# times out waiting for response from switch while using mock switch
-# driver, the networking_action queue takes longer to execute the request
-# the testing server kills the servers when other tests are completed.
+    def test_node_connect_network_error(self):
+        C.node.connect_network('node-02', 'eth0', 'net-04', 'vlan/native')
+        with pytest.raises(FailedAPICallException):
+            C.node.connect_network('node-02', 'eth0', 'net-04', 'vlan/native')
 
-    @pytest.mark.xfail
     def test_node_detach_network(self):
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
+        time.sleep(1)
         assert C.node.detach_network('node-04', 'eth0', 'net-04') is None
+
+    def test_node_detach_network_error(self):
+        C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
+        time.sleep(1)
+        C.node.detach_network('node-04', 'eth0', 'net-04')
+        with pytest.raises(FailedAPICallException):
+            C.node.detach_network('node-04', 'eth0', 'net-04')
 
 
 @pytest.mark.usefixtures("create_setup")

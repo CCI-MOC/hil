@@ -81,7 +81,7 @@ class Node(ClientBase):
                 )
         payload = json.dumps({'network': network})
         return self.check_response(
-                self.httpClient.request('PUT', url, payload)
+                self.httpClient.request('POST', url, data=payload)
                 )
 
     def show_console(self, node):

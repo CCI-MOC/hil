@@ -477,7 +477,7 @@ def headnode_delete_hnic(headnode, nic):
 @cmd
 def node_connect_network(node, nic, network, channel):
     """Connect <node> to <network> on given <nic> and <channel>"""
-    check_client_lib(
+    check_clientlib_response(
             lambda: C.node.connect_network(node, nic, network, channel)
             )
 
