@@ -105,12 +105,6 @@ class _Session(_console.Session):
         console.expect('Password: ')
         console.sendline(switch.password)
 
-        console = pexpect.spawn('telnet ' + switch.hostname)
-        console.expect('login: ')
-        console.sendline(switch.username)
-        console.expect('Password: ')
-        console.sendline(switch.password)
-
         prompts = _console.get_prompts(console)
 
         return _Session(console=console,
