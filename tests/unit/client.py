@@ -326,12 +326,12 @@ class Test_node:
 
     def test_node_detach_network(self):
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
-        time.sleep(1)
+        time.sleep(2)  # To avoid a potential race condition
         assert C.node.detach_network('node-04', 'eth0', 'net-04') is None
 
     def test_node_detach_network_error(self):
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
-        time.sleep(1)
+        time.sleep(2)  # To avoid a potential race condition
         C.node.detach_network('node-04', 'eth0', 'net-04')
         with pytest.raises(FailedAPICallException):
             C.node.detach_network('node-04', 'eth0', 'net-04')
