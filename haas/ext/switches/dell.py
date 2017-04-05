@@ -162,20 +162,17 @@ class _Session(_console.Session):
         """
 
         alternatives = [
-            re.escape(r'More: <space>, '
-                      'Quit: q or CTRL+Z, One line: <return> '),
+            r'More: .*',  # Prompt to press a key to continue
             r'Classification rules:\r\n',  # End
             r'[^ \t\r\n][^:]*:[^\n]*\n',   # Key:Value\r\n,
             r' [^\n]*\n',                  # continuation line (from k:v)
         ]
         self._sendline('show int sw %s' % interface)
-        # Find the first Key:Value pair (this is needed to skip past some
-        # possible matches for other patterns prior to this:
-        self.console.expect(alternatives[2])
 
+        # Name is the first field:
+        self.console.expect('Name: .*')
         k, v = self.console.after.split(':', 1)
         result = {k: v}
-
         while True:
             index = self.console.expect(alternatives)
             if index == 0:
