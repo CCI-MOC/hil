@@ -114,8 +114,11 @@ class _Session(_console.Session):
         self._sendline('sw trunk native vlan none')
 
     def disconnect(self):
+        save = True
         if (cfg.has_option('haas.ext.switches.dell', 'save') and
-           cfg.getboolean('haas.ext.switches.dell', 'save')):
+           not cfg.getboolean('haas.ext.switches.dell', 'save')):
+            save = False
+        if save:
             self._save_running_config()
         self._sendline('exit')
         self.console.expect(pexpect.EOF)
