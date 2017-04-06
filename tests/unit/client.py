@@ -65,6 +65,8 @@ class Test_ClientBase:
 #       4. Populates haas with dummy objects
 #       5. tears down the setup in a clean fashion.
 
+db_dir = None
+
 
 def make_config():
     """ This function creates haas.cfg with desired options
@@ -72,6 +74,8 @@ def make_config():
     It returns a tuple where (tmpdir, cwd) = ('location of haas.cfg', 'pwdd')
     """
     tmpdir = tempfile.mkdtemp()
+    global db_dir
+    db_dir = tmpdir
     cwd = os.getcwd()
     os.chdir(tmpdir)
     with open('haas.cfg', 'w') as f:
@@ -236,6 +240,21 @@ def populate_server():
                 )
 
 
+# Avoid race condition while creating, deleting networks
+def avoid_network_race_condition():
+    import sqlite3
+    global db_dir  # Value of db_dir is populated by `create_setup`.
+    db_file = db_dir+'/haas.db'
+    conn = sqlite3.connect(db_file)
+    cur = conn.cursor()
+    while True:
+        que = len(cur.execute('select * from networking_action;').fetchall())
+        if que > 0:
+            time.sleep(1)
+        else:
+            break
+
+
 @pytest.fixture(scope="module")
 def create_setup(request):
     dir_names = make_config()
@@ -326,12 +345,12 @@ class Test_node:
 
     def test_node_detach_network(self):
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
-        time.sleep(2)  # To avoid a potential race condition
+        avoid_network_race_condition()
         assert C.node.detach_network('node-04', 'eth0', 'net-04') is None
 
     def test_node_detach_network_error(self):
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
-        time.sleep(2)  # To avoid a potential race condition
+        avoid_network_race_condition()
         C.node.detach_network('node-04', 'eth0', 'net-04')
         with pytest.raises(FailedAPICallException):
             C.node.detach_network('node-04', 'eth0', 'net-04')
