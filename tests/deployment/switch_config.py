@@ -14,7 +14,8 @@
 
 """Deployment Tests - These tests are intended for our
 internal setup only and will most likely not work on
-other HaaS configurations. This test is for the dell switch only"""
+other HaaS configurations. This test is for the dell
+and the cisco nexus switches only"""
 
 
 from haas import api, model, deferred, server
@@ -27,6 +28,7 @@ import pytest
 import json
 
 DELL = 'http://schema.massopencloud.org/haas/v0/switches/powerconnect55xx'
+NEXUS = 'http://schema.massopencloud.org/haas/v0/switches/nexus'
 
 
 @pytest.fixture
@@ -35,7 +37,10 @@ def configure():
     config_merge({
         'haas.ext.switches.dell': {
             'save': 'True'
-         }
+         },
+        'haas.ext.switches.nexus': {
+            'save': 'True'
+        }
     })
     config.load_extensions()
 
@@ -62,15 +67,18 @@ pytestmark = pytest.mark.usefixtures('configure',
 
 
 @pytest.fixture
-def not_dell():
-    """open the site-layout file to see if we don't have a dell switch"""
+def not_dell_or_nexus():
+    """open the site-layout file to see if we don't have a dell or cisco nexus
+    switch"""
 
     with open('site-layout.json') as layout_data:
         layout = json.load(layout_data)
-    return layout['switches'][0]['type'] != DELL
+    switch_type = layout['switches'][0]['type']
+    return switch_type != NEXUS and switch_type != DELL
 
 
-@pytest.mark.skipif(not_dell(), reason="Skipping because not a dell switch")
+@pytest.mark.skipif(not_dell_or_nexus(),
+                    reason="Skipping because not a dell or cisco switch")
 class TestSwitchSavingToFlash(NetworkTest):
     """ saves the running config to the flash memory. Test is only for the dell
         switch"""

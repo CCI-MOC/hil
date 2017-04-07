@@ -25,6 +25,7 @@ import logging
 
 from haas.model import db, Switch
 from haas.ext.switches import _console
+from haas.config import cfg
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +96,12 @@ class _Session(_console.Session):
         self.console.sendline('sw trunk native vlan ' + self.dummy_vlan)
 
     def disconnect(self):
+        save = True
+        if (cfg.has_option('haas.ext.switches.nexus', 'save') and
+           not cfg.getboolean('haas.ext.switches.nexus', 'save')):
+            save = False
+        if save:
+            self._save_running_config()
         self.console.sendline('exit')
 
     @staticmethod
@@ -202,3 +209,27 @@ class _Session(_console.Session):
                 networks.append(('vlan/native', native))
             result[k] = networks
         return result
+
+    def _save_running_config(self):
+        """saves the running config to startup config"""
+
+        self.console.sendline('copy running-config startup-config')
+        self.console.expect('Copy complete')
+        logger.debug('Copy succeeded')
+
+    def _get_config(self, config_type):
+        """returns the requested configuration file from the switch"""
+
+        self.console.sendline('terminal length 0')
+        self.console.expect(r'[\r\n]+.+# ')
+        self.console.sendline('show ' + config_type + '-config')
+        self.console.expect(r'[\r\n]+.+# ')
+        config = self.console.after
+        lines_to_remove = 9
+        # the startup config file always has a couple of extra lines that
+        # we need to remove.
+        if(config_type == 'startup'):
+            lines_to_remove = 11
+        config = config.split("\n", lines_to_remove)[lines_to_remove]
+        self.console.sendline('terminal length 40')
+        return config
