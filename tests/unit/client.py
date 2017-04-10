@@ -247,10 +247,41 @@ def avoid_network_race_condition():
     db_file = db_dir+'/haas.db'
     conn = sqlite3.connect(db_file)
     cur = conn.cursor()
+    timeout = 0
     while True:
         que = len(cur.execute('select * from networking_action;').fetchall())
         if que > 0:
             time.sleep(1)
+            timeout = timeout + 1
+            if timeout > 10:  # breakout if exceeds 10 secs.
+                break
+        else:
+            break
+
+
+def avoid_race_sqlalchemy():
+    from haas.model import Node, Project, NetworkingAction
+    from sqlalchemy import func
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+
+    global db_dir  # Value of db_dir is populated by `create_setup`.
+    uri = 'sqlite:///'+db_dir+'/haas.db'
+    engine = create_engine(uri)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    timeout = 0
+
+    while True:
+        que = session.query(
+                func.count('*')).select_from(
+                        NetworkingAction
+                        ).scalar()
+        if que > 0:
+            time.sleep(1)
+            timeout = timeout + 1
+            if timeout > 10:  # breakout if exceeds 10 secs.
+                break
         else:
             break
 
@@ -345,7 +376,7 @@ class Test_node:
 
     def test_node_detach_network(self):
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
-        avoid_network_race_condition()
+        avoid_race_sqlalchemy()
         assert C.node.detach_network('node-04', 'eth0', 'net-04') is None
 
     def test_node_detach_network_error(self):
