@@ -401,7 +401,8 @@ def node_connect_network(node, nic, network, channel=None):
         raise BadArgumentError("Channel %r, is not legal for this network." %
                                channel)
 
-    db.session.add(model.NetworkingAction(nic=nic,
+    db.session.add(model.NetworkingAction(type='modify_port',
+                                          nic=nic,
                                           new_network=network,
                                           channel=channel))
     db.session.commit()
@@ -437,7 +438,8 @@ def node_detach_network(node, nic, network):
         .filter_by(nic=nic, network=network).first()
     if attachment is None:
         raise BadArgumentError("The network is not attached to the nic.")
-    db.session.add(model.NetworkingAction(nic=nic,
+    db.session.add(model.NetworkingAction(type='modify_port',
+                                          nic=nic,
                                           channel=attachment.channel,
                                           new_network=None))
     db.session.commit()
@@ -1034,6 +1036,26 @@ def port_detach_nic(switch, port):
         raise BlockedError("The port is attached to a node which is not free")
 
     port.nic = None
+    db.session.commit()
+
+
+@rest_call('POST', '/switch/<switch>/port/<path:port>/revert', Schema({
+    'switch': basestring, 'port': basestring,
+}))
+def port_revert(switch, port):
+    get_auth_backend().require_admin()
+    switch = _must_find(model.Switch, switch)
+    port = _must_find_n(switch, model.Port, port)
+
+    if port.nic is None:
+        raise NotFoundError(port.label + " not attached")
+    if port.nic.current_action:
+        raise BlockedError("Port already has a pending action.")
+
+    db.session.add(model.NetworkingAction(type='revert_port',
+                                          nic=port.nic,
+                                          channel='',
+                                          new_network=None))
     db.session.commit()
 
 

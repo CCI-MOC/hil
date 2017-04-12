@@ -136,10 +136,12 @@ class TestBrocade(object):
         r = requests.get(url)
     ```
     """
+
     @pytest.fixture()
     def switch(self):
         from haas.ext.switches import brocade
         return brocade.Brocade(
+            label='theSwitch',
             hostname='http://example.com',
             username='admin',
             password='admin',
@@ -205,15 +207,17 @@ class TestBrocade(object):
             response = switch._get_mode(INTERFACE1)
             assert response == 'trunk'
 
-    def test_apply_networking(self, switch, nic, network):
+    def test_modify_port(self, switch, nic, network):
         # Create a port on the switch and connect it to the nic
         port = model.Port(label=INTERFACE1, switch=switch)
-        nic.port = port
+        port.nic = nic
 
         # Test action to set a network as native
-        action_native = model.NetworkingAction(nic=nic,
+        action_native = model.NetworkingAction(type='modify_port',
+                                               nic=nic,
                                                new_network=network,
                                                channel='vlan/native')
+
         with requests_mock.mock() as mock:
             url_switch = switch._construct_url(INTERFACE1)
             mock.post(url_switch)
@@ -225,7 +229,9 @@ class TestBrocade(object):
             url_trunk = switch._construct_url(INTERFACE1, suffix='trunk')
             mock.put(url_trunk)
 
-            switch.apply_networking(action_native)
+            switch.modify_port(action_native.nic.port.label,
+                               action_native.channel,
+                               action_native.new_network.network_id)
 
             assert mock.called
             assert mock.call_count == 4
@@ -234,21 +240,26 @@ class TestBrocade(object):
             assert mock.request_history[3].text == TRUNK_NATIVE_PAYLOAD
 
         # Test action to remove a native network
-        action_rm_native = model.NetworkingAction(nic=nic,
+        action_rm_native = model.NetworkingAction(type='modify_port',
+                                                  nic=nic,
                                                   new_network=None,
                                                   channel='vlan/native')
+
         with requests_mock.mock() as mock:
             url_native = switch._construct_url(INTERFACE1,
                                                suffix='trunk/native-vlan')
             mock.delete(url_native)
 
-            switch.apply_networking(action_rm_native)
+            switch.modify_port(action_rm_native.nic.port.label,
+                               action_rm_native.channel,
+                               None)
 
             assert mock.called
             assert mock.call_count == 1
 
         # Test action to add a vlan
-        action_vlan = model.NetworkingAction(nic=nic,
+        action_vlan = model.NetworkingAction(type='modify_port',
+                                             nic=nic,
                                              new_network=network,
                                              channel='vlan/102')
         with requests_mock.mock() as mock:
@@ -261,7 +272,9 @@ class TestBrocade(object):
                                               suffix='trunk/allowed/vlan')
             mock.put(url_trunk)
 
-            switch.apply_networking(action_vlan)
+            switch.modify_port(action_vlan.nic.port.label,
+                               action_vlan.channel,
+                               action_vlan.new_network.network_id)
 
             assert mock.called
             assert mock.call_count == 3
@@ -270,7 +283,8 @@ class TestBrocade(object):
             assert mock.request_history[2].text == TRUNK_VLAN_PAYLOAD
 
         # Test action to remove a vlan
-        action_rm_vlan = model.NetworkingAction(nic=nic,
+        action_rm_vlan = model.NetworkingAction(type='modify_port',
+                                                nic=nic,
                                                 new_network=None,
                                                 channel='vlan/102')
         with requests_mock.mock() as mock:
@@ -278,7 +292,9 @@ class TestBrocade(object):
                                               suffix='trunk/allowed/vlan')
             mock.put(url_trunk)
 
-            switch.apply_networking(action_rm_vlan)
+            switch.modify_port(action_rm_vlan.nic.port.label,
+                               action_rm_vlan.channel,
+                               None)
 
             assert mock.called
             assert mock.call_count == 1

@@ -202,3 +202,7 @@ class _Session(_console.Session):
                 networks.append(('vlan/native', native))
             result[k] = networks
         return result
+
+    def disable_port(self):
+        self.console.sendline('sw trunk allowed vlan none')
+        self.console.sendline('sw trunk native vlan ' + self.dummy_vlan)

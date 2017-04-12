@@ -156,6 +156,10 @@ class _Session(_console.Session):
             result[k] = networks
         return result
 
+    def disable_port(self):
+        self._sendline('sw trunk allowed vlan none')
+        self._sendline('sw trunk native vlan none')
+
     def _port_configs(self, ports):
         result = {}
         for port in ports:
