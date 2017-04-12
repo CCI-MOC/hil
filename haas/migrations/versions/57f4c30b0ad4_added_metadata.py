@@ -13,7 +13,7 @@ import sqlalchemy as sa
 # revision identifiers, used by Alembic.
 revision = '57f4c30b0ad4'
 down_revision = '89630e3872ec'
-branch_labels = ('haas',)
+branch_labels = None
 
 
 def upgrade():

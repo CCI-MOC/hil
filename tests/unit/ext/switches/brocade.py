@@ -99,6 +99,8 @@ TRUNK_NATIVE_VLAN_RESPONSE_WITH_VLANS = """
 </trunk>
 """
 
+SWITCHPORT_PAYLOAD = '<switchport></switchport>'
+
 TRUNK_PAYLOAD = '<mode><vlan-mode>trunk</vlan-mode></mode>'
 
 TRUNK_NATIVE_PAYLOAD = '<trunk><native-vlan>102</native-vlan></trunk>'
@@ -134,10 +136,12 @@ class TestBrocade(object):
         r = requests.get(url)
     ```
     """
+
     @pytest.fixture()
     def switch(self):
         from haas.ext.switches import brocade
         return brocade.Brocade(
+            label='theSwitch',
             hostname='http://example.com',
             username='admin',
             password='admin',
@@ -165,25 +169,30 @@ class TestBrocade(object):
 
     def test_get_port_networks(self, switch):
         with requests_mock.mock() as mock:
+
+            PORT1 = model.Port(label=INTERFACE1, switch=switch)
+            PORT2 = model.Port(label=INTERFACE2, switch=switch)
+            PORT3 = model.Port(label=INTERFACE3, switch=switch)
+
             mock.get(switch._construct_url(INTERFACE1, suffix='trunk'),
                      text=TRUNK_NATIVE_VLAN_RESPONSE_WITH_VLANS)
             mock.get(switch._construct_url(INTERFACE2, suffix='trunk'),
                      text=TRUNK_NATIVE_VLAN_RESPONSE_NO_VLANS)
             mock.get(switch._construct_url(INTERFACE3, suffix='trunk'),
                      text=TRUNK_VLAN_RESPONSE)
-            response = switch.get_port_networks([INTERFACE1,
-                                                 INTERFACE2,
-                                                 INTERFACE3])
+            response = switch.get_port_networks([PORT1,
+                                                 PORT2,
+                                                 PORT3])
             assert response == {
-                INTERFACE1: [('vlan/native', '10'),
-                             ('vlan/4001', '4001'),
-                             ('vlan/4025', '4025')],
-                INTERFACE2: [('vlan/native', '10')],
-                INTERFACE3: [('vlan/1', '1'),
-                             ('vlan/4001', '4001'),
-                             ('vlan/4004', '4004'),
-                             ('vlan/4025', '4025'),
-                             ('vlan/4050', '4050')]
+                PORT1: [('vlan/native', '10'),
+                        ('vlan/4001', '4001'),
+                        ('vlan/4025', '4025')],
+                PORT2: [('vlan/native', '10')],
+                PORT3: [('vlan/1', '1'),
+                        ('vlan/4001', '4001'),
+                        ('vlan/4004', '4004'),
+                        ('vlan/4025', '4025'),
+                        ('vlan/4050', '4050')]
             }
 
     def test_get_mode(self, switch):
@@ -198,16 +207,20 @@ class TestBrocade(object):
             response = switch._get_mode(INTERFACE1)
             assert response == 'trunk'
 
-    def test_apply_networking(self, switch, nic, network):
+    def test_modify_port(self, switch, nic, network):
         # Create a port on the switch and connect it to the nic
         port = model.Port(label=INTERFACE1, switch=switch)
-        nic.port = port
+        port.nic = nic
 
         # Test action to set a network as native
-        action_native = model.NetworkingAction(nic=nic,
+        action_native = model.NetworkingAction(type='modify_port',
+                                               nic=nic,
                                                new_network=network,
                                                channel='vlan/native')
+
         with requests_mock.mock() as mock:
+            url_switch = switch._construct_url(INTERFACE1)
+            mock.post(url_switch)
             url_mode = switch._construct_url(INTERFACE1, suffix='mode')
             mock.put(url_mode)
             url_tag = switch._construct_url(INTERFACE1,
@@ -216,32 +229,42 @@ class TestBrocade(object):
             url_trunk = switch._construct_url(INTERFACE1, suffix='trunk')
             mock.put(url_trunk)
 
-            switch.apply_networking(action_native)
+            switch.modify_port(action_native.nic.port.label,
+                               action_native.channel,
+                               action_native.new_network.network_id)
 
             assert mock.called
-            assert mock.call_count == 3
-            assert mock.request_history[0].text == TRUNK_PAYLOAD
-            assert mock.request_history[2].text == TRUNK_NATIVE_PAYLOAD
+            assert mock.call_count == 4
+            assert mock.request_history[0].text == SWITCHPORT_PAYLOAD
+            assert mock.request_history[1].text == TRUNK_PAYLOAD
+            assert mock.request_history[3].text == TRUNK_NATIVE_PAYLOAD
 
         # Test action to remove a native network
-        action_rm_native = model.NetworkingAction(nic=nic,
+        action_rm_native = model.NetworkingAction(type='modify_port',
+                                                  nic=nic,
                                                   new_network=None,
                                                   channel='vlan/native')
+
         with requests_mock.mock() as mock:
             url_native = switch._construct_url(INTERFACE1,
                                                suffix='trunk/native-vlan')
             mock.delete(url_native)
 
-            switch.apply_networking(action_rm_native)
+            switch.modify_port(action_rm_native.nic.port.label,
+                               action_rm_native.channel,
+                               None)
 
             assert mock.called
             assert mock.call_count == 1
 
         # Test action to add a vlan
-        action_vlan = model.NetworkingAction(nic=nic,
+        action_vlan = model.NetworkingAction(type='modify_port',
+                                             nic=nic,
                                              new_network=network,
                                              channel='vlan/102')
         with requests_mock.mock() as mock:
+            url_switch = switch._construct_url(INTERFACE1)
+            mock.post(url_switch)
             url_mode = switch._construct_url(INTERFACE1,
                                              suffix='mode')
             mock.put(url_mode)
@@ -249,15 +272,19 @@ class TestBrocade(object):
                                               suffix='trunk/allowed/vlan')
             mock.put(url_trunk)
 
-            switch.apply_networking(action_vlan)
+            switch.modify_port(action_vlan.nic.port.label,
+                               action_vlan.channel,
+                               action_vlan.new_network.network_id)
 
             assert mock.called
-            assert mock.call_count == 2
-            assert mock.request_history[0].text == TRUNK_PAYLOAD
-            assert mock.request_history[1].text == TRUNK_VLAN_PAYLOAD
+            assert mock.call_count == 3
+            assert mock.request_history[0].text == SWITCHPORT_PAYLOAD
+            assert mock.request_history[1].text == TRUNK_PAYLOAD
+            assert mock.request_history[2].text == TRUNK_VLAN_PAYLOAD
 
         # Test action to remove a vlan
-        action_rm_vlan = model.NetworkingAction(nic=nic,
+        action_rm_vlan = model.NetworkingAction(type='modify_port',
+                                                nic=nic,
                                                 new_network=None,
                                                 channel='vlan/102')
         with requests_mock.mock() as mock:
@@ -265,8 +292,21 @@ class TestBrocade(object):
                                               suffix='trunk/allowed/vlan')
             mock.put(url_trunk)
 
-            switch.apply_networking(action_rm_vlan)
+            switch.modify_port(action_rm_vlan.nic.port.label,
+                               action_rm_vlan.channel,
+                               None)
 
             assert mock.called
             assert mock.call_count == 1
             assert mock.request_history[0].text == TRUNK_REMOVE_VLAN_PAYLOAD
+
+    def test_construct_url(self, switch):
+        assert switch._construct_url('1/0/4') == (
+            'http://example.com/rest/config/running/interface/'
+            'TenGigabitEthernet/%221/0/4%22'
+        )
+
+        assert switch._construct_url('1/0/4', suffix='mode') == (
+            'http://example.com/rest/config/running/interface/'
+            'TenGigabitEthernet/%221/0/4%22/switchport/mode'
+        )

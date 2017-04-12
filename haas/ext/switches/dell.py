@@ -26,6 +26,7 @@ from haas.model import db, Switch
 from haas.migrations import paths
 from haas.ext.switches import _console
 from os.path import dirname, join
+from haas.config import cfg
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'dell')
 
@@ -113,6 +114,12 @@ class _Session(_console.Session):
         self._sendline('sw trunk native vlan none')
 
     def disconnect(self):
+        save = True
+        if (cfg.has_option('haas.ext.switches.dell', 'save') and
+           not cfg.getboolean('haas.ext.switches.dell', 'save')):
+            save = False
+        if save:
+            self._save_running_config()
         self._sendline('exit')
         self.console.expect(pexpect.EOF)
         logger.debug('Logged out of switch %r', self.switch)
@@ -149,6 +156,10 @@ class _Session(_console.Session):
             result[k] = networks
         return result
 
+    def disable_port(self):
+        self._sendline('sw trunk allowed vlan none')
+        self._sendline('sw trunk native vlan none')
+
     def _port_configs(self, ports):
         result = {}
         for port in ports:
@@ -162,20 +173,17 @@ class _Session(_console.Session):
         """
 
         alternatives = [
-            re.escape(r'More: <space>, '
-                      'Quit: q or CTRL+Z, One line: <return> '),
+            r'More: .*',  # Prompt to press a key to continue
             r'Classification rules:\r\n',  # End
             r'[^ \t\r\n][^:]*:[^\n]*\n',   # Key:Value\r\n,
             r' [^\n]*\n',                  # continuation line (from k:v)
         ]
         self._sendline('show int sw %s' % interface)
-        # Find the first Key:Value pair (this is needed to skip past some
-        # possible matches for other patterns prior to this:
-        self.console.expect(alternatives[2])
 
+        # Name is the first field:
+        self.console.expect('Name: .*')
         k, v = self.console.after.split(':', 1)
         result = {k: v}
-
         while True:
             index = self.console.expect(alternatives)
             if index == 0:
@@ -190,3 +198,24 @@ class _Session(_console.Session):
 
         self.console.expect(self.main_prompt)
         return result
+
+    def _save_running_config(self):
+        """saves the running config to startup config"""
+
+        self._sendline('copy running-config startup-config')
+        self.console.expect('Overwrite file ')
+        self._sendline('y')
+        self.console.expect('Copy succeeded')
+        logger.debug('Copy succeeded')
+
+    def _get_config(self, config_type):
+        """returns the requested configuration file from the switch"""
+
+        self._sendline('terminal datadump')
+        self.console.expect('console.*')
+        self._sendline('show ' + config_type + '-config')
+        self.console.expect('console.*')
+        config = self.console.before
+        config = config.split("\n", 1)[1]
+        self._sendline('no terminal datadump')
+        return config

@@ -110,13 +110,19 @@ class TestNativeNetwork(NetworkTest):
             nodes = project.nodes
             ports = self.get_all_ports(nodes)
 
-            # Remove all nodes from their networks
-            for node in nodes:
+            # Remove all nodes from their networks. We do this in two different
+            # ways for different ports to test the different mechanisms. For
+            # the first two nodes we explicity remove the attachments. For the
+            # latter two we call port_revert.
+            for node in nodes[:2]:
                 attachment = model.NetworkAttachment.query \
                     .filter_by(nic=node.nics[0]).one()
                 api.node_detach_network(node.label,
                                         node.nics[0].label,
                                         attachment.network.label)
+            for node in nodes[2:]:
+                port = node.nics[0].port
+                api.port_revert(port.owner.label, port.label)
             deferred.apply_networking()
 
             # Assert that none of the nodes are on any network

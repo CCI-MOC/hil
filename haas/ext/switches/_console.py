@@ -14,6 +14,7 @@
 """Common functionality for switches with a cisco-like console."""
 
 from abc import ABCMeta, abstractmethod
+from haas.model import Port, NetworkAttachment
 import re
 
 
@@ -65,26 +66,32 @@ class Session(object):
         """
 
     @abstractmethod
+    def disable_port(self):
+        """Disable all vlans on the current port."""
+
+    @abstractmethod
     def disconnect(self):
         """End the session. Must be at the main prompt."""
 
-    def apply_networking(self, action):
-        interface = action.nic.port.label
-        channel = action.channel
+    def modify_port(self, port, channel, network_id):
+        interface = port
+        port = Port.query.filter_by(label=port,
+                                    owner_id=self.switch.id).one()
 
         self.enter_if_prompt(interface)
         self.console.expect(self.if_prompt)
 
         if channel == 'vlan/native':
-            old_native = None
-            old_attachments = filter(lambda a: a.channel == 'vlan/native',
-                                     action.nic.attachments)
-            if len(old_attachments) != 0:
-                old_native = old_attachments[0].network.network_id
-            if action.new_network is None:
+            old_native = NetworkAttachment.query.filter_by(
+                channel='vlan/native',
+                nic_id=port.nic.id).first()
+            if old_native is not None:
+                old_native = old_native.network.network_id
+
+            if network_id is not None:
+                self.set_native(old_native, network_id)
+            elif old_native is not None:
                 self.disable_native(old_native)
-            else:
-                self.set_native(old_native, action.new_network.network_id)
         else:
             match = re.match(_CHANNEL_RE, channel)
             # TODO: I'd be more okay with this assertion if it weren't possible
@@ -94,11 +101,20 @@ class Session(object):
             assert match is not None, "HaaS passed an invalid channel to the" \
                 "switch!"
             vlan_id = match.groups()[0]
-            if action.new_network is None:
+            if network_id is None:
                 self.disable_vlan(vlan_id)
             else:
-                assert action.new_network.network_id == vlan_id
+                assert network_id == vlan_id
                 self.enable_vlan(vlan_id)
+
+        self.exit_if_prompt()
+        self.console.expect(self.config_prompt)
+
+    def revert_port(self, port):
+        self.enter_if_prompt(port)
+        self.console.expect(self.if_prompt)
+
+        self.disable_port()
 
         self.exit_if_prompt()
         self.console.expect(self.config_prompt)
