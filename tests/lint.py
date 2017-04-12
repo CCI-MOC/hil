@@ -77,7 +77,11 @@ class LogCallVisitor(ast.NodeVisitor):
         # smarter about figuring out what function is being called,
         # but this is probably good enough.
         if isinstance(node.func, ast.Attribute):
-            # This is a method call on on object
+            # This is a method call on on object. visit_Call is invoked
+            # on every call expression in the AST, including plain-old
+            # functions, and computed functions like
+            # `myfunctable[23](...)`. We only want to process nodes of
+            # the form foo.bar(...).
             funcname = node.func.attr
         else:
             return
