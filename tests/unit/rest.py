@@ -574,7 +574,7 @@ def test_dont_log(client, caplog):
     def some_call(public, private, stuff):
         pass
 
-    with caplog.atLevel(logging.DEBUG):
+    with caplog.at_level(logging.DEBUG):
         client.post('/some-path', data=json.dumps({
             'public': 'common knowledge',
             'private': 'sensitive info',
