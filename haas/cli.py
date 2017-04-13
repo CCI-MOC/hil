@@ -706,6 +706,13 @@ def port_detach_nic(switch, port):
 
 
 @cmd
+def port_revert(switch, port):
+    """Detach a <port> on a <switch> from all attached networks."""
+    url = object_url('switch', switch, 'port', port, 'revert')
+    do_post(url)
+
+
+@cmd
 def list_network_attachments(network, project):
     """List nodes connected to a network
     <project> may be either "all" or a specific project name.

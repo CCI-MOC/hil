@@ -228,11 +228,21 @@ class Switch(db.Model):
         HaaS avoid connecting and disconnecting for each change. the session
         object must have the methods:
 
-            def apply_networking(self, action):
-                '''Apply the NetworkingAction ``action`` to the switch.
+            def modify_port(self, port, channel, new_network):
+                '''Move the specified (port, channel) pair to new_network.
 
-                Action is guaranteed to reference a port object that is
-                attached to the correct switch.
+                `port` is the name of a port (`Port.label`) on the switch.
+
+                `channel` is a channel identifier
+
+                `new_network` is the network ID for the network to move to.
+                If `new_network` is `None`, The (port, channel) pair should be
+                removed from it's existing network (if any).
+
+            def revert_port(self, port):
+                '''Detach the port from all networks.
+
+                `port` is the name of a port (`Port.label`) on the switch.
                 '''
 
             def disconnect(self):
@@ -264,7 +274,7 @@ class Switch(db.Model):
 
         Some drivers may do things that are not connection-oriented; If so,
         they can just return a dummy object here. The recommended way to
-        handle this is to define the two methods above on the switch object,
+        handle this is to define the methods above on the switch object,
         and have ``session`` just return ``self``.
         """
 
@@ -497,15 +507,46 @@ class Hnic(db.Model):
 
 
 class NetworkingAction(db.Model):
-    """A journal entry representing a pending networking change."""
+    """A journal entry representing a pending networking change.
+
+    This is basically an RPC call from the API server to the network daemon.
+    Eventually we'll probably want to separate the storage for these daemons,
+    at which point we can replace this with proper RPC.
+
+    `legal_types` is a list of legal values for the `type` field. The meaning
+    and relevance of the some other fields depends on the value of `type`; see
+    the comments for each field.
+
+    """
+
+    # Legal values for `type`
+    legal_types = ('modify_port', 'revert_port')
+
     id = db.Column(db.Integer, primary_key=True)
+
+    # The type of action.
+    #
+    # * 'modify_port' attaches the (nic, channel) pair to a specified network,
+    #    or detaches it from its existing network.
+    # * 'revert_port' detaches the port from all networks.
+    type = db.Column(db.String, nullable=False)
 
     nic_id = db.Column(db.ForeignKey('nic.id'), nullable=False)
     new_network_id = db.Column(db.ForeignKey('network.id'), nullable=True)
+
+    # If `type` is 'modify_port', this denotes the channel that should be
+    # affected on the given port. If `type` is 'revert_port', this field
+    # is ignored.
     channel = db.Column(db.String, nullable=False)
 
+    # The nic affected by the action. for 'revert_port', this is the nic
+    # attached to the specified port.
     nic = db.relationship("Nic",
                           backref=db.backref('current_action', uselist=False))
+
+    # For 'modify_port', this is the new network that the (nic, channel) pair
+    # should be moved to, or None if the (nic, channel) should just be detached
+    # from its current network.
     new_network = db.relationship("Network",
                                   backref=db.backref('scheduled_nics',
                                                      uselist=True))

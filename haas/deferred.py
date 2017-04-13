@@ -18,6 +18,59 @@ from haas import model
 from haas.model import db
 import logging
 
+logger = logging.getLogger(__name__)
+
+
+class DaemonSession(object):
+
+    def __init__(self):
+        self.switch_sessions = {}
+
+    def handle_action(self, action):
+        if action.type not in model.NetworkingAction.legal_types:
+            logger.warn('Illegal action type %r from server; ignoring.')
+        elif not action.nic.port:
+            logger.warn('Not modifying NIC %s; NIC is not on a port.' %
+                        action.nic.label)
+        else:
+            getattr(self, action.type)(action)
+
+    def modify_port(self, action):
+        session = self.get_session(action.nic.port.owner)
+
+        if action.new_network is None:
+            network_id = None
+        else:
+            network_id = action.new_network.network_id
+
+        session.modify_port(action.nic.port.label,
+                            action.channel,
+                            network_id)
+        if action.new_network is None:
+            model.NetworkAttachment.query \
+                .filter_by(nic=action.nic, channel=action.channel)\
+                .delete()
+        else:
+            db.session.add(model.NetworkAttachment(
+                nic=action.nic,
+                network=action.new_network,
+                channel=action.channel))
+
+    def revert_port(self, action):
+        session = self.get_session(action.nic.port.owner)
+        session.revert_port(action.nic.port.label)
+        model.NetworkAttachment.query.filter_by(nic=action.nic).delete()
+
+    def get_session(self, switch):
+        if switch.label not in self.switch_sessions:
+            self.switch_sessions[switch.label] = switch.session()
+        return self.switch_sessions[switch.label]
+
+    def close(self):
+        for session in self.switch_sessions.values():
+            session.disconnect()
+        self.switch_sessions = {}
+
 
 def apply_networking():
     """Do each networking action in the journal, then cross them off.
@@ -40,41 +93,15 @@ def apply_networking():
     actions = model.NetworkingAction.query \
         .order_by(model.NetworkingAction.id).all()
 
-    switch_sessions = {}
-
     if actions == []:
         # No actions to perform.  Return False immediately.
         db.session.commit()
         return False
 
+    session = DaemonSession()
     for action in actions:
-        nic = action.nic
-        network = action.new_network
-        if nic.port:
-            switch = nic.port.owner
-            if switch.label not in switch_sessions:
-                switch_sessions[switch.label] = switch.session()
-            switch_sessions[switch.label].apply_networking(action)
-        else:
-            logging.getLogger(__name__).warn(
-                'Not modifying NIC %s; NIC is not on a port.' %
-                nic.label)
-
-    # Close all of our sessions:
-    for session in switch_sessions.values():
-        session.disconnect()
-
-    # Then perform the database changes and delete them
-    for action in actions:
-        if action.new_network is None:
-            model.NetworkAttachment.query \
-                .filter_by(nic=action.nic, channel=action.channel)\
-                .delete()
-        else:
-            db.session.add(model.NetworkAttachment(nic=action.nic,
-                                                   network=action.new_network,
-                                                   channel=action.channel))
-        db.session.delete(action)
-
+        session.handle_action(action)
+    session.close()
+    model.NetworkingAction.query.delete()
     db.session.commit()
     return True

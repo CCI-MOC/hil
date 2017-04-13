@@ -233,3 +233,7 @@ class _Session(_console.Session):
         config = config.split("\n", lines_to_remove)[lines_to_remove]
         self.console.sendline('terminal length 40')
         return config
+
+    def disable_port(self):
+        self.console.sendline('sw trunk allowed vlan none')
+        self.console.sendline('sw trunk native vlan ' + self.dummy_vlan)
