@@ -16,7 +16,7 @@
 from abc import ABCMeta, abstractmethod
 from haas.model import Port, NetworkAttachment
 import re
-
+from haas.config import cfg
 
 _CHANNEL_RE = re.compile(r'vlan/(\d+)')
 
@@ -118,6 +118,16 @@ class Session(object):
 
         self.exit_if_prompt()
         self.console.expect(self.config_prompt)
+
+    def _save_check(self, switch_type):
+        """checks the config file to see if switch should save or not"""
+
+        save = True
+        switch_ext = 'haas.ext.switches.' + switch_type
+        if (cfg.has_option(switch_ext, 'save') and
+           not cfg.getboolean(switch_ext, 'save')):
+            save = False
+        return save
 
 
 def get_prompts(console):

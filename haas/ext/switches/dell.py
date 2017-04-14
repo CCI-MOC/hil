@@ -26,7 +26,6 @@ from haas.model import db, Switch
 from haas.migrations import paths
 from haas.ext.switches import _console
 from os.path import dirname, join
-from haas.config import cfg
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'dell')
 
@@ -114,11 +113,7 @@ class _Session(_console.Session):
         self._sendline('sw trunk native vlan none')
 
     def disconnect(self):
-        save = True
-        if (cfg.has_option('haas.ext.switches.dell', 'save') and
-           not cfg.getboolean('haas.ext.switches.dell', 'save')):
-            save = False
-        if save:
+        if self._save_check('dell'):
             self._save_running_config()
         self._sendline('exit')
         self.console.expect(pexpect.EOF)

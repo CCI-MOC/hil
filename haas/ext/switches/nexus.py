@@ -25,7 +25,6 @@ import logging
 
 from haas.model import db, Switch
 from haas.ext.switches import _console
-from haas.config import cfg
 
 logger = logging.getLogger(__name__)
 
@@ -96,11 +95,7 @@ class _Session(_console.Session):
         self.console.sendline('sw trunk native vlan ' + self.dummy_vlan)
 
     def disconnect(self):
-        save = True
-        if (cfg.has_option('haas.ext.switches.nexus', 'save') and
-           not cfg.getboolean('haas.ext.switches.nexus', 'save')):
-            save = False
-        if save:
+        if self._save_check('nexus'):
             self._save_running_config()
         self.console.sendline('exit')
 
