@@ -15,23 +15,22 @@ class Node(ClientBase):
 
     def show(self, node_name):
         """Shows attributes of a given node """
-
         url = self.object_url('node', node_name)
         return self.check_response(self.httpClient.request('GET', url))
 
     def register(self, node, subtype, *args):
         """Register a node with appropriate OBM driver. """
-#       Registering a node requires apriori knowledge of the
-#       available OBM driver and its corresponding arguments.
-#       We assume that the HIL administrator is aware as to which
-#       Node requires which OBM, and knows arguments required
-#       for successful node registration.
+        # Registering a node requires apriori knowledge of the
+        # available OBM driver and its corresponding arguments.
+        # We assume that the HIL administrator is aware as to which
+        # Node requires which OBM, and knows arguments required
+        # for successful node registration.
 
         obm_api = "http://schema.massopencloud.org/haas/v0/obm/"
         obm_types = ["ipmi", "mock"]
-#       FIXME: In future obm_types should be dynamically fetched.
-#        We need a new api call for querying available
-#        and currently active drivers for HIL
+        # FIXME: In future obm_types should be dynamically fetched.
+        # We need a new api call for querying available
+        # and currently active drivers for HIL
         raise NotImplementedError
 
     def delete(self, node_name):

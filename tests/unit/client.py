@@ -240,48 +240,27 @@ def populate_server():
                 )
 
 
-# Avoid race condition while creating, deleting networks
+# FIX ME: Replace this function with show_networking_action call, once it
+# gets implemented.
 def avoid_network_race_condition():
-    import sqlite3
-    global db_dir  # Value of db_dir is populated by `create_setup`.
-    db_file = db_dir+'/haas.db'
-    conn = sqlite3.connect(db_file)
-    cur = conn.cursor()
-    timeout = 0
-    while True:
-        que = len(cur.execute('select * from networking_action;').fetchall())
-        if que > 0:
-            time.sleep(1)
-            timeout = timeout + 1
-            if timeout > 10:  # breakout if exceeds 10 secs.
-                break
-        else:
-            break
+    """Checks for networking actions queue to be empty.
 
+    Used to avoid race condition between subsequent network calls
+    on the same object.
+    """
 
-def avoid_race_sqlalchemy():
+    from flask.ext.sqlalchemy import SQLAlchemy
+    from haas.flaskapp import app
     from haas.model import Node, Project, NetworkingAction
-    from sqlalchemy import func
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import sessionmaker
 
-    global db_dir  # Value of db_dir is populated by `create_setup`.
+    global db_dir
     uri = 'sqlite:///'+db_dir+'/haas.db'
-    engine = create_engine(uri)
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    timeout = 0
+    db = SQLAlchemy(app)
+    app.config.update(SQLALCHEMY_DATABASE_URI=uri)
 
-    while True:
-        que = session.query(
-                func.count('*')).select_from(
-                        NetworkingAction
-                        ).scalar()
-        if que > 0:
+    for timeout in range(10):
+        if (db.session.query(NetworkingAction).count() > 0):
             time.sleep(1)
-            timeout = timeout + 1
-            if timeout > 10:  # breakout if exceeds 10 secs.
-                break
         else:
             break
 
@@ -376,7 +355,7 @@ class Test_node:
 
     def test_node_detach_network(self):
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
-        avoid_race_sqlalchemy()
+        avoid_network_race_condition()
         assert C.node.detach_network('node-04', 'eth0', 'net-04') is None
 
     def test_node_detach_network_error(self):
