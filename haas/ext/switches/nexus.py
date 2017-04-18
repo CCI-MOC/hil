@@ -95,7 +95,7 @@ class _Session(_console.Session):
         self.console.sendline('sw trunk native vlan ' + self.dummy_vlan)
 
     def disconnect(self):
-        if self._save_check('nexus'):
+        if self._should_save('nexus'):
             self._save_running_config()
         self.console.sendline('exit')
 

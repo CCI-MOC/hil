@@ -113,7 +113,7 @@ class _Session(_console.Session):
         self._sendline('sw trunk native vlan none')
 
     def disconnect(self):
-        if self._save_check('dell'):
+        if self._should_save('dell'):
             self._save_running_config()
         self._sendline('exit')
         self.console.expect(pexpect.EOF)
