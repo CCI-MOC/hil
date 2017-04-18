@@ -28,9 +28,11 @@ from subprocess import check_call, Popen
 from urlparse import urljoin
 import requests
 from requests.exceptions import ConnectionError
+from flask.ext.sqlalchemy import SQLAlchemy
+from haas.flaskapp import app
+from haas.model import NetworkingAction
 from haas.client.base import ClientBase, FailedAPICallException
 from haas.client.client import Client, RequestsHTTPClient, KeystoneHTTPClient
-
 
 ep = "http://127.0.0.1:8000" or os.environ.get('HAAS_ENDPOINT')
 username = "hil_user" or os.environ.get('HAAS_USERNAME')
@@ -71,7 +73,7 @@ db_dir = None
 def make_config():
     """ This function creates haas.cfg with desired options
     and writes to a temporary directory.
-    It returns a tuple where (tmpdir, cwd) = ('location of haas.cfg', 'pwdd')
+    It returns a tuple where (tmpdir, cwd) = ('location of haas.cfg', 'pwd')
     """
     tmpdir = tempfile.mkdtemp()
     global db_dir
@@ -248,21 +250,18 @@ def avoid_network_race_condition():
     Used to avoid race condition between subsequent network calls
     on the same object.
     """
-
-    from flask.ext.sqlalchemy import SQLAlchemy
-    from haas.flaskapp import app
-    from haas.model import Node, Project, NetworkingAction
-
     global db_dir
     uri = 'sqlite:///'+db_dir+'/haas.db'
     db = SQLAlchemy(app)
     app.config.update(SQLALCHEMY_DATABASE_URI=uri)
 
     for timeout in range(10):
-        if (db.session.query(NetworkingAction).count() > 0):
+        que = db.session.query(NetworkingAction).count()
+        if (que > 0):
             time.sleep(1)
         else:
-            break
+            return que
+    return timeout
 
 
 @pytest.fixture(scope="module")
@@ -355,15 +354,21 @@ class Test_node:
 
     def test_node_detach_network(self):
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
-        avoid_network_race_condition()
-        assert C.node.detach_network('node-04', 'eth0', 'net-04') is None
+        x = avoid_network_race_condition()
+        if x == 0:
+            assert C.node.detach_network('node-04', 'eth0', 'net-04') is None
+        else:
+            assert False, "Timing out a race condition for networking actions."
 
     def test_node_detach_network_error(self):
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
-        avoid_network_race_condition()
-        C.node.detach_network('node-04', 'eth0', 'net-04')
-        with pytest.raises(FailedAPICallException):
+        x = avoid_network_race_condition()
+        if x == 0:
             C.node.detach_network('node-04', 'eth0', 'net-04')
+            with pytest.raises(FailedAPICallException):
+                C.node.detach_network('node-04', 'eth0', 'net-04')
+        else:
+            assert False, "Timing out a race condition for networking actions."
 
 
 @pytest.mark.usefixtures("create_setup")
