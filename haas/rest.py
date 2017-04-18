@@ -99,7 +99,7 @@ class ValidationError(APIError):
     """An exception indicating that the body of the request was invalid."""
 
 
-def rest_call(methods, path, schema):
+def rest_call(methods, path, schema, dont_log=()):
     """A decorator which registers an http mapping to a python api call.
 
     `rest_call` makes no modifications to the function itself, though the
@@ -130,6 +130,8 @@ def rest_call(methods, path, schema):
             Because GET query parameters are initially strings, ensure that any
             GET arguments of non-string type implement Schema's "Use" to
             perform type validation and conversion.
+    * dont_log (optional): a list of "sensitive" argument names, which should
+            not be logged.
 
     For example, given::
 
@@ -183,7 +185,7 @@ def rest_call(methods, path, schema):
 
         app.add_url_rule(path,
                          f.__name__,
-                         _rest_wrapper(f, schema),
+                         _rest_wrapper(f, schema, dont_log),
                          methods=meths)
         return f
     return register
@@ -252,13 +254,14 @@ def _do_validation(schema, kwargs):
         raise validation_error
 
 
-def _rest_wrapper(f, schema):
+def _rest_wrapper(f, schema, dont_log):
     """Return a wrapper around `f` that does the following:
 
-    * Validate the current request agains the schema.
+    * Validate the current request against the schema.
     * Invoke the authentication backend
     * Implement the exception handling described in the documentation to
       `rest_call`.
+    * Log arguments, except those in `dont_log`.
     * Convert `None` return values to empty bodies.
 
     The result of this is suitable to hand directly to flask.
@@ -267,9 +270,13 @@ def _rest_wrapper(f, schema):
     def wrapper(**kwargs):
         kwargs = _do_validation(schema, kwargs)
 
+        censored_kwargs = kwargs.copy()
+        for argname in dont_log:
+            censored_kwargs[argname] = '<<CENSORED>>'
+
         init_auth()
         logger.info('API call: %s(%s)' %
-                    (f.__name__, _format_arglist(**kwargs)))
+                    (f.__name__, _format_arglist(**censored_kwargs)))
 
         ret = f(**kwargs)
         if ret is None:
