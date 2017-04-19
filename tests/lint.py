@@ -1,8 +1,8 @@
 """Tests performing linter-like checks"""
 
 import ast
-from os.path import basename, dirname, isdir, join
-from os import listdir
+from os.path import dirname, join
+from subprocess import check_output
 
 
 # Root of the repository. Note that this is relative to this file,
@@ -37,25 +37,13 @@ def test_logger_format_strings():
     that isn't a string literal.
     """
 
-    def _visit_file(filename):
-        if basename(filename).startswith('.'):
-            # This could be one of '.' or '..', or something
-            # like .venv; it's unlikely to have version python
-            # source files in it, so we skip it.
-            return
-        if filename == join(source_root, 'ci', 'keystone'):
-            # Don't lint the keystone source code.
-            return
+    files = check_output([join(source_root, 'ci', 'list_tracked_pyfiles.sh')])\
+        .strip().split('\n')
 
-        if filename.endswith('.py') or filename.endswith('.wsgi'):
-            with open(filename) as f:
-                tree = ast.parse(f.read(), filename=filename)
-            LogCallVisitor(filename).visit(tree)
-        elif isdir(filename):
-            for child in listdir(filename):
-                _visit_file(join(filename, child))
-
-    _visit_file(source_root)
+    for filename in files:
+        with open(join(source_root, filename)) as f:
+            tree = ast.parse(f.read(), filename=filename)
+        LogCallVisitor(filename).visit(tree)
 
 
 class LogCallVisitor(ast.NodeVisitor):
