@@ -60,7 +60,7 @@ user_projects = db.Table('user_projects',
     'user': basestring,
     'password': basestring,
     Optional('is_admin'): bool,
-}))
+}), dont_log=('password',))
 def user_create(user, password, is_admin=False):
     """Create user with given password.
 

@@ -23,6 +23,7 @@ from haas import rest, config
 from abc import ABCMeta, abstractmethod
 import unittest
 import json
+import logging
 
 from schema import Schema, Optional, Use
 import pytest
@@ -32,9 +33,15 @@ from haas.test_common import config_testsuite, fail_on_log_warnings
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
 
+# This will get pulled in automaticaly, but if we declare it we'll get
+# better error messages if something goes wrong:
+pytest_plugins = 'pytest_catchlog'
+
+
 @pytest.fixture(autouse=True)
 def configure():
     config_testsuite()
+    config.configure_logging()
     config.load_extensions()
 
 
@@ -556,3 +563,21 @@ class TestCallOnce(HttpTest):
 
         self.client.post('/increment')
         assert self.num_calls == 1
+
+
+def test_dont_log(client, caplog):
+    @rest.rest_call('POST', '/some-path', Schema({
+        'public': basestring,
+        'private': basestring,
+        'stuff': basestring,
+    }), dont_log=('private',))
+    def some_call(public, private, stuff):
+        pass
+
+    with caplog.at_level(logging.DEBUG):
+        client.post('/some-path', data=json.dumps({
+            'public': 'common knowledge',
+            'private': 'sensitive info',
+        }))
+        for record in caplog.records():
+            assert 'sensitive info' not in record.getMessage()
