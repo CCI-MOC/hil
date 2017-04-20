@@ -242,6 +242,10 @@ def populate_server():
                 )
 
 
+class TimeoutError(Exception):
+    pass
+
+
 # FIX ME: Replace this function with show_networking_action call, once it
 # gets implemented.
 def avoid_network_race_condition():
@@ -260,8 +264,8 @@ def avoid_network_race_condition():
         if (que > 0):
             time.sleep(1)
         else:
-            return que
-    return timeout
+            return
+    raise TimeoutError(" Timed out to avoid race condition. ")
 
 
 @pytest.fixture(scope="module")
@@ -354,21 +358,15 @@ class Test_node:
 
     def test_node_detach_network(self):
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
-        x = avoid_network_race_condition()
-        if x == 0:
-            assert C.node.detach_network('node-04', 'eth0', 'net-04') is None
-        else:
-            assert False, "Timing out a race condition for networking actions."
+        avoid_network_race_condition()
+        assert C.node.detach_network('node-04', 'eth0', 'net-04') is None
 
     def test_node_detach_network_error(self):
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
-        x = avoid_network_race_condition()
-        if x == 0:
+        avoid_network_race_condition()
+        C.node.detach_network('node-04', 'eth0', 'net-04')
+        with pytest.raises(FailedAPICallException):
             C.node.detach_network('node-04', 'eth0', 'net-04')
-            with pytest.raises(FailedAPICallException):
-                C.node.detach_network('node-04', 'eth0', 'net-04')
-        else:
-            assert False, "Timing out a race condition for networking actions."
 
 
 @pytest.mark.usefixtures("create_setup")
