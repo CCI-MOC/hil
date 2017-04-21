@@ -114,7 +114,10 @@ def setup_http_client():
     global http_client
     global C  # initiating the client library
     # First try basic auth:
-    ep = os.environ.get('HAAS_ENDPOINT') or "http://127.0.0.1:5000"
+    ep = (
+            os.environ.get('HAAS_ENDPOINT') or
+            sys.stdout.write("Error: HAAS_ENDPOINT not set \n")
+            )
     basic_username = os.getenv('HAAS_USERNAME')
     basic_password = os.getenv('HAAS_PASSWORD')
     if basic_username is not None and basic_password is not None:
