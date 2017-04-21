@@ -9,6 +9,6 @@
 # fi
 
 py.test $extra_flags \
-	tests/lint.py \
+	tests/custom_lint.py \
 	tests/unit \
 	tests/stress.py
