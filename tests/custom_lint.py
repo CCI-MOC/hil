@@ -53,27 +53,28 @@ class LogCallVisitor(ast.NodeVisitor):
         self.filename = filename
 
     def visit_Call(self, node):
-        logfunc_names = {
-            'critical', 'error', 'warn', 'info', 'debug',
-        }
-
-        # Make sure this is a call to one of the logging methods.
-        # NOTE: we're going based on the method name only; in theory
-        # this could give us false positives if someone names another
-        # function after one of these, or false negatives if we store
-        # one of these in a variable (don't do that). We could be
-        # smarter about figuring out what function is being called,
-        # but this is probably good enough.
-        if isinstance(node.func, ast.Attribute):
-            # This is a method call on on object. visit_Call is invoked
-            # on every call expression in the AST, including plain-old
-            # functions, and computed functions like
-            # `myfunctable[23](...)`. We only want to process nodes of
-            # the form foo.bar(...).
-            funcname = node.func.attr
-        else:
+        # This function is called on all "Call" nodes in the ast, i.e.
+        # anything where an expression is being called:
+        #
+        # foo(bar)
+        # foo.baz(bar)
+        # foo[quux](bar, baz)
+        #
+        # First, filter this out to the set of calls we care about:
+        #
+        # 1. Make sure this a call to an attribute (method), e.g.
+        #    foo.bar(baz):
+        if not isinstance(node.func, ast.Attribute):
             return
-        if funcname not in logfunc_names:
+        # 2. Make sure the name of the method is one of the recognized
+        #    logging method names. In theory this could give us
+        #    false positives if someone names another function after
+        #    one of these, or false negatives if we store one of these
+        #    in a variable (don't do that). We could be smarter about
+        #    figuring out what function is being called, but this is
+        #    probably good enough:
+        logfunc_names = {'critical', 'error', 'warn', 'info', 'debug'}
+        if node.func.attr not in logfunc_names:
             return
 
         # We've decided this is a logging call; sanity check it:
