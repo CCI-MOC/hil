@@ -275,7 +275,7 @@ def _rest_wrapper(f, schema, dont_log):
             censored_kwargs[argname] = '<<CENSORED>>'
 
         init_auth()
-        logger.info('API call: %s(%s)' %
+        logger.info('API call: %s(%s)',
                     (f.__name__, _format_arglist(**censored_kwargs)))
 
         ret = f(**kwargs)

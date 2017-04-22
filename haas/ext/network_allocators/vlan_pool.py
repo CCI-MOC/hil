@@ -40,7 +40,7 @@ class VlanAllocator(NetworkAllocator):
         vlan = Vlan.query.filter_by(vlan_no=net_id).first()
         if not vlan:
             logger = logging.getLogger(__name__)
-            logger.error('vlan %s does not exist in database' % net_id)
+            logger.error('vlan %s does not exist in database', net_id)
             return
         vlan.available = True
 

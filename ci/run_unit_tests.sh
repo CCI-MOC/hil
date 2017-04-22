@@ -8,4 +8,7 @@
 #     extra_flags='-n auto'
 # fi
 
-py.test $extra_flags tests/unit tests/stress.py
+py.test $extra_flags \
+	tests/custom_lint.py \
+	tests/unit \
+	tests/stress.py

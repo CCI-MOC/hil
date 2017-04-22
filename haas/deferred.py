@@ -30,7 +30,7 @@ class DaemonSession(object):
         if action.type not in model.NetworkingAction.legal_types:
             logger.warn('Illegal action type %r from server; ignoring.')
         elif not action.nic.port:
-            logger.warn('Not modifying NIC %s; NIC is not on a port.' %
+            logger.warn('Not modifying NIC %s; NIC is not on a port.',
                         action.nic.label)
         else:
             getattr(self, action.type)(action)
