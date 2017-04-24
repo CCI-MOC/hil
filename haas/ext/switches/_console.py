@@ -123,8 +123,10 @@ class Session(object):
         """checks the config file to see if switch should save or not"""
 
         switch_ext = 'haas.ext.switches.' + switch_type
-        return (not cfg.has_option(switch_ext, 'save') or
-                cfg.getboolean(switch_ext, 'save'))
+        if cfg.has_option(switch_ext, 'save'):
+            if not cfg.getboolean(switch_ext, 'save'):
+                return False
+        return True
 
 
 def get_prompts(console):
