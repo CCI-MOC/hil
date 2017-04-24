@@ -23,9 +23,12 @@ import requests
 import sys
 import urllib
 import schema
-import abc
 
 from functools import wraps
+
+from haas.client.client import Client, RequestsHTTPClient, KeystoneHTTPClient
+from haas.client.base import FailedAPICallException
+
 
 command_dict = {}
 usage_dict = {}
@@ -33,94 +36,9 @@ MIN_PORT_NUMBER = 1
 MAX_PORT_NUMBER = 2**16 - 1
 
 
-class HTTPClient(object):
-    """An HTTP client.
-
-    Makes HTTP requests on behalf of the HaaS CLI. Responsible for adding
-    authentication information to the request.
-    """
-
-    __metaclass__ = abc.ABCMeta
-
-    @abc.abstractmethod
-    def request(method, url, data=None, params=None):
-        """Make an HTTP request
-
-        Makes an HTTP request on URL `url` with method `method`, request body
-        `data`(if supplied) and query parameter `params`(if supplied). May add
-        authentication or other backend-specific information to the request.
-
-        Parameters
-        ----------
-
-        method : str
-            The HTTP method to use, e.g. 'GET', 'PUT', 'POST'...
-        url : str
-            The URL to act on
-        data : str, optional
-            The body of the request
-        params : dictionary, optional
-            The query parameter, e.g. {'key1': 'val1', 'key2': 'val2'},
-            dictionary key can't be `None`
-
-        Returns
-        -------
-
-        requests.Response
-            The HTTP response
-        """
-
-
-class RequestsHTTPClient(requests.Session, HTTPClient):
-    """An HTTPClient which uses the requests library.
-
-    Note that this doesn't do anything over `requests.Session`; that
-    class already implements the required interface. We declare it only
-    for clarity.
-    """
-
-
-class KeystoneHTTPClient(HTTPClient):
-    """An HTTPClient which authenticates with Keystone.
-
-    This uses an instance of python-keystoneclient's Session class
-    to do its work.
-    """
-
-    def __init__(self, session):
-        """Create a KeystoneHTTPClient
-
-        Parameters
-        ----------
-
-        session : keystoneauth1.Session
-            A keystone session to make the requests with
-        """
-        self.session = session
-
-    def request(self, method, url, data=None, params=None):
-        """Make an HTTP request using keystone for authentication.
-
-        Smooths over the differences between python-keystoneclient's
-        request method that specified by HTTPClient
-        """
-        # We have to import this here, since we can't assume the library
-        # is available from global scope.
-        from keystoneauth1.exceptions.http import HttpError
-
-        try:
-            # The order of these parameters is different that what
-            # we expect, but the names are the same:
-            return self.session.request(method=method,
-                                        url=url,
-                                        data=data,
-                                        params=params)
-        except HttpError as e:
-            return e.response
-
-
 # An instance of HTTPClient, which will be used to make the request.
 http_client = None
+C = None
 
 
 class InvalidAPIArgumentsException(Exception):
@@ -168,6 +86,8 @@ def cmd(f):
 def setup_http_client():
     """Set `http_client` to a valid instance of `HTTPClient`
 
+    and pass it as parameter to initialize the client library.
+
     Sets http_client to an object which makes HTTP requests with
     authentication. It chooses an authentication backend as follows:
 
@@ -186,19 +106,30 @@ def setup_http_client():
     3. Oterwise, do not supply authentication information.
 
     This may be extended with other backends in the future.
+
+    `http_client` is also passed as a parameter to the client library.
+    Until all calls are moved to client library, this will support
+    both ways of intereacting with HIL.
     """
     global http_client
+    global C  # initiating the client library
     # First try basic auth:
+    ep = (
+            os.environ.get('HAAS_ENDPOINT') or
+            sys.stdout.write("Error: HAAS_ENDPOINT not set \n")
+            )
     basic_username = os.getenv('HAAS_USERNAME')
     basic_password = os.getenv('HAAS_PASSWORD')
     if basic_username is not None and basic_password is not None:
+        # For calls with no client library support yet.
+        # Includes all headnode calls; registration of nodes and switches.
         http_client = RequestsHTTPClient()
         http_client.auth = (basic_username, basic_password)
+        # For calls using the client library
+        C = Client(ep, http_client)
         return
     # Next try keystone:
     try:
-        from keystoneauth1.identity import v3
-        from keystoneauth1 import session
         os_auth_url = os.getenv('OS_AUTH_URL')
         os_password = os.getenv('OS_PASSWORD')
         os_username = os.getenv('OS_USERNAME')
@@ -215,15 +146,21 @@ def setup_http_client():
                            project_domain_id=os_project_domain_id)
         sess = session.Session(auth=auth)
         http_client = KeystoneHTTPClient(sess)
+        # For calls using the client library
+        C = Client(ep, http_client)
         return
     except (ImportError, KeyError):
         pass
     # Finally, fall back to no authentication:
     http_client = requests.Session()
+    C = Client(ep, http_client)
 
 
-class FailedAPICallException(Exception):
-    pass
+def check_clientlib_response(fun):
+    try:
+        return fun()
+    except Exception as e:
+        sys.exit('Error: %s\n' % e.message)
 
 
 def check_status_code(response):
@@ -235,9 +172,11 @@ def check_status_code(response):
     else:
         sys.stdout.write(response.text + "\n")
 
-
+# Function object_url should be DELETED.
 # TODO: This function's name is no longer very accurate.  As soon as it is
 # safe, we should change it to something more generic.
+
+
 def object_url(*args):
     # Prefer an environmental variable for getting the endpoint if available.
     url = os.environ.get('HAAS_ENDPOINT')
@@ -272,6 +211,8 @@ def do_get(url, params=None):
 
 def do_delete(url):
     check_status_code(http_client.request('DELETE', url))
+
+# DELETE UPTIL HERE once all calls have client library support.
 
 
 @cmd
@@ -326,96 +267,84 @@ def user_create(username, password, is_admin):
     <is_admin> may be either "admin" or "regular", and determines whether
     the user has administrative priveledges.
     """
-    url = object_url('/auth/basic/user', username)
-    if is_admin not in ('admin', 'regular'):
-        raise InvalidAPIArgumentsException(
-            "is_admin must be either 'admin' or 'regular'"
-        )
-    do_put(url, data={
-        'password': password,
-        'is_admin': is_admin == 'admin',
-    })
+    check_clientlib_response(
+            lambda: C.user.create(username, password, is_admin)
+            )
 
 
 @cmd
 def network_create(network, owner, access, net_id):
     """Create a link-layer <network>.  See docs/networks.md for details"""
-    url = object_url('network', network)
-    do_put(url, data={'owner': owner,
-                      'access': access,
-                      'net_id': net_id})
+    check_clientlib_response(
+            lambda: C.network.create(network, owner, access, net_id)
+            )
 
 
 @cmd
 def network_create_simple(network, project):
     """Create <network> owned by project.  Specific case of network_create"""
-    url = object_url('network', network)
-    do_put(url, data={'owner': project,
-                      'access': project,
-                      'net_id': ""})
+    check_clientlib_response(
+            lambda: C.network.create(network, project, project, "")
+            )
 
 
 @cmd
 def network_delete(network):
     """Delete a <network>"""
-    url = object_url('network', network)
-    do_delete(url)
+    check_clientlib_response(
+            lambda: C.network.delete(network)
+            )
 
 
 @cmd
 def user_delete(username):
     """Delete the user <username>"""
-    url = object_url('/auth/basic/user', username)
-    do_delete(url)
+    check_clientlib_response(
+            lambda: C.user.delete(username)
+            )
 
 
 @cmd
 def list_projects():
     """List all projects"""
-    url = object_url('projects')
-    do_get(url)
+    q = check_clientlib_response(lambda: C.project.list())
+    sys.stdout.write('%s Projects :    ' % len(q) + " ".join(q) + '\n')
 
 
 @cmd
 def user_add_project(user, project):
     """Add <user> to <project>"""
-    url = object_url('/auth/basic/user', user, 'add_project')
-    do_post(url, data={'project': project})
+    check_clientlib_response(lambda: C.user.add(user, project))
 
 
 @cmd
 def user_remove_project(user, project):
     """Remove <user> from <project>"""
-    url = object_url('/auth/basic/user', user, 'remove_project')
-    do_post(url, data={'project': project})
+    check_clientlib_response(lambda: C.user.remove(user, project))
 
 
 @cmd
 def network_grant_project_access(project, network):
     """Add <project> to <network> access"""
-    url = object_url('network', network, 'access', project)
-    do_put(url)
+    check_clientlib_response(lambda: C.network.grant_access(project, network))
 
 
 @cmd
 def network_revoke_project_access(project, network):
     """Remove <project> from <network> access"""
-    url = object_url('network', network, 'access', project)
-    do_delete(url)
+    check_clientlib_response(lambda: C.network.revoke_access(project, network))
 
 
 @cmd
 def project_create(project):
     """Create a <project>"""
-    url = object_url('project', project)
-    do_put(url)
+    check_clientlib_response(lambda: C.project.create(project))
 
 
 @cmd
 def project_delete(project):
     """Delete <project>"""
-    url = object_url('project', project)
-    do_delete(url)
+    check_clientlib_response(lambda: C.project.delete(project))
 
 
 @cmd
@@ -436,15 +365,13 @@ def headnode_delete(headnode):
 @cmd
 def project_connect_node(project, node):
     """Connect <node> to <project>"""
-    url = object_url('project', project, 'connect_node')
-    do_post(url, data={'node': node})
+    check_clientlib_response(lambda: C.project.connect(project, node))
 
 
 @cmd
 def project_detach_node(project, node):
     """Detach <node> from <project>"""
-    url = object_url('project', project, 'detach_node')
-    do_post(url, data={'node': node})
+    check_clientlib_response(lambda: C.project.detach(project, node))
 
 
 @cmd
@@ -495,22 +422,19 @@ def node_register(node, subtype, *args):
 @cmd
 def node_delete(node):
     """Delete <node>"""
-    url = object_url('node', node)
-    do_delete(url)
+    check_clientlib_response(lambda: C.node.delete(node))
 
 
 @cmd
 def node_power_cycle(node):
     """Power cycle <node>"""
-    url = object_url('node', node, 'power_cycle')
-    do_post(url)
+    check_clientlib_response(lambda: C.node.power_cycle(node))
 
 
 @cmd
 def node_power_off(node):
     """Power off <node>"""
-    url = object_url('node', node, 'power_off')
-    do_post(url)
+    check_clientlib_response(lambda: C.node.power_off(node))
 
 
 @cmd
@@ -530,15 +454,13 @@ def node_register_nic(node, nic, macaddr):
     """
     Register existence of a <nic> with the given <macaddr> on the given <node>
     """
-    url = object_url('node', node, 'nic', nic)
-    do_put(url, data={'macaddr': macaddr})
+    check_clientlib_response(lambda: C.node.add_nic(node, nic, macaddr))
 
 
 @cmd
 def node_delete_nic(node, nic):
     """Delete a <nic> on a <node>"""
-    url = object_url('node', node, 'nic', nic)
-    do_delete(url)
+    check_client_lib(lambda: C.node.remove_nic(node, nic))
 
 
 @cmd
@@ -558,16 +480,15 @@ def headnode_delete_hnic(headnode, nic):
 @cmd
 def node_connect_network(node, nic, network, channel):
     """Connect <node> to <network> on given <nic> and <channel>"""
-    url = object_url('node', node, 'nic', nic, 'connect_network')
-    do_post(url, data={'network': network,
-                       'channel': channel})
+    check_clientlib_response(
+            lambda: C.node.connect_network(node, nic, network, channel)
+            )
 
 
 @cmd
 def node_detach_network(node, nic, network):
     """Detach <node> from the given <network> on the given <nic>"""
-    url = object_url('node', node, 'nic', nic, 'detach_network')
-    do_post(url, data={'network': network})
+    check_clientlib_response(lambda: C.node.detach_network(node, nic, network))
 
 
 @cmd
@@ -666,43 +587,40 @@ def switch_register(switch, subtype, *args):
 @cmd
 def switch_delete(switch):
     """Delete a <switch> """
-    url = object_url('switch', switch)
-    do_delete(url)
+    check_clientlib_response(lambda: C.switch.delete(switch))
 
 
 @cmd
 def list_switches():
     """List all switches"""
-    url = object_url('switches')
-    do_get(url)
+    q = check_clientlib_response(lambda: C.switch.list())
+    sys.stdout.write('%s switches :    ' % len(q) + " ".join(q) + '\n')
 
 
 @cmd
 def port_register(switch, port):
     """Register a <port> with <switch> """
-    url = object_url('switch', switch, 'port', port)
-    do_put(url)
+    check_clientlib_response(lambda: C.port.register(switch, port))
 
 
 @cmd
 def port_delete(switch, port):
     """Delete a <port> from a <switch>"""
-    url = object_url('switch', switch, 'port', port)
-    do_delete(url)
+    check_clientlib_response(lambda: C.port.delete(switch, port))
 
 
 @cmd
 def port_connect_nic(switch, port, node, nic):
     """Connect a <port> on a <switch> to a <nic> on a <node>"""
-    url = object_url('switch', switch, 'port', port, 'connect_nic')
-    do_post(url, data={'node': node, 'nic': nic})
+    check_clientlib_response(
+            lambda: C.port.connect_nic(switch, port, node, nic)
+            )
 
 
 @cmd
 def port_detach_nic(switch, port):
     """Detach a <port> on a <switch> from whatever's connected to it"""
-    url = object_url('switch', switch, 'port', port, 'detach_nic')
-    do_post(url)
+    check_clientlib_response(lambda: C.port.detach_nic(switch, port))
 
 
 @cmd
@@ -732,54 +650,69 @@ def list_nodes(is_free):
     <is_free> may be either "all" or "free", and determines whether
         to list all nodes or all free nodes.
     """
-    if is_free not in ('all', 'free'):
-        raise InvalidAPIArgumentsException(
-            "is_free must be either 'all' or 'free'"
-        )
-    url = object_url('nodes', is_free)
-    do_get(url)
+    q = check_clientlib_response(lambda: C.node.list(is_free))
+    if is_free == 'all':
+        sys.stdout.write('All nodes %s\t:    %s\n' % (len(q), " ".join(q)))
+    elif is_free == 'free':
+        sys.stdout.write('Free nodes %s\t:   %s\n' % (len(q), " ".join(q)))
+    else:
+        sys.stdout.write('Error: %s is an invalid argument\n' % (is_free))
 
 
 @cmd
 def list_project_nodes(project):
     """List all nodes attached to a <project>"""
-    url = object_url('project', project, 'nodes')
-    do_get(url)
+    q = check_clientlib_response(lambda: C.project.nodes_in(project))
+    sys.stdout.write('Nodes allocated to %s:  ' % project + " ".join(q) + '\n')
 
 
 @cmd
 def list_project_networks(project):
     """List all networks attached to a <project>"""
-    url = object_url('project', project, 'networks')
-    do_get(url)
+    q = check_clientlib_response(lambda: C.project.networks_in(project))
+    sys.stdout.write(
+            "Networks allocated to %s\t:   %s\n" % (project, " ".join(q))
+            )
 
 
 @cmd
 def show_switch(switch):
     """Display information about <switch>"""
-    url = object_url('switch', switch)
-    do_get(url)
+    q = check_clientlib_response(lambda: C.switch.show(switch))
+    for item in q.items():
+        sys.stdout.write("%s\t  :  %s\n" % (item[0], item[1]))
 
 
 @cmd
 def list_networks():
     """List all networks"""
-    url = object_url('networks')
-    do_get(url)
+    q = check_clientlib_response(lambda: C.network.list())
+    for item in q.items():
+        sys.stdout.write('%s \t : %s\n' % (item[0], item[1]))
 
 
 @cmd
 def show_network(network):
     """Display information about <network>"""
-    url = object_url('network', network)
-    do_get(url)
+    q = check_clientlib_response(lambda: C.network.show(network))
+    for item in q.items():
+        sys.stdout.write("%s\t  :  %s\n" % (item[0], item[1]))
 
 
 @cmd
 def show_node(node):
-    """Display information about a <node>"""
-    url = object_url('node', node)
-    do_get(url)
+    """Display information about a <node>
+
+    FIXME: Recursion should be implemented to the output.
+    """
+#    The output of show_node is a dictionary that can be list of list, having
+#    multiple nics and networks. More metadata about node could be shown
+#    via this call. Suggestion to future developers of CLI to use
+#    recursion in the call for output of such metadata.
+
+    q = check_clientlib_response(lambda: C.node.show(node))
+    for item in q.items():
+        sys.stdout.write("%s\t  :  %s\n" % (item[0], item[1]))
 
 
 @cmd
@@ -813,15 +746,13 @@ def show_console(node):
 @cmd
 def start_console(node):
     """Start logging console output from <node>"""
-    url = object_url('node', node, 'console')
-    do_put(url)
+    check_clientlib_response(lambda: C.node.start_console(node))
 
 
 @cmd
 def stop_console(node):
     """Stop logging console output from <node> and delete the log"""
-    url = object_url('node', node, 'console')
-    do_delete(url)
+    check_clientlib_response(lambda: C.node.stop_console(node))
 
 
 @cmd
