@@ -220,11 +220,22 @@ class _Session(_console.Session):
         self.console.sendline('show ' + config_type + '-config')
         self.console.expect(r'[\r\n]+.+# ')
         config = self.console.after
-        lines_to_remove = 9
-        # the startup config file always has a couple of extra lines that
-        # we need to remove.
-        if(config_type == 'startup'):
-            lines_to_remove = 11
+
+        # The config files always have some lines in the beginning that we
+        # need to remove otherwise the comparison would fail. Here's a sample:
+        # !Command: show running-config
+        # !Time: Tue Apr 25 16:36:40 2017
+        # version 6.0(2)A1(1a)
+        # hostname the-switch
+        # feature telnet
+        # username admin password 5 XXXXXXXX  role network-admin
+        # ssh key rsa 2048
+        lines_to_remove = 0
+        for line in config.splitlines():
+            if 'username' in line:
+                break
+            lines_to_remove += 1
+
         config = config.split("\n", lines_to_remove)[lines_to_remove]
         self.console.sendline('terminal length 40')
         return config
