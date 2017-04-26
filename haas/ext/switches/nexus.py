@@ -95,6 +95,8 @@ class _Session(_console.Session):
         self.console.sendline('sw trunk native vlan ' + self.dummy_vlan)
 
     def disconnect(self):
+        if self._should_save('nexus'):
+            self._save_running_config()
         self.console.sendline('exit')
 
     @staticmethod
@@ -202,6 +204,41 @@ class _Session(_console.Session):
                 networks.append(('vlan/native', native))
             result[k] = networks
         return result
+
+    def _save_running_config(self):
+        """saves the running config to startup config"""
+
+        self.console.sendline('copy running-config startup-config')
+        self.console.expect('Copy complete')
+        logger.debug('Copy succeeded')
+
+    def _get_config(self, config_type):
+        """returns the requested configuration file from the switch"""
+
+        self.console.sendline('terminal length 0')
+        self.console.expect(r'[\r\n]+.+# ')
+        self.console.sendline('show ' + config_type + '-config')
+        self.console.expect(r'[\r\n]+.+# ')
+        config = self.console.after
+
+        # The config files always have some lines in the beginning that we
+        # need to remove otherwise the comparison would fail. Here's a sample:
+        # !Command: show running-config
+        # !Time: Tue Apr 25 16:36:40 2017
+        # version 6.0(2)A1(1a)
+        # hostname the-switch
+        # feature telnet
+        # username admin password 5 XXXXXXXX  role network-admin
+        # ssh key rsa 2048
+        lines_to_remove = 0
+        for line in config.splitlines():
+            if 'username' in line:
+                break
+            lines_to_remove += 1
+
+        config = config.split("\n", lines_to_remove)[lines_to_remove]
+        self.console.sendline('terminal length 40')
+        return config
 
     def disable_port(self):
         self.console.sendline('sw trunk allowed vlan none')
