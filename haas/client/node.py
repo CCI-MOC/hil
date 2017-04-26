@@ -36,7 +36,7 @@ class Node(ClientBase):
     def delete(self, node_name):
         """Deletes the node from database. """
         url = self.object_url('node', node_name)
-        return check_response(self.httpClient.request('DELETE', url))
+        return self.check_response(self.httpClient.request('DELETE', url))
 
     def power_cycle(self, node_name):
         """Power cycles the <node> """
