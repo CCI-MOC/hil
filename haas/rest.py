@@ -276,7 +276,7 @@ def _rest_wrapper(f, schema, dont_log):
 
         init_auth()
         logger.info('API call: %s(%s)',
-                    (f.__name__, _format_arglist(**censored_kwargs)))
+                    f.__name__, _format_arglist(**censored_kwargs))
 
         ret = f(**kwargs)
         if ret is None:
