@@ -1495,7 +1495,11 @@ class TestPortConnectDetachNic:
                   "user": "root",
                   "password": "tapeworm"})
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
+        assert json.loads(api.show_port('sw0', '3')) == {
+                        u'node': None, u'nic': None}
         api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
+        assert json.loads(api.show_port('sw0', '3')) == {
+                        u'node': u'compute-01', u'nic': u'eth0'}
 
     def test_port_connect_nic_no_such_switch(self):
         api.node_register('compute-01', obm={
