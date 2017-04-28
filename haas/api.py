@@ -967,7 +967,7 @@ def show_switch(switch):
     }, sort_keys=True)
 
 
-@rest_call('GET', '/switch/<switch>/<port>', Schema({
+@rest_call('GET', '/switch/<switch>/port/<path:port>', Schema({
     'switch': basestring, 'port': basestring}))
 def show_port(switch, port):
     """show port details on a switch.

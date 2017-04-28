@@ -61,5 +61,5 @@ class Port(ClientBase):
 
     def show(self, switch, port):
         """Show what's connected to <port>"""
-        url = self.object_url('switch', switch, port)
+        url = self.object_url('switch', switch, 'port', port)
         return self.check_response(self.httpClient.request("GET", url))
