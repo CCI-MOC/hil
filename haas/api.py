@@ -967,6 +967,21 @@ def show_switch(switch):
     }, sort_keys=True)
 
 
+@rest_call('GET', '/switch/<switch>/<port>', Schema({
+    'switch': basestring, 'port': basestring}))
+def show_port(switch, port):
+    """show port details on a switch.
+
+    Return a JSON object showing the node and nic to which port is connected.
+    """
+    get_auth_backend().require_admin()
+    switch = _must_find(model.Switch, switch)
+    port = _must_find_n(switch, model.Port, port)
+    nic = port.nic
+    return json.dumps({'node': nic.owner.label if nic else None, 'nic':
+                       nic.label if nic else None})
+
+
 @rest_call('GET', '/switches', Schema({}))
 def list_switches():
     """List all switches.

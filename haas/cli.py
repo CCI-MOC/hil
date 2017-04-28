@@ -684,6 +684,14 @@ def show_switch(switch):
 
 
 @cmd
+def show_port(switch, port):
+    """Show what's connected to <port>"""
+    q = check_clientlib_response(lambda: C.port.show(switch, port))
+    for item in q.items():
+        sys.stdout.write("%s\t:%s\n" % (item[0], item[1]))
+
+
+@cmd
 def list_networks():
     """List all networks"""
     q = check_clientlib_response(lambda: C.network.list())

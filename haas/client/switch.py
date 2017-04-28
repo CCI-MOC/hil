@@ -58,3 +58,8 @@ class Port(ClientBase):
         """"Detaches <port> of <switch>. """
         url = self.object_url('switch', switch, 'port', port, 'detach_nic')
         return self.check_response(self.httpClient.request("POST", url))
+
+    def show(self, switch, port):
+        """Show what's connected to <port>"""
+        url = self.object_url('switch', switch, port)
+        return self.check_response(self.httpClient.request("GET", url))
