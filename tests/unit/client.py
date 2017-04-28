@@ -280,6 +280,8 @@ def create_setup(request):
     def fin():
         proc1.terminate()
         proc2.terminate()
+        proc1.wait()
+        proc2.wait()
         cleanup(dir_names)
     request.addfinalizer(fin)
 
