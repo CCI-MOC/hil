@@ -1485,6 +1485,28 @@ class Test_list_switches:
                       {'label': 'test_port'}]
         }
 
+class TestShowPort:
+
+    def test_show_port(self, switchinit):
+        api.node_register('compute-01', obm={
+                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                  "host": "ipmihost",
+                  "user": "root",
+                  "password": "tapeworm"})
+        api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
+        # call show port on a switch that doesn't exist
+        with pytest.raises(api.NotFoundError):
+            api.show_port('non-existing-switch', 'some-port')
+        # call show port on a port that's not registered on that switch
+        with pytest.raises(api.NotFoundError):
+            api.show_port('sw0', 'non-existing-port')
+
+        assert json.loads(api.show_port('sw0', '3')) == {}
+        # connect the port to a nic, and see if show port agrees
+        api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
+        assert json.loads(api.show_port('sw0', '3')) == {
+                        u'node': u'compute-01', u'nic': u'eth0',
+                        u'networks':{}}
 
 class TestPortConnectDetachNic:
 
@@ -1495,11 +1517,7 @@ class TestPortConnectDetachNic:
                   "user": "root",
                   "password": "tapeworm"})
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
-        assert json.loads(api.show_port('sw0', '3')) == {
-                        u'node': None, u'nic': None}
         api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
-        assert json.loads(api.show_port('sw0', '3')) == {
-                        u'node': u'compute-01', u'nic': u'eth0'}
 
     def test_port_connect_nic_no_such_switch(self):
         api.node_register('compute-01', obm={
