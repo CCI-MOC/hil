@@ -1030,6 +1030,14 @@ Possible errors:
 
 Show the node and nic to which the port is connected.
 
+Response body:
+
+    {
+        u'node': u'mynode',
+        u'nic': u'mynic',
+        u'networks': {u'vlan/1511': u'mynetwork'}
+    }
+
 Authorization requirements:
 
 * Administrative access.

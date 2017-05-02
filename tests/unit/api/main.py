@@ -1485,6 +1485,7 @@ class Test_list_switches:
                       {'label': 'test_port'}]
         }
 
+
 class TestShowPort:
 
     def test_show_port(self, switchinit):
@@ -1506,7 +1507,8 @@ class TestShowPort:
         api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
         assert json.loads(api.show_port('sw0', '3')) == {
                         u'node': u'compute-01', u'nic': u'eth0',
-                        u'networks':{}}
+                        u'networks': {}}
+
 
 class TestPortConnectDetachNic:
 
