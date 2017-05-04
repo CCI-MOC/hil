@@ -530,7 +530,7 @@ def switch_register(switch, subtype, *args):
     client library (work-in-progress) should manage it.
     """
     switch_api = "http://schema.massopencloud.org/haas/v0/switches/"
-    if subtype == "nexus":
+    if subtype == "nexus" or subtype == "delln3000":
         if len(args) == 4:
             switchinfo = {
                 "type": switch_api + subtype,
@@ -553,7 +553,7 @@ def switch_register(switch, subtype, *args):
                              ' requires exactly 3 arguments\n')
             sys.stderr.write('<hostname> <username> <password>\n')
             return
-    elif subtype == "powerconnect55xx" or subtype == "delln3000":
+    elif subtype == "powerconnect55xx":
         if len(args) == 3:
             switchinfo = {"type": switch_api + subtype, "hostname": args[0],
                           "username": args[1], "password": args[2]}

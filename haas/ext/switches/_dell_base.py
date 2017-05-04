@@ -53,7 +53,9 @@ class _base_session(_console.Session):
         if self._should_save('dell'):
             self._save_running_config()
         self._sendline('exit')
-        self.console.expect(pexpect.EOF)
+        alternatives = [pexpect.EOF, '>']
+        if self.console.expect(alternatives):
+            self._sendline('exit')
         logger.debug('Logged out of switch %r', self.switch)
 
     def get_port_networks(self, ports):
@@ -113,7 +115,7 @@ class _base_session(_console.Session):
         self._sendline('show int sw %s' % interface)
 
         # Name is the first field:
-        self.console.expect('Name: .*')
+        self.console.expect(['Name: .*', 'Port: .*'])
         k, v = self.console.after.split(':', 1)
         result = {k: v}
         while True:
@@ -144,9 +146,9 @@ class _base_session(_console.Session):
         """returns the requested configuration file from the switch"""
 
         self._sendline('terminal datadump')
-        self.console.expect('console.*')
+        self.console.expect(self.main_prompt)
         self._sendline('show ' + config_type + '-config')
-        self.console.expect('console.*')
+        self.console.expect(self.main_prompt)
         config = self.console.before
         config = config.split("\n", 1)[1]
         self._sendline('no terminal datadump')

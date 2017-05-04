@@ -1,4 +1,4 @@
-# Copyright 2013-2015 Massachusetts Open Cloud Contributors
+# Copyright 2013-2017 Massachusetts Open Cloud Contributors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the
@@ -69,6 +69,7 @@ class DellN3000(Switch):
     hostname = db.Column(db.String, nullable=False)
     username = db.Column(db.String, nullable=False)
     password = db.Column(db.String, nullable=False)
+    dummy_vlan = db.Column(db.String, nullable=False)
 
     @staticmethod
     def validate(kwargs):
@@ -76,6 +77,9 @@ class DellN3000(Switch):
             'username': basestring,
             'hostname': basestring,
             'password': basestring,
+            'dummy_vlan': schema.And(schema.Use(int),
+                                     lambda v: 0 <= v and v <= 4093,
+                                     schema.Use(str)),
         }).validate(kwargs)
 
     def session(self):
@@ -117,15 +121,17 @@ class _PowerConnect55xxSession(_base_session):
 class _DellN3000Session(_base_session):
     """session object for the N300 series"""
 
-    def __init__(self, config_prompt, if_prompt, main_prompt, switch, console):
+    def __init__(self, config_prompt, if_prompt, main_prompt, switch, console,
+                 dummy_vlan):
         self.config_prompt = config_prompt
         self.if_prompt = if_prompt
         self.main_prompt = main_prompt
         self.switch = switch
         self.console = console
+        self.dummy_vlan = dummy_vlan
 
     def _sendline(self, line):
-        logger.debug('Sending from other switch` switch %r: %r',
+        logger.debug('Sending to switch` switch %r: %r',
                      self.switch, line)
         self.console.sendline(line)
 
@@ -133,17 +139,25 @@ class _DellN3000Session(_base_session):
     def connect(switch):
         # connect to the switch, and log in:
         console = pexpect.spawn('telnet ' + switch.hostname)
-        console.expect('User Name:')
+        console.expect('User:')
         console.sendline(switch.username)
         console.expect('Password:')
         console.sendline(switch.password)
         console.expect('>')
         console.sendline('en')
-        console.expect('#')
 
         logger.debug('Logged in to switch %r', switch)
 
         prompts = _console.get_prompts(console)
         return _DellN3000Session(switch=switch,
+                                 dummy_vlan=switch.dummy_vlan,
                                  console=console,
                                  **prompts)
+
+    def disable_port(self):
+        self._sendline('sw trunk allowed vlan remove 1-4093')
+        self._sendline('sw trunk native vlan ' + self.dummy_vlan)
+
+    def disable_native(self, vlan_id):
+        self.disable_vlan(vlan_id)
+        self._sendline('sw trunk native vlan ' + self.dummy_vlan)
