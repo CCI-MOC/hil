@@ -137,9 +137,9 @@ class _base_session(_console.Session):
         """saves the running config to startup config"""
 
         self._sendline('copy running-config startup-config')
-        self.console.expect('Overwrite file ')
+        self.console.expect(['Overwrite file ', re.escape('(y/n) ')])
         self._sendline('y')
-        self.console.expect('Copy succeeded')
+        self.console.expect(['Copy succeeded', 'Configuration Saved'])
         logger.debug('Copy succeeded')
 
     def _get_config(self, config_type):
