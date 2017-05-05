@@ -135,9 +135,9 @@ class Session(object):
         """set the terminal lines to unlimited or default"""
 
         if lines == 'unlimited':
-            self._sendline('terminal length 0')
+            self.console.sendline('terminal length 0')
         elif lines == 'default':
-            self._sendline('terminal length 40')
+            self.console.sendline('terminal length 40')
 
 
 def get_prompts(console):
