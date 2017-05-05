@@ -149,15 +149,33 @@ class _DellN3000Session(_base_session):
         logger.debug('Logged in to switch %r', switch)
 
         prompts = _console.get_prompts(console)
+        # create the dummy vlan
+        console.sendline('config')
+        console.expect(prompts['config_prompt'])
+        console.sendline('vlan ' + switch.dummy_vlan)
+        console.sendline('exit')
+
         return _DellN3000Session(switch=switch,
                                  dummy_vlan=switch.dummy_vlan,
                                  console=console,
                                  **prompts)
 
     def disable_port(self):
-        self._sendline('sw trunk allowed vlan remove 1-4093')
+        self._sendline('sw trunk allowed vlan add ' + self.dummy_vlan)
         self._sendline('sw trunk native vlan ' + self.dummy_vlan)
+        self._sendline('sw trunk allowed vlan remove 1-4093')
 
     def disable_native(self, vlan_id):
         self.disable_vlan(vlan_id)
+        self._sendline('sw trunk allowed vlan add ' + self.dummy_vlan)
         self._sendline('sw trunk native vlan ' + self.dummy_vlan)
+
+    def _set_native(self, old_native, network_id, interface):
+        # create the vlan that we need to set as native
+        self._sendline('exit')
+        self._sendline('vlan ' + network_id)
+        self._sendline('exit')
+        self._sendline('exit')
+        self.enter_if_prompt(interface)
+        # set the native vlan here
+        self.set_native(old_native, network_id)

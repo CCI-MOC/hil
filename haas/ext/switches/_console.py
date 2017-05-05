@@ -73,6 +73,9 @@ class Session(object):
     def disconnect(self):
         """End the session. Must be at the main prompt."""
 
+    def _set_native(self, old_native, network_id, interface):
+        self.set_native(old_native, network_id)
+
     def modify_port(self, port, channel, network_id):
         interface = port
         port = Port.query.filter_by(label=port,
@@ -89,7 +92,7 @@ class Session(object):
                 old_native = old_native.network.network_id
 
             if network_id is not None:
-                self.set_native(old_native, network_id)
+                self._set_native(old_native, network_id, interface)
             elif old_native is not None:
                 self.disable_native(old_native)
         else:
