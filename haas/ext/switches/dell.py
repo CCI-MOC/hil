@@ -117,6 +117,12 @@ class _PowerConnect55xxSession(_base_session):
                                         console=console,
                                         **prompts)
 
+    def _set_terminal_lines(self, lines):
+        if lines == 'unlimited':
+            self._sendline('terminal datadump')
+        elif lines == 'default':
+            self._sendline('no terminal datadump')
+
 
 class _DellN3000Session(_base_session):
     """session object for the N300 series"""
