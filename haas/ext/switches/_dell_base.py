@@ -42,8 +42,8 @@ class _base_session(_console.Session):
     def set_native(self, old, new):
         if old is not None:
             self.disable_vlan(old)
-        self._sendline('sw trunk native vlan ' + new)
         self.enable_vlan(new)
+        self._sendline('sw trunk native vlan ' + new)
 
     def disable_native(self, vlan_id):
         self.disable_vlan(vlan_id)
