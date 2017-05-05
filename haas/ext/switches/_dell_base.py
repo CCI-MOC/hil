@@ -145,11 +145,11 @@ class _base_session(_console.Session):
     def _get_config(self, config_type):
         """returns the requested configuration file from the switch"""
 
-        self._sendline('terminal datadump')
+        self._set_terminal_lines('unlimited')
         self.console.expect(self.main_prompt)
         self._sendline('show ' + config_type + '-config')
         self.console.expect(self.main_prompt)
         config = self.console.before
         config = config.split("\n", 1)[1]
-        self._sendline('no terminal datadump')
+        self._set_terminal_lines('default')
         return config

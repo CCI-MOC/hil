@@ -215,7 +215,7 @@ class _Session(_console.Session):
     def _get_config(self, config_type):
         """returns the requested configuration file from the switch"""
 
-        self.console.sendline('terminal length 0')
+        self._set_terminal_lines('unlimited')
         self.console.expect(r'[\r\n]+.+# ')
         self.console.sendline('show ' + config_type + '-config')
         self.console.expect(r'[\r\n]+.+# ')
@@ -237,7 +237,7 @@ class _Session(_console.Session):
             lines_to_remove += 1
 
         config = config.split("\n", lines_to_remove)[lines_to_remove]
-        self.console.sendline('terminal length 40')
+        self._set_terminal_lines('default')
         return config
 
     def disable_port(self):
