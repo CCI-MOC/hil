@@ -27,6 +27,7 @@ env:
   - DB=postgres
 
 install:
+  - pip install --upgrade pip # Prevent old pip incompatibilities.
   - sh -e ci/apache/install.sh
   - sh -e ci/keystone/install.sh
 
