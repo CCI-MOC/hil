@@ -1506,8 +1506,9 @@ class TestShowPort:
         # connect the port to a nic, and see if show port agrees
         api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
         assert json.loads(api.show_port('sw0', '3')) == {
-                        u'node': u'compute-01', u'nic': u'eth0',
-                        u'networks': {}}
+                        'node': u'compute-01',
+                        'nic': 'eth0',
+                        'networks': {}}
 
 
 class TestPortConnectDetachNic:

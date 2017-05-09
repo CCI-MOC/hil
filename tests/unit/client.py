@@ -514,7 +514,9 @@ class Test_port:
         assert C.port.show('mock-01', 'gi1/1/8') == {}
         C.port.connect_nic('mock-01', 'gi1/1/8', 'node-09', 'eth0')
         assert C.port.show('mock-01', 'gi1/1/8') == {
-                u'node': u'node-09', u'nic': u'eth0', u'networks': {}}
+                'node': 'node-09',
+                'nic': 'eth0',
+                'networks': {}}
 
         # do show port on a non-existing switch
         with pytest.raises(FailedAPICallException):

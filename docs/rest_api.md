@@ -1033,9 +1033,9 @@ Show the node and nic to which the port is connected.
 Response body:
 
     {
-        u'node': u'mynode',
-        u'nic': u'mynic',
-        u'networks': {u'vlan/1511': u'mynetwork'}
+        "node": "mynode",
+        "nic": "mynic",
+        "networks": {"vlan/1511": "mynetwork"}
     }
 
 Authorization requirements:
