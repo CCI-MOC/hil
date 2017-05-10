@@ -147,10 +147,9 @@ class _base_session(_console.Session):
         """returns the requested configuration file from the switch"""
 
         self._set_terminal_lines('unlimited')
-        # FIXME: we shouldnt have to expect ''
-        self.console.expect([self.main_prompt, ''])
+        self.console.expect(self.main_prompt)
         self._sendline('show ' + config_type + '-config')
-        self.console.expect([self.main_prompt, ''])
+        self.console.expect(self.main_prompt)
         config = self.console.before
         config = config.split("\n", 1)[1]
         self._set_terminal_lines('default')

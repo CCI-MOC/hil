@@ -160,6 +160,8 @@ class _DellN3000Session(_base_session):
         console.expect(prompts['config_prompt'])
         console.sendline('vlan ' + switch.dummy_vlan)
         console.sendline('exit')
+        console.sendline('exit')
+        console.expect(prompts['main_prompt'])
 
         return _DellN3000Session(switch=switch,
                                  dummy_vlan=switch.dummy_vlan,
