@@ -17,22 +17,26 @@ import haas
 from haas import model, api, deferred, server, config
 from haas.model import db
 from haas.network_allocator import get_network_allocator
-import pytest
-import json
-import requests
-import os
-import tempfile
-import subprocess
-import time
-from subprocess import check_call, Popen
-from urlparse import urljoin
-import requests
-from requests.exceptions import ConnectionError
 from flask.ext.sqlalchemy import SQLAlchemy
 from haas.flaskapp import app
 from haas.model import NetworkingAction
 from haas.client.base import ClientBase, FailedAPICallException
 from haas.client.client import Client, RequestsHTTPClient, KeystoneHTTPClient
+
+import errno
+import json
+import os
+import pytest
+import requests
+import socket
+import subprocess
+import tempfile
+import time
+
+from subprocess import check_call, Popen
+from urlparse import urljoin
+import requests
+from requests.exceptions import ConnectionError
 
 ep = "http://127.0.0.1:8000" or os.environ.get('HAAS_ENDPOINT')
 username = "hil_user" or os.environ.get('HAAS_USERNAME')
@@ -270,11 +274,33 @@ def avoid_network_race_condition():
 
 @pytest.fixture(scope="module")
 def create_setup(request):
+    serv_port = 8000
+    SERVER_TIMEOUT_SECS = 60
+
     dir_names = make_config()
     initialize_db()
-    proc1 = Popen(['haas', 'serve', '8000'])
+    proc1 = Popen(['haas', 'serve', str(serv_port)])
     proc2 = Popen(['haas', 'serve_networks'])
-    time.sleep(1)
+
+    # Loop until the server is up. See #770
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    begin = time.time()
+    while True:
+        try:
+            sock.connect(('127.0.0.1', serv_port))
+            break
+        except socket.error as serr:
+            if serr.errno == errno.ECONNREFUSED:
+                if (time.time() - begin) < SERVER_TIMEOUT_SECS:
+                    time.sleep(1)
+                else:
+                    raise TimeoutError("Client library test server didn't " +
+                            "start in {} seconds".format(SERVER_TIMEOUT_SECS))
+            else:
+                raise serr
+        finally:
+            sock.close()
+
     populate_server()
 
     def fin():
