@@ -53,7 +53,8 @@ class _base_session(_console.Session):
         if self._should_save('dell'):
             self._save_running_config()
         self._sendline('exit')
-        alternatives = [pexpect.EOF, '>']
+        # FIXME: we shouldn't expect ''. the other should just work
+        alternatives = [pexpect.EOF, '>', '']
         if self.console.expect(alternatives):
             self._sendline('exit')
         logger.debug('Logged out of switch %r', self.switch)
@@ -146,9 +147,10 @@ class _base_session(_console.Session):
         """returns the requested configuration file from the switch"""
 
         self._set_terminal_lines('unlimited')
-        self.console.expect(self.main_prompt)
+        # FIXME: we shouldnt have to expect ''
+        self.console.expect([self.main_prompt, ''])
         self._sendline('show ' + config_type + '-config')
-        self.console.expect(self.main_prompt)
+        self.console.expect([self.main_prompt, ''])
         config = self.console.before
         config = config.split("\n", 1)[1]
         self._set_terminal_lines('default')
