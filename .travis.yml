@@ -27,7 +27,8 @@ env:
   - DB=postgres
 
 install:
-  - pip install --upgrade pip # Prevent old pip incompatibilities.
+  # A dependency might use new pip syntax; upgrade to prevent breakage. See #771
+  - pip install --upgrade pip
   - sh -e ci/apache/install.sh
   - sh -e ci/keystone/install.sh
 
