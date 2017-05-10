@@ -53,8 +53,7 @@ class _base_session(_console.Session):
         if self._should_save('dell'):
             self._save_running_config()
         self._sendline('exit')
-        # FIXME: we shouldn't expect ''. the other should just work
-        alternatives = [pexpect.EOF, '>', '']
+        alternatives = [pexpect.EOF, '>']
         if self.console.expect(alternatives):
             self._sendline('exit')
         logger.debug('Logged out of switch %r', self.switch)

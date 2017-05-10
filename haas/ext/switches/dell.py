@@ -125,7 +125,7 @@ class _PowerConnect55xxSession(_base_session):
 
 
 class _DellN3000Session(_base_session):
-    """session object for the N300 series"""
+    """session object for the N3000 series"""
 
     def __init__(self, config_prompt, if_prompt, main_prompt, switch, console,
                  dummy_vlan):
@@ -155,7 +155,9 @@ class _DellN3000Session(_base_session):
         logger.debug('Logged in to switch %r', switch)
 
         prompts = _console.get_prompts(console)
-        # create the dummy vlan
+        # create the dummy vlan for port_revert
+        # this is a one time thing though; maybe we could remove this and let
+        # the admin create the dummy vlan on the switch
         console.sendline('config')
         console.expect(prompts['config_prompt'])
         console.sendline('vlan ' + switch.dummy_vlan)
@@ -200,15 +202,18 @@ class _DellN3000Session(_base_session):
 
         self._sendline('show int sw %s' % interface)
         self.console.expect('Port: .*')
-        k, v = 'a', 'b'
+        k, v = 'key', 'value'
         result = {k: v}
         key_lines = self.console.after.splitlines()
         del key_lines[-3:]
         for line in key_lines:
             k, v = line.split(':', 1)
             result[k] = v
-        # FIXME: we shouldnt expect '', main_prompt should handle this
-        self.console.expect([self.main_prompt, ''])
+        # expecting main_prompt here fails, because it appears that the
+        # main_prompt is a part of the interface configuration (console.after)
+        # sending a new line clears things up here.
+        self._sendline('\n')
+        self.console.expect(self.main_prompt)
         return result
 
     def get_port_networks(self, ports):
