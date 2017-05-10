@@ -173,8 +173,12 @@ class _DellN3000Session(_base_session):
 
     def disable_native(self, vlan_id):
         self.disable_vlan(vlan_id)
+        # first set the dummy vlan as trunking vlan, then set that as it's
+        # native, then remove that vlan from trunking vlans. otherwise the
+        # switch won't let you set a native vlan that isn't added.
         self._sendline('sw trunk allowed vlan add ' + self.dummy_vlan)
         self._sendline('sw trunk native vlan ' + self.dummy_vlan)
+        self._sendline('sw trunk allowed vlan remove ' + self.dummy_vlan)
 
     def _set_native(self, old_native, network_id, interface):
         # create the vlan that we need to set as native
@@ -185,3 +189,56 @@ class _DellN3000Session(_base_session):
         self.enter_if_prompt(interface)
         # set the native vlan here
         self.set_native(old_native, network_id)
+
+    def _int_config(self, interface):
+        """Collect information about the specified interface
+
+        Returns a dictionary from the output of ``show int sw <interfaces>``.
+        """
+
+        self._sendline('show int sw %s' % interface)
+        self.console.expect('Port: .*')
+        k, v = 'a', 'b'
+        result = {k: v}
+        key_lines = self.console.after.splitlines()
+        del key_lines[-3:]
+        for line in key_lines:
+            k, v = line.split(':', 1)
+            result[k] = v
+        # FIXME: we shouldnt expect '', main_prompt should handle this
+        self.console.expect([self.main_prompt, ''])
+        return result
+
+    def get_port_networks(self, ports):
+        num_re = re.compile(r'(\d+)')
+        port_configs = self._port_configs(ports)
+        result = {}
+        for k, v in port_configs.iteritems():
+            native = v['Trunking Mode Native VLAN'].strip()
+            match = re.match(num_re, native)
+            if match:
+                # We need to call groups to get the part of the string that
+                # actually matched, because it could include some junk on the
+                # end, e.g. "100 (Inactive)".
+                num_str = match.groups()[0]
+                native = int(num_str)
+                if native == int(self.switch.dummy_vlan):
+                    native = None
+            else:
+                native = None
+            networks = []
+            range_str = v['Trunking Mode VLANs Enabled']
+            for range_str in v['Trunking Mode VLANs Enabled'].split(','):
+                for num_str in range_str.split('-'):
+                    num_str = num_str.strip()
+                    match = re.match(num_re, num_str)
+                    if match:
+                        # There may be other tokens in the output, e.g.
+                        # the string "(Inactive)" somteimtes appears.
+                        # We should only use the value if it's an actual number
+                        num_str = match.groups()[0]
+                        networks.append(('vlan/%s' % num_str, int(num_str)))
+            if native is not None:
+                networks.append(('vlan/native', native))
+            result[k] = networks
+        return result
