@@ -202,7 +202,7 @@ class _DellN3000Session(_base_session):
 
         self._sendline('show int sw %s' % interface)
         self.console.expect('Port: .*')
-        k, v = 'a', 'b'
+        k, v = 'key', 'value'
         result = {k: v}
         key_lines = self.console.after.splitlines()
         del key_lines[-3:]
