@@ -114,8 +114,8 @@ class _base_session(_console.Session):
         ]
         self._sendline('show int sw %s' % interface)
 
-        # Name or Port is the first field:
-        self.console.expect(['Name: .*', 'Port: .*'])
+        # Name is the first field:
+        self.console.expect('Name: .*')
         k, v = self.console.after.split(':', 1)
         result = {k: v}
         while True:
