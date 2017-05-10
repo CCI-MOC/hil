@@ -1038,6 +1038,11 @@ Response body:
         "networks": {"vlan/1511": "mynetwork"}
     }
 
+In case there is no nic attached to port, the response body is just an empty
+json object:
+
+    {}
+
 Authorization requirements:
 
 * Administrative access.
