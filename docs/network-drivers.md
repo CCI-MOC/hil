@@ -70,20 +70,21 @@ Doing so is not difficult, and it is critical for security.
 ## Switch drivers
 
 At present, all switch drivers shipped with HaaS require that the VLAN
-pool allocator is in use. There are two switch drivers shipped with
+pool allocator is in use. There are three switch drivers shipped with
 HaaS:
 
 * ``haas.ext.switches.dell``, which provides a driver for the Dell
-  Powerconnect 5500 series switches.
+  Powerconnect 5500 series switches and the Dell N3000 series.
 * ``haas.ext.switches.nexus``, which provides a driver for some Cisco
   Nexus switches. Only the 3500 and 5500 have been tested, though it is
   possible that other models will work as well.
+* ``haas.ext.switches.brocade``, for the brocade VDX 6740.
 
 Neither driver requires any extension-specific config options. Per the
 information in `rest_api.md`, the details of certain API calls are
 driver-dependant, below are the details for each of these switches.
 
-### Powerconnect driver
+### Powerconnect 5500 driver
 
 #### Switch preperation
 
@@ -113,6 +114,25 @@ an untrusted network.
 Port names must be of the same form accepted by the switch's console
 interface, e.g. ``gi1/0/5``. Be *very* careful when specifying these, as
 they are not validated by HaaS (this will be fixed in future versions).
+
+### Dell N3000 driver
+
+#### switch_register
+
+To register a Dell N3000 switch, the ``"type"`` field of the
+request body must have a value of::
+
+    http://schema.massopencloud.org/haas/v0/switches/delln3000
+
+It requires the same additional fields as the powerconnect driver, plus an
+additional field "dummy_vlan" like the nexus driver, which should a JSON
+number corresponding to an unused VLAN id on the switch. Unlike the nexus
+switch, this dummy vlan must exists otherwise you cannot set it as the native
+vlan, but this vlan should not be used for any networks.
+
+#### switch_register_port
+
+Resgister ports just like the powerconnect driver. e.g. ``gi1/0/5``.
 
 ### Nexus driver
 
