@@ -271,36 +271,39 @@ def avoid_network_race_condition():
             return
     raise TimeoutError(" Timed out to avoid race condition. ")
 
+def wait_for_service(port, timeout=60):
+    """
+    Waits for a port to become connectable
+    timeout -- number of seconds to wait (default 60)
+    """
+
+    begin = time.time()
+    while True:
+        try:
+            sock = socket.create_connection(('127.0.0.1', port))
+            sock.shutdown(socket.SHUT_RDWR)
+            sock.close()
+            break
+        except socket.error as serr:
+            if serr.errno == errno.ECONNREFUSED:
+                if (time.time() - begin) < timeout:
+                    time.sleep(1)
+                else:
+                    raise TimeoutError("Client library test server didn't " +
+                            "start in {} seconds".format(timeout))
+            else:
+                raise serr
+
 
 @pytest.fixture(scope="module")
 def create_setup(request):
     serv_port = 8000
-    SERVER_TIMEOUT_SECS = 60
 
     dir_names = make_config()
     initialize_db()
     proc1 = Popen(['haas', 'serve', str(serv_port)])
     proc2 = Popen(['haas', 'serve_networks'])
-
-    # Loop until the server is up. See #770
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    begin = time.time()
-    while True:
-        try:
-            sock.connect(('127.0.0.1', serv_port))
-            break
-        except socket.error as serr:
-            if serr.errno == errno.ECONNREFUSED:
-                if (time.time() - begin) < SERVER_TIMEOUT_SECS:
-                    time.sleep(1)
-                else:
-                    raise TimeoutError("Client library test server didn't " +
-                            "start in {} seconds".format(SERVER_TIMEOUT_SECS))
-            else:
-                raise serr
-        finally:
-            sock.close()
-
+    wait_for_service(serv_port) # Loop until the server is up. See #770
     populate_server()
 
     def fin():
