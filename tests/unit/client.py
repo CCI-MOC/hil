@@ -323,13 +323,14 @@ def create_setup(request):
     wait_for_service(url)  # Loop until the server is up. See #770
     populate_server()
 
-    def fin():
-        proc1.terminate()
-        proc2.terminate()
-        proc1.wait()
-        proc2.wait()
-        cleanup(dir_names)
-    request.addfinalizer(fin)
+    yield
+
+    # Everything below is for cleanup
+    proc1.terminate()
+    proc2.terminate()
+    proc1.wait()
+    proc2.wait()
+    cleanup(dir_names)
 
 
 @pytest.mark.usefixtures("create_setup")
