@@ -286,7 +286,7 @@ def port_has_server(url):
         return False
 
 
-def wait_for_service(url, timeout=60):
+def wait_for_service(url, timeout=15):
     """
     Waits for a port to become a working http server
     timeout -- number of seconds to wait (default 60)
@@ -385,6 +385,7 @@ class Test_node:
         assert C.node.remove_nic('node-08', 'eth0') is None
 
     def test_remove_duplicate_nic(self):
+        C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff')
         C.node.remove_nic('node-08', 'eth0')
         with pytest.raises(FailedAPICallException):
             C.node.remove_nic('node-08', 'eth0')
@@ -395,25 +396,32 @@ class Test_node:
     def test_node_stop_console(self):
         assert C.node.stop_console('node-01') is None
 
+    ### Network note: it is the responsibility of the calling test to
+    ### ensure that no net operations are pending when it is done.
     def test_node_connect_network(self):
         assert C.node.connect_network(
                 'node-01', 'eth0', 'net-01', 'vlan/native'
                 ) is None
+        avoid_network_race_condition()
 
     def test_node_connect_network_error(self):
         C.node.connect_network('node-02', 'eth0', 'net-04', 'vlan/native')
+        avoid_network_race_condition()
         with pytest.raises(FailedAPICallException):
             C.node.connect_network('node-02', 'eth0', 'net-04', 'vlan/native')
+        avoid_network_race_condition()
 
     def test_node_detach_network(self):
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
         avoid_network_race_condition()
         assert C.node.detach_network('node-04', 'eth0', 'net-04') is None
+        avoid_network_race_condition()
 
     def test_node_detach_network_error(self):
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
         avoid_network_race_condition()
         C.node.detach_network('node-04', 'eth0', 'net-04')
+        avoid_network_race_condition()
         with pytest.raises(FailedAPICallException):
             C.node.detach_network('node-04', 'eth0', 'net-04')
 
@@ -532,6 +540,7 @@ class Test_port:
 
     def test_port_connect_nic(self):
         C.port.register('mock-01', 'gi1/1/5')
+        C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff')
         assert C.port.connect_nic(
                 'mock-01', 'gi1/1/5', 'node-08', 'eth0'
                 ) is None
@@ -540,7 +549,8 @@ class Test_port:
         C.port.register('mock-01', 'gi1/1/6')
         C.port.connect_nic('mock-01', 'gi1/1/6', 'node-09', 'eth0')
         with pytest.raises(FailedAPICallException):
-            C.port.connect_nic('mock-01', 'gi1/1/6', 'node-08', 'eth0')
+            C.port.connect_nic('mock-01', 'gi1/1/6', 'node-09', 'eth0')
+        C.port.detach_nic('mock-01', 'gi1/1/6')
 
     def test_port_detach_nic(self):
         C.port.register('mock-01', 'gi1/1/7')
