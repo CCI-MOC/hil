@@ -28,7 +28,7 @@ import json
 import os
 import pytest
 import requests
-import socket
+import sys
 import subprocess
 import tempfile
 import time
@@ -111,6 +111,7 @@ def make_config():
 
         ])
         f.write(config)
+        f.close()
         return (tmpdir, cwd)
 
 
@@ -267,44 +268,59 @@ def avoid_network_race_condition():
     for timeout in range(10):
         que = db.session.query(NetworkingAction).count()
         if (que > 0):
-            time.sleep(1)
+            time.sleep(.5)
         else:
             return
     raise TimeoutError(" Timed out to avoid race condition. ")
 
-def wait_for_service(port, timeout=60):
+
+def port_has_server(url):
+    """ Returns whether a local TCP port is a connectable http server. """
+
+    try:
+        sess = requests.Session()
+        sess.auth = (username, password)
+        sess.get(url + '/projects')
+        return True
+    except:
+        return False
+
+
+def wait_for_service(url, timeout=60):
     """
-    Waits for a port to become connectable
+    Waits for a port to become a working http server
     timeout -- number of seconds to wait (default 60)
     """
 
     begin = time.time()
     while True:
         try:
-            sock = socket.create_connection(('127.0.0.1', port))
-            sock.shutdown(socket.SHUT_RDWR)
-            sock.close()
+            sess = requests.Session()
+            sess.auth = (username, password)
+            sess.get(url + '/projects')
             break
-        except socket.error as serr:
-            if serr.errno == errno.ECONNREFUSED:
-                if (time.time() - begin) < timeout:
-                    time.sleep(1)
-                else:
-                    raise TimeoutError("Client library test server didn't " +
-                            "start in {} seconds".format(timeout))
+        except requests.exceptions.ConnectionError:
+            if (time.time() - begin) < timeout:
+                time.sleep(.5)
             else:
-                raise serr
+                raise TimeoutError("Client library test server didn't "
+                                   "start in {} seconds".format(timeout))
 
 
 @pytest.fixture(scope="module")
 def create_setup(request):
     serv_port = 8000
+    url = 'http://127.0.0.1:{}'.format(serv_port)
+
+    assert not port_has_server(url)
 
     dir_names = make_config()
     initialize_db()
-    proc1 = Popen(['haas', 'serve', str(serv_port)])
-    proc2 = Popen(['haas', 'serve_networks'])
-    wait_for_service(serv_port) # Loop until the server is up. See #770
+    proc1 = Popen(['haas', 'serve', str(serv_port)], stdout=sys.stdout,
+                  stderr=sys.stderr)
+    proc2 = Popen(['haas', 'serve_networks'], stdout=sys.stdout,
+                  stderr=sys.stderr)
+    wait_for_service(url)  # Loop until the server is up. See #770
     populate_server()
 
     def fin():
