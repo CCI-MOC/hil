@@ -396,8 +396,8 @@ class Test_node:
     def test_node_stop_console(self):
         assert C.node.stop_console('node-01') is None
 
-    ### Network note: it is the responsibility of the calling test to
-    ### ensure that no net operations are pending when it is done.
+    # Network note: it is the responsibility of the calling test to
+    # ensure that no net operations are pending when it is done.
     def test_node_connect_network(self):
         assert C.node.connect_network(
                 'node-01', 'eth0', 'net-01', 'vlan/native'
