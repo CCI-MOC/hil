@@ -87,6 +87,7 @@ def make_config():
     with open('haas.cfg', 'w') as f:
         config = '\n'.join([
             '[general]',
+            'log_level = debug',
             '[devel]',
             'dry_run=True',
             '[auth]',
