@@ -25,7 +25,7 @@ import schema
 from haas.model import db, Switch
 from haas.migrations import paths
 from haas.ext.switches import _console
-from haas.ext.switches._dell_base import _base_session
+from haas.ext.switches._dell_base import _BaseSession
 from os.path import dirname, join
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'dell')
@@ -78,7 +78,7 @@ class DellN3000(Switch):
             'hostname': basestring,
             'password': basestring,
             'dummy_vlan': schema.And(schema.Use(int),
-                                     lambda v: 0 <= v and v <= 4093,
+                                     lambda v: 0 < v and v <= 4093,
                                      schema.Use(str)),
         }).validate(kwargs)
 
@@ -86,7 +86,7 @@ class DellN3000(Switch):
         return _DellN3000Session.connect(self)
 
 
-class _PowerConnect55xxSession(_base_session):
+class _PowerConnect55xxSession(_BaseSession):
     """session object for the power connect 5500 series"""
 
     def __init__(self, config_prompt, if_prompt, main_prompt, switch, console):
@@ -124,7 +124,7 @@ class _PowerConnect55xxSession(_base_session):
             self._sendline('no terminal datadump')
 
 
-class _DellN3000Session(_base_session):
+class _DellN3000Session(_BaseSession):
     """session object for the N3000 series"""
 
     def __init__(self, config_prompt, if_prompt, main_prompt, switch, console,
@@ -234,7 +234,6 @@ class _DellN3000Session(_base_session):
             else:
                 native = None
             networks = []
-            range_str = v['Trunking Mode VLANs Enabled']
             for range_str in v['Trunking Mode VLANs Enabled'].split(','):
                 for num_str in range_str.split('-'):
                     num_str = num_str.strip()

@@ -22,7 +22,7 @@ from haas.ext.switches import _console
 logger = logging.getLogger(__name__)
 
 
-class _base_session(_console.Session):
+class _BaseSession(_console.Session):
 
     def enter_if_prompt(self, interface):
         self._sendline('config')

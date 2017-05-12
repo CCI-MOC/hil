@@ -80,7 +80,7 @@ HaaS:
   possible that other models will work as well.
 * ``haas.ext.switches.brocade``, for the brocade VDX 6740.
 
-Neither driver requires any extension-specific config options. Per the
+None of the drivers require any extension-specific config options. Per the
 information in `rest_api.md`, the details of certain API calls are
 driver-dependant, below are the details for each of these switches.
 
@@ -125,9 +125,9 @@ request body must have a value of::
     http://schema.massopencloud.org/haas/v0/switches/delln3000
 
 It requires the same additional fields as the powerconnect driver, plus an
-additional field "dummy_vlan" like the nexus driver, which should a JSON
+additional field "dummy_vlan" like the nexus driver, which should be a JSON
 number corresponding to an unused VLAN id on the switch. Unlike the nexus
-switch, this dummy vlan must exists otherwise you cannot set it as the native
+switch, this dummy vlan must exist otherwise you cannot set it as the native
 vlan, but this vlan should not be used for any networks.
 
 #### switch_register_port
