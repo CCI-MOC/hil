@@ -385,7 +385,6 @@ class Test_node:
         assert C.node.remove_nic('node-08', 'eth0') is None
 
     def test_remove_duplicate_nic(self):
-        C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff')
         C.node.remove_nic('node-08', 'eth0')
         with pytest.raises(FailedAPICallException):
             C.node.remove_nic('node-08', 'eth0')
@@ -540,7 +539,6 @@ class Test_port:
 
     def test_port_connect_nic(self):
         C.port.register('mock-01', 'gi1/1/5')
-        C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff')
         assert C.port.connect_nic(
                 'mock-01', 'gi1/1/5', 'node-08', 'eth0'
                 ) is None
