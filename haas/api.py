@@ -959,12 +959,32 @@ def show_switch(switch):
     """
     get_auth_backend().require_admin()
     switch = _must_find(model.Switch, switch)
-
     return json.dumps({
         'name': switch.label,
         'ports': [{'label': port.label}
                   for port in switch.ports],
     }, sort_keys=True)
+
+
+@rest_call('GET', '/switch/<switch>/port/<path:port>', Schema({
+    'switch': basestring, 'port': basestring}))
+def show_port(switch, port):
+    """show port details on a switch.
+
+    Return a JSON object showing the node and nic to which port is connected.
+    """
+    get_auth_backend().require_admin()
+    switch = _must_find(model.Switch, switch)
+    port = _must_find_n(switch, model.Port, port)
+    nic = port.nic
+    return_obj = {}
+    if nic:
+        return_obj = {'node': nic.owner.label,
+                      'nic': nic.label,
+                      'networks': dict(
+                        [(attachment.channel, attachment.network.label)
+                         for attachment in nic.attachments])}
+    return json.dumps(return_obj)
 
 
 @rest_call('GET', '/switches', Schema({}))

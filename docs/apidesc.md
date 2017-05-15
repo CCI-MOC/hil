@@ -102,6 +102,7 @@ one exception is NICs, where the label is unique only on a per-node basis.
     show_node                  <node>
     show_headnode              <headnode>
     show_network               <network>
+    show_port                  <switch_label> <port_label>
 
 
 ## Authorization-related operations:

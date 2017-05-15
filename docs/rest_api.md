@@ -1024,6 +1024,33 @@ Possible errors:
 * 404, if there is no nic attached to `port`
 * 409, if there is already a networking action pending on `port`
 
+#### show_port
+
+`GET /switch/<switch>/port/<port>`
+
+Show the node and nic to which the port is connected.
+
+Response body:
+
+    {
+        "node": "mynode",
+        "nic": "mynic",
+        "networks": {"vlan/1511": "mynetwork"}
+    }
+
+If there is no nic attached to a port, the response body is just an empty
+json object:
+
+    {}
+
+Authorization requirements:
+
+* Administrative access.
+
+Possible errors:
+
+* 404, if the switch and/or port do not exist.
+
 ## API Extensions
 
 API calls provided by specific extensions. They may not exist in all

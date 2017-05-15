@@ -505,6 +505,23 @@ class Test_port:
         with pytest.raises(FailedAPICallException):
             C.port.detach_nic('mock-01', 'gi1/1/8')
 
+    def test_show_port(self):
+        # do show port on a port that's not registered yet
+        with pytest.raises(FailedAPICallException):
+            C.port.show('mock-01', 'gi1/1/8')
+
+        C.port.register('mock-01', 'gi1/1/8')
+        assert C.port.show('mock-01', 'gi1/1/8') == {}
+        C.port.connect_nic('mock-01', 'gi1/1/8', 'node-09', 'eth0')
+        assert C.port.show('mock-01', 'gi1/1/8') == {
+                'node': 'node-09',
+                'nic': 'eth0',
+                'networks': {}}
+
+        # do show port on a non-existing switch
+        with pytest.raises(FailedAPICallException):
+            C.port.show('unknown-switch', 'unknown-port')
+
 
 @pytest.mark.usefixtures("create_setup")
 class Test_user:
