@@ -1038,7 +1038,7 @@ Response body:
         "networks": {"vlan/1511": "mynetwork"}
     }
 
-In case there is no nic attached to port, the response body is just an empty
+If there is no nic attached to a port, the response body is just an empty
 json object:
 
     {}
