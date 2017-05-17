@@ -1143,6 +1143,8 @@ def show_node(nodename):
         'project': None if node.project_id is None else node.project.label,
         'nics': [{'label': n.label,
                   'macaddr': n.mac_addr,
+                  'port': None if n.port is None else n.port.label,
+                  'switch': None if n.port is None else n.port.owner.label,
                   'networks': dict([(attachment.channel,
                                      attachment.network.label)
                                     for attachment in n.attachments]),
