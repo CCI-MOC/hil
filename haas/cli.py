@@ -716,7 +716,9 @@ def show_node(node):
 #    via this call. Suggestion to future developers of CLI to use
 #    recursion in the call for output of such metadata.
 
-    print check_clientlib_response(lambda: C.node.show(node))
+    q = check_clientlib_response(lambda: C.node.show(node))
+    for item in q.items():
+        print item
 
 
 @cmd
