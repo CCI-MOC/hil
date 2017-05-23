@@ -15,6 +15,7 @@
 """This module implements the HaaS command line tool."""
 from haas import config, server, migrations
 from haas.config import cfg
+from haas.commands.util import ensure_not_root
 
 import inspect
 import json
@@ -806,6 +807,7 @@ def main():
     There is a script located at ${source_tree}/scripts/haas, which invokes
     this function.
     """
+    ensure_not_root()
     config.setup()
 
     if len(sys.argv) < 2 or sys.argv[1] not in command_dict:
