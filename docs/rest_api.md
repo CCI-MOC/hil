@@ -537,11 +537,31 @@ Response body:
 	 "metadata":{"EK":"pk"}
 	}
 
+
+Response body if run by an admin:
+
+    {"name": "node1",
+	 "project": "project1",
+         "nics": [{"label": "nic1",
+           "port": "gi1/0/1",
+           "switch": "dell-01",
+	 	   "macaddr": "01:23:45:67:89", 
+		   "networks": {"vlan/native": "pxe", "vlan/235": "storage"}},
+                  {"label": "nic2",
+                   "port": None,
+                   "switch": None,
+		   "macaddr": "12:34:56:78:90", 
+		   "networks":{"vlan/native": "public"}}],
+	 "metadata":{"EK":"pk"}
+	}
+
 Authorization requirements:
 
 * If the node is free, no special access is required.
 * Otherwise, access to the project to which `<node>` is assigned is
   required.
+* If a user is an admin, then information about the port and switch to which
+  the nic is connected to is also printed.
 
 ### Projects
 
