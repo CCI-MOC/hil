@@ -1138,17 +1138,27 @@ def show_node(nodename):
     node = _must_find(model.Node, nodename)
     if node.project is not None:
         get_auth_backend().require_project_access(node.project)
+
+    # build list of nics
+    nic = [{'label': n.label,
+            'macaddr': n.mac_addr,
+            'port': None if n.port is None else n.port.label,
+            'switch': None if n.port is None else n.port.owner.label,
+            'networks': dict([(attachment.channel,
+                               attachment.network.label)
+                             for attachment in n.attachments]),
+            } for n in node.nics]
+
+    # remove port and switch info if the user is not an admin
+    if not get_auth_backend().have_admin():
+        for nics in nic:
+            del nics['port']
+            del nics['switch']
+
     return json.dumps({
         'name': node.label,
         'project': None if node.project_id is None else node.project.label,
-        'nics': [{'label': n.label,
-                  'macaddr': n.mac_addr,
-                  'port': None if n.port is None else n.port.label,
-                  'switch': None if n.port is None else n.port.owner.label,
-                  'networks': dict([(attachment.channel,
-                                     attachment.network.label)
-                                    for attachment in n.attachments]),
-                  } for n in node.nics],
+        'nics': nic,
         'metadata': {m.label: m.value for m in node.metadata}
     }, sort_keys=True)
 

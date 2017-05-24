@@ -718,7 +718,7 @@ def show_node(node):
 
     q = check_clientlib_response(lambda: C.node.show(node))
     for item in q.items():
-        print item
+        sys.stdout.write("%s\t  :  %s\n" % (item[0], item[1]))
 
 
 @cmd
