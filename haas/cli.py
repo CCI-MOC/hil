@@ -247,17 +247,24 @@ def serve_networks():
     """Start the HaaS networking server"""
     from haas import model, deferred
     from time import sleep
+    import ConfigParser
     server.init()
     server.register_drivers()
     server.validate_state()
     model.init_db()
     migrations.check_db_schema()
+    # Check if config contains usable sleep_time
+    try:
+        sleep_time = float(cfg.get('devel', 'sleep_time'))
+    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError,
+            ValueError):
+        sleep_time = 2
     while True:
         # Empty the journal until it's empty; then delay so we don't tight
         # loop.
         while deferred.apply_networking():
             pass
-        sleep(2)
+        sleep(sleep_time)
 
 
 @cmd
