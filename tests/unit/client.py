@@ -111,8 +111,7 @@ def make_config():
 
         ])
         f.write(config)
-        f.close()
-        return (tmpdir, cwd)
+    return (tmpdir, cwd)
 
 
 def cleanup((tmpdir, cwd)):
@@ -265,7 +264,7 @@ def avoid_network_race_condition():
     db = SQLAlchemy(app)
     app.config.update(SQLALCHEMY_DATABASE_URI=uri)
 
-    for timeout in range(10):
+    for timeout in xrange(30):
         que = db.session.query(NetworkingAction).count()
         if (que > 0):
             time.sleep(.5)
@@ -286,7 +285,7 @@ def port_has_server(url):
         return False
 
 
-def wait_for_service(url, timeout=15):
+def wait_for_service(url, timeout=60):
     """
     Waits for a port to become a working http server
     timeout -- number of seconds to wait (default 60)
@@ -543,12 +542,17 @@ class Test_port:
                 'mock-01', 'gi1/1/5', 'node-08', 'eth0'
                 ) is None
 
-    def test_port_connect_nic_error(self):
+    def test_port_connect_nic_errors(self):
         C.port.register('mock-01', 'gi1/1/6')
         C.port.connect_nic('mock-01', 'gi1/1/6', 'node-09', 'eth0')
+
+        # port already connected
+        with pytest.raises(FailedAPICallException):
+            C.port.connect_nic('mock-01', 'gi1/1/6', 'node-08', 'eth0')
+
+        # port AND node-09 already connected
         with pytest.raises(FailedAPICallException):
             C.port.connect_nic('mock-01', 'gi1/1/6', 'node-09', 'eth0')
-        C.port.detach_nic('mock-01', 'gi1/1/6')
 
     def test_port_detach_nic(self):
         C.port.register('mock-01', 'gi1/1/7')
