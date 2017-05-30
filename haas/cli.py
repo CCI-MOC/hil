@@ -257,12 +257,12 @@ def serve_networks():
     # Check if config contains usable sleep_time
     if cfg.has_option('network-daemon', 'sleep_time'):
         try:
-            sleep_time = float(cfg.get('network-daemon', 'sleep_time'))
-            if sleep_time < 0:
-                raise ValueError
+            sleep_time = cfg.getfloat('network-daemon', 'sleep_time')
         except (ValueError):
-            sys.exit("Error: Invalid sleep_time. " \
-                     "Must be a positive decimal value\n")
+            sys.exit("Error: sleep_time set to non-float value\n")
+        if sleep_time <= 0 or sleep_time >= 3600:
+            sys.exit("Error: sleep_time not within bounds " \
+                     "0 < sleep_time < 3600\n")
     else:
         sleep_time = 2
 
