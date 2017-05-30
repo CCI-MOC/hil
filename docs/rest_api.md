@@ -522,46 +522,73 @@ The object will have at least the following fields:
                 - "label", the nic's label.
                 - "macaddr", the nic's mac address.
 		- "networks", a JSON object describing what networks are attached to the nic. The keys are channels and the values are the names of networks attached to those channels.
+        - "port", the port to which the nic is connected to or null if the nic
+          is not connected to any port.
+        - "switch", the switch that has the port to which the nic is connected
+          to or null if the nic is not connected to any port.
 	* "metadata", a dictionary of metadata objects
 
-Response body:
+Response body when run by a non-admin user:
 
-    {"name": "node1",
-	 "project": "project1",
-         "nics": [{"label": "nic1", 
-	 	   "macaddr": "01:23:45:67:89", 
-		   "networks": {"vlan/native": "pxe", "vlan/235": "storage"}},
-                  {"label": "nic2", 
-		   "macaddr": "12:34:56:78:90", 
-		   "networks":{"vlan/native": "public"}}],
-	 "metadata":{"EK":"pk"}
-	}
+    {
+        "metadata": {
+            "EK": "pk"
+        },
+        "name": "node1",
+        "nics": [
+            {
+                "label": "nic1",
+                "macaddr": "01:23:45:67:89",
+                "networks": {
+                    "vlan/235": "storage",
+                    "vlan/native": "pxe"
+                }
+            },
+            {
+                "label": "nic2",
+                "macaddr": "12:34:56:78:90",
+                "networks": {}
+            }
+        ],
+        "project": "project1"
+    }
 
 
-Response body if run by an admin:
+Response body when run by an admin:
 
-    {"name": "node1",
-	 "project": "project1",
-         "nics": [{"label": "nic1",
-           "port": "gi1/0/1",
-           "switch": "dell-01",
-	 	   "macaddr": "01:23:45:67:89", 
-		   "networks": {"vlan/native": "pxe", "vlan/235": "storage"}},
-                  {"label": "nic2",
-                   "port": None,
-                   "switch": None,
-		   "macaddr": "12:34:56:78:90", 
-		   "networks":{"vlan/native": "public"}}],
-	 "metadata":{"EK":"pk"}
-	}
+    {
+        "metadata": {
+            "EK": "pk"
+        },
+        "name": "node1",
+        "nics": [
+            {
+                "label": "nic1",
+                "macaddr": "01:23:45:67:89",
+                "networks": {
+                    "vlan/235": "storage",
+                    "vlan/native": "pxe"
+                },
+                "port": "gi1/0/1",
+                "switch": "dell-01"
+            },
+            {
+                "label": "nic2",
+                "macaddr": "12:34:56:78:90",
+                "networks": {},
+                "port": null,
+                "switch": null
+            }
+        ],
+        "project": "project1"
+    }
 
 Authorization requirements:
 
 * If the node is free, no special access is required.
 * Otherwise, access to the project to which `<node>` is assigned is
   required.
-* If a user is an admin, then information about the port and switch to which
-  the nic is connected to is also printed.
+* Admin acces to view port and switch information.
 
 ### Projects
 
