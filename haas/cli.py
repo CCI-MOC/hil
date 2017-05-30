@@ -253,12 +253,19 @@ def serve_networks():
     server.validate_state()
     model.init_db()
     migrations.check_db_schema()
+
     # Check if config contains usable sleep_time
-    try:
-        sleep_time = float(cfg.get('devel', 'sleep_time'))
-    except (ConfigParser.NoSectionError, ConfigParser.NoOptionError,
-            ValueError):
+    if cfg.has_option('network-daemon', 'sleep_time'):
+        try:
+            sleep_time = float(cfg.get('network-daemon', 'sleep_time'))
+            if sleep_time < 0:
+                raise ValueError
+        except (ValueError):
+            sys.exit("Error: Invalid sleep_time. " \
+                     "Must be a positive decimal value\n")
+    else:
         sleep_time = 2
+
     while True:
         # Empty the journal until it's empty; then delay so we don't tight
         # loop.
