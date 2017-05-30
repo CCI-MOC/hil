@@ -259,10 +259,10 @@ def serve_networks():
         try:
             sleep_time = cfg.getfloat('network-daemon', 'sleep_time')
         except (ValueError):
-            sys.exit("Error: sleep_time set to non-float value\n")
+            sys.exit("Error: sleep_time set to non-float value")
         if sleep_time <= 0 or sleep_time >= 3600:
             sys.exit("Error: sleep_time not within bounds "
-                     "0 < sleep_time < 3600\n")
+                     "0 < sleep_time < 3600")
     else:
         sleep_time = 2
 
