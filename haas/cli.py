@@ -261,7 +261,7 @@ def serve_networks():
         except (ValueError):
             sys.exit("Error: sleep_time set to non-float value\n")
         if sleep_time <= 0 or sleep_time >= 3600:
-            sys.exit("Error: sleep_time not within bounds " \
+            sys.exit("Error: sleep_time not within bounds "
                      "0 < sleep_time < 3600\n")
     else:
         sleep_time = 2
