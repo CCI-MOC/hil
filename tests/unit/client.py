@@ -270,40 +270,35 @@ def avoid_network_race_condition():
             time.sleep(.5)
         else:
             return
-    raise TimeoutError(" Timed out to avoid race condition. ")
+    raise TimeoutError("Timed out to avoid race condition")
 
 
-def port_has_server(url):
-    """ Returns whether a local TCP port is a connectable http server. """
+def server_active(url):
+    """ Returns whether a url is a connectable http server. """
 
     try:
         sess = requests.Session()
         sess.auth = (username, password)
         sess.get(url + '/projects')
         return True
-    except:
+    except requests.exceptions.ConnectionError:
         return False
 
 
 def wait_for_service(url, timeout=60):
     """
     Waits for a port to become a working http server
+    url     -- URL to attempt to access
     timeout -- number of seconds to wait (default 60)
     """
 
     begin = time.time()
-    while True:
-        try:
-            sess = requests.Session()
-            sess.auth = (username, password)
-            sess.get(url + '/projects')
-            break
-        except requests.exceptions.ConnectionError:
-            if (time.time() - begin) < timeout:
-                time.sleep(.5)
-            else:
-                raise TimeoutError("Client library test server didn't "
-                                   "start in {} seconds".format(timeout))
+    while not server_active(url):
+        if (time.time() - begin) < timeout:
+            time.sleep(.5)
+        else:
+            raise TimeoutError("Client library test server didn't "
+                               "start in {} seconds".format(timeout))
 
 
 @pytest.fixture(scope="module")
@@ -311,7 +306,7 @@ def create_setup(request):
     serv_port = 8000
     url = 'http://127.0.0.1:{}'.format(serv_port)
 
-    assert not port_has_server(url)
+    assert not server_active(url)
 
     dir_names = make_config()
     initialize_db()
