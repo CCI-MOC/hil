@@ -247,7 +247,6 @@ def serve_networks():
     """Start the HaaS networking server"""
     from haas import model, deferred
     from time import sleep
-    import ConfigParser
     server.init()
     server.register_drivers()
     server.validate_state()
@@ -255,7 +254,8 @@ def serve_networks():
     migrations.check_db_schema()
 
     # Check if config contains usable sleep_time
-    if cfg.has_option('network-daemon', 'sleep_time'):
+    if (cfg.has_section('network-daemon') and
+            cfg.has_option('network-daemon', 'sleep_time')):
         try:
             sleep_time = cfg.getfloat('network-daemon', 'sleep_time')
         except (ValueError):
