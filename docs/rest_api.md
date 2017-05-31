@@ -523,9 +523,11 @@ The object will have at least the following fields:
                 - "macaddr", the nic's mac address.
 		- "networks", a JSON object describing what networks are attached to the nic. The keys are channels and the values are the names of networks attached to those channels.
         - "port", the port to which the nic is connected to or null if the nic
-          is not connected to any port.
+          is not connected to any port. This field is only visibile if the
+          caller is an admin.
         - "switch", the switch that has the port to which the nic is connected
-          to or null if the nic is not connected to any port.
+          to or null if the nic is not connected to any port. Just like port,
+          this is only visible if the caller is an admin.
 	* "metadata", a dictionary of metadata objects
 
 Response body when run by a non-admin user:
