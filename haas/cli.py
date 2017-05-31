@@ -263,6 +263,8 @@ def serve_networks():
         if sleep_time <= 0 or sleep_time >= 3600:
             sys.exit("Error: sleep_time not within bounds "
                      "0 < sleep_time < 3600")
+        if sleep_time > 60:
+            sys.stdout.write("Warning: sleep_time greater than 1 minute\n")
     else:
         sleep_time = 2
 
