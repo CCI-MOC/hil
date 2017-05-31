@@ -74,7 +74,9 @@ pool allocator is in use. There are three switch drivers shipped with
 HaaS:
 
 * ``haas.ext.switches.dell``, which provides a driver for the Dell
-  Powerconnect 5500 series switches and the Dell N3000 series.
+  Powerconnect 5500 series switches.
+* ``haas.ext.switches.n3000``, which provides a driver for the Dell N3000
+  series switches.
 * ``haas.ext.switches.nexus``, which provides a driver for some Cisco
   Nexus switches. Only the 3500 and 5500 have been tested, though it is
   possible that other models will work as well.
