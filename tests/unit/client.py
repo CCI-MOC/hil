@@ -17,22 +17,26 @@ import haas
 from haas import model, api, deferred, server, config
 from haas.model import db
 from haas.network_allocator import get_network_allocator
-import pytest
-import json
-import requests
-import os
-import tempfile
-import subprocess
-import time
-from subprocess import check_call, Popen
-from urlparse import urljoin
-import requests
-from requests.exceptions import ConnectionError
 from flask.ext.sqlalchemy import SQLAlchemy
 from haas.flaskapp import app
 from haas.model import NetworkingAction
 from haas.client.base import ClientBase, FailedAPICallException
 from haas.client.client import Client, RequestsHTTPClient, KeystoneHTTPClient
+
+import errno
+import json
+import os
+import pytest
+import requests
+import sys
+import subprocess
+import tempfile
+import time
+
+from subprocess import check_call, Popen
+from urlparse import urljoin
+import requests
+from requests.exceptions import ConnectionError
 
 ep = "http://127.0.0.1:8000" or os.environ.get('HAAS_ENDPOINT')
 username = "hil_user" or os.environ.get('HAAS_USERNAME')
@@ -83,6 +87,7 @@ def make_config():
     with open('haas.cfg', 'w') as f:
         config = '\n'.join([
             '[general]',
+            'log_level = debug',
             '[devel]',
             'dry_run=True',
             '[auth]',
@@ -106,7 +111,7 @@ def make_config():
 
         ])
         f.write(config)
-        return (tmpdir, cwd)
+    return (tmpdir, cwd)
 
 
 def cleanup((tmpdir, cwd)):
@@ -259,31 +264,67 @@ def avoid_network_race_condition():
     db = SQLAlchemy(app)
     app.config.update(SQLALCHEMY_DATABASE_URI=uri)
 
-    for timeout in range(10):
+    for timeout in xrange(30):
         que = db.session.query(NetworkingAction).count()
         if (que > 0):
-            time.sleep(1)
+            time.sleep(.5)
         else:
             return
-    raise TimeoutError(" Timed out to avoid race condition. ")
+    raise TimeoutError("Timed out to avoid race condition")
+
+
+def server_active(url):
+    """ Returns whether a url is a connectable http server. """
+
+    try:
+        sess = requests.Session()
+        sess.auth = (username, password)
+        sess.get(url + '/projects')
+        return True
+    except requests.exceptions.ConnectionError:
+        return False
+
+
+def wait_for_service(url, timeout=60):
+    """
+    Waits for a port to become a working http server
+    url     -- URL to attempt to access
+    timeout -- number of seconds to wait (default 60)
+    """
+
+    begin = time.time()
+    while not server_active(url):
+        if (time.time() - begin) < timeout:
+            time.sleep(.5)
+        else:
+            raise TimeoutError("Client library test server didn't "
+                               "start in {} seconds".format(timeout))
 
 
 @pytest.fixture(scope="module")
 def create_setup(request):
+    serv_port = 8000
+    url = 'http://127.0.0.1:{}'.format(serv_port)
+
+    assert not server_active(url)
+
     dir_names = make_config()
     initialize_db()
-    proc1 = Popen(['haas', 'serve', '8000'])
-    proc2 = Popen(['haas', 'serve_networks'])
-    time.sleep(1)
+    proc1 = Popen(['haas', 'serve', str(serv_port)], stdout=sys.stdout,
+                  stderr=sys.stderr)
+    proc2 = Popen(['haas', 'serve_networks'], stdout=sys.stdout,
+                  stderr=sys.stderr)
+    wait_for_service(url)  # Loop until the server is up. See #770
     populate_server()
 
-    def fin():
-        proc1.terminate()
-        proc2.terminate()
-        proc1.wait()
-        proc2.wait()
-        cleanup(dir_names)
-    request.addfinalizer(fin)
+    yield
+
+    # Everything below is for cleanup
+    proc1.terminate()
+    proc2.terminate()
+    proc1.wait()
+    proc2.wait()
+    cleanup(dir_names)
 
 
 @pytest.mark.usefixtures("create_setup")
@@ -348,25 +389,32 @@ class Test_node:
     def test_node_stop_console(self):
         assert C.node.stop_console('node-01') is None
 
+    # Network note: it is the responsibility of the calling test to
+    # ensure that no net operations are pending when it is done.
     def test_node_connect_network(self):
         assert C.node.connect_network(
                 'node-01', 'eth0', 'net-01', 'vlan/native'
                 ) is None
+        avoid_network_race_condition()
 
     def test_node_connect_network_error(self):
         C.node.connect_network('node-02', 'eth0', 'net-04', 'vlan/native')
+        avoid_network_race_condition()
         with pytest.raises(FailedAPICallException):
             C.node.connect_network('node-02', 'eth0', 'net-04', 'vlan/native')
+        avoid_network_race_condition()
 
     def test_node_detach_network(self):
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
         avoid_network_race_condition()
         assert C.node.detach_network('node-04', 'eth0', 'net-04') is None
+        avoid_network_race_condition()
 
     def test_node_detach_network_error(self):
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
         avoid_network_race_condition()
         C.node.detach_network('node-04', 'eth0', 'net-04')
+        avoid_network_race_condition()
         with pytest.raises(FailedAPICallException):
             C.node.detach_network('node-04', 'eth0', 'net-04')
 
@@ -489,11 +537,17 @@ class Test_port:
                 'mock-01', 'gi1/1/5', 'node-08', 'eth0'
                 ) is None
 
-    def test_port_connect_nic_error(self):
+    def test_port_connect_nic_errors(self):
         C.port.register('mock-01', 'gi1/1/6')
         C.port.connect_nic('mock-01', 'gi1/1/6', 'node-09', 'eth0')
+
+        # port already connected
         with pytest.raises(FailedAPICallException):
             C.port.connect_nic('mock-01', 'gi1/1/6', 'node-08', 'eth0')
+
+        # port AND node-09 already connected
+        with pytest.raises(FailedAPICallException):
+            C.port.connect_nic('mock-01', 'gi1/1/6', 'node-09', 'eth0')
 
     def test_port_detach_nic(self):
         C.port.register('mock-01', 'gi1/1/7')
