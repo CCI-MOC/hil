@@ -1856,11 +1856,15 @@ class TestQuery_unpopulated_db:
                 {
                     'label': 'eth0',
                     'macaddr': 'DE:AD:BE:EF:20:14',
+                    'port': None,
+                    'switch': None,
                     "networks": {}
                 },
                 {
                     'label': 'wlan0',
                     'macaddr': 'DE:AD:BE:EF:20:15',
+                    'port': None,
+                    'switch': None,
                     "networks": {}
                 }
             ],
@@ -1889,11 +1893,15 @@ class TestQuery_unpopulated_db:
                 {
                     'label': 'eth0',
                     'macaddr': 'DE:AD:BE:EF:20:14',
+                    'port': None,
+                    'switch': None,
                     "networks": {}
                 },
                 {
                     'label': 'wlan0',
                     'macaddr': 'DE:AD:BE:EF:20:15',
+                    'port': None,
+                    'switch': None,
                     "networks": {}
                 }
             ],
@@ -1935,6 +1943,8 @@ class TestQuery_unpopulated_db:
                 {
                     'label': 'eth0',
                     'macaddr': 'DE:AD:BE:EF:20:14',
+                    'port': '1',
+                    'switch': 'sw0',
                     "networks": {
                         get_network_allocator().get_default_channel(): 'pxe'
                     }
@@ -1942,6 +1952,8 @@ class TestQuery_unpopulated_db:
                 {
                     'label': 'wlan0',
                     'macaddr': 'DE:AD:BE:EF:20:15',
+                    'port': '2',
+                    'switch': 'sw0',
                     "networks": {
                         get_network_allocator().get_default_channel(): 'storage'  # noqa
                     }

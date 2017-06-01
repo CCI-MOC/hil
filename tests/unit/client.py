@@ -349,6 +349,8 @@ class Test_node:
                 u'nics': [
                     {
                         u'macaddr': u'aa:bb:cc:dd:ee:07',
+                        u'port': u'gi1/0/7',
+                        u'switch': u'mock-01',
                         u'networks': {}, u'label': u'eth0'
                         }
                     ],
