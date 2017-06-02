@@ -23,6 +23,7 @@ import requests
 import sys
 import urllib
 import schema
+import logging
 
 from functools import wraps
 
@@ -30,6 +31,7 @@ from haas.client.client import Client, RequestsHTTPClient, KeystoneHTTPClient
 from haas.client.base import FailedAPICallException
 
 
+logger = logging.getLogger(__name__)
 command_dict = {}
 usage_dict = {}
 MIN_PORT_NUMBER = 1
@@ -247,14 +249,11 @@ def serve_networks():
     """Start the HaaS networking server"""
     from haas import model, deferred
     from time import sleep
-    import logging
     server.init()
     server.register_drivers()
     server.validate_state()
     model.init_db()
     migrations.check_db_schema()
-
-    logger = logging.getLogger(__name__)
 
     # Check if config contains usable sleep_time
     if (cfg.has_section('network-daemon') and
