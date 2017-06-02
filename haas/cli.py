@@ -159,13 +159,6 @@ def setup_http_client():
     C = Client(ep, http_client)
 
 
-def check_clientlib_response(fun):
-    try:
-        return fun()
-    except Exception as e:
-        sys.exit('Error: %s\n' % e.message)
-
-
 def check_status_code(response):
     if response.status_code < 200 or response.status_code >= 300:
         sys.stderr.write('Unexpected status code: %d\n' % response.status_code)
@@ -286,84 +279,74 @@ def user_create(username, password, is_admin):
     <is_admin> may be either "admin" or "regular", and determines whether
     the user has administrative priveledges.
     """
-    check_clientlib_response(
-            lambda: C.user.create(username, password, is_admin)
-            )
+    C.user.create(username, password, is_admin)
 
 
 @cmd
 def network_create(network, owner, access, net_id):
     """Create a link-layer <network>.  See docs/networks.md for details"""
-    check_clientlib_response(
-            lambda: C.network.create(network, owner, access, net_id)
-            )
+    C.network.create(network, owner, access, net_id)
 
 
 @cmd
 def network_create_simple(network, project):
     """Create <network> owned by project.  Specific case of network_create"""
-    check_clientlib_response(
-            lambda: C.network.create(network, project, project, "")
-            )
+    C.network.create(network, project, project, "")
 
 
 @cmd
 def network_delete(network):
     """Delete a <network>"""
-    check_clientlib_response(
-            lambda: C.network.delete(network)
-            )
+    C.network.delete(network)
 
 
 @cmd
 def user_delete(username):
     """Delete the user <username>"""
-    check_clientlib_response(
-            lambda: C.user.delete(username)
-            )
+    C.user.delete(username)
 
 
 @cmd
 def list_projects():
     """List all projects"""
-    q = check_clientlib_response(lambda: C.project.list())
+    q = C.project.list()
     sys.stdout.write('%s Projects :    ' % len(q) + " ".join(q) + '\n')
 
 
 @cmd
 def user_add_project(user, project):
     """Add <user> to <project>"""
-    check_clientlib_response(lambda: C.user.add(user, project))
+    C.user.add(user, project)
 
 
 @cmd
 def user_remove_project(user, project):
     """Remove <user> from <project>"""
-    check_clientlib_response(lambda: C.user.remove(user, project))
+    C.user.remove(user, project)
 
 
 @cmd
 def network_grant_project_access(project, network):
     """Add <project> to <network> access"""
-    check_clientlib_response(lambda: C.network.grant_access(project, network))
+    C.network.grant_access(project, network)
 
 
 @cmd
 def network_revoke_project_access(project, network):
     """Remove <project> from <network> access"""
-    check_clientlib_response(lambda: C.network.revoke_access(project, network))
+    C.network.revoke_access(project, network)
 
 
 @cmd
 def project_create(project):
     """Create a <project>"""
-    check_clientlib_response(lambda: C.project.create(project))
+    C.project.create(project)
 
 
 @cmd
 def project_delete(project):
     """Delete <project>"""
-    check_clientlib_response(lambda: C.project.delete(project))
+    C.project.delete(project)
 
 
 @cmd
@@ -384,13 +367,13 @@ def headnode_delete(headnode):
 @cmd
 def project_connect_node(project, node):
     """Connect <node> to <project>"""
-    check_clientlib_response(lambda: C.project.connect(project, node))
+    C.project.connect(project, node)
 
 
 @cmd
 def project_detach_node(project, node):
     """Detach <node> from <project>"""
-    check_clientlib_response(lambda: C.project.detach(project, node))
+    C.project.detach(project, node)
 
 
 @cmd
@@ -441,19 +424,19 @@ def node_register(node, subtype, *args):
 @cmd
 def node_delete(node):
     """Delete <node>"""
-    check_clientlib_response(lambda: C.node.delete(node))
+    C.node.delete(node)
 
 
 @cmd
 def node_power_cycle(node):
     """Power cycle <node>"""
-    check_clientlib_response(lambda: C.node.power_cycle(node))
+    C.node.power_cycle(node)
 
 
 @cmd
 def node_power_off(node):
     """Power off <node>"""
-    check_clientlib_response(lambda: C.node.power_off(node))
+    C.node.power_off(node)
 
 
 @cmd
@@ -473,13 +456,13 @@ def node_register_nic(node, nic, macaddr):
     """
     Register existence of a <nic> with the given <macaddr> on the given <node>
     """
-    check_clientlib_response(lambda: C.node.add_nic(node, nic, macaddr))
+    C.node.add_nic(node, nic, macaddr)
 
 
 @cmd
 def node_delete_nic(node, nic):
     """Delete a <nic> on a <node>"""
-    check_client_lib(lambda: C.node.remove_nic(node, nic))
+    C.node.remove_nic(node, nic)
 
 
 @cmd
@@ -499,15 +482,13 @@ def headnode_delete_hnic(headnode, nic):
 @cmd
 def node_connect_network(node, nic, network, channel):
     """Connect <node> to <network> on given <nic> and <channel>"""
-    check_clientlib_response(
-            lambda: C.node.connect_network(node, nic, network, channel)
-            )
+    C.node.connect_network(node, nic, network, channel)
 
 
 @cmd
 def node_detach_network(node, nic, network):
     """Detach <node> from the given <network> on the given <nic>"""
-    check_clientlib_response(lambda: C.node.detach_network(node, nic, network))
+    C.node.detach_network(node, nic, network)
 
 
 @cmd
@@ -606,40 +587,38 @@ def switch_register(switch, subtype, *args):
 @cmd
 def switch_delete(switch):
     """Delete a <switch> """
-    check_clientlib_response(lambda: C.switch.delete(switch))
+    C.switch.delete(switch)
 
 
 @cmd
 def list_switches():
     """List all switches"""
-    q = check_clientlib_response(lambda: C.switch.list())
+    q = C.switch.list()
     sys.stdout.write('%s switches :    ' % len(q) + " ".join(q) + '\n')
 
 
 @cmd
 def port_register(switch, port):
     """Register a <port> with <switch> """
-    check_clientlib_response(lambda: C.port.register(switch, port))
+    C.port.register(switch, port)
 
 
 @cmd
 def port_delete(switch, port):
     """Delete a <port> from a <switch>"""
-    check_clientlib_response(lambda: C.port.delete(switch, port))
+    C.port.delete(switch, port)
 
 
 @cmd
 def port_connect_nic(switch, port, node, nic):
     """Connect a <port> on a <switch> to a <nic> on a <node>"""
-    check_clientlib_response(
-            lambda: C.port.connect_nic(switch, port, node, nic)
-            )
+    C.port.connect_nic(switch, port, node, nic)
 
 
 @cmd
 def port_detach_nic(switch, port):
     """Detach a <port> on a <switch> from whatever's connected to it"""
-    check_clientlib_response(lambda: C.port.detach_nic(switch, port))
+    C.port.detach_nic(switch, port)
 
 
 @cmd
@@ -669,7 +648,7 @@ def list_nodes(is_free):
     <is_free> may be either "all" or "free", and determines whether
         to list all nodes or all free nodes.
     """
-    q = check_clientlib_response(lambda: C.node.list(is_free))
+    q = C.node.list(is_free)
     if is_free == 'all':
         sys.stdout.write('All nodes %s\t:    %s\n' % (len(q), " ".join(q)))
     elif is_free == 'free':
@@ -681,14 +660,14 @@ def list_nodes(is_free):
 @cmd
 def list_project_nodes(project):
     """List all nodes attached to a <project>"""
-    q = check_clientlib_response(lambda: C.project.nodes_in(project))
+    q = C.project.nodes_in(project)
     sys.stdout.write('Nodes allocated to %s:  ' % project + " ".join(q) + '\n')
 
 
 @cmd
 def list_project_networks(project):
     """List all networks attached to a <project>"""
-    q = check_clientlib_response(lambda: C.project.networks_in(project))
+    q = C.project.networks_in(project)
     sys.stdout.write(
             "Networks allocated to %s\t:   %s\n" % (project, " ".join(q))
             )
@@ -697,7 +676,7 @@ def list_project_networks(project):
 @cmd
 def show_switch(switch):
     """Display information about <switch>"""
-    q = check_clientlib_response(lambda: C.switch.show(switch))
+    q = C.switch.show(switch)
     for item in q.items():
         sys.stdout.write("%s\t  :  %s\n" % (item[0], item[1]))
 
@@ -705,13 +684,13 @@ def show_switch(switch):
 @cmd
 def show_port(switch, port):
     """Show what's connected to <port>"""
-    print check_clientlib_response(lambda: C.port.show(switch, port))
+    print C.port.show(switch, port)
 
 
 @cmd
 def list_networks():
     """List all networks"""
-    q = check_clientlib_response(lambda: C.network.list())
+    q = C.network.list()
     for item in q.items():
         sys.stdout.write('%s \t : %s\n' % (item[0], item[1]))
 
@@ -719,7 +698,7 @@ def list_networks():
 @cmd
 def show_network(network):
     """Display information about <network>"""
-    q = check_clientlib_response(lambda: C.network.show(network))
+    q = C.network.show(network)
     for item in q.items():
         sys.stdout.write("%s\t  :  %s\n" % (item[0], item[1]))
 
@@ -735,7 +714,7 @@ def show_node(node):
 #    via this call. Suggestion to future developers of CLI to use
 #    recursion in the call for output of such metadata.
 
-    q = check_clientlib_response(lambda: C.node.show(node))
+    q = C.node.show(node)
     for item in q.items():
         sys.stdout.write("%s\t  :  %s\n" % (item[0], item[1]))
 
@@ -771,13 +750,13 @@ def show_console(node):
 @cmd
 def start_console(node):
     """Start logging console output from <node>"""
-    check_clientlib_response(lambda: C.node.start_console(node))
+    C.node.start_console(node)
 
 
 @cmd
 def stop_console(node):
     """Stop logging console output from <node> and delete the log"""
-    check_clientlib_response(lambda: C.node.stop_console(node))
+    C.node.stop_console(node)
 
 
 @cmd
@@ -836,7 +815,8 @@ def main():
         setup_http_client()
         try:
             command_dict[sys.argv[1]](*sys.argv[2:])
-        except FailedAPICallException:
-            sys.exit(1)
+        #except FailedAPICallException as e:
+        except Exception as e:
+            sys.exit('Error: %s\n' % e.message)
         except InvalidAPIArgumentsException:
             sys.exit(2)
