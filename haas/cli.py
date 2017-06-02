@@ -247,11 +247,14 @@ def serve_networks():
     """Start the HaaS networking server"""
     from haas import model, deferred
     from time import sleep
+    import logging
     server.init()
     server.register_drivers()
     server.validate_state()
     model.init_db()
     migrations.check_db_schema()
+
+    logger = logging.getLogger(__name__)
 
     # Check if config contains usable sleep_time
     if (cfg.has_section('network-daemon') and
@@ -264,7 +267,7 @@ def serve_networks():
             sys.exit("Error: sleep_time not within bounds "
                      "0 < sleep_time < 3600")
         if sleep_time > 60:
-            sys.stdout.write("Warning: sleep_time greater than 1 minute\n")
+            logger.warn('sleep_time greater than 1 minute.')
     else:
         sleep_time = 2
 
