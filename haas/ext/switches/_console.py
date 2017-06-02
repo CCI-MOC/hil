@@ -73,14 +73,6 @@ class Session(object):
     def disconnect(self):
         """End the session. Must be at the main prompt."""
 
-    def _set_native(self, old_native, network_id, interface):
-        """This method is intended to be over written.
-
-        In some switches, we need to create a vlan before setting that as
-        native. `interface` is needed to get back to the interface prompt
-        to set the native vlan for that interface"""
-        self.set_native(old_native, network_id)
-
     def modify_port(self, port, channel, network_id):
         interface = port
         port = Port.query.filter_by(label=port,
@@ -97,7 +89,7 @@ class Session(object):
                 old_native = old_native.network.network_id
 
             if network_id is not None:
-                self._set_native(old_native, network_id, interface)
+                self.set_native(old_native, network_id)
             elif old_native is not None:
                 self.disable_native(old_native)
         else:

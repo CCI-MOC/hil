@@ -121,16 +121,6 @@ class _DellN3000Session(_BaseSession):
         self._sendline('sw trunk native vlan ' + self.dummy_vlan)
         self._sendline('sw trunk allowed vlan remove ' + self.dummy_vlan)
 
-    def _set_native(self, old_native, network_id, interface):
-        # create the vlan that we need to set as native
-        self._sendline('exit')
-        self._sendline('vlan ' + network_id)
-        self._sendline('exit')
-        self._sendline('exit')
-        self.enter_if_prompt(interface)
-        # set the native vlan here
-        self.set_native(old_native, network_id)
-
     def _int_config(self, interface):
         """Collect information about the specified interface
 
