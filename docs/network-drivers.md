@@ -119,6 +119,14 @@ they are not validated by HaaS (this will be fixed in future versions).
 
 ### Dell N3000 driver
 
+#### Switch preperation
+
+1. Just like the Powerconnect 5500, every VLAN that could be used on the switch
+must first be enabled on the switch. To enable all VLANs to work with the switch, run this command:
+
+   configure
+   vlan 2-4093
+
 #### switch_register
 
 To register a Dell N3000 switch, the ``"type"`` field of the
@@ -126,7 +134,7 @@ request body must have a value of::
 
     http://schema.massopencloud.org/haas/v0/switches/delln3000
 
-It requires the same additional fields as the powerconnect driver, plus an
+It requires the same fields as the powerconnect driver, plus an
 additional field "dummy_vlan" like the nexus driver, which should be a JSON
 number corresponding to an unused VLAN id on the switch. Unlike the nexus
 switch, this dummy vlan must exist otherwise you cannot set it as the native
