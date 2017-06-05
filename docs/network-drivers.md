@@ -124,8 +124,10 @@ they are not validated by HaaS (this will be fixed in future versions).
 1. Just like the Powerconnect 5500, every VLAN that could be used on the switch
 must first be enabled on the switch. To enable all VLANs to work with the switch, run this command:
 
-   configure
-   vlan 2-4093
+```
+   # configure
+   # vlan 2-4093
+```
 
 #### switch_register
 
