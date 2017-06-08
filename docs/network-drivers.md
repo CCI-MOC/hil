@@ -144,7 +144,7 @@ vlan, but this vlan should not be used for any networks.
 
 #### switch_register_port
 
-Resgister ports just like the powerconnect driver. e.g. ``gi1/0/5``.
+Register ports just like the powerconnect driver. e.g. ``gi1/0/5``.
 
 ### Nexus driver
 
