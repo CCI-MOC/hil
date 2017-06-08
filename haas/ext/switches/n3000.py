@@ -28,8 +28,10 @@ from haas.migrations import paths
 from haas.ext.switches import _console
 from haas.ext.switches._dell_base import _BaseSession
 from os.path import dirname, join
+from haas.migrations import paths
 
 logger = logging.getLogger(__name__)
+paths[__name__] = join(dirname(__file__), 'migrations', 'n3000')
 
 
 class DellN3000(Switch):
