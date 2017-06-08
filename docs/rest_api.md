@@ -1,6 +1,66 @@
-# REST API
+# Overview
 
-This file documents the HaaS REST API in detail.
+This file describes the HIL Api. We first describe the main objects,
+then users and security model, and finally provide a full reference for
+the API.
+
+## Objects in the HaaS
+
+* project - a grouping of resources (e.g., headnodes, nodes, networks).
+* node - a physical node.  Either unallocated or belongs to a project.  Has
+  one or more NICs attached to it.
+* headnode - a controlling machine for a project, today a VM, assigned to one
+  project
+* NIC - network card, identified by a user-specified label (e.g., PXE, ipmi,
+  user1, silly) will have a visible ethernet mac address (or equivalent unique
+  number for other network types), and is always part of one node and
+  connected to at most one port.
+* HNIC - headnode network card, identified by a user-specified label (e.g.,
+  PXE, ipmi, user1, silly), and is always part of one headnode.
+* port - a port to which NICs can be connected.  Only visible to admins.
+* network - a network, today implemented as a VLAN, that NICs and HNICs can be
+  connected to.  See networks.md for more details.
+
+The authentication system is pluggable. Authentication mechanisms are
+provided by extensions (see `extensions.md`), but the rules about who is
+allowed to access what are dictated by HaaS core. Operations etiher
+require administratie priilieges, or access to a particular project.
+
+Of note, "users" are not a concept that HaaS core understands, though
+some of the individual auth extensions do.
+
+## API design philosophy
+
+We provide the most basic API that we can, and attempt to impose no structure
+that is not required for authorization purposes.
+
+- A 'project' is merely an authorization domain.  It is reasonable to have
+  logically independent groupings of resources within one project, but the
+  HaaS will not help you create such a structure.  Policies like this belong
+  in higher-level tools built on top of the haas.
+
+- We considered having a mechanism for staging a large number of networking
+  changes and performing them all-together, and even potentially allowing
+  roll-back.  Instead, we simply have API calls to connect a NIC to a network,
+  and to disconnect it.  All other functionalities can be built on top of
+  this.
+
+There is no garbage-collection of objects.  If an object is being used
+somehow, it cannot be deleted.  For example, if a node is on a network, the
+user can neither de-allocate the node nor delete the network.  They must first
+detach the node from the network.  (The one exception to this is that, when
+deleting a headnode, all of its HNICs are deleted with it.  This is due to a
+technical limitation---we cannot currently dynamically add and remove HNICs.)
+
+Most objects are identified by "labels" that are globally unique, e.g., nodes,
+networks, groups, users, headnodes.  While we may eventually change this, it
+seems a reasonable limitation for now that simplifies the implementation and
+will allow potential sharing of resources. The system will return an error if
+a second user tries to create an object with an already existing label. The
+one exception is NICs, where the label is unique only on a per-node
+basis.
+
+# API Reference
 
 ## How to read
 
@@ -437,7 +497,7 @@ The valid/allowed boot devices are:
 
 * pxe : do a pxe boot (network boot)
 * disk: boot from local hard disk
-* none: to reset boot order to default. 
+* none: to reset boot order to default.
 
 #### node_power_off
 
@@ -690,11 +750,11 @@ Authorization requirements:
 
 `PUT /node/<node>/metadata/<label>`
 
-Request Body: 
+Request Body:
 
 	{
 		"value": <value>
-	}	
+	}
 
 Set metadata with `<label>` and `<value>` on `<node>`.
 
