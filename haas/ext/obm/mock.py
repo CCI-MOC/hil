@@ -14,7 +14,7 @@
 
 """MockObm driver for implementing out of band management. """
 
-from sqlalchemy import Column, String, BigInteger, ForeignKey
+from sqlalchemy import Column, String, Integer, ForeignKey
 import schema
 
 from haas.model import Obm
@@ -27,7 +27,7 @@ paths[__name__] = join(dirname(__file__), 'migrations', 'mock')
 
 
 class MockObm(Obm):
-    id = Column(BigInteger, ForeignKey('obm.id'), primary_key=True)
+    id = Column(Integer, ForeignKey('obm.id'), primary_key=True)
     host = Column(String, nullable=False)
     user = Column(String, nullable=False)
     password = Column(String, nullable=False)
