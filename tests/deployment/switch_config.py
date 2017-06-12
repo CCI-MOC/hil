@@ -27,8 +27,9 @@ from haas.test_common import config, config_testsuite, fresh_database, \
 import pytest
 import json
 
-DELL = 'http://schema.massopencloud.org/haas/v0/switches/powerconnect55xx'
+DELL5500 = 'http://schema.massopencloud.org/haas/v0/switches/powerconnect55xx'
 NEXUS = 'http://schema.massopencloud.org/haas/v0/switches/nexus'
+DELLN3000 = 'http://schema.massopencloud.org/haas/v0/switches/delln3000'
 
 
 @pytest.fixture
@@ -74,7 +75,8 @@ def not_dell_or_nexus():
     with open('site-layout.json') as layout_data:
         layout = json.load(layout_data)
     switch_type = layout['switches'][0]['type']
-    return switch_type != NEXUS and switch_type != DELL
+    return (switch_type != NEXUS and switch_type != DELL5500 and
+            switch_type != DELLN3000)
 
 
 @pytest.mark.skipif(not_dell_or_nexus(),
