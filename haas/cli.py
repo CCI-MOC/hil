@@ -815,9 +815,9 @@ def main():
         setup_http_client()
         try:
             command_dict[sys.argv[1]](*sys.argv[2:])
-        except FailedAPICallException:
-            sys.exit(1)
-        except InvalidAPIArgumentsException:
-            sys.exit(2)
+        except FailedAPICallException as e:
+            sys.exit('Error: %s\n' % e.message)
+        except InvalidAPIArgumentsException as e:
+            sys.exit('Error: %s\n' % e.message)
         except Exception as e:
             sys.exit('Unexpected error: %s\n' % e.message)
