@@ -159,13 +159,6 @@ def setup_http_client():
     C = Client(ep, http_client)
 
 
-def check_clientlib_response(fun):
-    try:
-        return fun()
-    except Exception as e:
-        sys.exit('Error: %s\n' % e.message)
-
-
 def check_status_code(response):
     if response.status_code < 200 or response.status_code >= 300:
         sys.stderr.write('Unexpected status code: %d\n' % response.status_code)
@@ -827,4 +820,4 @@ def main():
         except InvalidAPIArgumentsException:
             sys.exit(2)
         except Exception as e:
-            sys.exit('Error: %s\n' % e.message)
+            sys.exit('Unexpected error: %s\n' % e.message)
