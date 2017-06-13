@@ -68,7 +68,7 @@ network_projects = db.Table(
 class Nic(db.Model):
     """a nic belonging to a Node"""
 
-    id = db.Column(db.BigInteger, primary_key=True)
+    id = db.Column(BigIntegerType, primary_key=True)
     label = db.Column(db.String, nullable=False)
 
     # The Node to which the nic belongs:
