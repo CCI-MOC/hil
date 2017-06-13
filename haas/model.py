@@ -31,6 +31,8 @@ from haas.config import cfg
 from haas.dev_support import no_dry_run
 import uuid
 import xml.etree.ElementTree
+from sqlalchemy import BigInteger
+from sqlalchemy.dialects import postgresql, mysql, sqlite
 
 # without setting this explicitly, we get a warning that this option
 # will default to disabled in future versions (due to incurring a lot
@@ -40,6 +42,10 @@ app.config.update(SQLALCHEMY_TRACK_MODIFICATIONS=False)
 
 db = SQLAlchemy(app)
 
+BigIntegerType = BigInteger()
+BigIntegerType = BigIntegerType.with_variant(postgresql.BIGINT(), 'postgresql')
+BigIntegerType = BigIntegerType.with_variant(mysql.BIGINT(), 'mysql')
+BigIntegerType = BigIntegerType.with_variant(sqlite.INTEGER(), 'sqlite')
 
 def init_db(uri=None):
     """Start up the DB connection.
