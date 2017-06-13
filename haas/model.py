@@ -42,7 +42,10 @@ app.config.update(SQLALCHEMY_TRACK_MODIFICATIONS=False)
 
 db = SQLAlchemy(app)
 
-db_bigint = False
+BigIntegerType = BigInteger()
+BigIntegerType = BigIntegerType.with_variant(
+        sqlite.INTEGER(), 'sqlite')
+
 
 def init_db(uri=None):
     """Start up the DB connection.
@@ -55,7 +58,8 @@ def init_db(uri=None):
     app.config.update(SQLALCHEMY_DATABASE_URI=uri)
 
     if 'postgresql' in uri:
-        db_bigint = True
+        BigIntegerType = BigIntegerType.with_variant(
+                postgresql.BIGINT(), 'postgresql')
 
 # A joining table for project's access to networks, which have a many to many
 # relationship:
@@ -63,13 +67,6 @@ network_projects = db.Table(
     'network_projects',
     db.Column('project_id', db.ForeignKey('project.id')),
     db.Column('network_id', db.ForeignKey('network.id')))
-
-BigIntegerType = BigInteger()
-BigIntegerType = BigIntegerType.with_variant(
-        sqlite.INTEGER(), 'sqlite')
-if db_bigint:
-    BigIntegerType = BigIntegerType.with_variant(
-            postgresql.BIGINT(), 'postgresql')
 
 
 class Nic(db.Model):
