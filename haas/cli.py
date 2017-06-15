@@ -283,6 +283,20 @@ def user_create(username, password, is_admin):
 
 
 @cmd
+def user_set_admin(username, is_admin):
+    """Changes the admin status of user <username>.
+
+    <is_admin> may by either "admin" or "regular", and determines whether
+    a user is authorized for administrative privileges.
+    """
+    if is_admin not in ('admin', 'regular'):
+        raise ValueError(
+            "invalid user privilege: must be either 'admin' or 'regular'."
+            )
+    C.user.set_admin(username, is_admin == 'admin')
+
+
+@cmd
 def network_create(network, owner, access, net_id):
     """Create a link-layer <network>.  See docs/networks.md for details"""
     C.network.create(network, owner, access, net_id)

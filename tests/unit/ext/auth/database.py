@@ -3,7 +3,7 @@ from haas.test_common import config_testsuite, config_merge, fresh_database, \
     ModelTest, fail_on_log_warnings
 from haas.flaskapp import app
 from haas.model import db
-from haas.errors import AuthorizationError
+from haas.errors import AuthorizationError, IllegalStateError
 from haas.rest import init_auth, local
 import flask
 import pytest
@@ -189,6 +189,69 @@ class TestUserCreateDelete(DBAuthTestCase):
         self._new_user(is_admin=False)
         with pytest.raises(AuthorizationError):
             self.dbauth.user_delete('charlie')
+
+
+@use_fixtures('admin_auth')
+class TestUserSetAdmin(DBAuthTestCase):
+    """Tests for user_set_admin."""
+
+    def setUp(self):
+        from haas.ext.auth import database as dbauth
+        self.dbauth = dbauth
+
+    def _new_user(self, is_admin):
+        """Helper method for creating/switching to a new user.
+
+        A new admin user will be created with the credentials:
+
+        username: 'charlie'
+        password: 'foo'
+
+        The argument is_admin determines whether the user has admin rights.
+
+        Once the user has been created, the authentication info will be
+        changed to that user.
+        """
+        self.dbauth.user_create('charlie', 'foo', is_admin=is_admin)
+        flask.request = FakeAuthRequest('charlie', 'foo')
+        local.auth = self.dbauth.User.query.filter_by(label='charlie').one()
+
+    def test_user_set_admin(self):
+        self.dbauth.user_create('charlie', 'foo', False)
+        self.dbauth.user_set_admin('charlie', True)
+        self.dbauth.user_delete('charlie')
+        self.dbauth.user_create('charlie', 'foo', True)
+        self.dbauth.user_set_admin('charlie', False)
+        self.dbauth.user_delete('charlie')
+
+    def test_mod_admin_can_admin(self):
+        """Verify that a newly promoted admin can actually do admin stuff."""
+        self.dbauth.user_create('charlie', 'foo', False)
+        self.dbauth.user_set_admin('charlie', True)
+        flask.request = FakeAuthRequest('charlie', 'foo')
+        local.auth = self.dbauth.User.query.filter_by(label='charlie').one()
+        self.dbauth.user_delete('charlie')
+
+    def test_mod_non_admin_cannot_admin(self):
+        """Verify that a newly demoted regular user can't do admin stuff."""
+        self.dbauth.user_create('charlie', 'foo', True)
+        self.dbauth.user_set_admin('charlie', False)
+        flask.request = FakeAuthRequest('charlie', 'foo')
+        local.auth = self.dbauth.User.query.filter_by(label='charlie').one()
+        with pytest.raises(AuthorizationError):
+            self.dbauth.user_delete('charlie')
+
+    def test_user_cannot_self_promote(self):
+        """Verify that a user cannot self-promote to admin."""
+        self._new_user(is_admin=False)
+        with pytest.raises(AuthorizationError):
+            self.dbauth.user_set_admin('charlie', True)
+
+    def test_user_cannot_self_demote(self):
+        """Verify that a user cannot self-demote to regular."""
+        self._new_user(is_admin=True)
+        with pytest.raises(IllegalStateError):
+            self.dbauth.user_set_admin('charlie', False)
 
 
 @use_fixtures('admin_auth')

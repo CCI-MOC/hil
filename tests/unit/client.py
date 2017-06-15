@@ -628,6 +628,27 @@ class Test_user:
         with pytest.raises(FailedAPICallException):
             C.user.remove('sam03', 'test_proj03')
 
+    def test_user_set_admin(self):
+        """Test changing a user's admin status """
+        C.user.create('jimmy', '12345', 'regular')
+        C.user.create('jimbo', '678910', 'admin')
+        assert C.user.set_admin('jimmy', True) is None
+        assert C.user.set_admin('jimbo', False) is None
+
+    def test_user_set_admin_demote_error(self):
+        """Tests error condition while editing a user who doesn't exist. """
+        C.user.create('gary', '12345', 'admin')
+        C.user.delete('gary')
+        with pytest.raises(FailedAPICallException):
+            C.user.set_admin('gary', False)
+
+    def test_user_set_admin_promote_error(self):
+        """Tests error condition while editing a user who doesn't exist. """
+        C.user.create('hugo', '12345', 'regular')
+        C.user.delete('hugo')
+        with pytest.raises(FailedAPICallException):
+            C.user.set_admin('hugo', True)
+
 
 @pytest.mark.usefixtures("create_setup")
 class Test_network:

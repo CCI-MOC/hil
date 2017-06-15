@@ -131,6 +131,19 @@ def user_remove_project(user, project):
     db.session.commit()
 
 
+@rest_call('PATCH', '/auth/basic/user/<user>', Schema({
+    'user': basestring,
+    'is_admin': bool,
+}))
+def user_set_admin(user, is_admin):
+    get_auth_backend().require_admin()
+    user = api._must_find(User, user)
+    if user.label == local.auth.label:
+        raise IllegalStateError("Cannot set own admin status")
+    user.is_admin = is_admin
+    db.session.commit()
+
+
 class DatabaseAuthBackend(auth.AuthBackend):
 
     def authenticate(self):

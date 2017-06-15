@@ -50,3 +50,17 @@ class User(ClientBase):
         return self.check_response(
                 self.httpClient.request("POST", url, data=payload)
                 )
+
+    def set_admin(self, username, is_admin):
+        """Changes the admin status of <username>.
+
+        <is_admin> is a boolean that determines
+        whether a user is authorized for
+        administrative privileges.
+        """
+
+        url = self.object_url('/auth/basic/user', username)
+        payload = json.dumps({'is_admin': is_admin})
+        return self.check_response(
+                self.httpClient.request("PATCH", url, data=payload)
+                )

@@ -1198,6 +1198,28 @@ Authorization requirements:
 
 * Administrative access.
 
+#### user_set_admin
+
+'PATCH /auth/basic/user/<user>'
+
+Request Body:
+
+{
+    'is_admin': <boolean>
+}
+
+Set admin status of user '<user>' to true (admin user) or false (regular user)
+
+Authorization requirements:
+
+* Administrative access.
+
+Possible errors:
+
+* 404, if the user does not exist.
+
+* 409, if the user tries to set own admin privilege
+
 #### user_add_project
 
 `POST /auth/basic/user/<user>/add_project`
