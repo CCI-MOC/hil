@@ -13,30 +13,21 @@
 # governing permissions and limitations under the License.
 
 """Unit tests for client library"""
-import haas
-from haas import model, api, deferred, server, config
-from haas.model import db
-from haas.network_allocator import get_network_allocator
 from flask.ext.sqlalchemy import SQLAlchemy
 from haas.flaskapp import app
 from haas.model import NetworkingAction
 from haas.client.base import ClientBase, FailedAPICallException
-from haas.client.client import Client, RequestsHTTPClient, KeystoneHTTPClient
+from haas.client.client import Client, RequestsHTTPClient
 
-import errno
 import json
 import os
 import pytest
 import requests
 import sys
-import subprocess
 import tempfile
 import time
 
 from subprocess import check_call, Popen
-from urlparse import urljoin
-import requests
-from requests.exceptions import ConnectionError
 
 ep = "http://127.0.0.1:8000" or os.environ.get('HAAS_ENDPOINT')
 username = "hil_user" or os.environ.get('HAAS_USERNAME')

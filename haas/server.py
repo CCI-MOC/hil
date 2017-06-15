@@ -1,12 +1,13 @@
 """Manage server-side startup"""
 import sys
+
 # api must be loaded to register the api callbacks, even though we don't
-# call it directly from this module:
-from haas import model, api, auth
-from haas.model import db
+# use it directly from this module.
+from haas import api  # pylint: disable=unused-import
+
+from haas import model, auth
 from haas.class_resolver import build_class_map_for
 from haas.network_allocator import get_network_allocator
-from os import path
 
 
 def register_drivers():

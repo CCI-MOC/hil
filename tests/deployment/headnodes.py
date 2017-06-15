@@ -20,7 +20,7 @@ difficult to run in other contexts.
 
 from haas.test_common import *
 from haas.dev_support import have_dry_run
-from haas import config, server, rest
+from haas import config, server
 import pytest
 
 

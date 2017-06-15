@@ -1,4 +1,3 @@
-from haas.client.base import ClientBase
 from haas.client.node import Node
 from haas.client.project import Project
 from haas.client.switch import Switch

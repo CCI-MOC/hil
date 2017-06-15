@@ -21,7 +21,6 @@ Once `load` has been called, it will be ready to use.
 
 import ConfigParser
 import logging
-from logging import handlers
 import importlib
 import os
 import sys

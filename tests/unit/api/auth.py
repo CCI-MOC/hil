@@ -10,10 +10,7 @@ the mix. They are still tested here, since they are important for security.
 
 import pytest
 import unittest
-from haas.flaskapp import app
 from haas import api, config, model, server, deferred
-from haas.model import db
-from haas.network_allocator import get_network_allocator
 from haas.auth import get_auth_backend
 from haas.errors import AuthorizationError, BadArgumentError, \
     ProjectMismatchError, BlockedError

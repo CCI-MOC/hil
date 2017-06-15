@@ -19,7 +19,6 @@ and the cisco nexus switches only"""
 
 
 from haas import api, model, deferred, server
-from haas.model import db
 from haas.test_common import config, config_testsuite, fresh_database, \
     fail_on_log_warnings, with_request_context, site_layout, config_merge, \
     NetworkTest, network_create_simple

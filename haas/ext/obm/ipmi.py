@@ -14,15 +14,13 @@
 
 """IPMI driver for implementing out of band management. """
 
-from sqlalchemy import Column, String, Integer, ForeignKey
 import schema
-import subprocess
 import logging
 
 from haas.model import db, Obm
 from haas.errors import OBMError, BadArgumentError
 from haas.dev_support import no_dry_run
-from subprocess import call, check_call, Popen, PIPE
+from subprocess import call, Popen, PIPE
 import os
 
 

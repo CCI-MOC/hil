@@ -2,7 +2,7 @@ from haas.config import load_extensions
 from haas.flaskapp import app
 from haas.model import db
 from haas.migrations import create_db
-from haas import api, model, server
+from haas import api, server
 from haas.test_common import *
 import pytest
 

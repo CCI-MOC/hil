@@ -1,8 +1,5 @@
 """ This module implements the HaaS client library. """
 
-import requests
-import os
-import json
 from urlparse import urljoin
 
 

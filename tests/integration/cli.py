@@ -1,4 +1,3 @@
-import json
 import subprocess
 import pytest
 from haas.test_common import fail_on_log_warnings

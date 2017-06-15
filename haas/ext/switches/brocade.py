@@ -25,7 +25,7 @@ import requests
 import schema
 
 from haas.migrations import paths
-from haas.model import db, Switch, Port
+from haas.model import db, Switch
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'brocade')
 

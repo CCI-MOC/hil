@@ -2,7 +2,6 @@
 from haas.test_common import config_testsuite, fresh_database, config_merge, \
     fail_on_log_warnings
 from haas import api, config, server, rest
-from haas.flaskapp import app
 
 import json
 import pytest

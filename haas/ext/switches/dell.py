@@ -18,7 +18,6 @@ the long term we want to be using SNMP.
 """
 
 import pexpect
-import re
 import logging
 import schema
 

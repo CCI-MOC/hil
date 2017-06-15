@@ -26,7 +26,7 @@ import flask
 from flask import _app_ctx_stack as ctx_stack
 
 from haas.flaskapp import app
-from haas.errors import APIError, ServerError, AuthorizationError
+from haas.errors import APIError, AuthorizationError
 from haas.config import cfg
 
 from schema import SchemaError

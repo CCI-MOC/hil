@@ -14,8 +14,7 @@
 
 """Unit tests for ipmi.py"""
 import pytest
-import haas
-from haas import model, server, api
+from haas import server, api
 from haas.test_common import config, config_testsuite, fresh_database, \
     fail_on_log_warnings, with_request_context, config_merge
 
