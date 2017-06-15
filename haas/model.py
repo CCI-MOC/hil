@@ -42,7 +42,9 @@ app.config.update(SQLALCHEMY_TRACK_MODIFICATIONS=False)
 
 db = SQLAlchemy(app)
 
-BigIntegerType=BigInteger().with_variant(
+# Sets up variant type so that postgresql can use BIGINT primary keys
+# while sqlite uses Integer primary keys.
+BigIntegerType = BigInteger().with_variant(
         sqlite.INTEGER(), 'sqlite')
 
 
@@ -58,9 +60,7 @@ def init_db(uri=None):
 
     global BigIntegerType
 
-    #BigIntegerType=BigInteger().with_variant(
-    #        sqlite.INTEGER(), 'sqlite')
-
+    # Decide if primary keys should be BIGINTs or Integers
     if 'postgresql' in uri:
         BigIntegerType = BigInteger().with_variant(
                 postgresql.BIGINT(), 'postgresql')
