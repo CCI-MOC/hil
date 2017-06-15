@@ -42,8 +42,7 @@ app.config.update(SQLALCHEMY_TRACK_MODIFICATIONS=False)
 
 db = SQLAlchemy(app)
 
-BigIntegerType = BigInteger()
-BigIntegerType = BigIntegerType.with_variant(
+BigIntegerType=BigInteger().with_variant(
         sqlite.INTEGER(), 'sqlite')
 
 
@@ -59,13 +58,13 @@ def init_db(uri=None):
 
     global BigIntegerType
 
-    BigIntegerType = BigInteger()
-    BigIntegerType = BigIntegerType.with_variant(
-            sqlite.INTEGER(), 'sqlite')
+    #BigIntegerType=BigInteger().with_variant(
+    #        sqlite.INTEGER(), 'sqlite')
 
     if 'postgresql' in uri:
-        BigIntegerType = BigIntegerType.with_variant(
+        BigIntegerType = BigInteger().with_variant(
                 postgresql.BIGINT(), 'postgresql')
+
 
 # A joining table for project's access to networks, which have a many to many
 # relationship:
