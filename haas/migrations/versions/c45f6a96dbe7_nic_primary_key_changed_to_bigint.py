@@ -32,7 +32,6 @@ def upgrade():
                     existing_type=sa.INTEGER(),
                     type_=sa.BIGINT(),
                     existing_nullable=False)
-    # ### end Alembic commands ###
 
 
 def downgrade():
@@ -51,4 +50,3 @@ def downgrade():
         type_=sa.INTEGER(),
         autoincrement=True,
         existing_server_default=sa.text(u"nextval('nic_id_seq'::regclass)"))
-    # ### end Alembic commands ###
