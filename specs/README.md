@@ -17,6 +17,9 @@ please ask one of the core team members.
 To create a spec:
 1. Create a new file in this directory using the template below.
 2. Submit a Pull Request with that change.
+3. When/if the spec is accepted, be sure to include `Implements #SPEC_PR` in
+the body of the implementing PR to ensure that reviewers can refer back to the
+specification.
 
 Please include at least these entries in your specification, adding others if
 you think them necessary:
