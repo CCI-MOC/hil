@@ -31,6 +31,8 @@ from haas.config import cfg
 from haas.dev_support import no_dry_run
 import uuid
 import xml.etree.ElementTree
+from sqlalchemy import BigInteger
+from sqlalchemy.dialects import sqlite
 
 # without setting this explicitly, we get a warning that this option
 # will default to disabled in future versions (due to incurring a lot
@@ -40,16 +42,22 @@ app.config.update(SQLALCHEMY_TRACK_MODIFICATIONS=False)
 
 db = SQLAlchemy(app)
 
+# Sets up variant type so that postgresql can use BIGINT primary keys
+# while sqlite uses Integer primary keys.
+BigIntegerType = BigInteger().with_variant(
+        sqlite.INTEGER(), 'sqlite')
+
 
 def init_db(uri=None):
     """Start up the DB connection.
 
-    `uri` is the uri to use for the databse. If it is None, the uri from the
+    `uri` is the uri to use for the database. If it is None, the uri from the
     config file will be used.
     """
     if uri is None:
         uri = cfg.get('database', 'uri')
     app.config.update(SQLALCHEMY_DATABASE_URI=uri)
+
 
 # A joining table for project's access to networks, which have a many to many
 # relationship:
@@ -62,7 +70,7 @@ network_projects = db.Table(
 class Nic(db.Model):
     """a nic belonging to a Node"""
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(BigIntegerType, primary_key=True)
     label = db.Column(db.String, nullable=False)
 
     # The Node to which the nic belongs:
