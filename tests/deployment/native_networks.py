@@ -14,10 +14,10 @@
 
 """Deployment Unit Tests - These tests are intended for our
 internal setup only and will most likely not work on
-other HaaS configurations."""
+other HIL configurations."""
 
-from haas import api, model, deferred, server
-from haas.test_common import *
+from hil import api, model, deferred, server
+from hil.test_common import *
 import pytest
 
 

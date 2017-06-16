@@ -1,7 +1,7 @@
 
-from haas.test_common import config_testsuite, fresh_database, config_merge, \
+from hil.test_common import config_testsuite, fresh_database, config_merge, \
     fail_on_log_warnings
-from haas import api, config, server, rest
+from hil import api, config, server, rest
 
 import json
 import pytest
@@ -11,7 +11,7 @@ import pytest
 def configure():
     config_testsuite()
     config_merge(
-            {'extensions': {'haas.ext.obm.ipmi': '', }, })
+            {'extensions': {'hil.ext.obm.ipmi': '', }, })
 
     config.load_extensions()
 
@@ -45,17 +45,17 @@ def test_many_http_queries():
     with rest.app.test_request_context():
         rest.init_auth()
         api.node_register('node-99', obm={
-            "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+            "type": "http://schema.massopencloud.org/hil/v0/obm/ipmi",
             "host": "ipmihost",
             "user": "root",
             "password": "tapeworm"})
         api.node_register('node-98', obm={
-            "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+            "type": "http://schema.massopencloud.org/hil/v0/obm/ipmi",
             "host": "ipmihost",
             "user": "root",
             "password": "tapeworm"})
         api.node_register('node-97', obm={
-            "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+            "type": "http://schema.massopencloud.org/hil/v0/obm/ipmi",
             "host": "ipmihost",
             "user": "root",
             "password": "tapeworm"})

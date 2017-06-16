@@ -1,17 +1,17 @@
-Using HaaS as a Client
+Using HIL as a Client
 ======================
 
-Interaction with HaaS occurs via its REST API. The high-level semantics of the
+Interaction with HIL occurs via its REST API. The high-level semantics of the
 API are documented in `API Description <apidesc.html>`_, and the mapping to HTTP is
 described in `REST API <rest_api.html>`_.
 
-The ``haas`` command line tool is a wrapper around this API. Running ``haas
-help`` will display an overview of the available commands. To tell ``haas``
-which HaaS instance to use, be sure to do one of:
+The ``hil`` command line tool is a wrapper around this API. Running ``hil
+help`` will display an overview of the available commands. To tell ``hil``
+which HIL instance to use, be sure to do one of:
 
-1. Set the ``HAAS_ENDPOINT`` environmental variable. An example (using
-   the default port used when running ``haas serve``) would be ``http://127.0.0.1:5000``
-2. Ensure that there is a ``haas.cfg`` in the current directory which contains
+1. Set the ``HIL_ENDPOINT`` environmental variable. An example (using
+   the default port used when running ``hil serve``) would be ``http://127.0.0.1:5000``
+2. Ensure that there is a ``hil.cfg`` in the current directory which contains
    a valid ``client`` section. A valid config file in this case could look
    like
 
@@ -20,21 +20,21 @@ which HaaS instance to use, be sure to do one of:
    [client]
    endpoint = http://127.0.0.1:5000
 
-* If both configuration methods are present, the ``HAAS_ENDPOINT`` environmental variable will take precedence over whatever is contained within ``haas.cfg``.
-* Though insignificant in some circumstances, the presence or absence of trailing slashes within the endpoint URL can cause issues in communicating with the HaaS server, such as "404" errors. For example, using ``http://127.0.0.1:5000`` vs ``http://127.0.0.1:5000/``.
+* If both configuration methods are present, the ``HIL_ENDPOINT`` environmental variable will take precedence over whatever is contained within ``hil.cfg``.
+* Though insignificant in some circumstances, the presence or absence of trailing slashes within the endpoint URL can cause issues in communicating with the HIL server, such as "404" errors. For example, using ``http://127.0.0.1:5000`` vs ``http://127.0.0.1:5000/``.
 
 If using the basic auth/database auth backend, you must set the environment
-variables ``HAAS_USERNAME`` and ``HAAS_PASSWORD`` to the correct credentials.
+variables ``HIL_USERNAME`` and ``HIL_PASSWORD`` to the correct credentials.
 
 Deploying Machines
 ------------------
 
 The most basic workflow for deploying machines onto a set of nodes allocated
-with HaaS is as follows. First, create a headnode, and attach it to the network
+with HIL is as follows. First, create a headnode, and attach it to the network
 that the hardware nodes PXE boot off of.  Then, enter the headnode by VNCing to
 it from the headnode host. The VNC port can be found with the REST
 ``show_headnode`` call. Authentication support `is slated
-<https://github.com/CCI-MOC/haas/issues/352>`_ for a future release. From
+<https://github.com/CCI-MOC/hil/issues/352>`_ for a future release. From
 there, you can set up SSH access to the headnode, or you can continue to use
 VNC if you prefer.
 
@@ -59,17 +59,17 @@ Usage examples
 
 Included herewith are some examples about
 
- * Interacting with HaaS API directly using the curl utility.
+ * Interacting with HIL API directly using the curl utility.
 
  * And using equivalent cli calls are also included. 
 
 ::
 
-        haas node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01
+        hil node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01
 
 
 
-1) Register a switch with HaaS:
+1) Register a switch with HIL:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Eg> Switch name: mockswitch01
@@ -82,7 +82,7 @@ api call
 ::
 
     curl -X put http://127.0.0.1:5000/switch/mockswitch01 -d '
-        {"type": "http://schema.massopencloud.org/haas/v0/switches/mock",
+        {"type": "http://schema.massopencloud.org/hil/v0/switches/mock",
         "hostname": "switchhost01",
         "username": "switchuser01",
         "password": "password1234"}'
@@ -91,13 +91,13 @@ cli call
 
 ::
 
-       haas switch_register mockswitch02 mock switchhost01 switchuser01 password1234
+       hil switch_register mockswitch02 mock switchhost01 switchuser01 password1234
 
 2) Registering a Node which uses IPMI for out of band management
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-   - **Node name:**  dummyNoderHaaS-02
+   - **Node name:**  dummyNoderHIL-02
    - **Ipmi info:**
       + **hostname:**           ipmiHost4node-02
       + **ipmi_username:**      ipmiUser4node-02
@@ -109,7 +109,7 @@ For nodes using IPMI use the following api call:
 ::
 
    curl -X PUT http://127.0.0.1:5001/node/dummyNode01 -d '
-   > {"obm": { "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+   > {"obm": { "type": "http://schema.massopencloud.org/hil/v0/obm/ipmi",
    > "host": "ipmiHost4node-01",
    > "user": "ipmiUser4node-01",
    > "password": "ipmiPass4node-01"
@@ -120,7 +120,7 @@ Corresponding cli calls will be as follows:
 
 ::
 
-        haas node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01
+        hil node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01
 
 
  

@@ -4,6 +4,6 @@ include COPYING
 graft docs
 graft tests/unit
 graft examples
-include scripts/haas_network.service
+include scripts/hil_network.service
 
 

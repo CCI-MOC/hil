@@ -15,8 +15,8 @@
 import pytest
 import requests_mock
 
-from haas import model
-from haas.test_common import fail_on_log_warnings
+from hil import model
+from hil.test_common import fail_on_log_warnings
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
@@ -139,7 +139,7 @@ class TestBrocade(object):
 
     @pytest.fixture()
     def switch(self):
-        from haas.ext.switches import brocade
+        from hil.ext.switches import brocade
         return brocade.Brocade(
             label='theSwitch',
             hostname='http://example.com',
@@ -150,12 +150,12 @@ class TestBrocade(object):
 
     @pytest.fixture()
     def nic(self):
-        from haas.ext.obm.ipmi import Ipmi
+        from hil.ext.obm.ipmi import Ipmi
         return model.Nic(
             model.Node(
                 label='node-99',
                 obm=Ipmi(
-                    type="http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                    type="http://schema.massopencloud.org/hil/v0/obm/ipmi",
                     host="ipmihost",
                     user="root",
                     password="tapeworm")),

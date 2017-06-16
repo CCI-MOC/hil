@@ -10,15 +10,15 @@ the mix. They are still tested here, since they are important for security.
 
 import pytest
 import unittest
-from haas import api, config, model, server, deferred
-from haas.auth import get_auth_backend
-from haas.errors import AuthorizationError, BadArgumentError, \
+from hil import api, config, model, server, deferred
+from hil.auth import get_auth_backend
+from hil.errors import AuthorizationError, BadArgumentError, \
     ProjectMismatchError, BlockedError
-from haas.test_common import config_testsuite, config_merge, fresh_database, \
+from hil.test_common import config_testsuite, config_merge, fresh_database, \
     with_request_context, additional_db, fail_on_log_warnings
 
-MOCK_OBM_API_NAME = 'http://schema.massopencloud.org/haas/v0/obm/mock'
-MOCK_SWITCH_API_NAME = 'http://schema.massopencloud.org/haas/v0/switches/mock'
+MOCK_OBM_API_NAME = 'http://schema.massopencloud.org/hil/v0/obm/mock'
+MOCK_SWITCH_API_NAME = 'http://schema.massopencloud.org/hil/v0/switches/mock'
 
 
 def auth_call_test(fn, error, admin, project, args, kwargs={}):
@@ -57,13 +57,13 @@ def configure():
     config_testsuite()
     config_merge({
         'extensions': {
-            'haas.ext.auth.mock': '',
+            'hil.ext.auth.mock': '',
 
             # This extension is enabled by default in the tests, so we need to
             # disable it explicitly:
-            'haas.ext.auth.null': None,
-            'haas.ext.switches.mock': '',
-            'haas.ext.obm.mock': ''
+            'hil.ext.auth.null': None,
+            'hil.ext.switches.mock': '',
+            'hil.ext.obm.mock': ''
         },
     })
     config.load_extensions()
@@ -97,7 +97,7 @@ auth_call_params = [
     #
 
     # Legal Cases:
-    # Admin creates a public network internal to HaaS.
+    # Admin creates a public network internal to HIL.
     dict(fn=api.network_create,
          error=None,
          admin=True,

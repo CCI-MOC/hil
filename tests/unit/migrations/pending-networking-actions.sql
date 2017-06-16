@@ -9,10 +9,10 @@
 --
 -- The extensions loaded were:
 --
--- * haas.ext.switches.mock
--- * haas.ext.obm.mock
--- * haas.ext.auth.null
--- * haas.ext.network_allocators.null
+-- * hil.ext.switches.mock
+-- * hil.ext.obm.mock
+-- * hil.ext.auth.null
+-- * hil.ext.network_allocators.null
 --
 -- The database was populated with objects equivalent to those created by
 -- `create_pending_actions_db` in `tests/unit/migrations.py`, as of the
@@ -641,7 +641,7 @@ SELECT pg_catalog.setval('node_id_seq', 1, true);
 -- Data for Name: obm; Type: TABLE DATA; Schema: public; Owner: hil
 --
 
-INSERT INTO obm (id, type) VALUES (1, 'http://schema.massopencloud.org/haas/v0/obm/mock');
+INSERT INTO obm (id, type) VALUES (1, 'http://schema.massopencloud.org/hil/v0/obm/mock');
 
 
 --
@@ -683,7 +683,7 @@ SELECT pg_catalog.setval('project_id_seq', 1, true);
 -- Data for Name: switch; Type: TABLE DATA; Schema: public; Owner: hil
 --
 
-INSERT INTO switch (id, label, type) VALUES (1, 'sw0', 'http://schema.massopencloud.org/haas/v0/switches/mock');
+INSERT INTO switch (id, label, type) VALUES (1, 'sw0', 'http://schema.massopencloud.org/hil/v0/switches/mock');
 
 
 --

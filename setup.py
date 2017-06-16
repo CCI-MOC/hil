@@ -21,11 +21,11 @@ def _get_readme():
     with open(join(dirname(__file__), readme_file)) as f:
         return f.read()
 
-setup(name='haas',
+setup(name='hil',
       version='0.2rc2',
-      maintainer='Developers of the HaaS Project at MOC',
-      maintainer_email='haas-dev-list@bu.edu',
-      url='https://github.com/CCI-MOC/haas',
+      maintainer='Developers of the HIL Project at MOC',
+      maintainer_email='hil-dev-list@bu.edu',
+      url='https://github.com/CCI-MOC/hil',
       description='A bare-metal isolation service that automates allocation '
                   'and management of non-virtualized compute resources across '
                   'mutually untrusting and incompatible provisioning systems.',
@@ -47,19 +47,19 @@ setup(name='haas',
 
       packages=find_packages(),
       # TODO: we should merge scripts into entry_points, below.
-      scripts=['scripts/haas', 'scripts/create_bridges'],
+      scripts=['scripts/hil', 'scripts/create_bridges'],
       entry_points={
-          'console_scripts': ['haas-admin=haas.commands.admin:main'],
+          'console_scripts': ['hil-admin=hil.commands.admin:main'],
       },
       package_data={
-          'haas': [
+          'hil': [
               'migrations/env.py',
               'migrations/alembic.ini',
               'migrations/script.py.mako',
               'migrations/versions/*.py',
           ],
-          'haas.ext.obm': ['migrations/*/*.py'],
-          'haas.ext.switches': ['migrations/*/*.py'],
+          'hil.ext.obm': ['migrations/*/*.py'],
+          'hil.ext.switches': ['migrations/*/*.py'],
       },
       zip_safe=False,  # migrations folder needs to be extracted to work.
 

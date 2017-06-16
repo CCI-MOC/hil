@@ -2,7 +2,7 @@
     "switches": [
         {
             "switch": "dell-0",
-            "type": "http://schema.massopencloud.org/haas/v0/switches/powerconnect55xx",
+            "type": "http://schema.massopencloud.org/hil/v0/switches/powerconnect55xx",
             "hostname": "dell-0.example.com",
             "username": "alice",
             "password": "secret"

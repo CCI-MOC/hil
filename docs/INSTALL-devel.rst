@@ -1,26 +1,26 @@
 INSTALL-devel
 =============
 
-Following guide covers setting up a developement environment for HaaS
+Following guide covers setting up a developement environment for HIL
 on a CentOS/RHEL based system.
 
 Dependencies: 
 -------------
-There are a few things that HaaS expects the operating system to have::
+There are a few things that HIL expects the operating system to have::
 
   yum install epel-release bridge-utils  gcc  httpd  ipmitool libvirt \
   libxml2-devel  libxslt-devel  mod_wsgi net-tools python-pip python-psycopg2 \
   python-virtinst python-virtualenv qemu-kvm telnet vconfig virt-install
 
-HaaS requires a database server and currently supports only SQLite and PostgreSQL.
+HIL requires a database server and currently supports only SQLite and PostgreSQL.
 If you choose to use PostgreSQL database it is recommended to create a new system user 
-with a separate home directory. This user will be configured to control the haas database.
+with a separate home directory. This user will be configured to control the hil database.
 The development environment will be created in its home directory.
 
 Setting PostgreSQL for development environment:
 ------------------------------------------------
 
-If you choose to use sqlite database, skip this section and go to `Getting Started with HaaS Installation`_.
+If you choose to use sqlite database, skip this section and go to `Getting Started with HIL Installation`_.
 
 For setting up PostgreSQL, you will have to install the requisite packages on your system.
 Make sure your account can `sudo` to execute the following commands.
@@ -73,29 +73,29 @@ Setting up development environment with PostgreSQL backend becomes
 easy with a dedicated user controlling the database as well as the 
 development environment.
 
-Let that username be `haas_dev`.
+Let that username be `hil_dev`.
 For simplicity we will use the same name for database and database role.
 
 Create a new user on your system::
   
-  useradd --system -m -d /home/haas_dev -s /bin/bash -c "for HaaS development" haas_dev
+  useradd --system -m -d /home/hil_dev -s /bin/bash -c "for HIL development" hil_dev
 
-This will create a `haas_dev` user with following attributes::
+This will create a `hil_dev` user with following attributes::
   
-  haas_dev:x:1002:1002:for HaaS development:/home/haas_dev:/bin/bash
+  hil_dev:x:1002:1002:for HIL development:/home/hil_dev:/bin/bash
 
 exact uid/gid may vary depending on your system. 
 
-Switch to the `haas_dev` user::
+Switch to the `hil_dev` user::
 
-  sudo -u haas_dev -i
+  sudo -u hil_dev -i
 
 Setup database and role to control it.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Create database named `haas_dev` owned by user also named as `haas_dev`.
+Create database named `hil_dev` owned by user also named as `hil_dev`.
 
-1. Create a database role named `haas_dev` with priviledges to::
+1. Create a database role named `hil_dev` with priviledges to::
  
    -r create roles
    -d create databases and
@@ -104,9 +104,9 @@ Create database named `haas_dev` owned by user also named as `haas_dev`.
 This is necessary since we have configured PostgreSQL to use password authentication::
 
    sudo -i -u postgres
-   $ createuser -r -d -P haas_dev
-   Enter password for new role:  <Input password for database role haas>
-   Enter it again: <Retype password for role haas>
+   $ createuser -r -d -P hil_dev
+   Enter password for new role:  <Input password for database role hil>
+   Enter it again: <Retype password for role hil>
 
 
 Confirm that the role with requisite privileges is created **as postgres user**::
@@ -115,31 +115,31 @@ Confirm that the role with requisite privileges is created **as postgres user**:
                              List of roles
    Role name |                   Attributes                   | Member of
   -----------+------------------------------------------------+-----------
-   haas_dev      | Create role, Create DB                         | {}
+   hil_dev      | Create role, Create DB                         | {}
    postgres  | Superuser, Create role, Create DB, Replication | {}
 
 
 If you wish to delete the user. do the following **as postgres user**::
 
-  dropuser haas_dev
+  dropuser hil_dev
 
 **Note**: Make sure that the database role you create corresponds to an existing system user.
-eg. There has to be a system user `haas` to access database named `haas` as database role named `haas`.
+eg. There has to be a system user `hil` to access database named `hil` as database role named `hil`.
 
 
-Create database `haas_dev` owned by database role `haas_dev`::
+Create database `hil_dev` owned by database role `hil_dev`::
 
-  sudo -i -u haas_dev
-  $ createdb haas
+  sudo -i -u hil_dev
+  $ createdb hil
 
-Confirm it created a database named `haas_dev` and it is owned by `haas_dev`::
+Confirm it created a database named `hil_dev` and it is owned by `hil_dev`::
 
 
   $ psql -c '\l'
                                   List of databases
     Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges
   -----------+----------+----------+-------------+-------------+-----------------------
-   haas_dev  | haas_dev | UTF8     | en_US.UTF-8 | en_US.UTF-8 |
+   hil_dev  | hil_dev | UTF8     | en_US.UTF-8 | en_US.UTF-8 |
    postgres  | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |
    template0 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
              |          |          |             |             | postgres=CTc/postgres
@@ -147,14 +147,14 @@ Confirm it created a database named `haas_dev` and it is owned by `haas_dev`::
              |          |          |             |             | postgres=CTc/postgres
 
 
-switch to user `haas_dev`.
+switch to user `hil_dev`.
 All subsequent installation steps assumes you are in the 
-home directory of `haas_dev` 
+home directory of `hil_dev` 
 
 
-Getting Started with HaaS Installation
+Getting Started with HIL Installation
 ---------------------------------------
-First you will need to fork and clone the HaaS repo into your dev VM.::
+First you will need to fork and clone the HIL repo into your dev VM.::
 
   git clone https://github.com/**username**/hil
   cd hil
@@ -165,11 +165,11 @@ environment::
 
   virtualenv .venv
 
-Enter the environment (do this every time you start working with HaaS dev environment)::
+Enter the environment (do this every time you start working with HIL dev environment)::
 
   source .venv/bin/activate
 
-Then, proceed with installing the HaaS and its dependencies into the virtual
+Then, proceed with installing the HIL and its dependencies into the virtual
 environment::
 
   pip install -e .
@@ -200,7 +200,7 @@ Setting up the Database:
 The default dev environment uses SQLite as a database, so if you're using it you can skip this section.
 
 If you wish to use PostgreSQL instead, you may get an error ``psycopg2 package not found``,
-when you do ``haas-admin db create`` in the next step.
+when you do ``hil-admin db create`` in the next step.
 To avoid that problem, you may need to install some packages based on your system type:
 
 CentOS::  
@@ -212,23 +212,23 @@ Ubuntu::
   sudo apt-get install libpq-dev
 
 After these packages have been installed, you'll then need the python postgres
-driver in your HaaS virtualenv::
+driver in your HIL virtualenv::
 
   pip install psycopg2
 
 
-Configuring HaaS
+Configuring HIL
 -----------------
 
-Now the ``haas`` executable should be in your path. First, create a
-configuration file ``haas.cfg``. There are two examples for you to work from,
-``examples/haas.cfg.dev-no-hardware``, which is oriented towards development,
-and ``examples/haas.cfg`` which is more production oriented. These config files
+Now the ``hil`` executable should be in your path. First, create a
+configuration file ``hil.cfg``. There are two examples for you to work from,
+``examples/hil.cfg.dev-no-hardware``, which is oriented towards development,
+and ``examples/hil.cfg`` which is more production oriented. These config files
 are well commented; read them carefully.
 
-HaaS can be configured using ``haas.cfg`` to not perform state-changing
+HIL can be configured using ``hil.cfg`` to not perform state-changing
 operations on nodes, headnodes and networks, allowing developers to run and
-test parts of a haas server without requiring physical hardware. To suppress
+test parts of a hil server without requiring physical hardware. To suppress
 actual node and headnode operations, set ``dry_run = True`` in the ``[devel]``
 section. 
 
@@ -237,15 +237,15 @@ If using PostgreSQL as a database backend
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you choose to use PostgreSQL and did the necessary steps as described above,
-put following string in **haas.cfg** under section **[database]**::
+put following string in **hil.cfg** under section **[database]**::
 
-  uri = postgresql://haas_dev:<clear text password>@localhost:5432/haas_dev
+  uri = postgresql://hil_dev:<clear text password>@localhost:5432/hil_dev
 
 
 It follows the format: `postgresql://<user>:<password>@<address>/<dbname>`
 where ``<user>`` is the name of the postgres user you created, ``<password>`` is
 its password, ``<dbname>`` is the name of the database you created, and
-``<address>`` is the address which haas should use to connect to postgres (In a
+``<address>`` is the address which hil should use to connect to postgres (In a
 typical default postgres setup, the right value is ``localhost``).
 
 Setting up extensions
@@ -255,17 +255,17 @@ Most customizations require including extension names within the ``[extensions]`
 section.
 
 For suppressing actual network switch operations, use the ``mock`` switch driver :: 
-  haas.ext.switches.mock =
+  hil.ext.switches.mock =
 
 To suppress actual IPMI calls made to nodes on account of node_power_cycle
 requests, enable the ``mock`` OBM driver with ::
 
-  haas.ext.obm.mock =
+  hil.ext.obm.mock =
 
 You can choose to disable authentication mechanism by enabling the ``null``
 auth driver ::
 
-  haas.ext.auth.null =
+  hil.ext.auth.null =
 
 Database auth
 -------------
@@ -275,31 +275,31 @@ will need to be selected and enabled. Note that auth backends are mutually
 exclusive. For the database method (which stores users/passwords in the DB),
 add ::
 
-  haas.ext.auth.database =
+  hil.ext.auth.database =
 
 
 Next initialize the database with the required tables::
 
-  haas-admin db create
+  hil-admin db create
   
 Start the server
 -----------------
 
-Run the server with the port number as defined in ``haas.cfg``::
+Run the server with the port number as defined in ``hil.cfg``::
 
-  haas serve <port no> 
+  hil serve <port no> 
   
 and in a separate window terminal::
 
-  haas serve_networks
+  hil serve_networks
   
-Finally, ``haas help`` lists the various API commands one can use.
+Finally, ``hil help`` lists the various API commands one can use.
 Here is an example session, testing ``headnode_delete_hnic``::
 
-  haas project_create proj
-  haas headnode_create hn proj img1
-  haas headnode_create_hnic hn hn-eth0
-  haas headnode_delete_hnic hn hn-eth0
+  hil project_create proj
+  hil headnode_create hn proj img1
+  hil headnode_create_hnic hn hn-eth0
+  hil headnode_delete_hnic hn hn-eth0
 
 Testing
 -------
@@ -309,6 +309,6 @@ tests/unit``. If at all possible, run the deployment tests as well (``py.test
 tests/deployment``), but this requires access to a specialized setup, so if the
 patch is sufficiently unintrusive it may be acceptable to skip this step.
 
-`Testing <testing.html>`_ contains more information about testing HaaS.
+`Testing <testing.html>`_ contains more information about testing HIL.
 `Migrations <migrations.html>`_ dicsusses working with database migrations
 and schema changes.

@@ -1,13 +1,13 @@
 # Developer Guidelines
 
 This document represents the developer policies and procedures for maintaining
-Hardware as a Service (HaaS), including the accepted [coding style](#Coding-style).
+Hardware as a Service (HIL), including the accepted [coding style](#Coding-style).
 
 ## Getting started
 
-If you are new to HaaS and would like to jump in, then welcome!
+If you are new to HIL and would like to jump in, then welcome!
 
-Contributions can come in many forms: installing haas and using it in your
+Contributions can come in many forms: installing hil and using it in your
 environment (and giving us feedback), improving the testing, squashing bugs and
 introducing new functionality.
 
@@ -15,21 +15,21 @@ If you are interested in any of this, a good place to start is by reading the
 documentation (linked from the [Readme](./README.html)).
 
 If you're looking to code, there are a few ways to help:
-* Improving the HaaS documentation
+* Improving the HIL documentation
 * Better testing
-* Reviewing [Pull Requests](https://github.com/CCI-MOC/haas/pulls)
-* Taking a github issue marked with the [easy label](https://github.com/CCI-MOC/haas/labels/easy). (Talk to one of the core team members to have it assigned to you officially!)
-* Taking on a github issue that is part of one of the next [milestones in github](https://github.com/CCI-MOC/haas/milestones?state=open)
+* Reviewing [Pull Requests](https://github.com/CCI-MOC/hil/pulls)
+* Taking a github issue marked with the [easy label](https://github.com/CCI-MOC/hil/labels/easy). (Talk to one of the core team members to have it assigned to you officially!)
+* Taking on a github issue that is part of one of the next [milestones in github](https://github.com/CCI-MOC/hil/milestones?state=open)
 
 ## Communicating
 
 * IRC: The MOC team hangs out on #moc on [freenode](https://www.freenode.net/)
-* IRL (In Real Life): The MOC group office is on the BU campus, at 3 Cummington Mall, Boston, MA room 451. Anyone interested in HaaS is welcome to drop in and work there.
-* Email: HaaS developers or anyone else wishing to stay up to date should subscribe to haas-dev-list@bu.edu by sending a plain text email to majordomo@bu.edu with "subscribe haas-dev-list" in the body.
+* IRL (In Real Life): The MOC group office is on the BU campus, at 3 Cummington Mall, Boston, MA room 451. Anyone interested in HIL is welcome to drop in and work there.
+* Email: HIL developers or anyone else wishing to stay up to date should subscribe to hil-dev-list@bu.edu by sending a plain text email to majordomo@bu.edu with "subscribe hil-dev-list" in the body.
 
 ## Coding style/conventions
 
-By default, HaaS (like many other python projects) uses
+By default, HIL (like many other python projects) uses
 [PEP8](https://www.python.org/dev/peps/pep-0008/) as its naming guide, and
 [PEP257](https://www.python.org/dev/peps/pep-0257/) for documentation.
 Departures are acceptable when called for, but should be discussed first.
@@ -39,15 +39,15 @@ Departures are acceptable when called for, but should be discussed first.
 Any functionality that is intended to be externally visible (ie -
 available through the REST API) will need to be exposed by decorating a
 function with the `@rest_call` decorator, [available in
-rest.py](https://github.com/CCI-MOC/hil/blob/master/haas/rest.py).  This tells the framework the URL path and
+rest.py](https://github.com/CCI-MOC/hil/blob/master/hil/rest.py).  This tells the framework the URL path and
 HTTP method which should be mapped to that function, and also specifies
 how the arguments should be verified.
 
 Please [see the documentation there](rest_api.html) for additional
-information on the specifics, as well as [api.py]( https://github.com/CCI-MOC/hil/blob/master/haas/rest.py) for a number
+information on the specifics, as well as [api.py]( https://github.com/CCI-MOC/hil/blob/master/hil/rest.py) for a number
 of examples. Of special note is that every externally-visible function must
 supply a `Schema` which explicitly specifies the method for verifying all URL
-and body arguments. In HaaS, all body arguments are required to be JSON.
+and body arguments. In HIL, all body arguments are required to be JSON.
 
 ## Often-used code
 In certain cases, one will encounter heavily repeated code that gets run once per API call such as this:
@@ -68,11 +68,11 @@ local.db.delete(...)
 
 ## Submitting code / Pull Requests
 
-Overall, HaaS follows the [github fork & pull
+Overall, HIL follows the [github fork & pull
 model](http://scottchacon.com/2011/08/31/github-flow.html) to integrate
-contributions, where users fork the [main HaaS repository][repo], push changes
+contributions, where users fork the [main HIL repository][repo], push changes
 to their personal fork and then create a [Pull Request][pr](PR) to merge it
-into the master branch of the HaaS repository.
+into the master branch of the HIL repository.
 
 ### Prior to the pull request
 This summarizes what should be done prior to a pull request:
@@ -81,28 +81,28 @@ This summarizes what should be done prior to a pull request:
 - [ ] Ensure any user, deployer or developer documentation is updated.
 - [ ] If a change affects an external API, be sure to update docs/rest\_api.md.
 - [ ] Testing:
-  - [ ] Ensure tests pass after making your changes by running `py.test tests/unit tests/stress.py` from the top-level haas directory. Parallel testing can be used on multi-core systems by running `py.test tests/unit tests/stress.py -n auto`
+  - [ ] Ensure tests pass after making your changes by running `py.test tests/unit tests/stress.py` from the top-level hil directory. Parallel testing can be used on multi-core systems by running `py.test tests/unit tests/stress.py -n auto`
   - [ ] Add unit tests in the corresponding file and create one if none are present.
   - [ ] If practical, bug fixes should have an reproducing test to ensure that the bug does not come back.
   - [ ] Run deployment tests if code could affect switches
 
 #### Get agreement
 
-The HaaS project appreciates all ideas and submissions. In the past, we've
+The HIL project appreciates all ideas and submissions. In the past, we've
 discussed several alternatives to how things currently work (which we're trying
 to get better about writing down), and it would be good to have agreement that
 includes input from these past discussions as well as the wisdom of the
 community. The best way to do this is to [file an
-issue](https://github.com/CCI-MOC/haas/issues) on github, email
-haas-dev-list@bu.edu or speak with one of the core developers directly.
+issue](https://github.com/CCI-MOC/hil/issues) on github, email
+hil-dev-list@bu.edu or speak with one of the core developers directly.
 
 #### Documentation
 
 * [Documentation listing](/README.html#documentation)
 
-In HaaS, we primarily have 3 types of users: end-users (API/CLI users),
-deployers (HaaS instance admins) and developers (you!). If your change affects
-any of HaaS's extensive documentation, please be sure to update the
+In HIL, we primarily have 3 types of users: end-users (API/CLI users),
+deployers (HIL instance admins) and developers (you!). If your change affects
+any of HIL's extensive documentation, please be sure to update the
 accompanying documentation. For example, if an API call signature is changed or
 added, please update [docs/rest_api.md](https://github.com/CCI-MOC/hil/blob/master/docs/rest_api.md).
 
@@ -116,7 +116,7 @@ directory](https://github.com/CCI-MOC/hil/blob/master/docs/).
 
 Testing helps to ensure the quality of the code base. Every pull request
 submitted should first be tested to ensure that all existing tests pass. If
-changes could affect state external to HaaS's DB (network switches and
+changes could affect state external to HIL's DB (network switches and
 headnodes), then deployment tests should also be run.
 
 When introducing new functionality, new tests (both unit and more comprehensive)
@@ -128,11 +128,11 @@ the bug does not return.
 ### Pull Requests
 
 Once the checklist above has been met, issue a [pull request][pr] from your
-personal fork to the [main HaaS repo][repo].
+personal fork to the [main HIL repo][repo].
 
 Labels are the way we communicate github pull request and issue status. They should be assigned in line with the *Suggestions* section
 of [this wiki
-page](https://github.com/CCI-MOC/haas/wiki/Issue-Tracker-Proposal#suggestions).
+page](https://github.com/CCI-MOC/hil/wiki/Issue-Tracker-Proposal#suggestions).
 
 ### Code review
 
@@ -147,7 +147,7 @@ time. Remember the 80/20 rule (80% of the bugs come from 20% of the code).
 
 ### Friendliness
 
-We want the MOC HaaS to be a pleasure to work with. Thus, while we want to
+We want the MOC HIL to be a pleasure to work with. Thus, while we want to
 ensure a high level of code quality, we don't want new project contributors to
 get overwhelmed. This should be kept in mind while conducting a review.  In
 some cases, such as missing tests, it may help a new contributor for an
@@ -193,7 +193,7 @@ figure out which are in need of help.
 
 ## Core developers
 
-Core developers are the trusted gatekeepers of the HaaS codebase. They consist of:
+Core developers are the trusted gatekeepers of the HIL codebase. They consist of:
 
 * Jon Bell
 * Ian Denhardt
@@ -206,5 +206,5 @@ Core developers are the trusted gatekeepers of the HaaS codebase. They consist o
 Anyone who has had a few successful commits is invited to speak to the PTL
 (Project Team Lead) about being added as one.
 
-[repo]: https://github.com/CCI-MOC/haas
+[repo]: https://github.com/CCI-MOC/hil
 [pr]: https://help.github.com/articles/using-pull-requests/

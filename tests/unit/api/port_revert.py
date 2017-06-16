@@ -1,30 +1,30 @@
 import unittest
 import pytest
-from haas.test_common import \
+from hil.test_common import \
     config_testsuite, config_merge, fail_on_log_warnings, \
     initial_db, newDB, releaseDB
-from haas import api, config, deferred, model
-from haas.flaskapp import app
+from hil import api, config, deferred, model
+from hil.flaskapp import app
 
 
 class Test_port_revert(unittest.TestCase):
 
     def setUp(self):
-        from haas.ext.switches.mock import LOCAL_STATE
+        from hil.ext.switches.mock import LOCAL_STATE
         self.LOCAL_STATE = LOCAL_STATE
         fail_on_log_warnings()
 
-        # Configure HaaS:
+        # Configure HIL:
         config_testsuite()
         config_merge({
             'extensions': {
-                'haas.ext.switches.mock': '',
-                'haas.ext.obm.ipmi': '',
-                'haas.ext.obm.mock': '',
-                'haas.ext.network_allocators.null': None,
-                'haas.ext.network_allocators.vlan_pool': '',
+                'hil.ext.switches.mock': '',
+                'hil.ext.obm.ipmi': '',
+                'hil.ext.obm.mock': '',
+                'hil.ext.network_allocators.null': None,
+                'hil.ext.network_allocators.vlan_pool': '',
             },
-            'haas.ext.network_allocators.vlan_pool': {
+            'hil.ext.network_allocators.vlan_pool': {
                 'vlans': '100-200',
             },
         })

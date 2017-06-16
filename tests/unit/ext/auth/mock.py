@@ -1,8 +1,8 @@
-from haas import config, server
-from haas.auth import get_auth_backend
-from haas.errors import AuthorizationError
-from haas.model import db, Project
-from haas.test_common import config_testsuite, config_merge, fresh_database, \
+from hil import config, server
+from hil.auth import get_auth_backend
+from hil.errors import AuthorizationError
+from hil.model import db, Project
+from hil.test_common import config_testsuite, config_merge, fresh_database, \
     with_request_context, fail_on_log_warnings
 import pytest
 
@@ -12,8 +12,8 @@ def configure():
     config_testsuite()
     config_merge({
         'extensions': {
-            'haas.ext.auth.mock': '',
-            'haas.ext.auth.null': None,
+            'hil.ext.auth.mock': '',
+            'hil.ext.auth.null': None,
         },
     })
     config.load_extensions()

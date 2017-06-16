@@ -2,11 +2,11 @@
 # use postgres for the database. This is designed for running the usual test
 # suite against postgres on travis ci.
 [extensions]
-haas.ext.network_allocators.null =
-haas.ext.auth.null =
+hil.ext.network_allocators.null =
+hil.ext.auth.null =
 [devel]
 dry_run = True
 [headnode]
 base_imgs = base-headnode, img1, img2, img3, img4
 [database]
-uri = postgresql://postgres@localhost/haas_tests
+uri = postgresql://postgres@localhost/hil_tests
