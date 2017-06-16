@@ -32,7 +32,7 @@ from haas.dev_support import no_dry_run
 import uuid
 import xml.etree.ElementTree
 from sqlalchemy import BigInteger
-from sqlalchemy.dialects import postgresql, sqlite
+from sqlalchemy.dialects import sqlite
 
 # without setting this explicitly, we get a warning that this option
 # will default to disabled in future versions (due to incurring a lot
@@ -57,13 +57,6 @@ def init_db(uri=None):
     if uri is None:
         uri = cfg.get('database', 'uri')
     app.config.update(SQLALCHEMY_DATABASE_URI=uri)
-
-    global BigIntegerType
-
-    # Decide if primary keys should be BIGINTs or Integers
-    if 'postgresql' in uri:
-        BigIntegerType = BigInteger().with_variant(
-                postgresql.BIGINT(), 'postgresql')
 
 
 # A joining table for project's access to networks, which have a many to many
