@@ -78,7 +78,7 @@ For headnode functionality:
 Documentation
 =============
 
-* The full documentation is availalbe at `ReadTheDocs <http://hil.readthedocs.io/en/latest/>`_ in a beautiful and easy to navigate web interface. 
+* The full documentation is availalbe at `ReadTheDocs <http://hil.readthedocs.io/en/latest/>`_ in a beautiful and easy to navigate web interface.
 * `The docs directory <docs/>`_ contains all the documentation in .rst and .md format
 * `examples <examples/>`_ contains examples of config files, templates for creating headnode VM images and a script to register nodes with HIL.
 
@@ -117,7 +117,7 @@ Bibtex:
   keywords = {IaaS, PaaS, bare metal, cloud computing, datacenter management, exokernel},
   }
 
-An early short paper on HIL (then called "Hardware as a Service/HIL"):
+An early short paper on HIL (then called "Hardware as a Service/HaaS"):
 
     Jason Hennessey, Chris Hill, Ian Denhardt, Viggnesh Venugopal, George Silvis, Orran Krieger, and Peter Desnoyers, `Hardware as a service - enabling dynamic, user-level bare metal provisioning of pools of data center resources. <https://open.bu.edu/handle/2144/11221>`_ in 2014 IEEE High Performance Extreme Computing Conference, Waltham, MA, USA, 2014.
 

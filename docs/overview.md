@@ -1,6 +1,6 @@
 # HIL Architecture Overview
 
-The HIL (Hardware as a Service) is a tool used to perform network
+The HIL (Hardware Isolation Layer) is a tool used to perform network
 isolation of physical machines, so that different parties can be
 given physical capacity within the same data center, without needing
 to trust each other.

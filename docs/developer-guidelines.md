@@ -25,7 +25,9 @@ If you're looking to code, there are a few ways to help:
 
 * IRC: The MOC team hangs out on #moc on [freenode](https://www.freenode.net/)
 * IRL (In Real Life): The MOC group office is on the BU campus, at 3 Cummington Mall, Boston, MA room 451. Anyone interested in HIL is welcome to drop in and work there.
-* Email: HIL developers or anyone else wishing to stay up to date should subscribe to hil-dev-list@bu.edu by sending a plain text email to majordomo@bu.edu with "subscribe hil-dev-list" in the body.
+* Email: HIL developers or anyone else wishing to stay up to date should
+subscribe to haas-dev-list@bu.edu by sending a plain text email to
+majordomo@bu.edu with "subscribe haas-dev-list" in the body.
 
 ## Coding style/conventions
 

@@ -24,7 +24,7 @@ def _get_readme():
 setup(name='hil',
       version='0.2rc2',
       maintainer='Developers of the HIL Project at MOC',
-      maintainer_email='hil-dev-list@bu.edu',
+      maintainer_email='haas-dev-list@bu.edu',
       url='https://github.com/CCI-MOC/hil',
       description='A bare-metal isolation service that automates allocation '
                   'and management of non-virtualized compute resources across '
