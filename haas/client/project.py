@@ -47,7 +47,7 @@ class Project(ClientBase):
                     )
 
         def detach(self, project_name, node_name):
-            """Adds a node to a project. """
+            """Detaches a node to a project. """
             url = self.object_url('project', project_name, 'detach_node')
             self.payload = json.dumps({'node': node_name})
             return self.check_response(
