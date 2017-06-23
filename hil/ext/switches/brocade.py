@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 class Brocade(Switch):
-    api_name = 'http://schema.massopencloud.org/hil/v0/switches/brocade'
+    api_name = 'http://schema.massopencloud.org/haas/v0/switches/brocade'
 
     __mapper_args__ = {
         'polymorphic_identity': api_name,

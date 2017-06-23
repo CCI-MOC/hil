@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 class PowerConnect55xx(Switch):
-    api_name = 'http://schema.massopencloud.org/hil/v0/switches/' \
+    api_name = 'http://schema.massopencloud.org/haas/v0/switches/' \
         'powerconnect55xx'
 
     __mapper_args__ = {

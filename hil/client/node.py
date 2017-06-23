@@ -26,7 +26,7 @@ class Node(ClientBase):
         # Node requires which OBM, and knows arguments required
         # for successful node registration.
 
-        obm_api = "http://schema.massopencloud.org/hil/v0/obm/"
+        obm_api = "http://schema.massopencloud.org/haas/v0/obm/"
         obm_types = ["ipmi", "mock"]
         # FIXME: In future obm_types should be dynamically fetched.
         # We need a new api call for querying available

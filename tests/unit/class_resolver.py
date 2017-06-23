@@ -4,7 +4,7 @@ from hil.model import *
 from hil.test_common import fail_on_log_warnings
 import pytest
 
-mockapi_name = 'http://schema.massopencloud.org/hil/v0/'
+mockapi_name = 'http://schema.massopencloud.org/haas/v0/'
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
 

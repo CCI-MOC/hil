@@ -35,7 +35,7 @@ paths[__name__] = join(dirname(__file__), 'migrations', 'n3000')
 
 
 class DellN3000(Switch):
-    api_name = 'http://schema.massopencloud.org/hil/v0/switches/' \
+    api_name = 'http://schema.massopencloud.org/haas/v0/switches/' \
         'delln3000'
 
     __mapper_args__ = {

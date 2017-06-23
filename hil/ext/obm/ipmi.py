@@ -32,7 +32,7 @@ class Ipmi(Obm):
     user = db.Column(db.String, nullable=False)
     password = db.Column(db.String, nullable=False)
 
-    api_name = 'http://schema.massopencloud.org/hil/v0/obm/ipmi'
+    api_name = 'http://schema.massopencloud.org/haas/v0/obm/ipmi'
 
     __mapper_args__ = {
         'polymorphic_identity': api_name,

@@ -29,8 +29,8 @@ import re
 from pprint import pformat
 import difflib
 
-MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/hil/v0/switches/mock'
-MOCK_OBM_TYPE = 'http://schema.massopencloud.org/hil/v0/obm/mock'
+MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/v0/switches/mock'
+MOCK_OBM_TYPE = 'http://schema.massopencloud.org/haas/v0/obm/mock'
 
 
 def create_pending_actions_db():

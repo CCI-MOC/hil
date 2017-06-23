@@ -26,9 +26,9 @@ from hil.test_common import config, config_testsuite, fresh_database, \
 import pytest
 import json
 
-DELL5500 = 'http://schema.massopencloud.org/hil/v0/switches/powerconnect55xx'
-NEXUS = 'http://schema.massopencloud.org/hil/v0/switches/nexus'
-DELLN3000 = 'http://schema.massopencloud.org/hil/v0/switches/delln3000'
+DELL5500 = 'http://schema.massopencloud.org/haas/v0/switches/powerconnect55xx'
+NEXUS = 'http://schema.massopencloud.org/haas/v0/switches/nexus'
+DELLN3000 = 'http://schema.massopencloud.org/haas/v0/switches/delln3000'
 
 
 @pytest.fixture

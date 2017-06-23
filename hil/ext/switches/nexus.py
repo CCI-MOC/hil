@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 class Nexus(Switch):
-    api_name = 'http://schema.massopencloud.org/hil/v0/switches/nexus'
+    api_name = 'http://schema.massopencloud.org/haas/v0/switches/nexus'
 
     __mapper_args__ = {
         'polymorphic_identity': api_name,

@@ -410,7 +410,7 @@ def node_register(node, subtype, *args):
         if obm is of type: ipmi then provide arguments
         "ipmi", <hostname>, <ipmi-username>, <ipmi-password>
     """
-    obm_api = "http://schema.massopencloud.org/hil/v0/obm/"
+    obm_api = "http://schema.massopencloud.org/haas/v0/obm/"
     obm_types = ["ipmi", "mock"]
     # Currently the classes are hardcoded
     # In principle this should come from api.py
@@ -543,7 +543,7 @@ def switch_register(switch, subtype, *args):
     backend. Ideally, this should be taken care of in the driver itself or
     client library (work-in-progress) should manage it.
     """
-    switch_api = "http://schema.massopencloud.org/hil/v0/switches/"
+    switch_api = "http://schema.massopencloud.org/haas/v0/switches/"
     if subtype == "nexus" or subtype == "delln3000":
         if len(args) == 4:
             switchinfo = {

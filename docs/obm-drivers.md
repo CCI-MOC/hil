@@ -40,7 +40,7 @@ It is the IPMI driver.
 
 The type field for the IPMI driver has the value::
 
-    http://schema.massopencloud.org/hil/v0/obm/ipmi
+    http://schema.massopencloud.org/haas/v0/obm/ipmi
 
 
 IPMI driver requires three additional feilds 
@@ -54,7 +54,7 @@ and ipmi-password as "pass1234" is to be registered with HIL.
 
 The body of the api call request `node_register` can then look like::
 
-    {"obm": { "type": "http://schema.massopencloud.org/hil/v0/obm/ipmi",
+    {"obm": { "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
     		"host": "ipmi_node-01",
     		"user": "ipmi_user-01",
     		"password": "pass1234"

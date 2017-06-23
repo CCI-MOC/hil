@@ -32,7 +32,7 @@ class MockObm(Obm):
     user = Column(String, nullable=False)
     password = Column(String, nullable=False)
 
-    api_name = 'http://schema.massopencloud.org/hil/v0/obm/mock'
+    api_name = 'http://schema.massopencloud.org/haas/v0/obm/mock'
 
     __mapper_args__ = {
         'polymorphic_identity': api_name,

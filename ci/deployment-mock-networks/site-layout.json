@@ -2,14 +2,14 @@
     "switches": [
         {
             "switch": "mock-0",
-            "type": "http://schema.massopencloud.org/hil/v0/switches/mock",
+            "type": "http://schema.massopencloud.org/haas/v0/switches/mock",
             "hostname": "mock-0.example.com",
             "username": "alice",
             "password": "secret"
         },
         {
             "switch": "mock-1",
-            "type": "http://schema.massopencloud.org/hil/v0/switches/mock",
+            "type": "http://schema.massopencloud.org/haas/v0/switches/mock",
             "hostname": "mock-0.example.com",
             "username": "alice",
             "password": "secret"
@@ -33,7 +33,7 @@
                 }
             ],
             "obm": {
-							  "type": "http://schema.massopencloud.org/hil/v0/obm/mock",
+							  "type": "http://schema.massopencloud.org/haas/v0/obm/mock",
                 "host": "192.168.1.1",
                 "user": "foo",
                 "password": "bar"
@@ -50,7 +50,7 @@
                 }
             ],
             "obm": {
-							  "type": "http://schema.massopencloud.org/hil/v0/obm/mock",
+							  "type": "http://schema.massopencloud.org/haas/v0/obm/mock",
                 "host": "192.168.1.2",
                 "user": "foo",
                 "password": "bar"
@@ -73,7 +73,7 @@
                 }
             ],
             "obm": {
-							  "type": "http://schema.massopencloud.org/hil/v0/obm/mock",
+							  "type": "http://schema.massopencloud.org/haas/v0/obm/mock",
                 "host": "192.168.1.1",
                 "user": "foo",
                 "password": "bar"
@@ -90,7 +90,7 @@
                 }
             ],
             "obm": {
-							  "type": "http://schema.massopencloud.org/hil/v0/obm/mock",
+							  "type": "http://schema.massopencloud.org/haas/v0/obm/mock",
                 "host": "192.168.1.2",
                 "user": "foo",
                 "password": "bar"

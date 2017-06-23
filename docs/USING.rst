@@ -82,7 +82,7 @@ api call
 ::
 
     curl -X put http://127.0.0.1:5000/switch/mockswitch01 -d '
-        {"type": "http://schema.massopencloud.org/hil/v0/switches/mock",
+        {"type": "http://schema.massopencloud.org/haas/v0/switches/mock",
         "hostname": "switchhost01",
         "username": "switchuser01",
         "password": "password1234"}'
@@ -109,7 +109,7 @@ For nodes using IPMI use the following api call:
 ::
 
    curl -X PUT http://127.0.0.1:5001/node/dummyNode01 -d '
-   > {"obm": { "type": "http://schema.massopencloud.org/hil/v0/obm/ipmi",
+   > {"obm": { "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
    > "host": "ipmiHost4node-01",
    > "user": "ipmiUser4node-01",
    > "password": "ipmiPass4node-01"

@@ -36,9 +36,9 @@ password = "hil_pass1234" or os.environ.get('HIL_PASSWORD')
 http_client = RequestsHTTPClient()
 http_client.auth = (username, password)
 C = Client(ep, http_client)  # Initializing client library
-MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/hil/v0/switches/mock'
-OBM_TYPE_MOCK = 'http://schema.massopencloud.org/hil/v0/obm/mock'
-OBM_TYPE_IPMI = 'http://schema.massopencloud.org/hil/v0/obm/ipmi'
+MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/v0/switches/mock'
+OBM_TYPE_MOCK = 'http://schema.massopencloud.org/haas/v0/obm/mock'
+OBM_TYPE_IPMI = 'http://schema.massopencloud.org/haas/v0/obm/ipmi'
 
 
 class Test_ClientBase:
@@ -150,7 +150,7 @@ def populate_server():
 
     # Adding nodes, node-01 - node-09
     url_node = 'http://127.0.0.1:8000/node/'
-    ipmi = 'http://schema.massopencloud.org/hil/v0/obm/ipmi'
+    ipmi = 'http://schema.massopencloud.org/haas/v0/obm/ipmi'
 
     for i in range(1, 10):
         obminfo = {
@@ -172,7 +172,7 @@ def populate_server():
 
     # Adding switches one for each driver
     url_switch = 'http://127.0.0.1:8000/switch/'
-    api_name = 'http://schema.massopencloud.org/hil/v0/switches/'
+    api_name = 'http://schema.massopencloud.org/haas/v0/switches/'
 
     dell_param = {
             'type': api_name + 'powerconnect55xx', 'hostname': 'dell-01',

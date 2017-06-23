@@ -59,7 +59,7 @@ class TestIpmi:
         """Check that node_set_bootdev throws error for invalid devices."""
 
         api.node_register('node-99', obm={
-                  "type": "http://schema.massopencloud.org/hil/v0/obm/ipmi",
+                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
                   "user": "root",
                   "password": "tapeworm"})

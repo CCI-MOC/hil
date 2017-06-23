@@ -102,7 +102,7 @@ A few commands are necessary to run on the switch before it can be used with HIL
 To register a Dell Powerconnect switch, the ``"type"`` field of the
 request body must have a value of::
 
-    http://schema.massopencloud.org/hil/v0/switches/powerconnect55xx
+    http://schema.massopencloud.org/haas/v0/switches/powerconnect55xx
 
 In addition, it requires three extra fields: ``"username"``,
 ``"hostname"``, and ``"password"``, which provide the necessary
@@ -134,7 +134,7 @@ must first be enabled on the switch. To enable all VLANs to work with the switch
 To register a Dell N3000 switch, the ``"type"`` field of the
 request body must have a value of::
 
-    http://schema.massopencloud.org/hil/v0/switches/delln3000
+    http://schema.massopencloud.org/haas/v0/switches/delln3000
 
 It requires the same fields as the powerconnect driver, plus an
 additional field "dummy_vlan" like the nexus driver, which should be a JSON
@@ -152,7 +152,7 @@ Register ports just like the powerconnect driver. e.g. ``gi1/0/5``.
 
 The type field for the Nexus driver has the value::
 
-    http://schema.massopencloud.org/hil/v0/switches/nexus
+    http://schema.massopencloud.org/haas/v0/switches/nexus
 
 The nexus driver requires the same additional fields as the powerconnect
 driver, plus an additional field "dummy_vlan", which should be a JSON
@@ -170,7 +170,7 @@ the switch's console, run:
 The body of the api call request can then look like:
 
     {
-        "type": "http://schema.massopencloud.org/hil/v0/switches/nexus",
+        "type": "http://schema.massopencloud.org/haas/v0/switches/nexus",
         "username": "MyUser",
         "password": "secret",
         "hostname": "mynexus.example.com",
@@ -189,7 +189,7 @@ same format accepted by the underlying switch, in this case (e.g.)
                                                                                                            
 The ``type`` field for the Brocade NOS driver has the value:
 
-    http://schema.massopencloud.org/hil/v0/switches/brocade
+    http://schema.massopencloud.org/haas/v0/switches/brocade
 
 In addition to ``type``, the brocade driver requires three additional fields
 ``hostname``, ``username``, ``password``, and ``interface_type``.
@@ -201,7 +201,7 @@ parameters for ``interface_type``.
 The body of the api call request will look like:
 
     {
-        "type": "http://schema.massopencloud.org/hil/v0/switches/brocade",
+        "type": "http://schema.massopencloud.org/haas/v0/switches/brocade",
         "username": "MyUser",
         "password": "secret",
         "hostname": "mybrocade.example.com",

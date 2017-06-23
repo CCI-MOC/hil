@@ -155,7 +155,7 @@ class TestBrocade(object):
             model.Node(
                 label='node-99',
                 obm=Ipmi(
-                    type="http://schema.massopencloud.org/hil/v0/obm/ipmi",
+                    type="http://schema.massopencloud.org/haas/v0/obm/ipmi",
                     host="ipmihost",
                     user="root",
                     password="tapeworm")),

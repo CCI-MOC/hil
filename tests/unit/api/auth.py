@@ -17,8 +17,8 @@ from hil.errors import AuthorizationError, BadArgumentError, \
 from hil.test_common import config_testsuite, config_merge, fresh_database, \
     with_request_context, additional_db, fail_on_log_warnings
 
-MOCK_OBM_API_NAME = 'http://schema.massopencloud.org/hil/v0/obm/mock'
-MOCK_SWITCH_API_NAME = 'http://schema.massopencloud.org/hil/v0/switches/mock'
+MOCK_OBM_API_NAME = 'http://schema.massopencloud.org/haas/v0/obm/mock'
+MOCK_SWITCH_API_NAME = 'http://schema.massopencloud.org/haas/v0/switches/mock'
 
 
 def auth_call_test(fn, error, admin, project, args, kwargs={}):

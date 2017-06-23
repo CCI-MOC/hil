@@ -45,17 +45,17 @@ def test_many_http_queries():
     with rest.app.test_request_context():
         rest.init_auth()
         api.node_register('node-99', obm={
-            "type": "http://schema.massopencloud.org/hil/v0/obm/ipmi",
+            "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
             "host": "ipmihost",
             "user": "root",
             "password": "tapeworm"})
         api.node_register('node-98', obm={
-            "type": "http://schema.massopencloud.org/hil/v0/obm/ipmi",
+            "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
             "host": "ipmihost",
             "user": "root",
             "password": "tapeworm"})
         api.node_register('node-97', obm={
-            "type": "http://schema.massopencloud.org/hil/v0/obm/ipmi",
+            "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
             "host": "ipmihost",
             "user": "root",
             "password": "tapeworm"})

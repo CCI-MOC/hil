@@ -37,7 +37,7 @@ class MockSwitch(Switch):
     suggested int the superclass's documentation.
     """
 
-    api_name = 'http://schema.massopencloud.org/hil/v0/switches/mock'
+    api_name = 'http://schema.massopencloud.org/haas/v0/switches/mock'
 
     __mapper_args__ = {
         'polymorphic_identity': api_name,
