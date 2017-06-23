@@ -9,22 +9,22 @@
 -- The extensions loaded were:
 --
 --
--- * hil.ext.switches.mock
--- * hil.ext.switches.nexus
--- * hil.ext.switches.dell
--- * hil.ext.obm.ipmi
--- * hil.ext.obm.mock
--- * hil.ext.auth.database
--- * hil.ext.network_allocators.vlan_pool
+-- * haas.ext.switches.mock
+-- * haas.ext.switches.nexus
+-- * haas.ext.switches.dell
+-- * haas.ext.obm.ipmi
+-- * haas.ext.obm.mock
+-- * haas.ext.auth.database
+-- * haas.ext.network_allocators.vlan_pool
 --
--- Additionally, hil.cfg contained the following, which affects the generated
+-- Additionally, haas.cfg contained the following, which affects the generated
 -- database:
 --
---   [hil.ext.network_allocators.vlan_pool]
+--   [haas.ext.network_allocators.vlan_pool]
 --   vlans = 100-200, 300-500
 --
 -- The database was poplated with objects equivalent to those created by
--- `hil.test_common.initial_db` as of the commit:
+-- `haas.test_common.initial_db` as of the commit:
 --
 -- e8a7f545eb7b3afe3c39169becef1633f507d349
 
@@ -42,7 +42,7 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
--- Name: headnode; Type: TABLE; Schema: public; Owner: hil; Tablespace:
+-- Name: headnode; Type: TABLE; Schema: public; Owner: haas; Tablespace:
 --
 
 CREATE TABLE headnode (
@@ -56,7 +56,7 @@ CREATE TABLE headnode (
 
 
 --
--- Name: headnode_id_seq; Type: SEQUENCE; Schema: public; Owner: hil
+-- Name: headnode_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
 --
 
 CREATE SEQUENCE headnode_id_seq
@@ -68,14 +68,14 @@ CREATE SEQUENCE headnode_id_seq
 
 
 --
--- Name: headnode_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
+-- Name: headnode_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
 --
 
 ALTER SEQUENCE headnode_id_seq OWNED BY headnode.id;
 
 
 --
--- Name: hnic; Type: TABLE; Schema: public; Owner: hil; Tablespace:
+-- Name: hnic; Type: TABLE; Schema: public; Owner: haas; Tablespace:
 --
 
 CREATE TABLE hnic (
@@ -87,7 +87,7 @@ CREATE TABLE hnic (
 
 
 --
--- Name: hnic_id_seq; Type: SEQUENCE; Schema: public; Owner: hil
+-- Name: hnic_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
 --
 
 CREATE SEQUENCE hnic_id_seq
@@ -99,14 +99,14 @@ CREATE SEQUENCE hnic_id_seq
 
 
 --
--- Name: hnic_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
+-- Name: hnic_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
 --
 
 ALTER SEQUENCE hnic_id_seq OWNED BY hnic.id;
 
 
 --
--- Name: ipmi; Type: TABLE; Schema: public; Owner: hil; Tablespace:
+-- Name: ipmi; Type: TABLE; Schema: public; Owner: haas; Tablespace:
 --
 
 CREATE TABLE ipmi (
@@ -118,7 +118,7 @@ CREATE TABLE ipmi (
 
 
 --
--- Name: mockobm; Type: TABLE; Schema: public; Owner: hil; Tablespace:
+-- Name: mockobm; Type: TABLE; Schema: public; Owner: haas; Tablespace:
 --
 
 CREATE TABLE mockobm (
@@ -130,7 +130,7 @@ CREATE TABLE mockobm (
 
 
 --
--- Name: mockswitch; Type: TABLE; Schema: public; Owner: hil; Tablespace:
+-- Name: mockswitch; Type: TABLE; Schema: public; Owner: haas; Tablespace:
 --
 
 CREATE TABLE mockswitch (
@@ -142,7 +142,7 @@ CREATE TABLE mockswitch (
 
 
 --
--- Name: network; Type: TABLE; Schema: public; Owner: hil; Tablespace:
+-- Name: network; Type: TABLE; Schema: public; Owner: haas; Tablespace:
 --
 
 CREATE TABLE network (
@@ -156,7 +156,7 @@ CREATE TABLE network (
 
 
 --
--- Name: network_id_seq; Type: SEQUENCE; Schema: public; Owner: hil
+-- Name: network_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
 --
 
 CREATE SEQUENCE network_id_seq
@@ -168,14 +168,14 @@ CREATE SEQUENCE network_id_seq
 
 
 --
--- Name: network_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
+-- Name: network_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
 --
 
 ALTER SEQUENCE network_id_seq OWNED BY network.id;
 
 
 --
--- Name: networkattachment; Type: TABLE; Schema: public; Owner: hil; Tablespace:
+-- Name: networkattachment; Type: TABLE; Schema: public; Owner: haas; Tablespace:
 --
 
 CREATE TABLE networkattachment (
@@ -187,7 +187,7 @@ CREATE TABLE networkattachment (
 
 
 --
--- Name: networkattachment_id_seq; Type: SEQUENCE; Schema: public; Owner: hil
+-- Name: networkattachment_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
 --
 
 CREATE SEQUENCE networkattachment_id_seq
@@ -199,14 +199,14 @@ CREATE SEQUENCE networkattachment_id_seq
 
 
 --
--- Name: networkattachment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
+-- Name: networkattachment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
 --
 
 ALTER SEQUENCE networkattachment_id_seq OWNED BY networkattachment.id;
 
 
 --
--- Name: networkingaction; Type: TABLE; Schema: public; Owner: hil; Tablespace:
+-- Name: networkingaction; Type: TABLE; Schema: public; Owner: haas; Tablespace:
 --
 
 CREATE TABLE networkingaction (
@@ -218,7 +218,7 @@ CREATE TABLE networkingaction (
 
 
 --
--- Name: networkingaction_id_seq; Type: SEQUENCE; Schema: public; Owner: hil
+-- Name: networkingaction_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
 --
 
 CREATE SEQUENCE networkingaction_id_seq
@@ -230,14 +230,14 @@ CREATE SEQUENCE networkingaction_id_seq
 
 
 --
--- Name: networkingaction_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
+-- Name: networkingaction_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
 --
 
 ALTER SEQUENCE networkingaction_id_seq OWNED BY networkingaction.id;
 
 
 --
--- Name: nexus; Type: TABLE; Schema: public; Owner: hil; Tablespace:
+-- Name: nexus; Type: TABLE; Schema: public; Owner: haas; Tablespace:
 --
 
 CREATE TABLE nexus (
@@ -250,7 +250,7 @@ CREATE TABLE nexus (
 
 
 --
--- Name: nic; Type: TABLE; Schema: public; Owner: hil; Tablespace:
+-- Name: nic; Type: TABLE; Schema: public; Owner: haas; Tablespace:
 --
 
 CREATE TABLE nic (
@@ -263,7 +263,7 @@ CREATE TABLE nic (
 
 
 --
--- Name: nic_id_seq; Type: SEQUENCE; Schema: public; Owner: hil
+-- Name: nic_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
 --
 
 CREATE SEQUENCE nic_id_seq
@@ -275,14 +275,14 @@ CREATE SEQUENCE nic_id_seq
 
 
 --
--- Name: nic_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
+-- Name: nic_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
 --
 
 ALTER SEQUENCE nic_id_seq OWNED BY nic.id;
 
 
 --
--- Name: node; Type: TABLE; Schema: public; Owner: hil; Tablespace:
+-- Name: node; Type: TABLE; Schema: public; Owner: haas; Tablespace:
 --
 
 CREATE TABLE node (
@@ -294,7 +294,7 @@ CREATE TABLE node (
 
 
 --
--- Name: node_id_seq; Type: SEQUENCE; Schema: public; Owner: hil
+-- Name: node_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
 --
 
 CREATE SEQUENCE node_id_seq
@@ -306,14 +306,14 @@ CREATE SEQUENCE node_id_seq
 
 
 --
--- Name: node_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
+-- Name: node_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
 --
 
 ALTER SEQUENCE node_id_seq OWNED BY node.id;
 
 
 --
--- Name: obm; Type: TABLE; Schema: public; Owner: hil; Tablespace:
+-- Name: obm; Type: TABLE; Schema: public; Owner: haas; Tablespace:
 --
 
 CREATE TABLE obm (
@@ -323,7 +323,7 @@ CREATE TABLE obm (
 
 
 --
--- Name: obm_id_seq; Type: SEQUENCE; Schema: public; Owner: hil
+-- Name: obm_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
 --
 
 CREATE SEQUENCE obm_id_seq
@@ -335,14 +335,14 @@ CREATE SEQUENCE obm_id_seq
 
 
 --
--- Name: obm_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
+-- Name: obm_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
 --
 
 ALTER SEQUENCE obm_id_seq OWNED BY obm.id;
 
 
 --
--- Name: port; Type: TABLE; Schema: public; Owner: hil; Tablespace:
+-- Name: port; Type: TABLE; Schema: public; Owner: haas; Tablespace:
 --
 
 CREATE TABLE port (
@@ -353,7 +353,7 @@ CREATE TABLE port (
 
 
 --
--- Name: port_id_seq; Type: SEQUENCE; Schema: public; Owner: hil
+-- Name: port_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
 --
 
 CREATE SEQUENCE port_id_seq
@@ -365,14 +365,14 @@ CREATE SEQUENCE port_id_seq
 
 
 --
--- Name: port_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
+-- Name: port_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
 --
 
 ALTER SEQUENCE port_id_seq OWNED BY port.id;
 
 
 --
--- Name: powerconnect55xx; Type: TABLE; Schema: public; Owner: hil; Tablespace:
+-- Name: powerconnect55xx; Type: TABLE; Schema: public; Owner: haas; Tablespace:
 --
 
 CREATE TABLE powerconnect55xx (
@@ -384,7 +384,7 @@ CREATE TABLE powerconnect55xx (
 
 
 --
--- Name: project; Type: TABLE; Schema: public; Owner: hil; Tablespace:
+-- Name: project; Type: TABLE; Schema: public; Owner: haas; Tablespace:
 --
 
 CREATE TABLE project (
@@ -394,7 +394,7 @@ CREATE TABLE project (
 
 
 --
--- Name: project_id_seq; Type: SEQUENCE; Schema: public; Owner: hil
+-- Name: project_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
 --
 
 CREATE SEQUENCE project_id_seq
@@ -406,14 +406,14 @@ CREATE SEQUENCE project_id_seq
 
 
 --
--- Name: project_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
+-- Name: project_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
 --
 
 ALTER SEQUENCE project_id_seq OWNED BY project.id;
 
 
 --
--- Name: switch; Type: TABLE; Schema: public; Owner: hil; Tablespace:
+-- Name: switch; Type: TABLE; Schema: public; Owner: haas; Tablespace:
 --
 
 CREATE TABLE switch (
@@ -424,7 +424,7 @@ CREATE TABLE switch (
 
 
 --
--- Name: switch_id_seq; Type: SEQUENCE; Schema: public; Owner: hil
+-- Name: switch_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
 --
 
 CREATE SEQUENCE switch_id_seq
@@ -436,14 +436,14 @@ CREATE SEQUENCE switch_id_seq
 
 
 --
--- Name: switch_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
+-- Name: switch_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
 --
 
 ALTER SEQUENCE switch_id_seq OWNED BY switch.id;
 
 
 --
--- Name: user; Type: TABLE; Schema: public; Owner: hil; Tablespace:
+-- Name: user; Type: TABLE; Schema: public; Owner: haas; Tablespace:
 --
 
 CREATE TABLE "user" (
@@ -456,7 +456,7 @@ CREATE TABLE "user" (
 
 
 --
--- Name: user_id_seq; Type: SEQUENCE; Schema: public; Owner: hil
+-- Name: user_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
 --
 
 CREATE SEQUENCE user_id_seq
@@ -469,14 +469,14 @@ CREATE SEQUENCE user_id_seq
 
 
 --
--- Name: user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
+-- Name: user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
 --
 
 ALTER SEQUENCE user_id_seq OWNED BY "user".id;
 
 
 --
--- Name: user_projects; Type: TABLE; Schema: public; Owner: hil; Tablespace:
+-- Name: user_projects; Type: TABLE; Schema: public; Owner: haas; Tablespace:
 --
 
 CREATE TABLE user_projects (
@@ -487,7 +487,7 @@ CREATE TABLE user_projects (
 
 
 --
--- Name: vlan; Type: TABLE; Schema: public; Owner: hil; Tablespace:
+-- Name: vlan; Type: TABLE; Schema: public; Owner: haas; Tablespace:
 --
 
 CREATE TABLE vlan (
@@ -499,7 +499,7 @@ CREATE TABLE vlan (
 
 
 --
--- Name: vlan_id_seq; Type: SEQUENCE; Schema: public; Owner: hil
+-- Name: vlan_id_seq; Type: SEQUENCE; Schema: public; Owner: haas
 --
 
 CREATE SEQUENCE vlan_id_seq
@@ -512,105 +512,105 @@ CREATE SEQUENCE vlan_id_seq
 
 
 --
--- Name: vlan_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: hil
+-- Name: vlan_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haas
 --
 
 ALTER SEQUENCE vlan_id_seq OWNED BY vlan.id;
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: hil
+-- Name: id; Type: DEFAULT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY headnode ALTER COLUMN id SET DEFAULT nextval('headnode_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: hil
+-- Name: id; Type: DEFAULT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY hnic ALTER COLUMN id SET DEFAULT nextval('hnic_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: hil
+-- Name: id; Type: DEFAULT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY network ALTER COLUMN id SET DEFAULT nextval('network_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: hil
+-- Name: id; Type: DEFAULT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY networkattachment ALTER COLUMN id SET DEFAULT nextval('networkattachment_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: hil
+-- Name: id; Type: DEFAULT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY networkingaction ALTER COLUMN id SET DEFAULT nextval('networkingaction_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: hil
+-- Name: id; Type: DEFAULT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY nic ALTER COLUMN id SET DEFAULT nextval('nic_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: hil
+-- Name: id; Type: DEFAULT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY node ALTER COLUMN id SET DEFAULT nextval('node_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: hil
+-- Name: id; Type: DEFAULT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY obm ALTER COLUMN id SET DEFAULT nextval('obm_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: hil
+-- Name: id; Type: DEFAULT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY port ALTER COLUMN id SET DEFAULT nextval('port_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: hil
+-- Name: id; Type: DEFAULT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY project ALTER COLUMN id SET DEFAULT nextval('project_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: hil
+-- Name: id; Type: DEFAULT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY switch ALTER COLUMN id SET DEFAULT nextval('switch_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: hil
+-- Name: id; Type: DEFAULT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY "user" ALTER COLUMN id SET DEFAULT nextval('user_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: hil
+-- Name: id; Type: DEFAULT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY vlan ALTER COLUMN id SET DEFAULT nextval('vlan_id_seq'::regclass);
 
 
 --
--- Data for Name: headnode; Type: TABLE DATA; Schema: public; Owner: hil
+-- Data for Name: headnode; Type: TABLE DATA; Schema: public; Owner: haas
 --
 
 INSERT INTO headnode (id, label, project_id, dirty, base_img, uuid) VALUES (1, 'runway_headnode_on', 1, false, 'base-headnode', 'e9c77c00-fa31-11e5-93f8-001e65327848');
@@ -620,14 +620,14 @@ INSERT INTO headnode (id, label, project_id, dirty, base_img, uuid) VALUES (4, '
 
 
 --
--- Name: headnode_id_seq; Type: SEQUENCE SET; Schema: public; Owner: hil
+-- Name: headnode_id_seq; Type: SEQUENCE SET; Schema: public; Owner: haas
 --
 
 SELECT pg_catalog.setval('headnode_id_seq', 4, true);
 
 
 --
--- Data for Name: hnic; Type: TABLE DATA; Schema: public; Owner: hil
+-- Data for Name: hnic; Type: TABLE DATA; Schema: public; Owner: haas
 --
 
 INSERT INTO hnic (id, label, owner_id, network_id) VALUES (1, 'pxe', 1, NULL);
@@ -641,20 +641,20 @@ INSERT INTO hnic (id, label, owner_id, network_id) VALUES (8, 'public', 4, 3);
 
 
 --
--- Name: hnic_id_seq; Type: SEQUENCE SET; Schema: public; Owner: hil
+-- Name: hnic_id_seq; Type: SEQUENCE SET; Schema: public; Owner: haas
 --
 
 SELECT pg_catalog.setval('hnic_id_seq', 8, true);
 
 
 --
--- Data for Name: ipmi; Type: TABLE DATA; Schema: public; Owner: hil
+-- Data for Name: ipmi; Type: TABLE DATA; Schema: public; Owner: haas
 --
 
 
 
 --
--- Data for Name: mockobm; Type: TABLE DATA; Schema: public; Owner: hil
+-- Data for Name: mockobm; Type: TABLE DATA; Schema: public; Owner: haas
 --
 
 INSERT INTO mockobm (id, host, "user", password) VALUES (1, 'runway_node_0', 'user', 'password');
@@ -667,7 +667,7 @@ INSERT INTO mockobm (id, host, "user", password) VALUES (7, 'hostname', 'user', 
 
 
 --
--- Data for Name: mockswitch; Type: TABLE DATA; Schema: public; Owner: hil
+-- Data for Name: mockswitch; Type: TABLE DATA; Schema: public; Owner: haas
 --
 
 INSERT INTO mockswitch (id, hostname, username, password) VALUES (1, 'empty', 'alice', 'secret');
@@ -675,7 +675,7 @@ INSERT INTO mockswitch (id, hostname, username, password) VALUES (2, 'stock', 'b
 
 
 --
--- Data for Name: network; Type: TABLE DATA; Schema: public; Owner: hil
+-- Data for Name: network; Type: TABLE DATA; Schema: public; Owner: haas
 --
 
 INSERT INTO network (id, label, creator_id, access_id, allocated, network_id) VALUES (1, 'stock_int_pub', NULL, NULL, true, '100');
@@ -688,46 +688,46 @@ INSERT INTO network (id, label, creator_id, access_id, allocated, network_id) VA
 
 
 --
--- Name: network_id_seq; Type: SEQUENCE SET; Schema: public; Owner: hil
+-- Name: network_id_seq; Type: SEQUENCE SET; Schema: public; Owner: haas
 --
 
 SELECT pg_catalog.setval('network_id_seq', 7, true);
 
 
 --
--- Data for Name: networkattachment; Type: TABLE DATA; Schema: public; Owner: hil
+-- Data for Name: networkattachment; Type: TABLE DATA; Schema: public; Owner: haas
 --
 
 
 
 --
--- Name: networkattachment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: hil
+-- Name: networkattachment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: haas
 --
 
 SELECT pg_catalog.setval('networkattachment_id_seq', 1, false);
 
 
 --
--- Data for Name: networkingaction; Type: TABLE DATA; Schema: public; Owner: hil
+-- Data for Name: networkingaction; Type: TABLE DATA; Schema: public; Owner: haas
 --
 
 
 
 --
--- Name: networkingaction_id_seq; Type: SEQUENCE SET; Schema: public; Owner: hil
+-- Name: networkingaction_id_seq; Type: SEQUENCE SET; Schema: public; Owner: haas
 --
 
 SELECT pg_catalog.setval('networkingaction_id_seq', 1, false);
 
 
 --
--- Data for Name: nexus; Type: TABLE DATA; Schema: public; Owner: hil
+-- Data for Name: nexus; Type: TABLE DATA; Schema: public; Owner: haas
 --
 
 
 
 --
--- Data for Name: nic; Type: TABLE DATA; Schema: public; Owner: hil
+-- Data for Name: nic; Type: TABLE DATA; Schema: public; Owner: haas
 --
 
 INSERT INTO nic (id, label, owner_id, mac_addr, port_id) VALUES (1, 'boot-nic', 1, 'Unknown', NULL);
@@ -745,14 +745,14 @@ INSERT INTO nic (id, label, owner_id, mac_addr, port_id) VALUES (12, 'nic-with-p
 
 
 --
--- Name: nic_id_seq; Type: SEQUENCE SET; Schema: public; Owner: hil
+-- Name: nic_id_seq; Type: SEQUENCE SET; Schema: public; Owner: haas
 --
 
 SELECT pg_catalog.setval('nic_id_seq', 12, true);
 
 
 --
--- Data for Name: node; Type: TABLE DATA; Schema: public; Owner: hil
+-- Data for Name: node; Type: TABLE DATA; Schema: public; Owner: haas
 --
 
 INSERT INTO node (id, label, project_id, obm_id) VALUES (1, 'runway_node_0', 1, 1);
@@ -765,34 +765,34 @@ INSERT INTO node (id, label, project_id, obm_id) VALUES (7, 'no_nic_node', NULL,
 
 
 --
--- Name: node_id_seq; Type: SEQUENCE SET; Schema: public; Owner: hil
+-- Name: node_id_seq; Type: SEQUENCE SET; Schema: public; Owner: haas
 --
 
 SELECT pg_catalog.setval('node_id_seq', 7, true);
 
 
 --
--- Data for Name: obm; Type: TABLE DATA; Schema: public; Owner: hil
+-- Data for Name: obm; Type: TABLE DATA; Schema: public; Owner: haas
 --
 
-INSERT INTO obm (id, type) VALUES (1, 'http://schema.massopencloud.org/hil/v0/obm/mock');
-INSERT INTO obm (id, type) VALUES (2, 'http://schema.massopencloud.org/hil/v0/obm/mock');
-INSERT INTO obm (id, type) VALUES (3, 'http://schema.massopencloud.org/hil/v0/obm/mock');
-INSERT INTO obm (id, type) VALUES (4, 'http://schema.massopencloud.org/hil/v0/obm/mock');
-INSERT INTO obm (id, type) VALUES (5, 'http://schema.massopencloud.org/hil/v0/obm/mock');
-INSERT INTO obm (id, type) VALUES (6, 'http://schema.massopencloud.org/hil/v0/obm/mock');
-INSERT INTO obm (id, type) VALUES (7, 'http://schema.massopencloud.org/hil/v0/obm/mock');
+INSERT INTO obm (id, type) VALUES (1, 'http://schema.massopencloud.org/haas/v0/obm/mock');
+INSERT INTO obm (id, type) VALUES (2, 'http://schema.massopencloud.org/haas/v0/obm/mock');
+INSERT INTO obm (id, type) VALUES (3, 'http://schema.massopencloud.org/haas/v0/obm/mock');
+INSERT INTO obm (id, type) VALUES (4, 'http://schema.massopencloud.org/haas/v0/obm/mock');
+INSERT INTO obm (id, type) VALUES (5, 'http://schema.massopencloud.org/haas/v0/obm/mock');
+INSERT INTO obm (id, type) VALUES (6, 'http://schema.massopencloud.org/haas/v0/obm/mock');
+INSERT INTO obm (id, type) VALUES (7, 'http://schema.massopencloud.org/haas/v0/obm/mock');
 
 
 --
--- Name: obm_id_seq; Type: SEQUENCE SET; Schema: public; Owner: hil
+-- Name: obm_id_seq; Type: SEQUENCE SET; Schema: public; Owner: haas
 --
 
 SELECT pg_catalog.setval('obm_id_seq', 7, true);
 
 
 --
--- Data for Name: port; Type: TABLE DATA; Schema: public; Owner: hil
+-- Data for Name: port; Type: TABLE DATA; Schema: public; Owner: haas
 --
 
 INSERT INTO port (id, label, owner_id) VALUES (1, 'free_port_0', 2);
@@ -806,20 +806,20 @@ INSERT INTO port (id, label, owner_id) VALUES (8, 'free_node_1_port', 2);
 
 
 --
--- Name: port_id_seq; Type: SEQUENCE SET; Schema: public; Owner: hil
+-- Name: port_id_seq; Type: SEQUENCE SET; Schema: public; Owner: haas
 --
 
 SELECT pg_catalog.setval('port_id_seq', 8, true);
 
 
 --
--- Data for Name: powerconnect55xx; Type: TABLE DATA; Schema: public; Owner: hil
+-- Data for Name: powerconnect55xx; Type: TABLE DATA; Schema: public; Owner: haas
 --
 
 
 
 --
--- Data for Name: project; Type: TABLE DATA; Schema: public; Owner: hil
+-- Data for Name: project; Type: TABLE DATA; Schema: public; Owner: haas
 --
 
 INSERT INTO project (id, label) VALUES (1, 'runway');
@@ -828,48 +828,48 @@ INSERT INTO project (id, label) VALUES (3, 'empty-project');
 
 
 --
--- Name: project_id_seq; Type: SEQUENCE SET; Schema: public; Owner: hil
+-- Name: project_id_seq; Type: SEQUENCE SET; Schema: public; Owner: haas
 --
 
 SELECT pg_catalog.setval('project_id_seq', 3, true);
 
 
 --
--- Data for Name: switch; Type: TABLE DATA; Schema: public; Owner: hil
+-- Data for Name: switch; Type: TABLE DATA; Schema: public; Owner: haas
 --
 
-INSERT INTO switch (id, label, type) VALUES (1, 'empty-switch', 'http://schema.massopencloud.org/hil/v0/switches/mock');
-INSERT INTO switch (id, label, type) VALUES (2, 'stock_switch_0', 'http://schema.massopencloud.org/hil/v0/switches/mock');
+INSERT INTO switch (id, label, type) VALUES (1, 'empty-switch', 'http://schema.massopencloud.org/haas/v0/switches/mock');
+INSERT INTO switch (id, label, type) VALUES (2, 'stock_switch_0', 'http://schema.massopencloud.org/haas/v0/switches/mock');
 
 
 --
--- Name: switch_id_seq; Type: SEQUENCE SET; Schema: public; Owner: hil
+-- Name: switch_id_seq; Type: SEQUENCE SET; Schema: public; Owner: haas
 --
 
 SELECT pg_catalog.setval('switch_id_seq', 2, true);
 
 
 --
--- Data for Name: user; Type: TABLE DATA; Schema: public; Owner: hil
+-- Data for Name: user; Type: TABLE DATA; Schema: public; Owner: haas
 --
 
 
 
 --
--- Name: user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: hil
+-- Name: user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: haas
 --
 
 SELECT pg_catalog.setval('user_id_seq', 1, false);
 
 
 --
--- Data for Name: user_projects; Type: TABLE DATA; Schema: public; Owner: hil
+-- Data for Name: user_projects; Type: TABLE DATA; Schema: public; Owner: haas
 --
 
 
 
 --
--- Data for Name: vlan; Type: TABLE DATA; Schema: public; Owner: hil
+-- Data for Name: vlan; Type: TABLE DATA; Schema: public; Owner: haas
 --
 
 INSERT INTO vlan (id, vlan_no, available) VALUES (5, 104, true);
@@ -1177,14 +1177,14 @@ INSERT INTO vlan (id, vlan_no, available) VALUES (4, 103, false);
 
 
 --
--- Name: vlan_id_seq; Type: SEQUENCE SET; Schema: public; Owner: hil
+-- Name: vlan_id_seq; Type: SEQUENCE SET; Schema: public; Owner: haas
 --
 
 SELECT pg_catalog.setval('vlan_id_seq', 302, true);
 
 
 --
--- Name: headnode_pkey; Type: CONSTRAINT; Schema: public; Owner: hil; Tablespace:
+-- Name: headnode_pkey; Type: CONSTRAINT; Schema: public; Owner: haas; Tablespace:
 --
 
 ALTER TABLE ONLY headnode
@@ -1192,7 +1192,7 @@ ALTER TABLE ONLY headnode
 
 
 --
--- Name: headnode_uuid_key; Type: CONSTRAINT; Schema: public; Owner: hil; Tablespace:
+-- Name: headnode_uuid_key; Type: CONSTRAINT; Schema: public; Owner: haas; Tablespace:
 --
 
 ALTER TABLE ONLY headnode
@@ -1200,7 +1200,7 @@ ALTER TABLE ONLY headnode
 
 
 --
--- Name: hnic_pkey; Type: CONSTRAINT; Schema: public; Owner: hil; Tablespace:
+-- Name: hnic_pkey; Type: CONSTRAINT; Schema: public; Owner: haas; Tablespace:
 --
 
 ALTER TABLE ONLY hnic
@@ -1208,7 +1208,7 @@ ALTER TABLE ONLY hnic
 
 
 --
--- Name: ipmi_pkey; Type: CONSTRAINT; Schema: public; Owner: hil; Tablespace:
+-- Name: ipmi_pkey; Type: CONSTRAINT; Schema: public; Owner: haas; Tablespace:
 --
 
 ALTER TABLE ONLY ipmi
@@ -1216,7 +1216,7 @@ ALTER TABLE ONLY ipmi
 
 
 --
--- Name: mockobm_pkey; Type: CONSTRAINT; Schema: public; Owner: hil; Tablespace:
+-- Name: mockobm_pkey; Type: CONSTRAINT; Schema: public; Owner: haas; Tablespace:
 --
 
 ALTER TABLE ONLY mockobm
@@ -1224,7 +1224,7 @@ ALTER TABLE ONLY mockobm
 
 
 --
--- Name: mockswitch_pkey; Type: CONSTRAINT; Schema: public; Owner: hil; Tablespace:
+-- Name: mockswitch_pkey; Type: CONSTRAINT; Schema: public; Owner: haas; Tablespace:
 --
 
 ALTER TABLE ONLY mockswitch
@@ -1232,7 +1232,7 @@ ALTER TABLE ONLY mockswitch
 
 
 --
--- Name: network_pkey; Type: CONSTRAINT; Schema: public; Owner: hil; Tablespace:
+-- Name: network_pkey; Type: CONSTRAINT; Schema: public; Owner: haas; Tablespace:
 --
 
 ALTER TABLE ONLY network
@@ -1240,7 +1240,7 @@ ALTER TABLE ONLY network
 
 
 --
--- Name: networkattachment_pkey; Type: CONSTRAINT; Schema: public; Owner: hil; Tablespace:
+-- Name: networkattachment_pkey; Type: CONSTRAINT; Schema: public; Owner: haas; Tablespace:
 --
 
 ALTER TABLE ONLY networkattachment
@@ -1248,7 +1248,7 @@ ALTER TABLE ONLY networkattachment
 
 
 --
--- Name: networkingaction_pkey; Type: CONSTRAINT; Schema: public; Owner: hil; Tablespace:
+-- Name: networkingaction_pkey; Type: CONSTRAINT; Schema: public; Owner: haas; Tablespace:
 --
 
 ALTER TABLE ONLY networkingaction
@@ -1256,7 +1256,7 @@ ALTER TABLE ONLY networkingaction
 
 
 --
--- Name: nexus_pkey; Type: CONSTRAINT; Schema: public; Owner: hil; Tablespace:
+-- Name: nexus_pkey; Type: CONSTRAINT; Schema: public; Owner: haas; Tablespace:
 --
 
 ALTER TABLE ONLY nexus
@@ -1264,7 +1264,7 @@ ALTER TABLE ONLY nexus
 
 
 --
--- Name: nic_pkey; Type: CONSTRAINT; Schema: public; Owner: hil; Tablespace:
+-- Name: nic_pkey; Type: CONSTRAINT; Schema: public; Owner: haas; Tablespace:
 --
 
 ALTER TABLE ONLY nic
@@ -1272,7 +1272,7 @@ ALTER TABLE ONLY nic
 
 
 --
--- Name: node_pkey; Type: CONSTRAINT; Schema: public; Owner: hil; Tablespace:
+-- Name: node_pkey; Type: CONSTRAINT; Schema: public; Owner: haas; Tablespace:
 --
 
 ALTER TABLE ONLY node
@@ -1280,7 +1280,7 @@ ALTER TABLE ONLY node
 
 
 --
--- Name: obm_pkey; Type: CONSTRAINT; Schema: public; Owner: hil; Tablespace:
+-- Name: obm_pkey; Type: CONSTRAINT; Schema: public; Owner: haas; Tablespace:
 --
 
 ALTER TABLE ONLY obm
@@ -1288,7 +1288,7 @@ ALTER TABLE ONLY obm
 
 
 --
--- Name: port_pkey; Type: CONSTRAINT; Schema: public; Owner: hil; Tablespace:
+-- Name: port_pkey; Type: CONSTRAINT; Schema: public; Owner: haas; Tablespace:
 --
 
 ALTER TABLE ONLY port
@@ -1296,7 +1296,7 @@ ALTER TABLE ONLY port
 
 
 --
--- Name: powerconnect55xx_pkey; Type: CONSTRAINT; Schema: public; Owner: hil; Tablespace:
+-- Name: powerconnect55xx_pkey; Type: CONSTRAINT; Schema: public; Owner: haas; Tablespace:
 --
 
 ALTER TABLE ONLY powerconnect55xx
@@ -1304,7 +1304,7 @@ ALTER TABLE ONLY powerconnect55xx
 
 
 --
--- Name: project_pkey; Type: CONSTRAINT; Schema: public; Owner: hil; Tablespace:
+-- Name: project_pkey; Type: CONSTRAINT; Schema: public; Owner: haas; Tablespace:
 --
 
 ALTER TABLE ONLY project
@@ -1312,7 +1312,7 @@ ALTER TABLE ONLY project
 
 
 --
--- Name: switch_pkey; Type: CONSTRAINT; Schema: public; Owner: hil; Tablespace:
+-- Name: switch_pkey; Type: CONSTRAINT; Schema: public; Owner: haas; Tablespace:
 --
 
 ALTER TABLE ONLY switch
@@ -1320,7 +1320,7 @@ ALTER TABLE ONLY switch
 
 
 --
--- Name: user_pkey; Type: CONSTRAINT; Schema: public; Owner: hil; Tablespace:
+-- Name: user_pkey; Type: CONSTRAINT; Schema: public; Owner: haas; Tablespace:
 --
 
 ALTER TABLE ONLY "user"
@@ -1328,7 +1328,7 @@ ALTER TABLE ONLY "user"
 
 
 --
--- Name: vlan_pkey; Type: CONSTRAINT; Schema: public; Owner: hil; Tablespace:
+-- Name: vlan_pkey; Type: CONSTRAINT; Schema: public; Owner: haas; Tablespace:
 --
 
 ALTER TABLE ONLY vlan
@@ -1336,7 +1336,7 @@ ALTER TABLE ONLY vlan
 
 
 --
--- Name: vlan_vlan_no_key; Type: CONSTRAINT; Schema: public; Owner: hil; Tablespace:
+-- Name: vlan_vlan_no_key; Type: CONSTRAINT; Schema: public; Owner: haas; Tablespace:
 --
 
 ALTER TABLE ONLY vlan
@@ -1344,7 +1344,7 @@ ALTER TABLE ONLY vlan
 
 
 --
--- Name: headnode_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hil
+-- Name: headnode_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY headnode
@@ -1352,7 +1352,7 @@ ALTER TABLE ONLY headnode
 
 
 --
--- Name: hnic_network_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hil
+-- Name: hnic_network_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY hnic
@@ -1360,7 +1360,7 @@ ALTER TABLE ONLY hnic
 
 
 --
--- Name: hnic_owner_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hil
+-- Name: hnic_owner_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY hnic
@@ -1368,7 +1368,7 @@ ALTER TABLE ONLY hnic
 
 
 --
--- Name: ipmi_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hil
+-- Name: ipmi_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY ipmi
@@ -1376,7 +1376,7 @@ ALTER TABLE ONLY ipmi
 
 
 --
--- Name: mockobm_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hil
+-- Name: mockobm_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY mockobm
@@ -1384,7 +1384,7 @@ ALTER TABLE ONLY mockobm
 
 
 --
--- Name: mockswitch_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hil
+-- Name: mockswitch_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY mockswitch
@@ -1392,7 +1392,7 @@ ALTER TABLE ONLY mockswitch
 
 
 --
--- Name: network_access_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hil
+-- Name: network_access_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY network
@@ -1400,7 +1400,7 @@ ALTER TABLE ONLY network
 
 
 --
--- Name: network_creator_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hil
+-- Name: network_creator_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY network
@@ -1408,7 +1408,7 @@ ALTER TABLE ONLY network
 
 
 --
--- Name: networkattachment_network_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hil
+-- Name: networkattachment_network_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY networkattachment
@@ -1416,7 +1416,7 @@ ALTER TABLE ONLY networkattachment
 
 
 --
--- Name: networkattachment_nic_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hil
+-- Name: networkattachment_nic_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY networkattachment
@@ -1424,7 +1424,7 @@ ALTER TABLE ONLY networkattachment
 
 
 --
--- Name: networkingaction_new_network_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hil
+-- Name: networkingaction_new_network_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY networkingaction
@@ -1432,7 +1432,7 @@ ALTER TABLE ONLY networkingaction
 
 
 --
--- Name: networkingaction_nic_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hil
+-- Name: networkingaction_nic_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY networkingaction
@@ -1440,7 +1440,7 @@ ALTER TABLE ONLY networkingaction
 
 
 --
--- Name: nexus_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hil
+-- Name: nexus_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY nexus
@@ -1448,7 +1448,7 @@ ALTER TABLE ONLY nexus
 
 
 --
--- Name: nic_owner_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hil
+-- Name: nic_owner_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY nic
@@ -1456,7 +1456,7 @@ ALTER TABLE ONLY nic
 
 
 --
--- Name: nic_port_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hil
+-- Name: nic_port_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY nic
@@ -1464,7 +1464,7 @@ ALTER TABLE ONLY nic
 
 
 --
--- Name: node_obm_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hil
+-- Name: node_obm_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY node
@@ -1472,7 +1472,7 @@ ALTER TABLE ONLY node
 
 
 --
--- Name: node_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hil
+-- Name: node_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY node
@@ -1480,7 +1480,7 @@ ALTER TABLE ONLY node
 
 
 --
--- Name: port_owner_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hil
+-- Name: port_owner_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY port
@@ -1488,7 +1488,7 @@ ALTER TABLE ONLY port
 
 
 --
--- Name: powerconnect55xx_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hil
+-- Name: powerconnect55xx_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY powerconnect55xx
@@ -1496,7 +1496,7 @@ ALTER TABLE ONLY powerconnect55xx
 
 
 --
--- Name: user_projects_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hil
+-- Name: user_projects_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY user_projects
@@ -1504,7 +1504,7 @@ ALTER TABLE ONLY user_projects
 
 
 --
--- Name: user_projects_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: hil
+-- Name: user_projects_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haas
 --
 
 ALTER TABLE ONLY user_projects
