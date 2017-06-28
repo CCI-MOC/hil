@@ -14,7 +14,7 @@ from hil.model import NetworkingAction
 # revision identifiers, used by Alembic.
 revision = '3b2dab2e0d7d'
 down_revision = '57f4c30b0ad4'
-branch_labels = ('hil',)
+branch_labels = None
 
 
 def upgrade():
