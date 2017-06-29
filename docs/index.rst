@@ -32,7 +32,7 @@ Contents:
    Types of Networks <networks.md>
    Network Teardown <network-teardown.md>
    Out-of-Band Management <obm-drivers.md>
-   Testing for Haas <testing.md>
+   Testing for HIL <testing.md>
    VLAN Primer <vlan-primer.md>
    Driver Model <driver-model.rst>
 
