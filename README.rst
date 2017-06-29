@@ -3,12 +3,15 @@
 
 
 HIL
-========
+===
 
 HIL is a low-level tool for reserving physical machines and connecting
 them via isolated networks. It does not prescribe a particular
 method for imaging/managing said machines, allowing the user to use
 any solution of their choosing.
+
+We call this paradigm "hardware as a service" (HaaS); HIL is our
+implementation of this idea.
 
 HIL keeps track of available resources in a database, which a system
 administrator must populate initially.
