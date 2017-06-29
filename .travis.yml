@@ -5,6 +5,9 @@ python:
 virtualenv:
   system_site_packages: true
 
+# See issue #812
+group: deprecated-2017Q2
+
 sudo: required
 dist: trusty
 
