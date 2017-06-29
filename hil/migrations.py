@@ -31,8 +31,15 @@ def _configure_alembic(config):
     """Customize alembic configuration."""
     # Configure the path for version scripts to include all of the directories
     # named in the `paths` dictionary, above:
-    config.set_main_option('version_locations',
-                           ' '.join(paths.values()))
+
+    # It is important that the entry for HIL core ('hil') is first; I(zenhack)
+    # assume this has something to do with search order, but this hangs
+    # otherwise.
+    paths_scratch = paths.copy()
+    core_path = paths_scratch.pop('hil')
+    configval = ' '.join([core_path] + list(paths_scratch.values()))
+
+    config.set_main_option('version_locations', configval)
     return config
 
 
