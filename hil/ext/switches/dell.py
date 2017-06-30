@@ -26,6 +26,7 @@ from hil.migrations import paths
 from hil.ext.switches import _console
 from hil.ext.switches._dell_base import _BaseSession
 from os.path import dirname, join
+from hil.errors import BadArgumentError
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'dell')
 logger = logging.getLogger(__name__)
@@ -54,6 +55,13 @@ class PowerConnect55xx(Switch):
 
     def session(self):
         return _PowerConnect55xxSession.connect(self)
+
+    @staticmethod
+    def validate_port_name(port):
+        val = re.compile('(^(gi|te)\d+[/]\d+[/]\d+$)|(^(gi|te)\d+[/]\d+$)')
+        if not val.match(port)
+            raise BadArgumentError("Port name not cool for this switch")
+        return
 
 
 class _PowerConnect55xxSession(_BaseSession):
