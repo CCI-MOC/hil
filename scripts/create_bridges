@@ -14,10 +14,10 @@
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
 
-from haas import config
-from haas.config import cfg
+from hil import config
+from hil.config import cfg
 from subprocess import call
-from haas.ext.network_allocators.vlan_pool import get_vlan_list
+from hil.ext.network_allocators.vlan_pool import get_vlan_list
 
 config.load()
 

@@ -1,0 +1,27 @@
+# This configuration file is used for testing HIL with sqlite and apache
+[general]
+log_level = debug
+
+[auth]
+require_authentication = True
+
+[headnode]
+trunk_nic = eth0
+base_imgs = img1, img2, img3, img4
+libvirt_endpoint = qemu:///system
+
+[client]
+endpoint = http://127.0.0.1
+
+[database]
+uri = sqlite:////home/travis/hil.db
+
+[devel]
+dry_run=True
+
+[extensions]
+hil.ext.obm.mock =
+hil.ext.switches.mock =
+hil.ext.auth.database =
+
+hil.ext.network_allocators.null =

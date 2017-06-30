@@ -2,7 +2,7 @@
 
 This document is a brief primer on 802.1q VLANs (Virtual LANs): what they are,
 how switches tend to deal with them, how Linux deals with them, and how the
-HaaS uses them.
+HIL uses them.
 
 ## Managed vs. Unmanaged Switches
 
@@ -86,7 +86,7 @@ with:
 
     vconfig rem `eth0.104`
 
-## How does the HaaS use VLANs?
+## How does the HIL use VLANs?
 
 At present, when a network consisting of nodes 0, 1 and 2, and headnode H,
 using vlan tag N is deployed,
@@ -94,14 +94,14 @@ using vlan tag N is deployed,
 * The ports to which 0, 1 and 2 are attached are configured for trunked 
   mode, and given access to VLAN N. Depending on the user's preferences, 
   the VLAN may either be tagged or native, on a per-port basis.
-* An interface `ethM.N` is created on the HaaS master, where `ethM` is a network
+* An interface `ethM.N` is created on the HIL master, where `ethM` is a network
   interface connected to the switch. `ethM` must be connected to a port that is
   configured as trunking, with VLAN M being tagged for that port.
 * `ethM.N` is attached to H (not directly, see(1)).
 * H is started.
 
 From here, we have an isolated network connecting 0, 1, 2 and H. H can then
-manage the nodes by e.g. providing a PXE server and invoking the HaaS API to
+manage the nodes by e.g. providing a PXE server and invoking the HIL API to
 reboot the nodes.
 
 (1): The one slight wrinkle with the network setup described above is that libvirt

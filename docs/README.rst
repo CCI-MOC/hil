@@ -1,12 +1,12 @@
-HaaS - Introduction
+HIL - Introduction
 ====================
 
-HaaS is a low-level tool for reserving physical machines and connecting
+HIL is a low-level tool for reserving physical machines and connecting
 them via isolated networks. It does not prescribe a particular
 method for imaging/managing said machines, allowing the user to use
 any solution of their choosing.
 
-HaaS keeps track of available resources in a database, which a system
+HIL keeps track of available resources in a database, which a system
 administrator must populate initially.
 
 **This includes information such as:**
@@ -39,7 +39,7 @@ administrator must populate initially.
 Requirements
 -------------
 
-Required software/hardware for running a production HaaS include:
+Required software/hardware for running a production HIL include:
 
 * Network switches:
 
@@ -52,7 +52,7 @@ Required software/hardware for running a production HaaS include:
   * python 2.7, with the ability to install packages via pip
   * Access to:
 
-    * The Internet or intranet (a way for users to connect to the HaaS service)
+    * The Internet or intranet (a way for users to connect to the HIL service)
     * The administrative telnet IP on the managed switches
 
   * Currently only CentOS and RHEL 7.x have been tested, though any node that otherwise meets these requirements should function.
@@ -61,22 +61,22 @@ Required software/hardware for running a production HaaS include:
 
 For IPMI proxy functionality
 :
-* Network access from the HaaS service node to the IPMI interfaces of node under management
+* Network access from the HIL service node to the IPMI interfaces of node under management
 * Nodes that support IPMI v2+
-* A recent version of ipmitool installed on the HaaS service node
+* A recent version of ipmitool installed on the HIL service node
 
 For headnode functionality:
 
-* A recent Linux version for the HaaS service node that has libvirt with KVM installed
+* A recent Linux version for the HIL service node that has libvirt with KVM installed
 * Some number of VM templates
-* A trunk port connected between the switch and HaaS service node that carries all VLANs accessible from HaaS
+* A trunk port connected between the switch and HIL service node that carries all VLANs accessible from HIL
 
 Documentation
 --------------
 
 * The full documentation is availalbe at `ReadTheDocs <http://hil.readthedocs.io/en/latest/>`_ in a beautiful and easy to navigate web interface. 
 * `The docs directory <https://github.com/CCI-MOC/hil/tree/master/docs>`_ contains all the documentation in .rst and .md format
-* `Examples <https://github.com/CCI-MOC/hil/tree/master/examples>`_ contains examples of config files, templates for creating headnode VM images and a script to register nodes with HaaS.
+* `Examples <https://github.com/CCI-MOC/hil/tree/master/examples>`_ contains examples of config files, templates for creating headnode VM images and a script to register nodes with HIL.
 
 
 Mass Open Cloud

@@ -1,13 +1,13 @@
 
 The following steps will let you install, configure PostgreSQL server and
-create a `haas` database for development or production version of HaaS on a
+create a `hil` database for development or production version of HIL on a
 Centos - 7 server.
 
 For simplicity of configuration and ease of maintenance we will use 
-single name `haas` for creating a system user, database role and database name.
+single name `hil` for creating a system user, database role and database name.
 This is merely a guideline for users new to database setup and administration.
 Experienced users are free to choose any other method that suits their need.
-The end goal is to have a way to have a working PostgreSQL backend for `haas`
+The end goal is to have a way to have a working PostgreSQL backend for `hil`
 
 ## Part 1: Install PostgreSQL server. 
 
@@ -55,37 +55,37 @@ $ sudo systemctl start postgresql
 $ sudo systemctl enable postgresql
 ```
 
-##Part 2: Setup system user and database role for HaaS.
+##Part 2: Setup system user and database role for HIL.
 
-Create database named `haas` owned by user also named as `haas`.
+Create database named `hil` owned by user also named as `hil`.
 
-**5. Create a system user haas:**
+**5. Create a system user hil:**
 
 If you are setting up this database for a [production setup](INSTALL.html)
-then you might have already created a system user for managing `HaaS`. In that case skip this 
+then you might have already created a system user for managing `HIL`. In that case skip this 
 step.
 
 If you are setting up database for [development purpose](INSTALL-devel.html)
-you will need to create a system user to manage `HaaS` database as follows.
+you will need to create a system user to manage `HIL` database as follows.
 
 **format:** `useradd <username> --system -d <path-to-home-dir> -m -r `
 
-In this case both system username and home directory will be named `haas`
+In this case both system username and home directory will be named `hil`
 
 ```
-useradd haas --system -d /var/lib/haas -m -r
+useradd hil --system -d /var/lib/hil -m -r
 ```
 
-**6. Create a database role named `haas` with priviledges to:**
+**6. Create a database role named `hil` with priviledges to:**
  `-r` create roles
  `-d` create databases and 
  `-P` will prompt for the password of the new user. 
 This is necessary since we have configured PostgreSQL to use password authentication.
 
 ```
-$ sudo -u postgres createuser -r -d -P haas
-Enter password for new role:  <Input password for database role haas>
-Enter it again: <Retype password for role haas>
+$ sudo -u postgres createuser -r -d -P hil
+Enter password for new role:  <Input password for database role hil>
+Enter it again: <Retype password for role hil>
 ```
 
 Confirm that the role with requisite privileges is created **as postgres user**:
@@ -95,33 +95,33 @@ $ psql -c '\dg'
                              List of roles
  Role name |                   Attributes                   | Member of 
 -----------+------------------------------------------------+-----------
- haas      | Create role, Create DB                         | {}
+ hil      | Create role, Create DB                         | {}
  postgres  | Superuser, Create role, Create DB, Replication | {}
 ```
 
 If you wish to delete the user, do the following:
 
 ```
-$ sudo -u postgres dropuser haas
+$ sudo -u postgres dropuser hil
 ```
 **Note**: Make sure that the database role you create corresponds to an existing system user. 
-eg. There has to be a system user `haas` to access database named `haas` as database role named `haas`.
+eg. There has to be a system user `hil` to access database named `hil` as database role named `hil`.
 
 
-**7. Create database haas owned by database role haas:**
+**7. Create database hil owned by database role hil:**
 
 ```
-sudo -u haas createdb haas
+sudo -u hil createdb hil
 ```
 
-confirm it created a database named `haas` and it is owned by `haas`.
+confirm it created a database named `hil` and it is owned by `hil`.
 
 ```
 $ psql -c '\l'
                                   List of databases
    Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges   
 -----------+----------+----------+-------------+-------------+-----------------------
- haas      | haas     | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
+ hil      | hil     | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
  postgres  | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
  template0 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
            |          |          |             |             | postgres=CTc/postgres
@@ -132,16 +132,16 @@ $ psql -c '\l'
 ##Finally:
 
 If you have followed all steps so far. 
-Put following string in `haas.cfg` under section `[database]`
+Put following string in `hil.cfg` under section `[database]`
 
 ```
-uri = postgresql://haas:<clear text password >@localhost:5432/haas
+uri = postgresql://hil:<clear text password >@localhost:5432/hil
 ```
 
 It follows the format: `postgresql://<user>:<password>@<address>/<dbname>`
 where ``<user>`` is the name of the postgres user you created, ``<password>`` is
 its password, ``<dbname>`` is the name of the database you created, and
-``<address>`` is the address which haas should use to connect to postgres (In a
+``<address>`` is the address which hil should use to connect to postgres (In a
 typical default postgres setup, the right value is ``localhost``).
 
 Continue with installation steps:

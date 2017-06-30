@@ -12,12 +12,12 @@ Contents:
    :maxdepth: 1
 
    Introduction <README.rst>
-   HaaS Architecture Overview <overview.md>
+   HIL Architecture Overview <overview.md>
    Installation <INSTALL.rst>
    Installation - Developer - TL;DR <INSTALL-devel-tldr.rst>
    Installation - Developer <INSTALL-devel.rst>
    Upgrade <UPGRADING.rst>
-   HaaS as a client <USING.rst>
+   HIL as a client <USING.rst>
    Extensions <extensions.rst>
    API Description <apidesc.md>
    REST API <rest_api.md>
@@ -32,7 +32,7 @@ Contents:
    Types of Networks <networks.md>
    Network Teardown <network-teardown.md>
    Out-of-Band Management <obm-drivers.md>
-   Testing for Haas <testing.md>
+   Testing for HIL <testing.md>
    VLAN Primer <vlan-primer.md>
    Driver Model <driver-model.rst>
 

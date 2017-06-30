@@ -1,8 +1,8 @@
 #!/usr/bin/python
 """
-Register nodes with HaaS.
+Register nodes with HIL.
 
-This is intended to be used as a template for either creating a mock HaaS setup
+This is intended to be used as a template for either creating a mock HIL setup
 for development or to be modified to register real-life nodes that follow a
 particular pattern.
 
@@ -13,8 +13,8 @@ The ports are also numbered sequentially and are named following a dell switch
 scheme, which have ports that look like "R10SW1::GI1/0/5"
 
 It could be used in an environment similar to the one which
-``haas.cfg`` corresponds, though could also be used for development with the
-``haas.cfg.dev*``
+``hil.cfg`` corresponds, though could also be used for development with the
+``hil.cfg.dev*``
 """
 
 from subprocess import check_call
@@ -26,19 +26,19 @@ ipmi_pass = "ADMIN_PASSWORD"
 switch = "mock01"
 
 
-def haas(*args):
+def hil(*args):
     args = map(str, args)
     print args
-    check_call(['haas'] + args)
+    check_call(['hil'] + args)
 
-haas('switch_register', switch, 'mock', 'ip', 'user', 'pass')
+hil('switch_register', switch, 'mock', 'ip', 'user', 'pass')
 
 for node in range(N_NODES):
     ipmi_ip = "10.0.0." + str(node + 1)
 
     nic_port = "R10SW1::GI1/0/%d" % (node)
     nic_name = 'nic1'
-    haas('node_register', node, "mock", ipmi_ip, ipmi_user, ipmi_pass)
-    haas('node_register_nic', node, nic_name, 'FillThisInLater')
-    haas('port_register', switch, nic_port)
-    haas('port_connect_nic', switch, nic_port, node, nic_name)
+    hil('node_register', node, "mock", ipmi_ip, ipmi_user, ipmi_pass)
+    hil('node_register_nic', node, nic_name, 'FillThisInLater')
+    hil('port_register', switch, nic_port)
+    hil('port_connect_nic', switch, nic_port, node, nic_name)

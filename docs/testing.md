@@ -2,10 +2,10 @@
 
 ## Overview
 
-Testing for HaaS is done using [pytest][1]. All tests
+Testing for HIL is done using [pytest][1]. All tests
 are placed in the "tests" subdirectory, which is subdivided into:
 
-* `unit` - for basic unit tests. These are safe to run without a full HaaS enviornment (i.e. you don't need libvirt etc).
+* `unit` - for basic unit tests. These are safe to run without a full HIL enviornment (i.e. you don't need libvirt etc).
 * `deployment` - for tests that need to run against an actual setup, with libvirtd and at least one real switch.
 
 Developers should run at least the unit and pep8 tests before making a commit.
@@ -17,10 +17,10 @@ the problem scenario so that we can ensure the bug doesn't return!
 
 ## Configuration
 
-By installing HaaS and its dependencies in the virtual environment (done
+By installing HIL and its dependencies in the virtual environment (done
 via: `pip install -e .` in the root directory), you will automatically
 receive a recent version of pytest and be ready to test the code. Using
-pip's `-e` option installs the haas in editable mode, which has the
+pip's `-e` option installs the hil in editable mode, which has the
 advantage that one need not reinstall every time a file is changed!
 
 Most of the tests use a common set of default configuration options, as
@@ -33,7 +33,7 @@ the deployment tests (see below).
 
 ## Running
 
-To run all tests, from the HaaS root directory run:
+To run all tests, from the HIL root directory run:
 
     py.test tests/
 
@@ -44,7 +44,7 @@ To run just a subset of them, specify a particular file or directory:
 
 To run just a pep8 test:
 
-    pep8 *.py tests/ haas/
+    pep8 *.py tests/ hil/
 
 As stated above, running at least `tests/unit` is mandatory before each
 commit.
@@ -68,7 +68,7 @@ a few subdirectories:
 * `integration`
 * `deployment`
 
-For each file in the haas code, there should be a file with the same name in
+For each file in the hil code, there should be a file with the same name in
 the unit directory. Within those files, classes (class names **must**
 begin with "Test") can be used to organize tests into functional areas.
 Function names must also begin with "test". See tests/unit/api.py for

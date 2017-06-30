@@ -14,12 +14,12 @@
 
 """Deployment Tests - These tests are intended for our
 internal setup only and will most likely not work on
-other HaaS configurations. This test is for the dell
+other HIL configurations. This test is for the dell
 and the cisco nexus switches only"""
 
 
-from haas import api, model, deferred, server
-from haas.test_common import config, config_testsuite, fresh_database, \
+from hil import api, model, deferred, server
+from hil.test_common import config, config_testsuite, fresh_database, \
     fail_on_log_warnings, with_request_context, site_layout, config_merge, \
     NetworkTest, network_create_simple
 
@@ -35,10 +35,10 @@ DELLN3000 = 'http://schema.massopencloud.org/haas/v0/switches/delln3000'
 def configure():
     config_testsuite()
     config_merge({
-        'haas.ext.switches.dell': {
+        'hil.ext.switches.dell': {
             'save': 'True'
          },
-        'haas.ext.switches.nexus': {
+        'hil.ext.switches.nexus': {
             'save': 'True'
         }
     })

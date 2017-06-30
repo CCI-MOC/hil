@@ -71,13 +71,13 @@ case "$1" in
 
     # In addition to the sample data from the keystone project's script above,
     # we add an extra project and user for use in the tests:
-    openstack project create non-haas-project
+    openstack project create non-hil-project
     openstack user create \
-      non-haas-user \
+      non-hil-user \
       --password secret
     openstack role add \
-      --project non-haas-project \
-      --user non-haas-user \
+      --project non-hil-project \
+      --user non-hil-user \
       service
 
     # stop the server:
