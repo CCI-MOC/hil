@@ -95,7 +95,7 @@ Setup database and role to control it.
 
 Create database named `hil_dev` owned by user also named as `hil_dev`.
 
-1. Create a database role named `hil_dev` with priviledges to::
+1. Create a database role named `hil_dev` with privileges to::
 
    -r create roles
    -d create databases and

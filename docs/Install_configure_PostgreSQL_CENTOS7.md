@@ -76,7 +76,7 @@ In this case both system username and home directory will be named `hil`
 useradd hil --system -d /var/lib/hil -m -r
 ```
 
-**6. Create a database role named `hil` with priviledges to:**
+**6. Create a database role named `hil` with privileges to:**
  `-r` create roles
  `-d` create databases and 
  `-P` will prompt for the password of the new user. 
