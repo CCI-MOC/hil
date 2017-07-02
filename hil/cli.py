@@ -779,7 +779,7 @@ def create_admin_user(username, password):
 
     This must be run on the HIL API server, with access to hil.cfg and the
     database. It will create an user named <username> with password
-    <password>, who will have administrator priviledges.
+    <password>, who will have administrator privileges.
 
     This command should only be used for bootstrapping the system; once you
     have an initial admin, you can (and should) create additional users via
