@@ -81,10 +81,16 @@ For headnode functionality:
 Documentation
 =============
 
-* The full documentation is availalbe at `ReadTheDocs <http://hil.readthedocs.io/en/latest/>`_ in a beautiful and easy to navigate web interface.
-* `The docs directory <docs/>`_ contains all the documentation in .rst and .md format
-* `examples <examples/>`_ contains examples of config files, templates for creating headnode VM images and a script to register nodes with HIL.
 
+* The full documentation is availalbe at `ReadTheDocs <http://hil.readthedocs.io/en/latest/>`_ in a beautiful and easy to navigate web interface. 
+* `The docs directory <docs/>`_ contains documentation in .rst and .md format
+* `examples <examples/>`_ contains examples of config files, templates for creating headnode VM images and a script to register nodes with HaaS.
+
+
+Of particular relevance to developers:
+
+* `Developer guidelines <docs/developer-guidelines.md>`_
+* `Specifications <specs/>`_
 
 Please note that the documentation is a mix of Markdown and reStructured Text,
 since the latter is preferred by the python and OpenStack communities and the
@@ -133,4 +139,3 @@ This project is part of the larger `Massachusetts Open Cloud
 <https://info.massopencloud.org>`_. For a description of the team and other
 information, see
 `<https://github.com/CCI-MOC/moc-public/blob/master/README.md>`_.
-
