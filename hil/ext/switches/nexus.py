@@ -59,8 +59,13 @@ class Nexus(Switch):
 
     @staticmethod
     def validate_port_name(port):
-        val = \
-         re.compile('((E|e)thernet\d+\/\d+\/\d+$)|((E|e)thernet\d+\/\d+$)')
+        """
+        Valid port names for this switch are of the form: Ethernet1/12,
+        ethernet1/12, Ethernet1/0/10, or ethernet1/0/10
+        """
+
+        val = re.compile(
+                '((E|e)thernet\d+\/\d+\/\d+$)|((E|e)thernet\d+\/\d+$)')
         if not val.match(port):
             raise BadArgumentError("Invalid port name")
         return

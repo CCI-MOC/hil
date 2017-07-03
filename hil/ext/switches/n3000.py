@@ -65,6 +65,11 @@ class DellN3000(Switch):
 
     @staticmethod
     def validate_port_name(port):
+        """
+        Valid port names for this switch are of the form gi1/0/11,
+        te1/0/12, gi1/12, or te1/3
+        """
+
         val = re.compile('(^(gi|te)\d+[/]\d+[/]\d+$)|(^(gi|te)\d+[/]\d+$)')
         if not val.match(port):
             raise BadArgumentError("Invalid port name")
