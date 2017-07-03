@@ -6,7 +6,7 @@
 log_level = debug
 
 [headnode]
-# Set this to the appropriate interface on your haas master:
+# Set this to the appropriate interface on your hil master:
 # trunk_nic = eth0
 
 # Note that the test suite requires these two base images are available; this
@@ -15,10 +15,10 @@ base_imgs = base-headnode, base-headnode-2
 libvirt_endpoint = qemu:///system
 
 [extensions]
-haas.ext.network_allocators.vlan_pool =
-haas.ext.switches.dell =
+hil.ext.network_allocators.vlan_pool =
+hil.ext.switches.dell =
 
-[haas.ext.network_allocators.vlan_pool]
+[hil.ext.network_allocators.vlan_pool]
 # Set to a range appropriate for your local environment. A pool of at least 10
 # VLANs is recommended for running the tests. The tests don't use quite that
 # many at present, but may do so in the future.

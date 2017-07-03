@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-export HAAS_ENDPOINT=http://localhost
-export HAAS_USERNAME=admin
-export HAAS_PASSWORD=12345
+export HIL_ENDPOINT=http://localhost
+export HIL_USERNAME=admin
+export HIL_PASSWORD=12345
 
 # Initial Setup
 cd /etc
-haas-admin db create
-haas create_admin_user $HAAS_USERNAME $HAAS_PASSWORD
+hil-admin db create
+hil create_admin_user $HIL_USERNAME $HIL_PASSWORD
 cd $TRAVIS_BUILD_DIR
 
 # Test commands

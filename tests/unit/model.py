@@ -21,10 +21,10 @@
 # some point, which is definitely wrong. The test_repr methods are there just
 # to make sure it isn't throwing an exception.
 
-from haas.model import *
-from haas import config
+from hil.model import *
+from hil import config
 
-from haas.test_common import fresh_database, config_testsuite, ModelTest, \
+from hil.test_common import fresh_database, config_testsuite, ModelTest, \
     fail_on_log_warnings
 import pytest
 
@@ -46,7 +46,7 @@ pytestmark = pytest.mark.usefixtures('configure', 'fresh_database')
 class TestNic(ModelTest):
 
     def sample_obj(self):
-        from haas.ext.obm.ipmi import Ipmi
+        from hil.ext.obm.ipmi import Ipmi
         return Nic(Node(label='node-99',
                         obm=Ipmi(type=Ipmi.api_name,
                                  host="ipmihost",
@@ -58,7 +58,7 @@ class TestNic(ModelTest):
 class TestNode(ModelTest):
 
     def sample_obj(self):
-        from haas.ext.obm.ipmi import Ipmi
+        from hil.ext.obm.ipmi import Ipmi
         return Node(label='node-99',
                     obm=Ipmi(type=Ipmi.api_name,
                              host="ipmihost",
@@ -97,7 +97,7 @@ class TestNetwork(ModelTest):
 class TestMetadata(ModelTest):
 
     def sample_obj(self):
-        from haas.ext.obm.ipmi import Ipmi
+        from hil.ext.obm.ipmi import Ipmi
         node = Node(label='node-99',
                     obm=Ipmi(type=Ipmi.api_name,
                              host="ipmihost",
@@ -109,7 +109,7 @@ class TestMetadata(ModelTest):
 class TestNetworkingAction(ModelTest):
 
     def sample_obj(self):
-        from haas.ext.obm.ipmi import Ipmi
+        from hil.ext.obm.ipmi import Ipmi
         nic = Nic(Node(label='node-99',
                        obm=Ipmi(type=Ipmi.api_name,
                                 host="ipmihost",

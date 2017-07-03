@@ -1,9 +1,9 @@
 # Network Teardown
 
 The script `create_dell_vlans` can be used to pre-populate the bridges
-and vlan nics needed for the HaaS to operate, but right now we don't
+and vlan nics needed for the HIL to operate, but right now we don't
 have an automated way to delete them. You shouldn't need to do this to
-use the HaaS, but if for some reason you want to delete the nics related
+use the HIL, but if for some reason you want to delete the nics related
 to a given vlan, you can do:
 
     brctl delif br-vlan${vlan_number} em3.${vlan_number}

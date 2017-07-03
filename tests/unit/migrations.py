@@ -16,13 +16,13 @@ The general approach is as follows:
 
 """
 import pytest
-from haas import api, server
-from haas.test_common import config_testsuite, config_merge, initial_db, \
+from hil import api, server
+from hil.test_common import config_testsuite, config_merge, initial_db, \
     fail_on_log_warnings
-from haas.config import cfg, load_extensions
-from haas.model import db, init_db
-from haas.flaskapp import app
-from haas.migrations import create_db
+from hil.config import cfg, load_extensions
+from hil.model import db, init_db
+from hil.flaskapp import app
+from hil.migrations import create_db
 from flask_migrate import upgrade
 from os import path
 import re
@@ -179,28 +179,28 @@ def get_db_state():
 @pytest.mark.parametrize('filename,make_objects,extra_config', [
     ['flask.sql', initial_db, {
         'extensions': {
-            'haas.ext.switches.mock': '',
-            'haas.ext.switches.nexus': '',
-            'haas.ext.switches.dell': '',
-            'haas.ext.obm.ipmi': '',
-            'haas.ext.obm.mock': '',
-            'haas.ext.auth.database': '',
-            'haas.ext.network_allocators.vlan_pool': '',
+            'hil.ext.switches.mock': '',
+            'hil.ext.switches.nexus': '',
+            'hil.ext.switches.dell': '',
+            'hil.ext.obm.ipmi': '',
+            'hil.ext.obm.mock': '',
+            'hil.ext.auth.database': '',
+            'hil.ext.network_allocators.vlan_pool': '',
 
             # These are on by default; disable them.
-            'haas.ext.auth.null': None,
-            'haas.ext.network_allocators.null': None,
+            'hil.ext.auth.null': None,
+            'hil.ext.network_allocators.null': None,
         },
-        'haas.ext.network_allocators.vlan_pool': {
+        'hil.ext.network_allocators.vlan_pool': {
             'vlans': '100-200, 300-500',
         },
     }],
     ['pending-networking-actions.sql', create_pending_actions_db, {
         'extensions': {
-            'haas.ext.obm.mock': '',
-            'haas.ext.switches.mock': '',
-            'haas.ext.auth.null': '',
-            'haas.ext.network_allocators.null': '',
+            'hil.ext.obm.mock': '',
+            'hil.ext.switches.mock': '',
+            'hil.ext.auth.null': '',
+            'hil.ext.network_allocators.null': '',
         },
     }],
 ])
@@ -211,7 +211,7 @@ def test_db_eq(filename, make_objects, extra_config):
         of a schema, will create some set of objects.
     `filename` is the name of an sql dump of a previous database, whose
         contents were created with the then-current version of `make_objects`.
-    `extra_config` specifies modifications to the haas.cfg under which the
+    `extra_config` specifies modifications to the hil.cfg under which the
         test is run. this is passed to `config_merge`.
 
     The test does the following:

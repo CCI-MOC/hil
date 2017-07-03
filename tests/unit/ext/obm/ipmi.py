@@ -14,8 +14,8 @@
 
 """Unit tests for ipmi.py"""
 import pytest
-from haas import server, api
-from haas.test_common import config, config_testsuite, fresh_database, \
+from hil import server, api
+from hil.test_common import config, config_testsuite, fresh_database, \
     fail_on_log_warnings, with_request_context, config_merge
 
 
@@ -24,7 +24,7 @@ def configure():
     config_testsuite()
     config_merge({
         'extensions': {
-            'haas.ext.obm.ipmi': ''
+            'hil.ext.obm.ipmi': ''
         },
         'devel': {
            'dry_run': None
@@ -69,7 +69,7 @@ class TestIpmi:
             api.node_set_bootdev('node-99', 'invalid-device')
 
     def test_require_legal_bootdev(self):
-        from haas.ext.obm import ipmi
+        from hil.ext.obm import ipmi
         instance = ipmi.Ipmi(
                   host="ipmihost",
                   user="root",

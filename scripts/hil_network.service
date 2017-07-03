@@ -1,0 +1,18 @@
+[Unit]
+Description=HIL Network Server 
+After=network.target
+After=postgresql
+
+[Service]
+User=hil_user
+Group=hil_user
+WorkingDirectory=/var/lib/hil/
+ExecStart=/usr/bin/hil serve_networks
+Type=simple
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+

@@ -3,8 +3,8 @@
 # to these settings, copy this file to testsuite.cfg and edit
 # accordingly
 [extensions]
-haas.ext.network_allocators.null =
-haas.ext.auth.null =
+hil.ext.network_allocators.null =
+hil.ext.auth.null =
 [devel]
 dry_run = True
 [headnode]

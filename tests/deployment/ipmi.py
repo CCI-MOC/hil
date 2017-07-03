@@ -13,15 +13,15 @@
 # governing permissions and limitations under the License.
 """Deployment tests for ipmi driver.
 
-These require an actual HaaS setup with a real node, and are
+These require an actual HIL setup with a real node, and are
 somewhat particular to the MOC's development environment. They may be
 difficult to run in other contexts.
 """
 
-from haas.test_common import config, config_testsuite, fresh_database, \
+from hil.test_common import config, config_testsuite, fresh_database, \
     fail_on_log_warnings, with_request_context, site_layout
-from haas.model import Node
-from haas import config, server, api
+from hil.model import Node
+from hil import config, server, api
 import pytest
 
 

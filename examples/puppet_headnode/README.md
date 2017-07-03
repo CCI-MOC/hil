@@ -5,7 +5,7 @@ automate the install.
 # Setup
 
 1. Create a headnode. The headnode must have a nic that will be
-   recognized as eth1, which must be on a HaaS network that the nodes
+   recognized as eth1, which must be on a HIL network that the nodes
    will pxe boot off of.
 2. Download the CentOS 6.6 minimal ISO, verify the checksum, and then
    copy it to root's home directory:
@@ -18,11 +18,11 @@ automate the install.
 
     apt-get install puppet
 
-4. Git clone the haas to /root, cd into the examples/puppet_headnode/.
+4. Git clone the hil to /root, cd into the examples/puppet_headnode/.
 
     cd /root
-    git clone https://github.com/CCI-MOC/haas
-    cd haas/examples/puppet_headnode
+    git clone https://github.com/CCI-MOC/hil
+    cd hil/examples/puppet_headnode
 
 5. You may then wish to modify some of the files therein; in
    particular:
@@ -43,7 +43,7 @@ automate the install.
 
     puppet apply manifests/site.pp
 
-   Note that the haas repo *must* be located under /root; the puppet
+   Note that the hil repo *must* be located under /root; the puppet
    manifests hard-code paths to certain files.
 
 7. Reboot the headnode.
@@ -61,7 +61,7 @@ Each of these should be the mac address off of which you expect a node
 to boot. `make-links` will then make some symlinks, the effect of which
 is that the corresponding nodes will boot into the CentOS installer on
 their next boot (by default, they will chainload to the disk). You can
-then use the HaaS API to force-reboot the nodes.
+then use the HIL API to force-reboot the nodes.
 
 Upon completion of the install, the corresponding links will be deleted,
 and the node will boot into the new OS for the first time.

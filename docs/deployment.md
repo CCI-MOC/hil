@@ -1,11 +1,12 @@
 # Deployment
 
-This is a guide to the best practices for deploying Hardware as a Service
-(HaaS). It documents many of the assumptions that the HaaS development team
-made in terms of how HaaS would be used, how it would be deployed, and the
-configuration of the hardware systems it would be managing.
+This is a guide to the best practices for deploying Hardware Isolation
+Layer (HIL).  It documents many of the assumptions that the HIL
+development team made in terms of how HIL would be used, how it would be
+deployed, and the configuration of the hardware systems it would be
+managing.
 
-For instructions on installing HaaS, take a look at [Installation](INSTALL.html).
+For instructions on installing HIL, take a look at [Installation](INSTALL.html).
 For a general overview, please take a look at [Introduction](README.html).
 
 ## Nodes
@@ -32,7 +33,7 @@ before PXE allows customers who install an OS to have it boot first, reducing
 boot times and avoiding accidental overwriting of their installed OS.
 
 * Note: In the future, we anticipate a feature (see [issue
-303](https://github.com/CCI-MOC/haas/issues/303)) where customers can
+303](https://github.com/CCI-MOC/hil/issues/303)) where customers can
 explicitly request PXE booting for the next boot via an API call, however the
 permanent boot order would not likely be able to be changed as that is not
 supported by IPMI in a standard way.
@@ -43,7 +44,7 @@ For higher security, it may be desirable to disable CD/DVD access to the OS,
 only enabling it when needed for maintenance or other reasons. This is because
 an inadvertent CD/DVD left in the drive could allow a user to burn an image.
 Placed in another system or left in the tray, this image could then allow an
-attack on another system. 
+attack on another system.
 
 #### Firmware security
 
@@ -78,13 +79,13 @@ even the root user is untrusted.
 ## Networks
 
 ### Switch configuration
-In order to deploy HaaS, at least one switch supported by one of HaaS's 
+In order to deploy HIL, at least one switch supported by one of HIL's
 drivers is required.
 
 This currently includes:
 
 * Dell Powerconnect
-* Cisco Nexus 3500 & 5500 (other nexus switches may work as well, but 
+* Cisco Nexus 3500 & 5500 (other nexus switches may work as well, but
   are untested)
 
 ``null`` and ``mock`` drivers are also included for testing and
@@ -92,27 +93,27 @@ experimentation.
 
 ### VLANs
 
-The network administrator will need to pre-allocate a set of VLANs to 
-dedicate to HaaS's management. These are kept within the *vlan* section 
+The network administrator will need to pre-allocate a set of VLANs to
+dedicate to HIL's management. These are kept within the *vlan* section
 of the config file.
 
 ### Headnodes
 
-Currently, the system or systems that run the HaaS service (sometimes
-informally called the HaaS master) also run the Headnode virtual machines.
+Currently, the system or systems that run the HIL service (sometimes
+informally called the HIL master) also run the Headnode virtual machines.
 These can be used to access and administrate user networks, whether public or
-private. To facilitate this, all VLANs that are allocatable by HaaS must be
-trunked using 802.1Q to HaaS service systems. This port upon which these
+private. To facilitate this, all VLANs that are allocatable by HIL must be
+trunked using 802.1Q to HIL service systems. This port upon which these
 networks are shared is indicated using the *trunk_nic* member of the
 **[headnode]** section.
 
 ### Multiple Switches
-HaaS supports networks spanning multiple switches via 2 mechanisms:
+HIL supports networks spanning multiple switches via 2 mechanisms:
 
 1. Vendor-specific "stacking" features that make all of the switches appear to
    be one big one.
-2. By running a network cable between the two switches, and setting all 
-   VLANs belonging to HaaS to be trunked (tagged) on the interfaces 
+2. By running a network cable between the two switches, and setting all
+   VLANs belonging to HIL to be trunked (tagged) on the interfaces
    connecting those switches.
 
 IMPORTANT: If you're operating a multi-switch deployment using technique (2)

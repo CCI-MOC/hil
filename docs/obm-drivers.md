@@ -10,30 +10,30 @@ OBM allows operations like powering on, shutdown, reboot and knowing the status 
 regardless of whether the machine itself has an operating system or access to any network.
 
 The Intelligent Platform Management Interface (IPMI) is one such OBM server protocol for which
-HaaS includes a driver. For developers, a null OBM driver is also included which can be activated
-and used just like any other driver under HaaS. 
+HIL includes a driver. For developers, a null OBM driver is also included which can be activated
+and used just like any other driver under HIL. 
 
 
-## Activating drivers under HaaS
+## Activating drivers under HIL
 
 Drivers are implemented as extensions, and must be added to the 
-`[extensions]` section of `haas.cfg`. You can add as many OBM 
+`[extensions]` section of `hil.cfg`. You can add as many OBM 
 drivers as are supported in your environment
 
 for example::
 
     ...
     [extensions]
-    haas.ext.obm.mock = 
-    haas.ext.obm.ipmi =
+    hil.ext.obm.mock = 
+    hil.ext.obm.ipmi =
 
 
 ## IPMI driver
 
-At present, only one driver of OBM type is supplied with HaaS.
+At present, only one driver of OBM type is supplied with HIL.
 It is the IPMI driver. 
 
-* `haas.ext.obm.ipmi`, consist of the ipmi driver
+* `hil.ext.obm.ipmi`, consist of the ipmi driver
     It does not require any driver specific configuration.
 
 ### Using IPMI driver
@@ -47,10 +47,10 @@ IPMI driver requires three additional feilds
 to be able to communicate with the IPMI subsystem of a server. 
 These feilds are `host`, `user`, and `password`
 These information is passed as a part of the `node_register` api call 
-when registering the node for the first time with HaaS
+when registering the node for the first time with HIL
 
 For example, if a node with its ipmi-hostname as "ipmi_node01", ipmi-username as "ipmi-user01"
-and ipmi-password as "pass1234" is to be registered with HaaS. 
+and ipmi-password as "pass1234" is to be registered with HIL. 
 
 The body of the api call request `node_register` can then look like::
 

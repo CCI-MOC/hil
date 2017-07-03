@@ -1,9 +1,9 @@
-from haas.config import load_extensions
-from haas.flaskapp import app
-from haas.model import db
-from haas.migrations import create_db
-from haas import api, server
-from haas.test_common import *
+from hil.config import load_extensions
+from hil.flaskapp import app
+from hil.model import db
+from hil.migrations import create_db
+from hil import api, server
+from hil.test_common import *
 import pytest
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
@@ -22,10 +22,10 @@ def configure():
     config_testsuite()
     config_merge({
         'extensions': {
-            'haas.ext.network_allocators.null': None,
-            'haas.ext.network_allocators.vlan_pool': ''
+            'hil.ext.network_allocators.null': None,
+            'hil.ext.network_allocators.vlan_pool': ''
         },
-        'haas.ext.network_allocators.vlan_pool': {
+        'hil.ext.network_allocators.vlan_pool': {
             'vlans': '100-104, 300, 702',  # Arbitrary list
         },
     })
@@ -51,7 +51,7 @@ def test_populate_dirty_db():
     """
     # The fresh_database fixture will have created a clean database for us. We
     # just tweak it and then re-run create_db
-    from haas.ext.network_allocators.vlan_pool import Vlan
+    from hil.ext.network_allocators.vlan_pool import Vlan
     with app.app_context():
         # flag vlan 100 as in-use, just so the db isn't quite pristine.
         vlan100 = Vlan.query.filter_by(vlan_no=100)

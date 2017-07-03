@@ -1,20 +1,20 @@
-This document describes how to work with HaaS's database migration
+This document describes how to work with HIL's database migration
 framework. It is aimed at developers; for instructions on upgrading a
 production database see UPGRADING.rst.
 
 # Introduction
 
-HaaS uses [SQLAlchemy][1] as a database abstraction layer,
+HIL uses [SQLAlchemy][1] as a database abstraction layer,
 [Flask-SQLAlchemy][2] for integration with [Flask][3], and
 [Flask-Migrate][4]/[Alembic][5] for migration support. This document
-explains HaaS-specific details; refer to the libraries' documentation
+explains HIL-specific details; refer to the libraries' documentation
 for general information about these tools. This document mainly focuses
 on Alembic and Flask-Migrate.
 
-HaaS uses migration scripts for updating the database to work
+HIL uses migration scripts for updating the database to work
 with a new version of the software. Any time the database schema
 changes, a migration script must be written so that existing
-installations may be upgraded to the next HaaS release automatically.
+installations may be upgraded to the next HIL release automatically.
 
 ## Background
 
@@ -24,17 +24,17 @@ explains general alembic concepts. Developers should also read [the
 overview documentation for Flask-Migrate][4], which integrates Alembic
 with Flask.
 
-## Usage In HaaS
+## Usage In HIL
 
-HaaS uses the migration libraries as follows:
+HIL uses the migration libraries as follows:
 
 The [Flask-Script][6] extension is used to expose Flask-Migrate's
-functionality, via the `haas-admin db` subcommand, implemented in
-`haas/commands/`. This command is almost exactly as described in the
-[Flask-Migrate][4] documentation, except we've added sub-command `haas
+functionality, via the `hil-admin db` subcommand, implemented in
+`hil/commands/`. This command is almost exactly as described in the
+[Flask-Migrate][4] documentation, except we've added sub-command `hil
 db create`, which initially creates and populates the database tables.
 This command is idempotent, so it is safe to run it on an
-already-initialized database. When adding extensions to haas.cfg, the
+already-initialized database. When adding extensions to hil.cfg, the
 `create` command should be re-run to create any new tables; see
 UPGRADING for details.
 
@@ -52,53 +52,53 @@ not already have any migration scripts.
 First, choose a directory in which to store the migration scripts for the
 extension. Storing the migrations as close to the module as possible is
 recommended. Add code to your extension to register this directory with
-`haas.migrations.paths`, e.g.:
+`hil.migrations.paths`, e.g.:
 
-    from haas.migrations import paths:
+    from hil.migrations import paths:
 
     paths[__name__] = 'Path to my migrations directory'
 
 Make sure the value will be correct regardless of where the source tree is
 located; making it a function of `__file__` is a good idea. Have a look at
-existing extensions for examples if need be. `haas.ext.switches.dell` is a
+existing extensions for examples if need be. `hil.ext.switches.dell` is a
 good example.
 
 Also, make sure that the migration scripts will be included in the final
 package. This usually just means adding an appropriate entry to `package_data`
-in `setup.py`. If the extension is maintained outside of the HaaS core source
+in `setup.py`. If the extension is maintained outside of the HIL core source
 tree, make sure you pass `zip_safe=False` to `setup`.
 
 Next, to generate a template migration, execute:
 
-    haas-admin db migrate --head haas@head \
+    hil-admin db migrate --head hil@head \
         --branch-label ${name_of_extension_module} \
         -m '<Summary of change>'
 
 Alembic will look at the differences between the schema in the database and
-the one derived from the HaaS source, and generate its best attempt at a
-migration script. The script will be stored in `haas/migrations/versions`.
+the one derived from the HIL source, and generate its best attempt at a
+migration script. The script will be stored in `hil/migrations/versions`.
 Copy it to the directory you chose, and change the value of `down_revision` to
 `None`.
 
 Sanity check the output; Alembic often does a good job generating scripts, but
 it should not be trusted blindly.
 
-Finally, run `haas-admin db upgrade heads` to upgrade the database according
+Finally, run `hil-admin db upgrade heads` to upgrade the database according
 to your new migration.
 
-### If the extension already has migrations, or the script is for HaaS core
+### If the extension already has migrations, or the script is for HIL core
 
 To generate a new migration script, execute:
 
-    haas-admin db migrate --head ${branch_name}@head \
+    hil-admin db migrate --head ${branch_name}@head \
         -m '<Summary of change>'
 
 Where `${branch_name}` is either the name of the extension's module (if the
-script is for an extension) or `haas` (if the script is for HaaS core).
+script is for an extension) or `hil` (if the script is for HIL core).
 
 Alembic will look at the differences between the schema in the database and
-the one derived from the HaaS source, and generate its best attempt at a
-migration script. The script will be stored in `haas/migrations/versions`.
+the one derived from the HIL source, and generate its best attempt at a
+migration script. The script will be stored in `hil/migrations/versions`.
 
 The value of `down_revision` should be the identifier of the previous migration script.
 The value of `branch_labels` should be `('<branch_name>',)` where `branch_name`
@@ -117,7 +117,7 @@ it should not be trusted blindly.
 For automatic migrations the database being loaded to generate the migration should
 match the schema of the current master branch.
 To ensure this, create a new PostgreSQL database and initialise it using
-`haas-admin db create` while on a branch that is up to date with current HaaS
+`hil-admin db create` while on a branch that is up to date with current HIL
 master branch. The command to generate the migration script should then be run
 after checking out the branch that has the changes that the script should be generated for.
 
@@ -142,7 +142,7 @@ This can be done by directly encoding data within the script and using a command
 `bulk_insert()`, executing a SQL statement to SELECT the data and INSERT it into the new
 column, or by creating a live interaction with the database.
 
-lines 28-32 in ``haas/migrations/versions/89630e3872ec_network_acl.py`` show an example
+lines 28-32 in ``hil/migrations/versions/89630e3872ec_network_acl.py`` show an example
 of executing a SQL statement then using `bulk_insert()` to migrate data.
 
 ## Writing tests
@@ -153,7 +153,7 @@ detail, but the basic strategy is, back up a database with a known set
 of objects using ``pg_dump``, and place the result in
 ``tests/unit/migrations/``. To generate a dump, execute::
 
-    pg_dump -U $haas_user $database_name --column-inserts > filename.sql
+    pg_dump -U $hil_user $database_name --column-inserts > filename.sql
 
 ``--column-inserts`` is necessary to ensure that the result can be
 loaded via SQLAlchemy; the default is not valid SQL and takes advantage
@@ -175,16 +175,16 @@ the file manually, doing the following:
   machine which runs the tests are different from yours, since the
   refer to specific database users/roles.
 - At the top of the file, document the following:
-  - In roughly what stage of HaaS's development this dump was taken,
+  - In roughly what stage of HIL's development this dump was taken,
     e.g. "Just after re-integrating flask" or "first integration of
     openvpn"
-  - The git commit hash of the revision of HaaS which created the
+  - The git commit hash of the revision of HIL which created the
     database.
-  - A list of extensions that were loaded into HaaS when the database
+  - A list of extensions that were loaded into HIL when the database
     was created.
   - Any other options in the config file that would have affected the
     contents of the database.
-  - How the database was generated, e.g. "by the function haas.foo.bar
+  - How the database was generated, e.g. "by the function hil.foo.bar
     as of commit ``$hash``."
 
 [1]: http://www.sqlalchemy.org/

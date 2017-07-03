@@ -1,5 +1,5 @@
-from haas.test_common import config_set, fail_on_log_warnings
-from haas import config
+from hil.test_common import config_set, fail_on_log_warnings
+from hil import config
 import sys
 import pytest
 
@@ -15,7 +15,7 @@ def test_load_extension():
             #
             # 1. They are in the standard library, and cross-platform
             # 2. If you ever think you need to import these for use in
-            #    HaaS, I will judge you.
+            #    HIL, I will judge you.
             'sndhdr': '',
             'colorsys': '',
             'email.mime.audio': '',
