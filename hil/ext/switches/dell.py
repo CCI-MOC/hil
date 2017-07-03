@@ -20,6 +20,7 @@ the long term we want to be using SNMP.
 import pexpect
 import logging
 import schema
+import re
 
 from hil.model import db, Switch
 from hil.migrations import paths
@@ -59,8 +60,8 @@ class PowerConnect55xx(Switch):
     @staticmethod
     def validate_port_name(port):
         val = re.compile('(^(gi|te)\d+[/]\d+[/]\d+$)|(^(gi|te)\d+[/]\d+$)')
-        if not val.match(port)
-            raise BadArgumentError("Port name not cool for this switch")
+        if not val.match(port):
+            raise BadArgumentError("Invalid port name")
         return
 
 

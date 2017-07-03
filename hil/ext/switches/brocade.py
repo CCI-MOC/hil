@@ -26,6 +26,7 @@ import schema
 
 from hil.migrations import paths
 from hil.model import db, Switch
+from hil.errors import BadArgumentError
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'brocade')
 
@@ -56,6 +57,13 @@ class Brocade(Switch):
 
     def session(self):
         return self
+
+    @staticmethod
+    def validate_port_name(port):
+        val = re.compile('(^\d+\/\d+\/\d+$)|(^\d+\/\d+$)')
+        if not val.match(port):
+            raise BadArgumentError("Invalid port name")
+        return
 
     def disconnect(self):
         pass
