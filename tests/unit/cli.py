@@ -1,6 +1,6 @@
 """Tests for the command line tools.
 
-Note that this is not just `haas.cli`, but `haas.command` as well.
+Note that this is not just `hil.cli`, but `hil.command` as well.
 """
 import pytest
 import tempfile
@@ -9,7 +9,7 @@ import signal
 from subprocess import check_call, check_output, Popen, CalledProcessError, \
     STDOUT
 from time import sleep
-from haas.test_common import fail_on_log_warnings
+from hil.test_common import fail_on_log_warnings
 
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
@@ -20,7 +20,7 @@ def make_config(request):
     tmpdir = tempfile.mkdtemp()
     cwd = os.getcwd()
     os.chdir(tmpdir)
-    with open('haas.cfg', 'w') as f:
+    with open('hil.cfg', 'w') as f:
         # We need to make sure the database ends up in the tmpdir directory,
         # and Flask-SQLAlchemy doesn't seem to want to do relative paths, so
         # we can't just do a big string literal.
@@ -28,16 +28,16 @@ def make_config(request):
             '[headnode]',
             'base_imgs = base-headnode, img1, img2, img3, img4',
             '[database]',
-            'uri = sqlite:///%s/haas.db' % tmpdir,
+            'uri = sqlite:///%s/hil.db' % tmpdir,
             '[extensions]',
-            'haas.ext.auth.null =',
-            'haas.ext.network_allocators.null =',
+            'hil.ext.auth.null =',
+            'hil.ext.network_allocators.null =',
         ])
         f.write(config)
 
     def cleanup():
-        os.remove('haas.cfg')
-        os.remove('haas.db')
+        os.remove('hil.cfg')
+        os.remove('hil.db')
         os.chdir(cwd)
         os.rmdir(tmpdir)
 
@@ -45,7 +45,7 @@ def make_config(request):
 
 
 def test_db_create():
-    check_call(['haas-admin', 'db', 'create'])
+    check_call(['hil-admin', 'db', 'create'])
 
 
 def runs_for_seconds(cmd, seconds=1):
@@ -73,18 +73,18 @@ def runs_for_seconds(cmd, seconds=1):
 
 
 def test_serve():
-    check_call(['haas-admin', 'db', 'create'])
-    assert runs_for_seconds(['haas', 'serve', '5000'], seconds=1)
+    check_call(['hil-admin', 'db', 'create'])
+    assert runs_for_seconds(['hil', 'serve', '5000'], seconds=1)
 
 
 def test_serve_networks():
-    check_call(['haas-admin', 'db', 'create'])
-    assert runs_for_seconds(['haas', 'serve_networks'], seconds=1)
+    check_call(['hil-admin', 'db', 'create'])
+    assert runs_for_seconds(['hil', 'serve_networks'], seconds=1)
 
 
 @pytest.mark.parametrize('command', [
-    ['haas', 'serve', '5000'],
-    ['haas', 'serve_networks'],
+    ['hil', 'serve', '5000'],
+    ['hil', 'serve_networks'],
 ])
 def test_db_init_error(command):
     try:

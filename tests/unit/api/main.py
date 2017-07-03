@@ -13,10 +13,10 @@
 # governing permissions and limitations under the License.
 
 """Unit tests for api.py"""
-import haas
-from haas import model, deferred, server
-from haas.test_common import *
-from haas.network_allocator import get_network_allocator
+import hil
+from hil import model, deferred, server
+from hil.test_common import *
+from hil.network_allocator import get_network_allocator
 import pytest
 import json
 import uuid
@@ -31,9 +31,9 @@ def configure():
     config_testsuite()
     config_merge({
         'extensions': {
-            'haas.ext.switches.mock': '',
-            'haas.ext.obm.ipmi': '',
-            'haas.ext.obm.mock': '',
+            'hil.ext.switches.mock': '',
+            'hil.ext.obm.ipmi': '',
+            'hil.ext.obm.mock': '',
         },
     })
     config.load_extensions()
@@ -73,7 +73,7 @@ pytestmark = pytest.mark.usefixtures(*default_fixtures)
 
 
 class TestProjectCreateDelete:
-    """Tests for the haas.api.project_* functions."""
+    """Tests for the hil.api.project_* functions."""
 
     pytestmark = pytest.mark.usefixtures(*(default_fixtures +
                                            ['additional_database']))
@@ -374,7 +374,7 @@ class TestRegisterCorrectObm:
                   "password": "tapeworm"})
 
         node_obj = model.Node.query.filter_by(label="compute-01")\
-                        .join(model.Obm).join(haas.ext.obm.ipmi.Ipmi).first()
+                        .join(model.Obm).join(hil.ext.obm.ipmi.Ipmi).first()
 
         # Comes from table node
         assert str(node_obj.label) == 'compute-01'
@@ -391,7 +391,7 @@ class TestRegisterCorrectObm:
                   "password": "tapeworm"})
 
         node_obj = model.Node.query.filter_by(label="compute-01")\
-                        .join(model.Obm).join(haas.ext.obm.mock.MockObm).first()  # noqa
+                        .join(model.Obm).join(hil.ext.obm.mock.MockObm).first()  # noqa
 
         # Comes from table node
         assert str(node_obj.label) == 'compute-01'
@@ -402,7 +402,7 @@ class TestRegisterCorrectObm:
 
 
 class TestNodeRegisterDelete:
-    """Tests for the haas.api.node_* functions."""
+    """Tests for the hil.api.node_* functions."""
 
     def test_node_register(self):
         api.node_register('node-99', obm={
@@ -1125,7 +1125,7 @@ class TestHeadnodeConnectDetachNetwork:
 
         Right now the create_bridges script will only create bridges
         for vlans in the database, so any specified by the administrator
-        will not exist. Since the haas does not create the bridges during
+        will not exist. Since the hil does not create the bridges during
         execution, attempting to attach a headnode to a network whose vlan
         does not have an existing bridge will fail. An administrator could
         work around this by creating the bridges manually, but we wish to
@@ -1267,7 +1267,7 @@ class TestHeadnodeFreeze:
 
 
 class TestNetworkCreateDelete:
-    """Tests for the haas.api.network_* functions."""
+    """Tests for the hil.api.network_* functions."""
 
     def test_network_create_success(self):
         api.project_create('anvil-nextgen')

@@ -26,19 +26,19 @@ mount { "/mnt/iso":
 # set interface configuration
 file { '/etc/network/interfaces':
   ensure  => present,
-  source  => "/root/haas/examples/puppet_headnode/manifests/static/interfaces",
+  source  => "/root/hil/examples/puppet_headnode/manifests/static/interfaces",
 }
 
 file { '/etc/default/isc-dhcp-server':
   ensure  => present,
-  source  => "/root/haas/examples/puppet_headnode/manifests/static/isc-dhcp-server",
+  source  => "/root/hil/examples/puppet_headnode/manifests/static/isc-dhcp-server",
   require => Package["isc-dhcp-server"]
 }
 
 # dhcp configuration
 file { '/etc/dhcp/dhcpd.conf':
   ensure  => present,
-  source  => "/root/haas/examples/puppet_headnode/manifests/static/dhcpd.conf",
+  source  => "/root/hil/examples/puppet_headnode/manifests/static/dhcpd.conf",
   require => Package["isc-dhcp-server"],
   notify  => Service["isc-dhcp-server"]
 }
@@ -47,13 +47,13 @@ file { '/etc/dhcp/dhcpd.conf':
 file { "/etc/default/tftpd-hpa":
   ensure  => present,
   require => Package["tftpd-hpa"],
-  source  => "/root/haas/examples/puppet_headnode/manifests/static/tftpd-hpa",
+  source  => "/root/hil/examples/puppet_headnode/manifests/static/tftpd-hpa",
 }
 
 file { "/etc/inetd.conf":
   ensure  => present,
   require => Package["inetutils-inetd"],
-  source  => "/root/haas/examples/puppet_headnode/manifests/static/inetd.conf",
+  source  => "/root/hil/examples/puppet_headnode/manifests/static/inetd.conf",
 }
 
 # pxe configuration
@@ -63,7 +63,7 @@ file { "/var/lib/tftpboot/pxelinux.cfg":
 } ->
 file { "/var/lib/tftpboot/pxelinux.cfg/default":
   ensure  => present,
-  source  => "/root/haas/examples/puppet_headnode/manifests/static/default",
+  source  => "/root/hil/examples/puppet_headnode/manifests/static/default",
 }
 
 $centosDir = "/var/lib/tftpboot/centos"
@@ -74,7 +74,7 @@ file { $centosDir :
 
 file { "/var/lib/tftpboot/centos/pxelinux.cfg":
   ensure  => present,
-  source  => "/root/haas/examples/puppet_headnode/manifests/static/pxelinux_cfg",
+  source  => "/root/hil/examples/puppet_headnode/manifests/static/pxelinux_cfg",
   require => File[$centosDir],
 }
 
@@ -92,25 +92,25 @@ file { "/var/lib/tftpboot/centos/initrd.img":
 
 file { "/var/lib/tftpboot/centos/ks.cfg":
   ensure  => present,
-  source  => "/root/haas/examples/puppet_headnode/manifests/static/ks.cfg",
+  source  => "/root/hil/examples/puppet_headnode/manifests/static/ks.cfg",
   require => File[$centosDir],
 }
 
 file { "/usr/local/bin/make-links":
   ensure  => present,
-  source  => "/root/haas/examples/puppet_headnode/manifests/static/make-links",
+  source  => "/root/hil/examples/puppet_headnode/manifests/static/make-links",
   mode => 755
 }
 
 file { "/usr/local/bin/boot_notify.py":
   ensure  => present,
-  source  => "/root/haas/examples/puppet_headnode/manifests/static/boot_notify.py",
+  source  => "/root/hil/examples/puppet_headnode/manifests/static/boot_notify.py",
   mode  => 755,
 }
 
 file { "/etc/rc.local":
   ensure  => present,
-  source  => "/root/haas/examples/puppet_headnode/manifests/static/rc.local",
+  source  => "/root/hil/examples/puppet_headnode/manifests/static/rc.local",
   mode  => 755,
 }
 

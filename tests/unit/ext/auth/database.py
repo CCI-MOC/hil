@@ -1,10 +1,10 @@
-from haas import api, model, config, server
-from haas.test_common import config_testsuite, config_merge, fresh_database, \
+from hil import api, model, config, server
+from hil.test_common import config_testsuite, config_merge, fresh_database, \
     ModelTest, fail_on_log_warnings
-from haas.flaskapp import app
-from haas.model import db
-from haas.errors import AuthorizationError, IllegalStateError
-from haas.rest import init_auth, local
+from hil.flaskapp import app
+from hil.model import db
+from hil.errors import AuthorizationError, IllegalStateError
+from hil.rest import init_auth, local
 import flask
 import pytest
 import unittest
@@ -14,7 +14,7 @@ fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
 @pytest.fixture
 def dbauth():
-    from haas.ext.auth import database
+    from hil.ext.auth import database
     return database
 
 
@@ -37,8 +37,8 @@ def configure():
             'require_authentication': 'False',
         },
         'extensions': {
-            'haas.ext.auth.database': '',
-            'haas.ext.auth.null': None,
+            'hil.ext.auth.database': '',
+            'hil.ext.auth.null': None,
         },
     })
     config.load_extensions()
@@ -136,7 +136,7 @@ class TestUserCreateDelete(DBAuthTestCase):
     """Tests for user_create and user_delete."""
 
     def setUp(self):
-        from haas.ext.auth import database as dbauth
+        from hil.ext.auth import database as dbauth
         self.dbauth = dbauth
 
     def test_new_user(self):
@@ -196,7 +196,7 @@ class TestUserSetAdmin(DBAuthTestCase):
     """Tests for user_set_admin."""
 
     def setUp(self):
-        from haas.ext.auth import database as dbauth
+        from hil.ext.auth import database as dbauth
         self.dbauth = dbauth
 
     def _new_user(self, is_admin):
@@ -297,7 +297,7 @@ class TestUserModel(ModelTest):
     """Basic sanity check for the User model.
 
     Similar to the tests in /tests/unit/model.py, which cover the models
-    defined in HaaS core.
+    defined in HIL core.
     """
 
     def sample_obj(self):
@@ -318,7 +318,7 @@ admin_calls = [
 @use_fixtures('admin_auth')
 def test_admin_succeed(fn, args):
     """Verify that an admin-only call succeds when invoked by an admin."""
-    from haas.ext.auth import database as dbauth
+    from hil.ext.auth import database as dbauth
     fn = getattr(dbauth, fn)
     fn(*args)
 
@@ -329,7 +329,7 @@ def test_admin_runway_fail(fn, args):
     """
     Verify that an admin-only call fails when invoked by a non-admin user.
     """
-    from haas.ext.auth import database as dbauth
+    from hil.ext.auth import database as dbauth
     fn = getattr(dbauth, fn)
     with pytest.raises(AuthorizationError):
         fn(*args)
@@ -341,7 +341,7 @@ def test_admin_noauth_fail(fn, args):
     """
     Verify that an admin-only call fails when invoked without authentication.
     """
-    from haas.ext.auth import database as dbauth
+    from hil.ext.auth import database as dbauth
     fn = getattr(dbauth, fn)
     with pytest.raises(AuthorizationError):
         fn(*args)

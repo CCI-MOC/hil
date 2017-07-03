@@ -11,14 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for haas.rest.
+"""Tests for hil.rest.
 
 This contains a somewhat awkward mix of unittest style classes and tests that
 use pytest fixtures and decorators. The latter are newer,and make it workable
 to use stuff like `parametrize`.
 """
 
-from haas import rest, config
+from hil import rest, config
 
 from abc import ABCMeta, abstractmethod
 import unittest
@@ -28,7 +28,7 @@ import logging
 from schema import Schema, Optional, Use
 import pytest
 
-from haas.test_common import config_testsuite, fail_on_log_warnings
+from hil.test_common import config_testsuite, fail_on_log_warnings
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 

@@ -13,14 +13,14 @@
 # governing permissions and limitations under the License.
 """Unit tests for headnodes.
 
-These require an actual libvirt daemon (and full HaaS setup), and are
+These require an actual libvirt daemon (and full HIL setup), and are
 somewhat particular to the MOC's development environment. They may be
 difficult to run in other contexts.
 """
 
-from haas.test_common import *
-from haas.dev_support import have_dry_run
-from haas import config, server
+from hil.test_common import *
+from hil.dev_support import have_dry_run
+from hil import config, server
 import pytest
 
 

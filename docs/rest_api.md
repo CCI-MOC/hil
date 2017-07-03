@@ -4,7 +4,7 @@ This file describes the HIL Api. We first describe the main objects,
 then users and security model, and finally provide a full reference for
 the API.
 
-## Objects in the HaaS
+## Objects in the HIL
 
 * project - a grouping of resources (e.g., headnodes, nodes, networks).
 * node - a physical node.  Either unallocated or belongs to a project.  Has
@@ -23,10 +23,10 @@ the API.
 
 The authentication system is pluggable. Authentication mechanisms are
 provided by extensions (see `extensions.md`), but the rules about who is
-allowed to access what are dictated by HaaS core. Operations etiher
+allowed to access what are dictated by HIL core. Operations etiher
 require administratie priilieges, or access to a particular project.
 
-Of note, "users" are not a concept that HaaS core understands, though
+Of note, "users" are not a concept that HIL core understands, though
 some of the individual auth extensions do.
 
 ## API design philosophy
@@ -36,8 +36,8 @@ that is not required for authorization purposes.
 
 - A 'project' is merely an authorization domain.  It is reasonable to have
   logically independent groupings of resources within one project, but the
-  HaaS will not help you create such a structure.  Policies like this belong
-  in higher-level tools built on top of the haas.
+  HIL will not help you create such a structure.  Policies like this belong
+  in higher-level tools built on top of the hil.
 
 - We considered having a mechanism for staging a large number of networking
   changes and performing them all-together, and even potentially allowing
@@ -80,7 +80,7 @@ Each possible API call has an entry below containing:
  In general, administrative access is sufficient to perform any action.
 * A list of possible errors.
 
-In addition to the error codes listed for each API call, HaaS may
+In addition to the error codes listed for each API call, HIL may
 return:
 
 * 400 if something is wrong with the request (e.g. malformed request
@@ -135,7 +135,7 @@ Possible errors:
 
 ## Core API Specification
 
-API calls provided by the HaaS core. These are present in all
+API calls provided by the HIL core. These are present in all
 installations.
 
 ### Networks
@@ -405,7 +405,7 @@ Possible Errors:
 Register a node with OBM of <type> and optional metadata
 
 <type> (a string) is the type of OBM. The possible value depends on what drivers
-HaaS is configured to use. The remainder of the field are driver-specific;
+HIL is configured to use. The remainder of the field are driver-specific;
 see the documentation of the OBM driver in question (read `docs/obm-drivers.md`).
 
 `PUT /node/<node>`
@@ -450,7 +450,7 @@ Request Body:
     }
 
 Register a nic named `<nic>` belonging to `<node>`. `<mac_addr>` should
-be the nic's mac address. This isn't used by HaaS itself, but is useful
+be the nic's mac address. This isn't used by HIL itself, but is useful
 for users trying to configure their nodes.
 
 Authorization requirements:
@@ -732,7 +732,7 @@ Authorization requirements:
 
 `GET /projects`
 
-Return a list of all projects in HaaS
+Return a list of all projects in HIL
 
 Response body:
 
@@ -877,7 +877,7 @@ Connect the network named `<network>` to `<hnic>`.
 
 1. the headnode's project has the right to attach to, and
 2. was not assigned a specific network id by an administrator (i.e. the
-   network id was allocated dynamically by HaaS). This constraint is due
+   network id was allocated dynamically by HIL). This constraint is due
    to an implementation limitation, but will likely be lifted in the
    future; see issue #333.
 
@@ -886,7 +886,7 @@ Additionally, the headnode must not have previously been started.
 Note that, unlike nodes, headnodes may only be attached via the
 native/default channel (which is implicit, and may not be specified).
 
-Rationale: separating headnodes from haas core is planned, and it has
+Rationale: separating headnodes from hil core is planned, and it has
 been deemed not worth the development effort to adjust this prior to the
 separation. Additionally, headnodes may have an arbitrary number of
 nics, and so being able to attach two networks to the same nic is not as
@@ -991,7 +991,7 @@ Authorization requirements:
 Register a network switch of type `<type>`
 
 `<type>` (a string) is the type of network switch. The possible values
-depend on what drivers HaaS is configured to use. The remainder of the
+depend on what drivers HIL is configured to use. The remainder of the
 fields are driver-specific; see the documentation for the driver in
 question (in `docs/network-drivers.md`.
 
@@ -1033,7 +1033,7 @@ Possible Errors:
 
 `GET /switches`
 
-Return a list of all switches registered in HaaS
+Return a list of all switches registered in HIL
 
 Response body:
 
@@ -1165,7 +1165,7 @@ Possible errors:
 API calls provided by specific extensions. They may not exist in all
 configurations.
 
-### The `haas.ext.auth.database` auth backend
+### The `hil.ext.auth.database` auth backend
 
 #### user_create
 

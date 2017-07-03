@@ -5,10 +5,10 @@ a specific configuration and database contents. The script
 "ci/keystone/keystone.sh" at the root of the repository can be used to set
 this up. This is done automatically in our travis config.
 """
-from haas import test_common as tc
-from haas.test_common import fail_on_log_warnings
-from haas import server, config, model, rest, auth
-from haas.flaskapp import app
+from hil import test_common as tc
+from hil.test_common import fail_on_log_warnings
+from hil import server, config, model, rest, auth
+from hil.flaskapp import app
 import pytest
 import requests
 import time
@@ -23,7 +23,7 @@ from keystoneclient import client
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
 
-# A list of projects to be added to HaaS's database.
+# A list of projects to be added to HIL's database.
 project_db = ['admin', 'service']
 
 
@@ -49,7 +49,7 @@ def _keystone_cfg_opt(name):
 
     i.e. that option in the extension's section of the config file.
     """
-    return config.cfg.get('haas.ext.auth.keystone', name)
+    return config.cfg.get('hil.ext.auth.keystone', name)
 
 
 def _get_keystone_session(username, password, project_name):
@@ -70,14 +70,14 @@ def _get_keystone_session(username, password, project_name):
 
 @pytest.fixture
 def configure():
-    """Fixture which setups up haas.cfg, and loads extensions and such."""
+    """Fixture which setups up hil.cfg, and loads extensions and such."""
     tc.config_testsuite()
     tc.config_merge({
         'extensions': {
-            'haas.ext.auth.null': None,
-            'haas.ext.auth.keystone': '',
+            'hil.ext.auth.null': None,
+            'hil.ext.auth.keystone': '',
         },
-        'haas.ext.auth.keystone': {
+        'hil.ext.auth.keystone': {
             'auth_url': 'http://127.0.0.1:35357/v3',
             'auth_protocol': 'http',
             'username': 'admin',
@@ -98,7 +98,7 @@ fresh_database = pytest.fixture(tc.fresh_database)
 
 @pytest.fixture
 def keystone_session():
-    """Return a keystone Session from the options in haas.cfg"""
+    """Return a keystone Session from the options in hil.cfg"""
 
     return _get_keystone_session(
         username=_keystone_cfg_opt('username'),
@@ -109,7 +109,7 @@ def keystone_session():
 
 @pytest.fixture
 def keystone_client(keystone_session):
-    """Return a keystone client from the options in haas.cfg"""
+    """Return a keystone client from the options in hil.cfg"""
     return client.Client(session=keystone_session)
 
 
@@ -132,7 +132,7 @@ def server_init():
 
 @pytest.fixture
 def keystone_projects(keystone_project_uuids):
-    """Add each of the projects to the HaaS database.
+    """Add each of the projects to the HIL database.
 
     keystone_project_uuids is the return value from the fixture of the same
     name.
@@ -176,7 +176,7 @@ def extra_apis(keystone_project_uuids):
 
 @pytest.fixture
 def launch_server():
-    """Launch the haas API server in another thread.
+    """Launch the hil API server in another thread.
 
     The keystone client will try to make *real* http requests, so we can't
     just use flask's built-in test fixtures; we need to actually be listening
@@ -284,17 +284,17 @@ def test_anyone_call_unknown_project(keystone_projects):
     # Calls to the API with no special authorization requirements should fail
     # if the user is not authenticated for a project in the database. This is
     # true even if the project exists in keystone; it must be added to the
-    # HaaS database before it will be recognized as valid.
+    # HIL database before it will be recognized as valid.
 
     # This user is created in `/ci/keystone/keystone.sh` for use by this test
-    # (but naturally is never added to tha haas db).
-    sess = _get_keystone_session(username='non-haas-user',
+    # (but naturally is never added to tha hil db).
+    sess = _get_keystone_session(username='non-hil-user',
                                  password='secret',
-                                 project_name='non-haas-project')
+                                 project_name='non-hil-project')
     resp = _do_get(sess, 'anyone')
     assert 400 <= resp.status_code < 500, (
         "Status code for call with no special authorization requirements "
-        "should still fail if the keystone project is not in the HaaS db!"
+        "should still fail if the keystone project is not in the HIL db!"
     )
 
 

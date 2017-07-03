@@ -1,7 +1,7 @@
-# Types of Networks in the HaaS
+# Types of Networks in the HIL
 
 
-Networks in the HaaS have three fields:
+Networks in the HIL have three fields:
 
 - 'owner' represents what project owns it; or 'admin' if it was
   administrator-created.  If there are still networks owned by a project,
@@ -22,8 +22,8 @@ Networks in the HaaS have three fields:
 These fields are not really independent of each other.  Here are the legal
 combinations, with some explanation:
 
-- (admin,   all,     yes): Public network internal to HaaS
-- (admin,   all,     no):  Public network that connects outside the HaaS
+- (admin,   all,     yes): Public network internal to HIL
+- (admin,   all,     no):  Public network that connects outside the HIL
 - (admin,   project, yes): External provisioning network for one project
 - (admin,   project, no):  (kind of useless, but legal)
 - (project, project, yes): Normal project-created network

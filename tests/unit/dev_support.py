@@ -12,9 +12,9 @@
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
 
-from haas.dev_support import no_dry_run
+from hil.dev_support import no_dry_run
 import pytest
-from haas.test_common import *
+from hil.test_common import *
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 

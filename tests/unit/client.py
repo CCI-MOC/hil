@@ -14,10 +14,10 @@
 
 """Unit tests for client library"""
 from flask.ext.sqlalchemy import SQLAlchemy
-from haas.flaskapp import app
-from haas.model import NetworkingAction
-from haas.client.base import ClientBase, FailedAPICallException
-from haas.client.client import Client, RequestsHTTPClient
+from hil.flaskapp import app
+from hil.model import NetworkingAction
+from hil.client.base import ClientBase, FailedAPICallException
+from hil.client.client import Client, RequestsHTTPClient
 
 import json
 import os
@@ -29,9 +29,9 @@ import time
 
 from subprocess import check_call, Popen
 
-ep = "http://127.0.0.1:8000" or os.environ.get('HAAS_ENDPOINT')
-username = "hil_user" or os.environ.get('HAAS_USERNAME')
-password = "hil_pass1234" or os.environ.get('HAAS_PASSWORD')
+ep = "http://127.0.0.1:8000" or os.environ.get('HIL_ENDPOINT')
+username = "hil_user" or os.environ.get('HIL_USERNAME')
+password = "hil_pass1234" or os.environ.get('HIL_PASSWORD')
 
 http_client = RequestsHTTPClient()
 http_client.auth = (username, password)
@@ -56,26 +56,26 @@ class Test_ClientBase:
 # For testing the client library we need a running HIL server, with dummy
 # objects populated. Following classes accomplish that end.
 # It shall:
-#       1. Configures haas.cfg
+#       1. Configures hil.cfg
 #       2. Instantiates a database
 #       3. Starts a server on an arbitary port
-#       4. Populates haas with dummy objects
+#       4. Populates hil with dummy objects
 #       5. tears down the setup in a clean fashion.
 
 db_dir = None
 
 
 def make_config():
-    """ This function creates haas.cfg with desired options
+    """ This function creates hil.cfg with desired options
     and writes to a temporary directory.
-    It returns a tuple where (tmpdir, cwd) = ('location of haas.cfg', 'pwd')
+    It returns a tuple where (tmpdir, cwd) = ('location of hil.cfg', 'pwd')
     """
     tmpdir = tempfile.mkdtemp()
     global db_dir
     db_dir = tmpdir
     cwd = os.getcwd()
     os.chdir(tmpdir)
-    with open('haas.cfg', 'w') as f:
+    with open('hil.cfg', 'w') as f:
         config = '\n'.join([
             '[general]',
             'log_level = debug',
@@ -87,17 +87,17 @@ def make_config():
             '[headnode]',
             'base_imgs = base-headnode, img1, img2, img3, img4',
             '[database]',
-            'uri = sqlite:///%s/haas.db' % tmpdir,
+            'uri = sqlite:///%s/hil.db' % tmpdir,
             '[extensions]',
-            'haas.ext.auth.database =',
-            'haas.ext.switches.mock =',
-            'haas.ext.switches.nexus =',
-            'haas.ext.switches.dell =',
-            'haas.ext.switches.brocade =',
-            'haas.ext.obm.mock =',
-            'haas.ext.obm.ipmi =',
-            'haas.ext.network_allocators.vlan_pool =',
-            '[haas.ext.network_allocators.vlan_pool]',
+            'hil.ext.auth.database =',
+            'hil.ext.switches.mock =',
+            'hil.ext.switches.nexus =',
+            'hil.ext.switches.dell =',
+            'hil.ext.switches.brocade =',
+            'hil.ext.obm.mock =',
+            'hil.ext.obm.ipmi =',
+            'hil.ext.network_allocators.vlan_pool =',
+            '[hil.ext.network_allocators.vlan_pool]',
             'vlans = 1001-1040',
 
         ])
@@ -107,20 +107,20 @@ def make_config():
 
 def cleanup((tmpdir, cwd)):
     """ Cleanup crew, when all tests are done.
-    It will shutdown the haas server,
+    It will shutdown the hil server,
     delete any files and folders created for the tests.
     """
 
-    os.remove('haas.cfg')
-    os.remove('haas.db')
+    os.remove('hil.cfg')
+    os.remove('hil.db')
     os.chdir(cwd)
     os.rmdir(tmpdir)
 
 
 def initialize_db():
-    """ Creates an  database as defined in haas.cfg."""
-    check_call(['haas-admin', 'db', 'create'])
-    check_call(['haas', 'create_admin_user', username, password])
+    """ Creates an  database as defined in hil.cfg."""
+    check_call(['hil-admin', 'db', 'create'])
+    check_call(['hil', 'create_admin_user', username, password])
 
 
 # Allocating nodes to projects
@@ -251,7 +251,7 @@ def avoid_network_race_condition():
     on the same object.
     """
     global db_dir
-    uri = 'sqlite:///'+db_dir+'/haas.db'
+    uri = 'sqlite:///'+db_dir+'/hil.db'
     db = SQLAlchemy(app)
     app.config.update(SQLALCHEMY_DATABASE_URI=uri)
 
@@ -301,9 +301,9 @@ def create_setup(request):
 
     dir_names = make_config()
     initialize_db()
-    proc1 = Popen(['haas', 'serve', str(serv_port)], stdout=sys.stdout,
+    proc1 = Popen(['hil', 'serve', str(serv_port)], stdout=sys.stdout,
                   stderr=sys.stderr)
-    proc2 = Popen(['haas', 'serve_networks'], stdout=sys.stdout,
+    proc2 = Popen(['hil', 'serve_networks'], stdout=sys.stdout,
                   stderr=sys.stderr)
     wait_for_service(url)  # Loop until the server is up. See #770
     populate_server()
