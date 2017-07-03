@@ -57,7 +57,7 @@ class MockSwitch(Switch):
         }).validate(kwargs)
 
     @staticmethod
-    def validate_port_name(self):
+    def validate_port_name(port):
         pass
 
     def session(self):
