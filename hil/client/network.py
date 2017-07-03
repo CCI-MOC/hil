@@ -9,7 +9,7 @@ class Network(ClientBase):
         """
 
         def list(self):
-            """Lists all projects under HIL """
+            """Lists all networks under HIL """
             url = self.object_url('networks')
             return self.check_response(self.httpClient.request("GET", url))
 
