@@ -64,8 +64,7 @@ class Nexus(Switch):
         ethernet1/12, Ethernet1/0/10, or ethernet1/0/10
         """
 
-        val = re.compile(
-                '((E|e)thernet\d+\/\d+\/\d+$)|((E|e)thernet\d+\/\d+$)')
+        val = re.compile(r'^(E|e)thernet\d+/\d+(/\d+)?$')
         if not val.match(port):
             raise BadArgumentError("Invalid port name")
         return

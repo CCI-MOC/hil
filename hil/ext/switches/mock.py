@@ -58,6 +58,7 @@ class MockSwitch(Switch):
 
     @staticmethod
     def validate_port_name(port):
+        """All port names are valid for the mock switch"""
         pass
 
     def session(self):

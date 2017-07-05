@@ -70,7 +70,7 @@ class DellN3000(Switch):
         te1/0/12, gi1/12, or te1/3
         """
 
-        val = re.compile('(^(gi|te)\d+[/]\d+[/]\d+$)|(^(gi|te)\d+[/]\d+$)')
+        val = re.compile(r'^(gi|te)\d+/\d+(/\d+)?$')
         if not val.match(port):
             raise BadArgumentError("Invalid port name")
         return

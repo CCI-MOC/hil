@@ -62,7 +62,7 @@ class Brocade(Switch):
     def validate_port_name(port):
         """Valid port names for this switch are of the form 1/0/1 or 1/2"""
 
-        val = re.compile('(^\d+\/\d+\/\d+$)|(^\d+\/\d+$)')
+        val = re.compile(r'^\d+/\d+(/\d+)?$')
         if not val.match(port):
             raise BadArgumentError("Invalid port name")
         return
