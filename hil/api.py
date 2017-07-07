@@ -292,6 +292,10 @@ def node_delete(node):
     """
     get_auth_backend().require_admin()
     node = _must_find(model.Node, node)
+    if node.project:
+        raise BlockedError("Node %r is part of project %r; remove from "
+                           "project before deleting"
+                           % (node.label, node.project.label))
     if node.nics != []:
         raise BlockedError("Node %r has nics; remove them before deleting %r."
                            % (node.label, node.label))

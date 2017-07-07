@@ -493,6 +493,18 @@ class TestNodeRegisterDelete:
         with pytest.raises(api.BlockedError):
             api.node_delete('node-99')
 
+    def test_node_delete_in_project(self):
+        """node_delete should respond with an error if node is in project"""
+        api.node_register('node-99', obm={
+                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                  "host": "ipmihost",
+                  "user": "root",
+                  "password": "tapeworm"})
+        api.project_create('skeleton')
+        api.project_connect_node('skeleton', 'node-99')
+        with pytest.raises(api.BlockedError):
+            api.node_delete('node-99')
+
 
 class TestNodeRegisterDeleteNic:
 
