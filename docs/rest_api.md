@@ -1260,4 +1260,22 @@ Request Body:
 
 {}
 
+Response Body:
+
+[
+    [
+        "hil.ext.switches.mock",
+        ""
+    ],
+    [
+        "hil.ext.network_allocators.null",
+        ""
+    ],
+    ...
+]
+
 List all active extensions.
+
+Authorization requirements:
+
+* Administrative access.

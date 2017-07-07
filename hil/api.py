@@ -1232,6 +1232,7 @@ def list_headnode_images():
 @rest_call('GET', '/active_extensions', Schema({}))
 def list_active_extensions():
     """List all active extensions"""
+    get_auth_backend().require_admin()
     extensions = cfg.items('extensions')
     return json.dumps(extensions)
 

@@ -1,4 +1,4 @@
-from haas.client.base import ClientBase
+from hil.client.base import ClientBase
 
 
 class Extensions(ClientBase):
