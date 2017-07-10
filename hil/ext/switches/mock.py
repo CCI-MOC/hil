@@ -60,12 +60,16 @@ class MockSwitch(Switch):
 
     @staticmethod
     def validate_port_name(port):
-        """Valid port names for this switch are of the form 1/0/1 or 1/2"""
+        """
+        Valid port names for this switch are of the form gi1/0/11,
+        te1/0/12, gi1/12, or te1/3
+        """
 
-        val = re.compile(r'^\d+/\d+(/\d+)?$')
+        val = re.compile(r'^(gi|te)\d+/\d+(/\d+)?$')
         if not val.match(port):
-            raise BadArgumentError("Invalid port name: Vald port names are of"
-                                   " the form 1/0/1 or 1/2")
+            raise BadArgumentError("Invalid port name. Valid port names are "
+                                   "of the form gi1/0/11, te1/0/12, gi1/12,"
+                                   " te1/3")
         return
 
     def session(self):
