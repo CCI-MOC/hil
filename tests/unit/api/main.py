@@ -2220,11 +2220,11 @@ class TestExtensions:
     def test_extension_list(self):
         result = json.loads(api.list_active_extensions())
         assert result == [
-            'hil.ext.switches.mock',
+            'hil.ext.auth.null'
+            'hil.ext.network_allocators.null',
             'hil.ext.obm.ipmi',
             'hil.ext.obm.mock',
-            'hil.ext.network_allocators.null',
-            'hil.ext.auth.null'
+            'hil.ext.switches.mock',
             ]
 
 

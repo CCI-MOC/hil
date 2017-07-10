@@ -1234,7 +1234,7 @@ def list_active_extensions():
     """List all active extensions"""
     get_auth_backend().require_admin()
     extensions_raw = cfg.items('extensions')
-    extensions = [ext[0] for ext in extensions_raw]
+    extensions = sorted([ext[0] for ext in extensions_raw])
     return json.dumps(extensions)
 
 
