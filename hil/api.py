@@ -798,13 +798,9 @@ def network_create(network, owner, access, net_id):
     # Allocate net_id, if requested
     if net_id == "":
         net_id = get_network_allocator().get_new_network_id()
-        if net_id is None:
-            raise AllocationError('No more networks')
         allocated = True
     else:
-        if not get_network_allocator().validate_network_id(net_id):
-            raise BadArgumentError("Invalid net_id")
-        allocated = False
+        allocated = get_network_allocator().validate_network_id(net_id)
 
     network = model.Network(owner, access, allocated, net_id, network)
     db.session.add(network)
