@@ -797,24 +797,13 @@ def create_admin_user(username, password):
 
 
 @cmd
-def list_active_extensions(ext_type):
-    """List active extensions by type.
-
-    Default types: auth, obm, switches, network_allocators.
-
-    Use the 'all' argument to list all active extensions.
-    """
+def list_active_extensions():
+    """List active extensions by type. """
     if not config.cfg.has_section('extensions'):
         sys.exit("There are no active extensions.")
-
     all_extensions = C.extensions.list_active()
-    if ext_type == 'all':
-        active = [ext[0] for ext in all_extensions]
-        sys.stdout.write('All active extensions: ' + ', '.join(active) + '\n')
-    else:
-        active = [ext[0] for ext in all_extensions if ext_type in ext[0]]
-        sys.stdout.write('Active extensions of type %s: ' % ext_type)
-        sys.stdout.write(', '.join(active) + '\n')
+    for ext in all_extensions:
+        print ext
 
 
 @cmd

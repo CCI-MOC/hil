@@ -1256,21 +1256,11 @@ Authorization requirements:
 
 `GET /active_extensions`
 
-Request Body:
-
-{}
-
 Response Body:
 
 [
-    [
-        "hil.ext.switches.mock",
-        ""
-    ],
-    [
-        "hil.ext.network_allocators.null",
-        ""
-    ],
+    "hil.ext.switches.mock",
+    "hil.ext.network_allocators.null",
     ...
 ]
 
