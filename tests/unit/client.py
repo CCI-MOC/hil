@@ -733,11 +733,11 @@ class Test_extensions:
         """ Test listing active extensions. """
         assert C.extensions.list_active() == [
                     "hil.ext.auth.database",
+                    "hil.ext.network_allocators.vlan_pool",
+                    "hil.ext.obm.ipmi",
+                    "hil.ext.obm.mock",
+                    "hil.ext.switches.brocade",
+                    "hil.ext.switches.dell",
                     "hil.ext.switches.mock",
                     "hil.ext.switches.nexus",
-                    "hil.ext.switches.dell",
-                    "hil.ext.switches.brocade",
-                    "hil.ext.obm.mock",
-                    "hil.ext.obm.ipmi",
-                    "hil.ext.network_allocators.vlan_pool",
                 ]
