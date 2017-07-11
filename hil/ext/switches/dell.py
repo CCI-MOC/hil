@@ -28,9 +28,14 @@ from hil.ext.switches import _console
 from hil.ext.switches._dell_base import _BaseSession
 from os.path import dirname, join
 from hil.errors import BadArgumentError
+from sqlalchemy import BigInteger
+from sqlalchemy.dialects import sqlite
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'dell')
 logger = logging.getLogger(__name__)
+
+BigIntegerType = BigInteger().with_variant(
+                sqlite.INTEGER(), 'sqlite')
 
 
 class PowerConnect55xx(Switch):
@@ -41,7 +46,8 @@ class PowerConnect55xx(Switch):
         'polymorphic_identity': api_name,
     }
 
-    id = db.Column(db.Integer, db.ForeignKey('switch.id'), primary_key=True)
+    id = db.Column(BigIntegerType,
+                   db.ForeignKey('switch.id'), primary_key=True)
     hostname = db.Column(db.String, nullable=False)
     username = db.Column(db.String, nullable=False)
     password = db.Column(db.String, nullable=False)

@@ -93,7 +93,7 @@ class Nic(db.Model):
 
 class Node(db.Model):
     """a (physical) machine"""
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(BigIntegerType, primary_key=True)
     label = db.Column(db.String, nullable=False)
 
     # The project to which this node is allocated. If the project is null, the
@@ -103,7 +103,7 @@ class Node(db.Model):
 
     # The Obm info is fetched from the obm class and its respective subclass
     # pertaining to the node
-    obm_id = db.Column(db.Integer, db.ForeignKey('obm.id'), nullable=False)
+    obm_id = db.Column(BigIntegerType, db.ForeignKey('obm.id'), nullable=False)
     obm = db.relationship("Obm",
                           uselist=False,
                           backref="node",
@@ -116,7 +116,7 @@ class Project(db.Model):
 
     A project may contain allocated nodes, networks, and headnodes.
     """
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(BigIntegerType, primary_key=True)
     label = db.Column(db.String, nullable=False)
 
     def __init__(self, label):
@@ -129,7 +129,7 @@ class Metadata(db.Model):
 
     Metadata may a key, a hash, or otherwise
     """
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(BigIntegerType, primary_key=True)
     label = db.Column(db.String, nullable=False)
     value = db.Column(db.String)
     owner_id = db.Column(db.ForeignKey('node.id'), nullable=False)
@@ -147,7 +147,7 @@ class Network(db.Model):
 
     See docs/networks.md for more information on the parameters.
     """
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(BigIntegerType, primary_key=True)
     label = db.Column(db.String, nullable=False)
 
     # The project to which the network belongs, or None if the network was
@@ -190,7 +190,7 @@ class Port(db.Model):
     The port's label is an identifier that is meaningful only to the
     corresponding switch's driver.
     """
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(BigIntegerType, primary_key=True)
     label = db.Column(db.String, nullable=False)
     owner_id = db.Column(db.ForeignKey('switch.id'), nullable=False)
     owner = db.relationship('Switch', backref=db.backref('ports'))
@@ -209,7 +209,7 @@ class Switch(db.Model):
 
     Subclasses MUST override both ``validate`` and ``session``.
     """
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(BigIntegerType, primary_key=True)
     label = db.Column(db.String, nullable=False)
 
     type = db.Column(db.String, nullable=False)
@@ -297,7 +297,7 @@ class Obm(db.Model):
 
     related to out of band management of servers.
     """
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(BigIntegerType, primary_key=True)
     type = db.Column(db.String, nullable=False)
 
     __mapper_args__ = {
@@ -374,7 +374,7 @@ def _on_virt_uri(args_list):
 
 class Headnode(db.Model):
     """A virtual machine used to administer a project."""
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(BigIntegerType, primary_key=True)
     label = db.Column(db.String, nullable=False)
 
     # The project to which this Headnode belongs:
@@ -481,7 +481,7 @@ class Headnode(db.Model):
 
 class Hnic(db.Model):
     """a network interface for a Headnode"""
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(BigIntegerType, primary_key=True)
     label = db.Column(db.String, nullable=False)
 
     # The Headnode to which this Hnic belongs:
@@ -535,7 +535,7 @@ class NetworkingAction(db.Model):
     # Legal values for `type`
     legal_types = ('modify_port', 'revert_port')
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(BigIntegerType, primary_key=True)
 
     # The type of action.
     #
@@ -567,7 +567,7 @@ class NetworkingAction(db.Model):
 
 class NetworkAttachment(db.Model):
     """An attachment of a network to a particular nic on a channel"""
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(BigIntegerType, primary_key=True)
 
     # TODO: it would be nice to place explicit unique constraints on some
     # things:

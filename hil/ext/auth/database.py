@@ -11,8 +11,17 @@ from passlib.hash import sha512_crypt
 from schema import Schema, Optional
 import flask
 import logging
+from sqlalchemy import BigInteger
+from sqlalchemy.dialects import sqlite
+from os.path import join, dirname
+from hil.migrations import paths
 
 logger = ContextLogger(logging.getLogger(__name__), {})
+
+paths[__name__] = join(dirname(__file__), 'migrations', 'database')
+
+BigIntegerType = BigInteger().with_variant(
+        sqlite.INTEGER(), 'sqlite')
 
 
 class User(db.Model):
@@ -21,7 +30,7 @@ class User(db.Model):
     A user can be a member of any number of projects, which grants them access
     to that process's resources. A user may also be flagged as an administrator
     """
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(BigIntegerType, primary_key=True)
     label = db.Column(db.String, nullable=False)
 
     is_admin = db.Column(db.Boolean, nullable=False, default=False)
