@@ -11,7 +11,7 @@ import sqlalchemy as sa
 # revision identifiers, used by Alembic.
 revision = '5a6db7a7222d'
 down_revision = None
-branch_labels = ('hil.ext.switches.brocade',)
+branch_labels = None
 
 
 def upgrade():

@@ -60,6 +60,8 @@ setup(name='hil',
           ],
           'hil.ext.obm': ['migrations/*/*.py'],
           'hil.ext.switches': ['migrations/*/*.py'],
+          'hil.ext.auth': ['migrations/*/*.py'],
+          'hil.ext.network_allocators': ['migrations/*/*.py']
       },
       zip_safe=False,  # migrations folder needs to be extracted to work.
 

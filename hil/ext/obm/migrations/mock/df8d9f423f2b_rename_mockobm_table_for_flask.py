@@ -8,19 +8,17 @@ Create Date: 2016-04-04 02:24:53.812100
 
 """
 from alembic import op
-import sqlalchemy as sa
 from hil.model import db
-from hil.flaskapp import app
 
 # revision identifiers, used by Alembic.
 revision = 'df8d9f423f2b'
 down_revision = None
-branch_labels = ('hil.ext.obm.mock',)
+branch_labels = None
 
 
 def upgrade():
-    metadata = sa.MetaData(bind=db.get_engine(app), reflect=True)
-    if 'mockobm' in metadata.tables:
+    metadata = db.inspect(db.engine).get_table_names()
+    if 'mockobm' in metadata:
         op.rename_table('mockobm', 'mock_obm')
 
 

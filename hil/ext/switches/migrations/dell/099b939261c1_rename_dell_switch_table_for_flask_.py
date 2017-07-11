@@ -8,19 +8,18 @@ Create Date: 2016-03-22 04:34:49.141555
 
 """
 from alembic import op
-import sqlalchemy as sa
 from hil.model import db
-from hil.flaskapp import app
 
 # revision identifiers, used by Alembic.
 revision = '099b939261c1'
 down_revision = None
-branch_labels = ('hil.ext.switches.dell',)
+branch_labels = None
 
 
 def upgrade():
-    metadata = sa.MetaData(bind=db.get_engine(app), reflect=True)
-    if 'powerconnect55xx' in metadata.tables:
+    db.session.close()
+    metadata = db.inspect(db.engine).get_table_names()
+    if 'powerconnect55xx' in metadata:
         op.rename_table('powerconnect55xx', 'power_connect55xx')
 
 
