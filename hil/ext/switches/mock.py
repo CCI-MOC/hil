@@ -21,8 +21,10 @@ from collections import defaultdict
 from hil.model import Switch
 from hil.migrations import paths
 import schema
+import re
 from sqlalchemy import Column, Integer, ForeignKey, String
 from os.path import dirname, join
+from hil.errors import BadArgumentError
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'mock')
 
@@ -55,6 +57,20 @@ class MockSwitch(Switch):
             'hostname': basestring,
             'password': basestring,
         }).validate(kwargs)
+
+    @staticmethod
+    def validate_port_name(port):
+        """
+        Valid port names for this switch are of the form gi1/0/11,
+        te1/0/12, gi1/12, or te1/3
+        """
+
+        val = re.compile(r'^(gi|te)\d+/\d+(/\d+)?$')
+        if not val.match(port):
+            raise BadArgumentError("Invalid port name. Valid port names for "
+                                   "this switch are of the form gi1/0/11, "
+                                   "te1/0/12, gi1/12, or te1/3")
+        return
 
     def session(self):
         return self

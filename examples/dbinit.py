@@ -10,7 +10,7 @@ In the example environment for which this module is written, there are 10
 nodes which have IPMI interfaces that are sequentially numbered starting with
 10.0.0.0, have a username of "ADMIN_USER" and password of "ADMIN_PASSWORD".
 The ports are also numbered sequentially and are named following a dell switch
-scheme, which have ports that look like "R10SW1::GI1/0/5"
+scheme, which have ports that look like "gi1/0/5"
 
 It could be used in an environment similar to the one which
 ``hil.cfg`` corresponds, though could also be used for development with the
@@ -36,7 +36,7 @@ hil('switch_register', switch, 'mock', 'ip', 'user', 'pass')
 for node in range(N_NODES):
     ipmi_ip = "10.0.0." + str(node + 1)
 
-    nic_port = "R10SW1::GI1/0/%d" % (node)
+    nic_port = "gi1/0/%d" % (node)
     nic_name = 'nic1'
     hil('node_register', node, "mock", ipmi_ip, ipmi_user, ipmi_pass)
     hil('node_register_nic', node, nic_name, 'FillThisInLater')

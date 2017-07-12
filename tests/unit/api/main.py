@@ -24,6 +24,7 @@ import uuid
 MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/v0/switches/mock'
 OBM_TYPE_MOCK = 'http://schema.massopencloud.org/haas/v0/obm/mock'
 OBM_TYPE_IPMI = 'http://schema.massopencloud.org/haas/v0/obm/ipmi'
+PORTS = ['gi1/0/1', 'gi1/0/2', 'gi1/0/3', 'gi1/0/4', 'gi1/0/5']
 
 
 @pytest.fixture
@@ -60,7 +61,7 @@ def switchinit():
                         username="switch_user",
                         password="switch_pass",
                         hostname="switchname")
-    api.switch_register_port('sw0', '3')
+    api.switch_register_port('sw0', PORTS[2])
 
 
 default_fixtures = ['fail_on_log_warnings',
@@ -177,7 +178,7 @@ class TestNetworking:
                             username="switch_user",
                             password="switch_pass",
                             hostname="switchname")
-        for port in '1', '2', '3':
+        for port in PORTS[0], PORTS[1], PORTS[2]:
             api.switch_register_port('sw0', port)
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
@@ -200,7 +201,8 @@ class TestNetworking:
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
         api.node_register_nic('node-98', 'eth0', 'DE:AD:BE:EF:20:15')
         api.node_register_nic('node-97', 'eth0', 'DE:AD:BE:EF:20:16')
-        for port, node in ('1', 'node-99'), ('2', 'node-98'), ('3', 'node-97'):
+        for port, node in (PORTS[0], 'node-99'), (PORTS[1], 'node-98'), \
+                          (PORTS[2], 'node-97'):
             api.port_connect_nic('sw0', port, node, 'eth0')
 
         api.project_create('anvil-nextgen')
@@ -324,7 +326,7 @@ class TestProjectConnectDetachNode:
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:13')
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
-        api.port_connect_nic('sw0', '3', 'node-99', 'eth0')
+        api.port_connect_nic('sw0', PORTS[2], 'node-99', 'eth0')
         api.node_connect_network('node-99', 'eth0', 'hammernet')
         with pytest.raises(api.BlockedError):
             api.project_detach_node('anvil-nextgen', 'node-99')
@@ -351,7 +353,7 @@ class TestProjectConnectDetachNode:
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:13')
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
-        api.port_connect_nic('sw0', '3', 'node-99', 'eth0')
+        api.port_connect_nic('sw0', PORTS[2], 'node-99', 'eth0')
         api.node_connect_network('node-99', 'eth0', 'hammernet')
         deferred.apply_networking()
         api.node_detach_network('node-99', 'eth0', 'hammernet')
@@ -666,7 +668,7 @@ class TestNodeConnectDetachNetwork:
         api.project_create('anvil-nextgen')
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
-        api.port_connect_nic('sw0', '3', 'node-99', '99-eth0')
+        api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
 
         # Check the actual HTTP response and status, not just the success;
         # we should do this at least once in the test suite, since this call
@@ -690,7 +692,7 @@ class TestNodeConnectDetachNetwork:
         api.project_create('anvil-nextgen')
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
-        api.port_connect_nic('sw0', '3', 'node-99', '99-eth0')
+        api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
         api.node_register('node-98', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
@@ -788,7 +790,7 @@ class TestNodeConnectDetachNetwork:
         api.project_connect_node('anvil-nextgen', 'node-99')
 
         network_create_simple('hammernet', 'anvil-oldtimer')  # changed
-        api.port_connect_nic('sw0', '3', 'node-99', '99-eth0')
+        api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
 
         with pytest.raises(api.ProjectMismatchError):
             api.node_connect_network('node-99', '99-eth0', 'hammernet')
@@ -804,7 +806,7 @@ class TestNodeConnectDetachNetwork:
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
 
-        api.port_connect_nic('sw0', '3', 'node-99', '99-eth0')
+        api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
         api.node_connect_network('node-99', '99-eth0', 'hammernet')  # added
         deferred.apply_networking()  # added
 
@@ -823,7 +825,7 @@ class TestNodeConnectDetachNetwork:
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
         network_create_simple('hammernet2', 'anvil-nextgen')  # added
-        api.port_connect_nic('sw0', '3', 'node-99', '99-eth0')
+        api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
         api.node_connect_network('node-99', '99-eth0', 'hammernet')  # added
         deferred.apply_networking()  # added
 
@@ -840,7 +842,7 @@ class TestNodeConnectDetachNetwork:
         api.project_create('anvil-nextgen')
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
-        api.port_connect_nic('sw0', '3', 'node-99', '99-eth0')
+        api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
         deferred.apply_networking()  # added
 
@@ -884,7 +886,7 @@ class TestNodeConnectDetachNetwork:
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.project_connect_node('anvil-nextgen', 'node-98')  # added
         network_create_simple('hammernet', 'anvil-nextgen')
-        api.port_connect_nic('sw0', '3', 'node-99', '99-eth0')
+        api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
         with pytest.raises(api.NotFoundError):
@@ -905,7 +907,7 @@ class TestNodeConnectDetachNetwork:
         api.project_create('anvil-nextgen')
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
-        api.port_connect_nic('sw0', '3', 'node-99', '99-eth0')
+        api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
         with pytest.raises(api.NotFoundError):
@@ -921,7 +923,7 @@ class TestNodeConnectDetachNetwork:
         api.project_create('anvil-nextgen')
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
-        api.port_connect_nic('sw0', '3', 'node-99', '99-eth0')
+        api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
         with pytest.raises(api.NotFoundError):
@@ -937,7 +939,7 @@ class TestNodeConnectDetachNetwork:
         api.project_create('anvil-nextgen')
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
-        api.port_connect_nic('sw0', '3', 'node-99', '99-eth0')
+        api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
         with pytest.raises(api.NotFoundError):
@@ -953,7 +955,7 @@ class TestNodeConnectDetachNetwork:
         api.project_create('anvil-nextgen')
 #        api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
-        api.port_connect_nic('sw0', '3', 'node-99', '99-eth0')
+        api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
 #        api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
         with pytest.raises(api.ProjectMismatchError):
@@ -1316,7 +1318,7 @@ class TestNetworkCreateDelete:
                   "password": "tapeworm"})
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
         api.project_connect_node('anvil-nextgen', 'node-99')
-        api.port_connect_nic('sw0', '3', 'node-99', 'eth0')
+        api.port_connect_nic('sw0', PORTS[2], 'node-99', 'eth0')
         api.node_connect_network('node-99', 'eth0', 'hammernet')
         deferred.apply_networking()
         api.node_detach_network('node-99', 'eth0', 'hammernet')
@@ -1338,7 +1340,7 @@ class TestNetworkCreateDelete:
                   "password": "tapeworm"})
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
         api.project_connect_node('anvil-nextgen', 'node-99')
-        api.port_connect_nic('sw0', '3', 'node-99', 'eth0')
+        api.port_connect_nic('sw0', PORTS[2], 'node-99', 'eth0')
         api.node_connect_network('node-99', 'eth0', 'hammernet')
         with pytest.raises(api.BlockedError):
             api.network_delete('hammernet')
@@ -1405,15 +1407,15 @@ class Test_switch_register_port:
                             username="switch_user",
                             password="switch_pass",
                             hostname="switchname")
-        api.switch_register_port('sw0', '5')
+        api.switch_register_port('sw0', PORTS[4])
         port = model.Port.query.one()
-        assert port.label == '5'
+        assert port.label == PORTS[4]
         assert port.owner.label == 'sw0'
 
     def test_register_port_nonexisting_switch(self):
         """Creating  port on a non-existant switch should fail."""
         with pytest.raises(api.NotFoundError):
-            api.switch_register_port('sw0', '5')
+            api.switch_register_port('sw0', PORTS[4])
 
 
 class Test_switch_delete_port:
@@ -1425,8 +1427,8 @@ class Test_switch_delete_port:
                             username="switch_user",
                             password="switch_pass",
                             hostname="switchname")
-        api.switch_register_port('sw0', '5')
-        api.switch_delete_port('sw0', '5')
+        api.switch_register_port('sw0', PORTS[4])
+        api.switch_delete_port('sw0', PORTS[4])
         assert model.Port.query.count() == 0
 
     def test_delete_port_nonexisting_switch(self):
@@ -1435,7 +1437,7 @@ class Test_switch_delete_port:
         report the error.
         """
         with pytest.raises(api.NotFoundError):
-            api.switch_delete_port('sw0', '5')
+            api.switch_delete_port('sw0', PORTS[4])
 
     def test_delete_port_nonexisting_port(self):
         """Removing a port that does not exist should report the error"""
@@ -1445,7 +1447,7 @@ class Test_switch_delete_port:
                             password="switch_pass",
                             hostname="switchname")
         with pytest.raises(api.NotFoundError):
-            api.switch_delete_port('sw0', '5')
+            api.switch_delete_port('sw0', PORTS[4])
 
 
 class Test_list_switches:
@@ -1485,16 +1487,16 @@ class Test_list_switches:
 
         assert json.loads(api.show_switch('sw0')) == {
             'name': 'sw0',
-            'ports': [{'label': '3'}]
+            'ports': [{'label': PORTS[2]}]
         }
 
-        api.switch_register_port('sw0', 'test_port')
+        api.switch_register_port('sw0', PORTS[1])
         # Note: the order of ports is not sorted, test cases need to be in the
         # same order.
         assert json.loads(api.show_switch('sw0')) == {
             'name': 'sw0',
-            'ports': [{'label': '3'},
-                      {'label': 'test_port'}]
+            'ports': [{'label': PORTS[2]},
+                      {'label': PORTS[1]}]
         }
 
 
@@ -1514,10 +1516,10 @@ class TestShowPort:
         with pytest.raises(api.NotFoundError):
             api.show_port('sw0', 'non-existing-port')
 
-        assert json.loads(api.show_port('sw0', '3')) == {}
+        assert json.loads(api.show_port('sw0', PORTS[2])) == {}
         # connect the port to a nic, and see if show port agrees
-        api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
-        assert json.loads(api.show_port('sw0', '3')) == {
+        api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
+        assert json.loads(api.show_port('sw0', PORTS[2])) == {
                         'node': u'compute-01',
                         'nic': 'eth0',
                         'networks': {}}
@@ -1532,7 +1534,7 @@ class TestPortConnectDetachNic:
                   "user": "root",
                   "password": "tapeworm"})
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
-        api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
+        api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
 
     def test_port_connect_nic_no_such_switch(self):
         api.node_register('compute-01', obm={
@@ -1542,7 +1544,7 @@ class TestPortConnectDetachNic:
                   "password": "tapeworm"})
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         with pytest.raises(api.NotFoundError):
-            api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
+            api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
 
     def test_port_connect_nic_no_such_port(self):
         api.switch_register('sw0',
@@ -1557,7 +1559,7 @@ class TestPortConnectDetachNic:
                   "password": "tapeworm"})
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         with pytest.raises(api.NotFoundError):
-            api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
+            api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
 
     def test_port_connect_nic_no_such_node(self):
         api.switch_register('sw0',
@@ -1565,9 +1567,9 @@ class TestPortConnectDetachNic:
                             username="switch_user",
                             password="switch_pass",
                             hostname="switchname")
-        api.switch_register_port('sw0', '3')
+        api.switch_register_port('sw0', PORTS[2])
         with pytest.raises(api.NotFoundError):
-            api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
+            api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
 
     def test_port_connect_nic_no_such_nic(self):
         api.switch_register('sw0',
@@ -1575,14 +1577,14 @@ class TestPortConnectDetachNic:
                             username="switch_user",
                             password="switch_pass",
                             hostname="switchname")
-        api.switch_register_port('sw0', '3')
+        api.switch_register_port('sw0', PORTS[2])
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
                   "user": "root",
                   "password": "tapeworm"})
         with pytest.raises(api.NotFoundError):
-            api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
+            api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
 
     def test_port_connect_nic_already_attached_to_same(self, switchinit):
         api.node_register('compute-01', obm={
@@ -1591,22 +1593,22 @@ class TestPortConnectDetachNic:
                   "user": "root",
                   "password": "tapeworm"})
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
-        api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
+        api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
         with pytest.raises(api.DuplicateError):
-            api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
+            api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
 
     def test_port_connect_nic_nic_already_attached_differently(self,
                                                                switchinit):
-        api.switch_register_port('sw0', '4')
+        api.switch_register_port('sw0', PORTS[3])
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
                   "user": "root",
                   "password": "tapeworm"})
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
-        api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
+        api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
         with pytest.raises(api.DuplicateError):
-            api.port_connect_nic('sw0', '4', 'compute-01', 'eth0')
+            api.port_connect_nic('sw0', PORTS[3], 'compute-01', 'eth0')
 
     def test_port_connect_nic_port_already_attached_differently(self,
                                                                 switchinit):
@@ -1622,9 +1624,9 @@ class TestPortConnectDetachNic:
                   "password": "tapeworm"})
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         api.node_register_nic('compute-02', 'eth1', 'DE:AD:BE:EF:20:15')
-        api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
+        api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
         with pytest.raises(api.DuplicateError):
-            api.port_connect_nic('sw0', '3', 'compute-02', 'eth1')
+            api.port_connect_nic('sw0', PORTS[2], 'compute-02', 'eth1')
 
     def test_port_detach_nic_success(self, switchinit):
         api.node_register('compute-01', obm={
@@ -1633,12 +1635,12 @@ class TestPortConnectDetachNic:
                   "user": "root",
                   "password": "tapeworm"})
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
-        api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
-        api.port_detach_nic('sw0', '3')
+        api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
+        api.port_detach_nic('sw0', PORTS[2])
 
     def test_port_detach_nic_no_such_port(self):
         with pytest.raises(api.NotFoundError):
-            api.port_detach_nic('sw0', '3')
+            api.port_detach_nic('sw0', PORTS[2])
 
     def test_port_detach_nic_not_attached(self):
         api.switch_register('sw0',
@@ -1646,7 +1648,7 @@ class TestPortConnectDetachNic:
                             username="switch_user",
                             password="switch_pass",
                             hostname="switchname")
-        api.switch_register_port('sw0', '3')
+        api.switch_register_port('sw0', PORTS[2])
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -1654,7 +1656,7 @@ class TestPortConnectDetachNic:
                   "password": "tapeworm"})
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         with pytest.raises(api.NotFoundError):
-            api.port_detach_nic('sw0', '3')
+            api.port_detach_nic('sw0', PORTS[2])
 
     def port_detach_nic_node_not_free(self, switchinit):
         """should refuse to detach a nic if it has pending actions."""
@@ -1664,13 +1666,13 @@ class TestPortConnectDetachNic:
                   "user": "root",
                   "password": "tapeworm"})
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
-        api.port_connect_nic('sw0', '3', 'compute-01', 'eth0')
+        api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
 
         api.project_create('anvil-nextgen')
         api.project_connect_node('anvil-nextgen', 'compute-01')
 
         with pytest.raises(api.BlockedError):
-            api.port_detach_nic('sw0', '3')
+            api.port_detach_nic('sw0', PORTS[2])
 
 
 class TestQuery_populated_db:
@@ -1927,8 +1929,8 @@ class TestQuery_unpopulated_db:
                             username="switch_user",
                             password="switch_pass",
                             hostname="switchname")
-        api.switch_register_port('sw0', '1')
-        api.switch_register_port('sw0', '2')
+        api.switch_register_port('sw0', PORTS[0])
+        api.switch_register_port('sw0', PORTS[1])
         api.node_register('robocop', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -1940,10 +1942,10 @@ class TestQuery_unpopulated_db:
         api.project_create('anvil-nextgen')
         api.project_connect_node('anvil-nextgen', 'robocop')
         network_create_simple('pxe', 'anvil-nextgen')
-        api.port_connect_nic('sw0', '1', 'robocop', 'eth0')
+        api.port_connect_nic('sw0', PORTS[0], 'robocop', 'eth0')
         api.node_connect_network('robocop', 'eth0', 'pxe')
         network_create_simple('storage', 'anvil-nextgen')
-        api.port_connect_nic('sw0', '2', 'robocop', 'wlan0')
+        api.port_connect_nic('sw0', PORTS[1], 'robocop', 'wlan0')
         api.node_connect_network('robocop', 'wlan0', 'storage')
         deferred.apply_networking()
 
@@ -1955,7 +1957,7 @@ class TestQuery_unpopulated_db:
                 {
                     'label': 'eth0',
                     'macaddr': 'DE:AD:BE:EF:20:14',
-                    'port': '1',
+                    'port': PORTS[0],
                     'switch': 'sw0',
                     "networks": {
                         get_network_allocator().get_default_channel(): 'pxe'
@@ -1964,7 +1966,7 @@ class TestQuery_unpopulated_db:
                 {
                     'label': 'wlan0',
                     'macaddr': 'DE:AD:BE:EF:20:15',
-                    'port': '2',
+                    'port': PORTS[1],
                     'switch': 'sw0',
                     "networks": {
                         get_network_allocator().get_default_channel(): 'storage'  # noqa

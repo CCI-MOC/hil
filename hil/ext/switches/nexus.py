@@ -25,6 +25,7 @@ import logging
 
 from hil.model import db, Switch
 from hil.ext.switches import _console
+from hil.errors import BadArgumentError
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +56,21 @@ class Nexus(Switch):
 
     def session(self):
         return _Session.connect(self)
+
+    @staticmethod
+    def validate_port_name(port):
+        """
+        Valid port names for this switch are of the form: Ethernet1/12,
+        ethernet1/12, Ethernet1/0/10, or ethernet1/0/10
+        """
+
+        val = re.compile(r'^(E|e)thernet\d+/\d+(/\d+)?$')
+        if not val.match(port):
+            raise BadArgumentError("Invalid port name. Valid port names for "
+                                   "this switch are of the form: Ethernet1/12"
+                                   " ethernet1/12, Ethernet1/0/10, or"
+                                   " ethernet1/0/10")
+        return
 
 
 class _Session(_console.Session):

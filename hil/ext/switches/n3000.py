@@ -29,6 +29,7 @@ from hil.ext.switches import _console
 from hil.ext.switches._dell_base import _BaseSession
 from os.path import dirname, join
 from hil.migrations import paths
+from hil.errors import BadArgumentError
 
 logger = logging.getLogger(__name__)
 paths[__name__] = join(dirname(__file__), 'migrations', 'n3000')
@@ -61,6 +62,20 @@ class DellN3000(Switch):
 
     def session(self):
         return _DellN3000Session.connect(self)
+
+    @staticmethod
+    def validate_port_name(port):
+        """
+        Valid port names for this switch are of the form gi1/0/11,
+        te1/0/12, gi1/12, or te1/3
+        """
+
+        val = re.compile(r'^(gi|te)\d+/\d+(/\d+)?$')
+        if not val.match(port):
+            raise BadArgumentError("Invalid port name. Valid port names for "
+                                   "this switch are of the form gi1/0/11, "
+                                   "te1/0/12, gi1/12, or te1/3")
+        return
 
 
 class _DellN3000Session(_BaseSession):

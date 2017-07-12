@@ -924,6 +924,9 @@ def switch_register_port(switch, port):
     get_auth_backend().require_admin()
     switch = _must_find(model.Switch, switch)
     _assert_absent_n(switch, model.Port, port)
+
+    switch.validate_port_name(port)
+
     port = model.Port(port, switch)
 
     db.session.add(port)

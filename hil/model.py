@@ -219,6 +219,11 @@ class Switch(db.Model):
         'polymorphic_on': type,
     }
 
+    def validate_port_name(self, port):
+        """Verify that port name is valid for switch"""
+
+        assert False, "Subclasses MUST override the validate method"
+
     @staticmethod
     def validate(kwargs):
         """Verify that ``kwargs`` is a legal set of keyword args to ``__init__``
