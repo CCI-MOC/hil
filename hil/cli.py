@@ -799,11 +799,12 @@ def create_admin_user(username, password):
 @cmd
 def list_active_extensions():
     """List active extensions by type. """
-    if not config.cfg.has_section('extensions'):
-        sys.exit("There are no active extensions.")
     all_extensions = C.extensions.list_active()
-    for ext in all_extensions:
-        print ext
+    if not all_extensions:
+        print "No active extensions"
+    else: 
+        for ext in all_extensions:
+            print ext
 
 
 @cmd
