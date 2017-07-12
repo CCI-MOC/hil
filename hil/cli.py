@@ -802,7 +802,7 @@ def list_active_extensions():
     all_extensions = C.extensions.list_active()
     if not all_extensions:
         print "No active extensions"
-    else: 
+    else:
         for ext in all_extensions:
             print ext
 
