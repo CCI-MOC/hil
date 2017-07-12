@@ -64,7 +64,8 @@ class Brocade(Switch):
 
         val = re.compile(r'^\d+/\d+(/\d+)?$')
         if not val.match(port):
-            raise BadArgumentError("Invalid port name")
+            raise BadArgumentError("Invalid port name. Valid port names for "
+                                   "this switch are of the from 1/0/1 or 1/2")
         return
 
     def disconnect(self):
