@@ -5,7 +5,6 @@ import logging
 from hil.network_allocator import NetworkAllocator, set_network_allocator
 from hil.model import db
 from hil.config import cfg
-from hil.errors import BadArgumentError, AllocationError
 
 
 def get_vlan_list():
@@ -32,7 +31,7 @@ class VlanAllocator(NetworkAllocator):
     def get_new_network_id(self):
         vlan = Vlan.query.filter_by(available=True).first()
         if not vlan:
-            raise AllocationError('No more networks')
+            return None
         vlan.available = False
         returnee = str(vlan.vlan_no)
         return returnee
@@ -65,29 +64,24 @@ class VlanAllocator(NetworkAllocator):
         return "vlan/native"
 
     def validate_network_id(self, net_id):
-        """
-        validate if network_id is valid and available
-
-        Raises a BadArgumentError for an invalid net_id
-        Raises AllocationError if net_id is already taken.
-        returns True if net_id belongs to pool false otherwise
-        """
-
         try:
-            if not 1 <= int(net_id) <= 4096:
-                raise BadArgumentError("Invalid net_id")
-
-            vlan = Vlan.query.filter_by(vlan_no=net_id).first()
-            if vlan and vlan.available:
-                vlan.available = False
-                return True
-            elif vlan and not vlan.available:
-                raise AllocationError('Requested net_id is taken')
-            else:
-                return False
-
+            return 1 <= int(net_id) <= 4096
         except ValueError:
-            raise BadArgumentError("Invalid net_id")
+            return False
+
+    def network_id_available(self, net_id):
+        vlan = Vlan.query.filter_by(vlan_no=net_id).first()
+        if vlan and vlan.available:
+            vlan.available = False
+            return True
+        elif vlan and not vlan.available:
+            return False
+        else:
+            return True
+
+    def is_network_id_in_pool(self, net_id):
+        vlan = Vlan.query.filter_by(vlan_no=net_id).first()
+        return True if vlan else False
 
 
 class Vlan(db.Model):
