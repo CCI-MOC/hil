@@ -46,6 +46,12 @@ class NullNetworkAllocator(NetworkAllocator):
     def validate_network_id(self, net_id):
         return True
 
+    def claim_network_id(self, net_id):
+        return
+
+    def is_network_id_in_pool(self, net_id):
+        return True
+
 
 def setup(*args, **kwargs):
     set_network_allocator(NullNetworkAllocator())
