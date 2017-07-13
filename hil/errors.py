@@ -68,7 +68,7 @@ class DuplicateError(APIError):
     status_code = 409  # Conflict
 
 
-class AllocationError(APIError):
+class AllocationError(ServerError):
     """An exception indicating resource exhaustion."""
 
 
