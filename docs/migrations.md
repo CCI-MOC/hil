@@ -77,7 +77,7 @@ Next, to generate a template migration, execute:
 Alembic will look at the differences between the schema in the database and
 the one derived from the HIL source, and generate its best attempt at a
 migration script. The script will be stored in `hil/migrations/versions`.
-Copy it to the directory you chose, and change the value of `down_revision` to
+Move it to the directory you chose, and change the value of `down_revision` to
 `None`.
 
 Sanity check the output; Alembic often does a good job generating scripts, but
