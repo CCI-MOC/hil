@@ -800,15 +800,12 @@ def network_create(network, owner, access, net_id):
         net_id = get_network_allocator().get_new_network_id()
         if net_id is None:
             raise AllocationError('No more networks')
-        allocated = True
     else:
         if not get_network_allocator().validate_network_id(net_id):
             raise BadArgumentError("Invalid net_id")
-        if not get_network_allocator().network_id_available(net_id):
-            raise AllocationError("Network ID is in use. Please choose a "
-                                  "different net_id")
-        allocated = get_network_allocator().is_network_id_in_pool(net_id)
+        get_network_allocator().claim_network_id(net_id)
 
+    allocated = get_network_allocator().is_network_id_in_pool(net_id)
     network = model.Network(owner, access, allocated, net_id, network)
     db.session.add(network)
     db.session.commit()

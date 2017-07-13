@@ -5,6 +5,7 @@ import logging
 from hil.network_allocator import NetworkAllocator, set_network_allocator
 from hil.model import db
 from hil.config import cfg
+from hil.errors import BlockedError
 
 
 def get_vlan_list():
@@ -69,19 +70,20 @@ class VlanAllocator(NetworkAllocator):
         except ValueError:
             return False
 
-    def network_id_available(self, net_id):
+    def claim_network_id(self, net_id):
         vlan = Vlan.query.filter_by(vlan_no=net_id).first()
         if vlan and vlan.available:
             vlan.available = False
-            return True
+            return
         elif vlan and not vlan.available:
-            return False
+            raise BlockedError("Network ID is not available."
+                               " Please choose a different ID.")
         else:
-            return True
+            return
 
     def is_network_id_in_pool(self, net_id):
         vlan = Vlan.query.filter_by(vlan_no=net_id).first()
-        return True if vlan else False
+        return vlan is not None
 
 
 class Vlan(db.Model):
