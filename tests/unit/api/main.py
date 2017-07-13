@@ -31,10 +31,19 @@ PORTS = ['gi1/0/1', 'gi1/0/2', 'gi1/0/3', 'gi1/0/4', 'gi1/0/5']
 def configure():
     config_testsuite()
     config_merge({
+        'auth': {
+            'require_authentication': 'True',
+        },
         'extensions': {
+            'hil.ext.auth.null': '',
             'hil.ext.switches.mock': '',
             'hil.ext.obm.ipmi': '',
             'hil.ext.obm.mock': '',
+            'hil.ext.network_allocators.null': None,
+            'hil.ext.network_allocators.vlan_pool': '',
+        },
+        'hil.ext.network_allocators.vlan_pool': {
+            'vlans': '40-80',
         },
     })
     config.load_extensions()
@@ -2129,7 +2138,7 @@ class TestShowNetwork:
             'name': 'spiderwebs',
             'owner': 'anvil-nextgen',
             'access': ['anvil-nextgen'],
-            "channels": ["null"]
+            "channels": ["vlan/native", "vlan/40"]
         }
 
     def test_show_network_public(self):
@@ -2143,7 +2152,7 @@ class TestShowNetwork:
             'name': 'public-network',
             'owner': 'admin',
             'access': None,
-            'channels': ['null'],
+            'channels': ['vlan/native', 'vlan/432'],
         }
 
     def test_show_network_provider(self):
@@ -2158,7 +2167,7 @@ class TestShowNetwork:
             'name': 'spiderwebs',
             'owner': 'admin',
             'access': ['anvil-nextgen'],
-            'channels': ['null'],
+            'channels': ['vlan/native', 'vlan/451'],
         }
 
 
