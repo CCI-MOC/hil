@@ -4,6 +4,7 @@ from hil.model import db
 from hil.migrations import create_db
 from hil import api, server
 from hil.test_common import *
+from hil import model
 import pytest
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
@@ -76,3 +77,60 @@ def test_vlanid_for_admin_network():
     # create a netowrk with a vlanid<1
     with pytest.raises(api.BadArgumentError):
         api.network_create('nailnet', 'admin', '', '-2')
+
+
+class TestAdminCreatedNetworks():
+    """
+    Test networks created by administrator
+    """
+
+    def test_create_network_with_id_from_pool(self):
+
+        api.project_create('nuggets')
+
+        # create a project owned network and get it's network_id
+        api.network_create('hammernet', 'nuggets', 'nuggets', '')
+        network = api._must_find(model.Network, 'hammernet')
+        net_id = int(network.network_id)
+        assert network.allocated is True
+
+        # create an admin owned network with net_id from pool
+        api.network_create('nailnet', 'admin', '', 103)
+        network = api._must_find(model.Network, 'nailnet')
+        assert network.allocated is True
+
+        # creating a network with the same network id should raise an error
+        with pytest.raises(api.BlockedError):
+            api.network_create('redbone', 'admin', '', 103)
+        with pytest.raises(api.BlockedError):
+            api.network_create('starfish', 'admin', '', net_id)
+
+        # free the network ids by deleting the networks
+        api.network_delete('hammernet')
+        api.network_delete('nailnet')
+        api._assert_absent(model.Network, 'hammernet')
+        api._assert_absent(model.Network, 'nailnet')
+
+        # after deletion we should be able to create admin networks with those
+        # network_ids
+        api.network_create('redbone', 'admin', '', 103)
+        network = api._must_find(model.Network, 'redbone')
+        assert int(network.network_id) == 103
+
+        api.network_create('starfish', 'admin', '', net_id)
+        network = api._must_find(model.Network, 'starfish')
+        assert int(network.network_id) == net_id
+
+    def test_create_network_with_id_outside_pool(self):
+
+        # create an admin owned network
+        api.network_create('hammernet', 'admin', '', 1511)
+
+        # administrators should be able to make different networks with the
+        # same network id
+
+        api.network_create('starfish', 'admin', '', 1511)
+        network = api._must_find(model.Network, 'starfish')
+        net_id = int(network.network_id)
+        assert network.allocated is False
+        assert net_id == 1511
