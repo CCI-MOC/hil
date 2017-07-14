@@ -13,140 +13,139 @@
 # governing permissions and limitations under the License.
 
 """Unit tests for client library"""
-from flask.ext.sqlalchemy import SQLAlchemy
 from hil.flaskapp import app
-from hil.model import NetworkingAction
 from hil.client.base import ClientBase, FailedAPICallException
-from hil.client.client import Client, RequestsHTTPClient
+from hil.client.client import Client, HTTPClient, HTTPResponse
+from hil.test_common import config_testsuite, config_merge, \
+    fresh_database, fail_on_log_warnings
+from hil.model import db
+from hil import config, deferred, server
 
 import json
-import os
 import pytest
-import requests
-import sys
-import tempfile
-import time
 
-from subprocess import check_call, Popen
+from urlparse import urlparse
+from base64 import urlsafe_b64encode
+from passlib.hash import sha512_crypt
 
-ep = "http://127.0.0.1:8000" or os.environ.get('HIL_ENDPOINT')
-username = "hil_user" or os.environ.get('HIL_USERNAME')
-password = "hil_pass1234" or os.environ.get('HIL_PASSWORD')
+ep = "http://127.0.0.1:8000"
+username = "hil_user"
+password = "hil_pass1234"
 
-http_client = RequestsHTTPClient()
-http_client.auth = (username, password)
+
+class FlaskHTTPClient(HTTPClient):
+
+    def __init__(self):
+        self._flask_client = app.test_client()
+
+    def request(self, method, url, data=None, params=None):
+
+        # Flask doesn't provide a straightforward way to do basic auth,
+        # but it's not actually that complicated:
+        auth_header = 'Basic ' + urlsafe_b64encode(username + ':' + password)
+
+        resp = self._flask_client.open(
+            method=method,
+            headers={'Authorization': auth_header},
+            # flask expects just a path, and assumes
+            # the host & scheme:
+            path=urlparse(url).path,
+            data=data,
+            query_string=params,
+        )
+        return HTTPResponse(status_code=resp.status_code,
+                            headers=resp.headers,
+                            content=resp.get_data())
+
+http_client = FlaskHTTPClient()
 C = Client(ep, http_client)  # Initializing client library
 MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/v0/switches/mock'
 OBM_TYPE_MOCK = 'http://schema.massopencloud.org/haas/v0/obm/mock'
 OBM_TYPE_IPMI = 'http://schema.massopencloud.org/haas/v0/obm/ipmi'
 
 
-class Test_ClientBase:
-    """Tests client initialization and object_url creation. """
-
-    def test_init_error(self):
-        with pytest.raises(TypeError):
-            x = ClientBase()
-
-    def test_object_url(self):
-        x = ClientBase(ep, 'some_base64_string')
-        y = x.object_url('abc', '123', 'xy23z')
-        assert y == 'http://127.0.0.1:8000/abc/123/xy23z'
-
-# For testing the client library we need a running HIL server, with dummy
-# objects populated. Following classes accomplish that end.
-# It shall:
-#       1. Configures hil.cfg
-#       2. Instantiates a database
-#       3. Starts a server on an arbitary port
-#       4. Populates hil with dummy objects
-#       5. tears down the setup in a clean fashion.
-
-db_dir = None
+fail_on_log_warnings = pytest.fixture(fail_on_log_warnings)
+fresh_database = pytest.fixture(fresh_database)
 
 
-def make_config():
-    """ This function creates hil.cfg with desired options
-    and writes to a temporary directory.
-    It returns a tuple where (tmpdir, cwd) = ('location of hil.cfg', 'pwd')
-    """
-    tmpdir = tempfile.mkdtemp()
-    global db_dir
-    db_dir = tmpdir
-    cwd = os.getcwd()
-    os.chdir(tmpdir)
-    with open('hil.cfg', 'w') as f:
-        config = '\n'.join([
-            '[general]',
-            'log_level = debug',
-            '[devel]',
-            'dry_run=True',
-            '[auth]',
-            'require_authentication = True',
+@pytest.fixture
+def dummy_verify():
+    """replace sha512_crypt.verify with something faster (albeit broken).
 
-            '[headnode]',
-            'base_imgs = base-headnode, img1, img2, img3, img4',
-            '[database]',
-            'uri = sqlite:///%s/hil.db' % tmpdir,
-            '[extensions]',
-            'hil.ext.auth.database =',
-            'hil.ext.switches.mock =',
-            'hil.ext.switches.nexus =',
-            'hil.ext.switches.dell =',
-            'hil.ext.switches.brocade =',
-            'hil.ext.obm.mock =',
-            'hil.ext.obm.ipmi =',
-            'hil.ext.network_allocators.vlan_pool =',
-            '[hil.ext.network_allocators.vlan_pool]',
-            'vlans = 1001-1040',
-
-        ])
-        f.write(config)
-    return (tmpdir, cwd)
-
-
-def cleanup((tmpdir, cwd)):
-    """ Cleanup crew, when all tests are done.
-    It will shutdown the hil server,
-    delete any files and folders created for the tests.
+    Password hashing is just way too slow to do it this many times in
+    the test suite.
     """
 
-    os.remove('hil.cfg')
-    os.remove('hil.db')
-    os.chdir(cwd)
-    os.rmdir(tmpdir)
+    @staticmethod
+    def dummy(*args, **kwargs):
+        return True
+
+    old = sha512_crypt.verify
+    sha512_crypt.verify = dummy
+    yield
+    sha512_crypt.verify = old
 
 
-def initialize_db():
-    """ Creates an  database as defined in hil.cfg."""
-    check_call(['hil-admin', 'db', 'create'])
-    check_call(['hil', 'create_admin_user', username, password])
+@pytest.fixture
+def configure():
+    config_testsuite()
+    config_merge({
+        'auth': {
+            'require_authentication': 'False',
+        },
+        'extensions': {
+            'hil.ext.auth.null': None,
+            'hil.ext.auth.database': '',
+            'hil.ext.switches.mock': '',
+            'hil.ext.switches.nexus': '',
+            'hil.ext.switches.dell': '',
+            'hil.ext.switches.brocade': '',
+            'hil.ext.obm.mock': '',
+            'hil.ext.obm.ipmi': '',
+            'hil.ext.network_allocators.null': None,
+            'hil.ext.network_allocators.vlan_pool': '',
+        },
+        'hil.ext.network_allocators.vlan_pool': {
+            'vlans': '1001-1040',
+        },
+    })
+    config.load_extensions()
+
+
+@pytest.fixture
+def server_init():
+    server.register_drivers()
+    server.validate_state()
 
 
 # Allocating nodes to projects
-def assign_nodes2project(sess, project, *nodes):
+def assign_nodes2project(project, *nodes):
     """ Assigns multiple <nodes> to a <project>.
 
      Takes as input
-     <sess>: session object for REST call, <project>: project name,
      <*nodes> one or more node names.
     """
     url_project = 'http://127.0.0.1:8000/project/'
 
     for node in nodes:
-        sess.post(
-                url_project + project + '/connect_node',
-                data=json.dumps({'node': node})
+        http_client.request(
+            'POST',
+            url_project + project + '/connect_node',
+            data=json.dumps({'node': node})
         )
 
 
+@pytest.fixture()
 def populate_server():
     """
-    Once the server is started, this function will populate some mock objects
-    to faciliate testing of the client library
+    this function will populate some mock objects to faciliate testing of the
+    client library
     """
-    sess = requests.Session()
-    sess.auth = (username, password)
+    # create our initial admin user:
+    with app.app_context():
+        from hil.ext.auth.database import User
+        db.session.add(User(username, password, is_admin=True))
+        db.session.commit()
 
     # Adding nodes, node-01 - node-09
     url_node = 'http://127.0.0.1:8000/node/'
@@ -157,10 +156,12 @@ def populate_server():
                 "type": ipmi, "host": "10.10.0.0"+repr(i),
                 "user": "ipmi_u", "password": "pass1234"
                 }
-        sess.put(
+        http_client.request(
+                'PUT',
                 url_node + 'node-0'+repr(i), data=json.dumps({"obm": obminfo})
                 )
-        sess.put(
+        http_client.request(
+                'PUT',
                 url_node + 'node-0' + repr(i) + '/nic/eth0', data=json.dumps(
                             {"macaddr": "aa:bb:cc:dd:ee:0" + repr(i)}
                             )
@@ -168,7 +169,7 @@ def populate_server():
 
     # Adding Projects proj-01 - proj-03
     for i in ["proj-01", "proj-02", "proj-03"]:
-        sess.put('http://127.0.0.1:8000/project/' + i)
+        http_client.request('PUT', 'http://127.0.0.1:8000/project/' + i)
 
     # Adding switches one for each driver
     url_switch = 'http://127.0.0.1:8000/switch/'
@@ -192,37 +193,46 @@ def populate_server():
             'interface_type': 'TenGigabitEthernet'
             }
 
-    sess.put(url_switch + 'dell-01', data=json.dumps(dell_param))
-    sess.put(url_switch + 'nexus-01', data=json.dumps(nexus_param))
-    sess.put(url_switch + 'mock-01', data=json.dumps(mock_param))
-    sess.put(url_switch + 'brocade-01', data=json.dumps(brocade_param))
+    http_client.request('PUT', url_switch + 'dell-01',
+                        data=json.dumps(dell_param))
+    http_client.request('PUT', url_switch + 'nexus-01',
+                        data=json.dumps(nexus_param))
+    http_client.request('PUT', url_switch + 'mock-01',
+                        data=json.dumps(mock_param))
+    http_client.request('PUT', url_switch + 'brocade-01',
+                        data=json.dumps(brocade_param))
 
     # Adding ports to the mock switch, Connect nics to ports:
     for i in range(1, 8):
-        sess.put(url_switch + 'mock-01/port/gi1/0/' + repr(i))
-        sess.post(
+        http_client.request(
+            'PUT',
+            url_switch + 'mock-01/port/gi1/0/' + repr(i)
+        )
+        http_client.request(
+                'POST',
                 url_switch + 'mock-01/port/gi1/0/' + repr(i) + '/connect_nic',
                 data=json.dumps(
                     {'node': 'node-0' + repr(i), 'nic': 'eth0'}
                     )
                 )
 
-# Adding port gi1/0/8 to switch mock-01 without connecting it to any node.
-    sess.put(url_switch + 'mock-01/port/gi1/0/8')
+    # Adding port gi1/0/8 to switch mock-01 without connecting it to any node.
+    http_client.request('PUT', url_switch + 'mock-01/port/gi1/0/8')
 
     # Adding Projects proj-01 - proj-03
     for i in ["proj-01", "proj-02", "proj-03"]:
-        sess.put('http://127.0.0.1:8000/project/' + i)
+        http_client.request('PUT', 'http://127.0.0.1:8000/project/' + i)
 
     # Allocating nodes to projects
-    assign_nodes2project(sess, 'proj-01', 'node-01')
-    assign_nodes2project(sess, 'proj-02', 'node-02', 'node-04')
-    assign_nodes2project(sess, 'proj-03', 'node-03', 'node-05')
+    assign_nodes2project('proj-01', 'node-01')
+    assign_nodes2project('proj-02', 'node-02', 'node-04')
+    assign_nodes2project('proj-03', 'node-03', 'node-05')
 
     # Assigning networks to projects
     url_network = 'http://127.0.0.1:8000/network/'
     for i in ['net-01', 'net-02', 'net-03']:
-        sess.put(
+        http_client.request(
+                'PUT',
                 url_network + i,
                 data=json.dumps(
                     {"owner": "proj-01", "access": "proj-01", "net_id": ""}
@@ -230,95 +240,35 @@ def populate_server():
                 )
 
     for i in ['net-04', 'net-05']:
-        sess.put(
+        http_client.request(
+                'PUT',
                 url_network + i,
                 data=json.dumps(
                     {"owner": "proj-02", "access": "proj-02", "net_id": ""}
                     )
                 )
 
-
-class TimeoutError(Exception):
-    pass
-
-
-# FIX ME: Replace this function with show_networking_action call, once it
-# gets implemented.
-def avoid_network_race_condition():
-    """Checks for networking actions queue to be empty.
-
-    Used to avoid race condition between subsequent network calls
-    on the same object.
-    """
-    global db_dir
-    uri = 'sqlite:///'+db_dir+'/hil.db'
-    db = SQLAlchemy(app)
-    app.config.update(SQLALCHEMY_DATABASE_URI=uri)
-
-    for timeout in xrange(30):
-        que = db.session.query(NetworkingAction).count()
-        if (que > 0):
-            time.sleep(.5)
-        else:
-            return
-    raise TimeoutError("Timed out to avoid race condition")
+pytestmark = pytest.mark.usefixtures('dummy_verify',
+                                     'fail_on_log_warnings',
+                                     'configure',
+                                     'fresh_database',
+                                     'server_init',
+                                     'populate_server')
 
 
-def server_active(url):
-    """ Returns whether a url is a connectable http server. """
+class Test_ClientBase:
+    """Tests client initialization and object_url creation. """
 
-    try:
-        sess = requests.Session()
-        sess.auth = (username, password)
-        sess.get(url + '/projects')
-        return True
-    except requests.exceptions.ConnectionError:
-        return False
+    def test_init_error(self):
+        with pytest.raises(TypeError):
+            x = ClientBase()
 
-
-def wait_for_service(url, timeout=60):
-    """
-    Waits for a port to become a working http server
-    url     -- URL to attempt to access
-    timeout -- number of seconds to wait (default 60)
-    """
-
-    begin = time.time()
-    while not server_active(url):
-        if (time.time() - begin) < timeout:
-            time.sleep(.5)
-        else:
-            raise TimeoutError("Client library test server didn't "
-                               "start in {} seconds".format(timeout))
+    def test_object_url(self):
+        x = ClientBase(ep, 'some_base64_string')
+        y = x.object_url('abc', '123', 'xy23z')
+        assert y == 'http://127.0.0.1:8000/abc/123/xy23z'
 
 
-@pytest.fixture(scope="module")
-def create_setup(request):
-    serv_port = 8000
-    url = 'http://127.0.0.1:{}'.format(serv_port)
-
-    assert not server_active(url)
-
-    dir_names = make_config()
-    initialize_db()
-    proc1 = Popen(['hil', 'serve', str(serv_port)], stdout=sys.stdout,
-                  stderr=sys.stderr)
-    proc2 = Popen(['hil', 'serve_networks'], stdout=sys.stdout,
-                  stderr=sys.stderr)
-    wait_for_service(url)  # Loop until the server is up. See #770
-    populate_server()
-
-    yield
-
-    # Everything below is for cleanup
-    proc1.terminate()
-    proc2.terminate()
-    proc1.wait()
-    proc2.wait()
-    cleanup(dir_names)
-
-
-@pytest.mark.usefixtures("create_setup")
 class Test_node:
     """ Tests Node related client calls. """
 
@@ -382,37 +332,34 @@ class Test_node:
     def test_node_stop_console(self):
         assert C.node.stop_console('node-01') is None
 
-    # Network note: it is the responsibility of the calling test to
-    # ensure that no net operations are pending when it is done.
     def test_node_connect_network(self):
         assert C.node.connect_network(
                 'node-01', 'eth0', 'net-01', 'vlan/native'
                 ) is None
-        avoid_network_race_condition()
+        deferred.apply_networking()
 
     def test_node_connect_network_error(self):
         C.node.connect_network('node-02', 'eth0', 'net-04', 'vlan/native')
-        avoid_network_race_condition()
+        deferred.apply_networking()
         with pytest.raises(FailedAPICallException):
             C.node.connect_network('node-02', 'eth0', 'net-04', 'vlan/native')
-        avoid_network_race_condition()
+        deferred.apply_networking()
 
     def test_node_detach_network(self):
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
-        avoid_network_race_condition()
+        deferred.apply_networking()
         assert C.node.detach_network('node-04', 'eth0', 'net-04') is None
-        avoid_network_race_condition()
+        deferred.apply_networking()
 
     def test_node_detach_network_error(self):
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
-        avoid_network_race_condition()
+        deferred.apply_networking()
         C.node.detach_network('node-04', 'eth0', 'net-04')
-        avoid_network_race_condition()
+        deferred.apply_networking()
         with pytest.raises(FailedAPICallException):
             C.node.detach_network('node-04', 'eth0', 'net-04')
 
 
-@pytest.mark.usefixtures("create_setup")
 class Test_project:
     """ Tests project related client calls."""
 
@@ -486,7 +433,6 @@ class Test_project:
             C.project.detach('no-such-project', 'node-06')
 
 
-@pytest.mark.usefixtures("create_setup")
 class Test_switch:
     """ Tests switch related client calls."""
 
@@ -502,7 +448,6 @@ class Test_switch:
         assert C.switch.delete('nexus-01') is None
 
 
-@pytest.mark.usefixtures("create_setup")
 class Test_port:
     """ Tests port related client calls."""
 
@@ -570,7 +515,6 @@ class Test_port:
             C.port.show('unknown-switch', 'unknown-port')
 
 
-@pytest.mark.usefixtures("create_setup")
 class Test_user:
     """ Tests user related client calls."""
 
@@ -650,7 +594,6 @@ class Test_user:
             C.user.set_admin('hugo', True)
 
 
-@pytest.mark.usefixtures("create_setup")
 class Test_network:
     """ Tests network related client calls. """
 
