@@ -163,10 +163,10 @@ def check_status_code(response):
     if response.status_code < 200 or response.status_code >= 300:
         sys.stderr.write('Unexpected status code: %d\n' % response.status_code)
         sys.stderr.write('Response text:\n')
-        sys.stderr.write(response.text + "\n")
+        sys.stderr.write(response.content + "\n")
         raise FailedAPICallException()
     else:
-        sys.stdout.write(response.text + "\n")
+        sys.stdout.write(response.content + "\n")
 
 # Function object_url should be DELETED.
 # TODO: This function's name is no longer very accurate.  As soon as it is

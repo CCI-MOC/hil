@@ -7,6 +7,8 @@ from hil.client.user import User
 import abc
 import requests
 
+from collections import namedtuple
+
 
 class HTTPClient(object):
     """An HTTP client.
@@ -41,18 +43,44 @@ class HTTPClient(object):
         Returns
         -------
 
-        requests.Response
+        HTTPResponse
             The HTTP response
         """
+
+
+class HTTPResponse(namedtuple('HTTPResponse', ['status_code',
+                                               'headers',
+                                               'content'])):
+    """An http response.
+
+    Attributes
+    ----------
+
+    status_code : int
+        The http status code
+    headers : dict
+        http headers
+    content : str
+        The body of the response
+    """
 
 
 class RequestsHTTPClient(requests.Session, HTTPClient):
     """An HTTPClient which uses the requests library.
 
-    Note that this doesn't do anything over `requests.Session`; that
-    class already implements the required interface. We declare it only
-    for clarity.
+    This is a thin wrapper around `requests.Session`; all it does is
+    convert the response to an `HTTPResponse`.
+
+    The requests library's Response object actually satisfies the
+    needed interface by itself, but by wrapping it we decrease the
+    odds of accidentally depending on requests-specific functionality.
     """
+
+    def request(self, *args, **kwargs):
+        resp = requests.Session.request(self, *args, **kwargs)
+        return HTTPResponse(status_code=resp.status_code,
+                            headers=resp.headers,
+                            content=resp.content)
 
 
 class KeystoneHTTPClient(HTTPClient):
@@ -86,12 +114,16 @@ class KeystoneHTTPClient(HTTPClient):
         try:
             # The order of these parameters is different that what
             # we expect, but the names are the same:
-            return self.session.request(method=method,
+            resp = self.session.request(method=method,
                                         url=url,
                                         data=data,
                                         params=params)
+
         except HttpError as e:
-            return e.response
+            resp = e.response
+        return HTTPResponse(status_code=resp.status_code,
+                            headers=resp.headers,
+                            content=resp.content)
 
 
 class Client(object):
