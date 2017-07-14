@@ -14,6 +14,8 @@ import requests
 import time
 from schema import Schema
 from threading import Thread
+import subprocess
+import os
 
 from keystoneauth1.identity import v3
 from keystoneauth1 import session
@@ -309,3 +311,15 @@ def test_unregistered_admin():
         "Status code for admin-only call by non-registered admin project "
         "should still succeed."
     )
+
+
+@pytest.mark.parametrize('user_info', user_db)
+def test_cli_call(keystone_projects, user_info):
+    # Tests to make sure the CLI can interact with keystone.
+    os.environ["HIL_ENDPOINT"] = "http://127.0.0.1:6000"
+    os.environ["OS_AUTH_URL"] = str(_keystone_cfg_opt('auth_url'))
+    os.environ["OS_PASSWORD"] = user_info['password']
+    os.environ["OS_USERNAME"] = user_info['name']
+    os.environ["OS_PROJECT_NAME"] = user_info['project_name']
+    output = subprocess.check_output(['hil', 'list_nodes', 'all'])
+    assert output == 'All nodes 0\t:    \n'
