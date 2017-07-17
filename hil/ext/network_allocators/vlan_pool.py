@@ -72,14 +72,13 @@ class VlanAllocator(NetworkAllocator):
 
     def claim_network_id(self, net_id):
         vlan = Vlan.query.filter_by(vlan_no=net_id).first()
-        if vlan and vlan.available:
-            vlan.available = False
+        if vlan is None:
             return
-        elif vlan and not vlan.available:
+        elif vlan.available:
+            vlan.available = False
+        else:
             raise BlockedError("Network ID is not available."
                                " Please choose a different ID.")
-        else:
-            return
 
     def is_network_id_in_pool(self, net_id):
         vlan = Vlan.query.filter_by(vlan_no=net_id).first()
