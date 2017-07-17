@@ -45,4 +45,4 @@ class ClientBase(object):
                 return
         else:
             e = json.loads(response.content)
-            raise FailedAPICallException(e['msg'])
+            raise FailedAPICallException(e['error']['message'])
