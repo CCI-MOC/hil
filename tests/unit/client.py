@@ -59,9 +59,6 @@ class FlaskHTTPClient(HTTPClient):
 
 http_client = FlaskHTTPClient()
 C = Client(ep, http_client)  # Initializing client library
-MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/v0/switches/mock'
-OBM_TYPE_MOCK = 'http://schema.massopencloud.org/haas/v0/obm/mock'
-OBM_TYPE_IPMI = 'http://schema.massopencloud.org/haas/v0/obm/ipmi'
 
 
 fail_on_log_warnings = pytest.fixture(fail_on_log_warnings)
