@@ -88,7 +88,7 @@ class TestAdminCreatedNetworks():
 
         api.project_create('nuggets')
 
-        # create a project owned network and get it's network_id
+        # create a project owned network and get its network_id
         api.network_create('hammernet', 'nuggets', 'nuggets', '')
         network = api._must_find(model.Network, 'hammernet')
         net_id = int(network.network_id)
