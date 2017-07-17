@@ -45,4 +45,7 @@ class ClientBase(object):
                 return
         else:
             e = json.loads(response.content)
-            raise FailedAPICallException(e['msg'])
+            if e.keys()[0] == 'error':
+                raise FailedAPICallException(e['error']['message'])
+            else:
+                raise FailedAPICallException(e['msg'])
