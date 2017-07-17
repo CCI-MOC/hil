@@ -69,8 +69,29 @@ fresh_database = pytest.fixture(fresh_database)
 def dummy_verify():
     """replace sha512_crypt.verify with something faster (albeit broken).
 
-    Password hashing is just way too slow to do it this many times in
-    the test suite.
+    The tests in this module mostly use the database auth backend. This was,
+    frankly, a mistake. This module pulls in way too much "real" code (as
+    opposed to mock objects) in general, and patches to improve the
+    situation are welcome.
+
+    In the meantime, this fixture works around a serious consequence of using
+    the database backend: doing password hasing is **SLOW** (by design; the
+    algorithms are intended to make brute-forcing hard), and we've got
+    fixtures where we're going through the request handler tens of times for
+    every test (before even hitting the test itself).
+
+    So, this fixture monkey-patches sha512_crypt.verify (the function that
+    does the work of checking the password), replacing it with a dummy
+    implementation. At the time of writing, this shaves about half an hour
+    off of our Travis CI runs.
+
+    Longer term, we should:
+
+    * Not go through the http code when creating database objects (do what
+      e.g. initial_db and additional_db do instead).
+    * Use the null/mock backends and drivers everywhere we can.
+    * Scope this fixture to the Test_user class, which is the only place
+      that should need to be using the database backend in the first place.
     """
 
     @staticmethod
@@ -78,9 +99,9 @@ def dummy_verify():
         return True
 
     old = sha512_crypt.verify
-    sha512_crypt.verify = dummy
-    yield
-    sha512_crypt.verify = old
+    sha512_crypt.verify = dummy  # override the verify() function
+    yield  # Test runs here
+    sha512_crypt.verify = old  # restore the old implementaton.
 
 
 @pytest.fixture
