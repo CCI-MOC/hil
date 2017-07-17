@@ -133,6 +133,8 @@ def setup_http_client():
         return
     # Next try keystone:
     try:
+        from keystoneauth1.identity import v3
+        from keystoneauth1 import session
         os_auth_url = os.getenv('OS_AUTH_URL')
         os_password = os.getenv('OS_PASSWORD')
         os_username = os.getenv('OS_USERNAME')
