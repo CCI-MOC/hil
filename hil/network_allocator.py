@@ -79,6 +79,14 @@ class NetworkAllocator(object):
     def validate_network_id(self, net_id):
         """Check if net_id is a valid network id"""
 
+    @abstractmethod
+    def claim_network_id(self, net_id):
+        """Claim a network id when an admin creates a network"""
+
+    @abstractmethod
+    def is_network_id_in_pool(self, net_id):
+        """returns true if net_id is part of the allocation pool"""
+
 
 _network_allocator = None
 
