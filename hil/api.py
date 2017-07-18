@@ -1234,6 +1234,16 @@ def list_headnode_images():
     return json.dumps(valid_imgs)
 
 
+# Extension code #
+#################
+@rest_call('GET', '/active_extensions', Schema({}))
+def list_active_extensions():
+    """List all active extensions"""
+    get_auth_backend().require_admin()
+    extensions = sorted([ext[0] for ext in cfg.items('extensions')])
+    return json.dumps(extensions)
+
+
 # Console code #
 ################
 @rest_call('GET', '/node/<nodename>/console', Schema({'nodename': basestring}))

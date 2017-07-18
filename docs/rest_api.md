@@ -1251,3 +1251,21 @@ Remove a user from a project.
 Authorization requirements:
 
 * Administrative access.
+
+#### list_active_extensions
+
+`GET /active_extensions`
+
+Response Body:
+
+[
+    "hil.ext.switches.mock",
+    "hil.ext.network_allocators.null",
+    ...
+]
+
+List all active extensions.
+
+Authorization requirements:
+
+* Administrative access.

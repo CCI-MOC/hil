@@ -2235,6 +2235,22 @@ class TestFancyNetworkCreate:
             assert network.network_id == '35'
 
 
+class TestExtensions:
+    """
+    Test extension related API calls
+    """
+
+    def test_extension_list(self):
+        result = json.loads(api.list_active_extensions())
+        assert result == [
+            'hil.ext.auth.null',
+            'hil.ext.network_allocators.null',
+            'hil.ext.obm.ipmi',
+            'hil.ext.obm.mock',
+            'hil.ext.switches.mock',
+            ]
+
+
 class TestDryRun:
     """
     Test that api calls using functions with @no_dry_run behave reasonably.

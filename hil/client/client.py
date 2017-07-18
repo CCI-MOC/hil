@@ -4,6 +4,7 @@ from hil.client.switch import Switch
 from hil.client.switch import Port
 from hil.client.network import Network
 from hil.client.user import User
+from hil.client.extensions import Extensions
 import abc
 import requests
 
@@ -137,3 +138,4 @@ class Client(object):
         self.port = Port(self.endpoint, self.httpClient)
         self.network = Network(self.endpoint, self.httpClient)
         self.user = User(self.endpoint, self.httpClient)
+        self.extensions = Extensions(self.endpoint, self.httpClient)

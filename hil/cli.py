@@ -799,6 +799,17 @@ def create_admin_user(username, password):
 
 
 @cmd
+def list_active_extensions():
+    """List active extensions by type. """
+    all_extensions = C.extensions.list_active()
+    if not all_extensions:
+        print "No active extensions"
+    else:
+        for ext in all_extensions:
+            print ext
+
+
+@cmd
 def help(*commands):
     """Display usage of all following <commands>, or of all commands if none
     are given

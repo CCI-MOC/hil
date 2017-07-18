@@ -684,3 +684,21 @@ class Test_network:
         C.network.revoke_access('proj-02', 'newnet03')
         with pytest.raises(FailedAPICallException):
             C.network.revoke_access('proj-02', 'newnet03')
+
+
+@pytest.mark.usefixtures("create_setup")
+class Test_extensions:
+    """ Test extension related client calls. """
+
+    def test_extension_list(self):
+        """ Test listing active extensions. """
+        assert C.extensions.list_active() == [
+                    "hil.ext.auth.database",
+                    "hil.ext.network_allocators.vlan_pool",
+                    "hil.ext.obm.ipmi",
+                    "hil.ext.obm.mock",
+                    "hil.ext.switches.brocade",
+                    "hil.ext.switches.dell",
+                    "hil.ext.switches.mock",
+                    "hil.ext.switches.nexus",
+                ]
