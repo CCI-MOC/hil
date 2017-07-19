@@ -317,7 +317,7 @@ class Test_node:
                 }
 
     def test_power_cycle(self):
-        assert C.node.power_cycle('node-07', False) is None
+        assert C.node.power_cycle('node-07') is None
 
     def test_power_cycle_force(self):
         assert C.node.power_cycle('node-07', True) is None

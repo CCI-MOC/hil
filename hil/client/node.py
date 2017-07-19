@@ -38,7 +38,7 @@ class Node(ClientBase):
         url = self.object_url('node', node_name)
         return self.check_response(self.httpClient.request('DELETE', url))
 
-    def power_cycle(self, node_name, force):
+    def power_cycle(self, node_name, force=False):
         """Power cycles the <node> """
         url = self.object_url('node', node_name, 'power_cycle')
         payload = json.dumps({'force': force})

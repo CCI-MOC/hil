@@ -478,6 +478,14 @@ Authorization requirements:
 Power cycle the node named `<node>`, and set it's next boot device to
 PXE. If the node is powered off, this turns it on.
 
+Accepts one optional boolean argument that determines whether to soft (default)
+or hard reboot the system.
+
+Request body:
+    {
+    	"force": <boolean> (Optional, defaults to False)
+    }
+
 #### node_set_bootdev
 
 `PUT /node/<node>/boot_device`

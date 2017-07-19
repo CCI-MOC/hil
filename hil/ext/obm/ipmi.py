@@ -68,7 +68,7 @@ class Ipmi(Obm):
         return status
 
     @no_dry_run
-    def power_cycle(self, force):
+    def power_cycle(self, force=False):
         self._ipmitool(['chassis', 'bootdev', 'pxe'])
         if force:
             if self._ipmitool(['chassis', 'power', 'reset']) == 0:
