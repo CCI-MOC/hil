@@ -41,9 +41,7 @@ class Node(ClientBase):
     def power_cycle(self, node_name, force):
         """Power cycles the <node> """
         url = self.object_url('node', node_name, 'power_cycle')
-        payload = json.dumps({
-                'force': force
-                })
+        payload = json.dumps({'force': force})
         return self.check_response(
                 self.httpClient.request('POST', url, data=payload)
                 )
