@@ -221,7 +221,8 @@ Configuring HIL
 -----------------
 
 Now the ``hil`` executable should be in your path. First, create a
-configuration file ``hil.cfg``. There are two examples for you to work from,
+configuration file ``hil.cfg`` because if it's not found then hil would refuse
+to run and exit. There are two examples for you to work from,
 ``examples/hil.cfg.dev-no-hardware``, which is oriented towards development,
 and ``examples/hil.cfg`` which is more production oriented. These config files
 are well commented; read them carefully.

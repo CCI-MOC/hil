@@ -35,10 +35,11 @@ def load(filename='hil.cfg'):
     This must be called once at program startup; no configuration options will
     be available until then.
 
-    If the configuration file is not available, this function will simply load
-    an empty configuration (i.e. one with no options).
+    If the config file is not found, it will simply exit.
     """
-    cfg.read(filename)
+    opened_file = cfg.read(filename)
+    if filename not in opened_file:
+        sys.exit("Config file not found. Please create hil.cfg")
 
 
 def configure_logging():

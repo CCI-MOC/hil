@@ -36,9 +36,5 @@ install:
   - sh -e ci/keystone/install.sh
 
 script:
-  - sh -e ci/pep8_tests.sh
-  - sh -e ci/pylint_tests.sh
-  - sh -e ci/run_unit_tests.sh
   - sh -e ci/apache/run_integration_tests.sh
-  - sh -e ci/keystone/run_integration_tests.sh
   - sh -e ci/deployment-mock-networks/run_integration_tests.sh
