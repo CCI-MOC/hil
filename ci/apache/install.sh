@@ -16,6 +16,7 @@ fi
 # Address #577 via
 # https://stackoverflow.com/questions/2192323/what-is-the-python-egg-cache-python-egg-cache
 mkdir -p ~/.python-eggs
+chmod go-w ~/.python-eggs # Eliminate "writable by group/others" warnings
 
 # Install HIL
 python setup.py install
