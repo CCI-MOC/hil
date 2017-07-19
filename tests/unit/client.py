@@ -686,7 +686,6 @@ class Test_network:
             C.network.revoke_access('proj-02', 'newnet03')
 
 
-@pytest.mark.usefixtures("create_setup")
 class Test_extensions:
     """ Test extension related client calls. """
 
