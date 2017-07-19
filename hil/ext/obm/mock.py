@@ -48,7 +48,7 @@ class MockObm(Obm):
             }).validate(kwargs)
 
     @no_dry_run
-    def power_cycle(self):
+    def power_cycle(self, force):
         return
 
     @no_dry_run
