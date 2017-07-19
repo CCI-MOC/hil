@@ -13,6 +13,10 @@ if [ $DB = postgres ]; then
     psql -c 'CREATE DATABASE hil;' -U postgres
 fi
 
+# Address #577 via
+# https://stackoverflow.com/questions/2192323/what-is-the-python-egg-cache-python-egg-cache
+mkdir -p ~/.python-eggs
+
 # Install HIL
 python setup.py install
 
