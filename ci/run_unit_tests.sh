@@ -4,9 +4,9 @@
 # uses an in memory (and  therefore per-process) database.
 
 # Temporarily disabled till we figure out how to solve https://github.com/CCI-MOC/hil/issues/577
-# if [ $DB = sqlite ]; then
-#     extra_flags='-n auto'
-# fi
+if [ $DB = sqlite ]; then
+    extra_flags='-n auto'
+fi
 
 py.test $extra_flags \
 	tests/custom_lint.py \
