@@ -179,6 +179,7 @@ def object_url(*args):
     # Prefer an environmental variable for getting the endpoint if available.
     url = os.environ.get('HIL_ENDPOINT')
     if url is None:
+        config.setup()
         url = cfg.get('client', 'endpoint')
 
     for arg in args:
@@ -227,6 +228,7 @@ def serve(port):
         sys.exit('Unxpected Error!!! \n %s' % e)
 
     """Start the HIL API server"""
+    config.setup()
     if cfg.has_option('devel', 'debug'):
         debug = cfg.getboolean('devel', 'debug')
     else:
@@ -245,6 +247,7 @@ def serve_networks():
     """Start the HIL networking server"""
     from hil import model, deferred
     from time import sleep
+    config.setup()
     server.init()
     server.register_drivers()
     server.validate_state()
@@ -787,6 +790,7 @@ def create_admin_user(username, password):
     have an initial admin, you can (and should) create additional users via
     the API.
     """
+    config.setup()
     if not config.cfg.has_option('extensions', 'hil.ext.auth.database'):
         sys.exit("'make_inital_admin' is only valid with the database auth"
                  " backend.")
@@ -832,7 +836,6 @@ def main():
     this function.
     """
     ensure_not_root()
-    config.setup()
 
     if len(sys.argv) < 2 or sys.argv[1] not in command_dict:
         # Display usage for all commands
