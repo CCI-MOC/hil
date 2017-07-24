@@ -13,7 +13,7 @@ from hil.model import db
 # revision identifiers, used by Alembic.
 revision = 'b5b31d19257d'
 down_revision = None
-branch_labels = ('hil.ext.switches.mock',)
+branch_labels = None
 
 
 def upgrade():
