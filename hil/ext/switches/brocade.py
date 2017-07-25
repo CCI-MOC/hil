@@ -27,15 +27,11 @@ import schema
 from hil.migrations import paths
 from hil.model import db, Switch
 from hil.errors import BadArgumentError
-from sqlalchemy import BigInteger
-from sqlalchemy.dialects import sqlite
+from hil.model import BigIntegerType
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'brocade')
 
 logger = logging.getLogger(__name__)
-
-BigIntegerType = BigInteger().with_variant(
-                sqlite.INTEGER(), 'sqlite')
 
 
 class Brocade(Switch):

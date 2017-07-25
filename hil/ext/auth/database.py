@@ -11,17 +11,13 @@ from passlib.hash import sha512_crypt
 from schema import Schema, Optional
 import flask
 import logging
-from sqlalchemy import BigInteger
-from sqlalchemy.dialects import sqlite
 from os.path import join, dirname
 from hil.migrations import paths
+from hil.model import BigIntegerType
 
 logger = ContextLogger(logging.getLogger(__name__), {})
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'database')
-
-BigIntegerType = BigInteger().with_variant(
-        sqlite.INTEGER(), 'sqlite')
 
 
 class User(db.Model):

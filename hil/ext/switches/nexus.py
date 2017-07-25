@@ -28,15 +28,11 @@ from hil.ext.switches import _console
 from hil.errors import BadArgumentError
 from os.path import join, dirname
 from hil.migrations import paths
-from sqlalchemy import BigInteger
-from sqlalchemy.dialects import sqlite
+from hil.model import BigIntegerType
 
 logger = logging.getLogger(__name__)
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'nexus')
-
-BigIntegerType = BigInteger().with_variant(
-                sqlite.INTEGER(), 'sqlite')
 
 
 class Nexus(Switch):

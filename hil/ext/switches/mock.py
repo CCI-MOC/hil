@@ -25,15 +25,11 @@ import re
 from sqlalchemy import Column, ForeignKey, String
 from os.path import dirname, join
 from hil.errors import BadArgumentError
-from sqlalchemy import BigInteger
-from sqlalchemy.dialects import sqlite
+from hil.model import BigIntegerType
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'mock')
 
 LOCAL_STATE = defaultdict(lambda: defaultdict(dict))
-
-BigIntegerType = BigInteger().with_variant(
-                sqlite.INTEGER(), 'sqlite')
 
 
 class MockSwitch(Switch):
@@ -66,8 +62,6 @@ class MockSwitch(Switch):
     @staticmethod
     def validate_port_name(port):
 
-        BigIntegerType = BigInteger().with_variant(
-                        sqlite.INTEGER(), 'sqlite')
         """
         Valid port names for this switch are of the form gi1/0/11,
         te1/0/12, gi1/12, or te1/3
