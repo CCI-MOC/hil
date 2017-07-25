@@ -30,14 +30,10 @@ from hil.ext.switches._dell_base import _BaseSession
 from os.path import dirname, join
 from hil.migrations import paths
 from hil.errors import BadArgumentError
-from sqlalchemy import BigInteger
-from sqlalchemy.dialects import sqlite
+from hil.model import BigIntegerType
 
 logger = logging.getLogger(__name__)
 paths[__name__] = join(dirname(__file__), 'migrations', 'n3000')
-
-BigIntegerType = BigInteger().with_variant(
-                sqlite.INTEGER(), 'sqlite')
 
 
 class DellN3000(Switch):

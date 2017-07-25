@@ -22,13 +22,9 @@ from hil.dev_support import no_dry_run
 
 from os.path import join, dirname
 from hil.migrations import paths
-from sqlalchemy import BigInteger
-from sqlalchemy.dialects import sqlite
+from hil.model import BigIntegerType
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'mock')
-
-BigIntegerType = BigInteger().with_variant(
-        sqlite.INTEGER(), 'sqlite')
 
 
 class MockObm(Obm):

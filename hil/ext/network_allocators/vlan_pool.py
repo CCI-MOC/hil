@@ -9,13 +9,9 @@ from hil.errors import BlockedError
 
 from os.path import join, dirname
 from hil.migrations import paths
-from sqlalchemy import BigInteger
-from sqlalchemy.dialects import sqlite
+from hil.model import BigIntegerType
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'vlan_pool')
-
-BigIntegerType = BigInteger().with_variant(
-                sqlite.INTEGER(), 'sqlite')
 
 
 def get_vlan_list():
