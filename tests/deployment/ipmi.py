@@ -64,6 +64,11 @@ class TestIpmi():
         for node in nodes:
             api.node_power_cycle(node.label)
 
+    def test_node_power_force(self):
+        nodes = self.collect_nodes()
+        for node in nodes:
+            api.node_power_cycle(node.label, True)
+
     def test_node_power_off(self):
         nodes = self.collect_nodes()
         for node in nodes:

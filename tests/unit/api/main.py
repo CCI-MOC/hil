@@ -2266,3 +2266,18 @@ class TestDryRun:
                   "password": "tapeworm"})
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.node_power_cycle('node-99')
+
+    def test_node_power_cycle_force(self):
+        """
+        Check that power-cycle with the force flag
+
+        behaves reasonably under @no_dry_run.
+        """
+        api.project_create('anvil-nextgen')
+        api.node_register('node-99', obm={
+                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                  "host": "ipmihost",
+                  "user": "root",
+                  "password": "tapeworm"})
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.node_power_cycle('node-99', True)

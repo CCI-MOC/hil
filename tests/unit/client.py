@@ -319,6 +319,16 @@ class Test_node:
     def test_power_cycle(self):
         assert C.node.power_cycle('node-07') is None
 
+    def test_power_cycle_force(self):
+        assert C.node.power_cycle('node-07', True) is None
+
+    def test_power_cycle_no_force(self):
+        assert C.node.power_cycle('node-07', False) is None
+
+    def test_power_cycle_bad_arg(self):
+        with pytest.raises(FailedAPICallException):
+            C.node.power_cycle('node-07', 'wrong')
+
     def test_power_off(self):
         assert C.node.power_off('node-07') is None
 
