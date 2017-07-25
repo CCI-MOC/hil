@@ -53,3 +53,14 @@ Configuring HIL to talk to Keystone deviates in the following ways:
   section in `hil.cfg`, i.e. `[hil.ext.auth.keystone]`.
 
 [1]: http://docs.openstack.org/developer/keystonemiddleware/
+
+## Debugging Tips
+
+If authentication is not working with HIL, first check if authentication to OpenStack is working.  Using the OpenStack CLI, run the command:
+``openstack token issue -f value -c id``.
+If a text token is returned, then authentication to OpenStack is working.
+
+Testing authentication directly to the HIL API is also helpful.
+Using the token from the tip above, run:
+``curl -H 'x-auth-token: <token>' <HIL address>/nodes/free``.
+If the response lists the nodes in the current HIL setup, then the keystone middleware has been setup correctly. 

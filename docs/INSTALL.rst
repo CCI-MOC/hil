@@ -396,6 +396,8 @@ former is a WSGI application, which we recommend running with Apache's
 (The file may already exist, with just the ``LoadModule`` option. If so, it is
 safe to replace it.)
 
+**Note:** if accessing HIL through a public IP address, be sure to change the ``VirtualHost`` entry accordingly. `VirtualHost documentation <https://httpd.apache.org/docs/current/mod/core.html#virtualhost>`_
+
 **Note:** certain calls to HIL such as *port_register()* may pass arbitrary
 strings that should be escaped (see `issue 361 <https://github.com/CCI-MOC/hil/issues/360>`_). By default, Apache `Doesn't
 allow <https://stackoverflow.com/questions/4390436/need-to-allow-encoded-slashes-on-apache>`_

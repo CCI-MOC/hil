@@ -26,6 +26,9 @@ which HIL instance to use, be sure to do one of:
 If using the basic auth/database auth backend, you must set the environment
 variables ``HIL_USERNAME`` and ``HIL_PASSWORD`` to the correct credentials.
 
+If using the auth/keystone auth backend, first make sure that the keystonemiddleware library is installed by running ``pip install keystonemiddleware``.
+Next, ensure that there are OS environment variables set for the following OpenStack authentication credentials: ``OS_AUTH_URL``, ``OS_USERNAME``, ``OS_PASSWORD``, ``OS_PROJECT_NAME``.
+
 Deploying Machines
 ------------------
 
