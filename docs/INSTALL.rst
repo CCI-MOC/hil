@@ -94,9 +94,10 @@ hil.cfg
 --------
 
 HIL is configured with ``hil.cfg``. This file contains settings for both the
-CLI client and the server. Carefully read the ``hil.cfg*`` files in
-``examples/``, to understand and correctly set all of the options.  In
-particular, the following two fields in the ``headnode`` section are very
+CLI client and the server. If ``hil.cfg`` is not found, hil would refuse to run
+and exit. Carefully read the ``hil.cfg*`` files in ``examples/``,
+to understand and correctly set all of the options.  In particular,
+the following two fields in the ``headnode`` section are very
 important: ``trunk_nic`` must match your choice of trunk NIC in the "Networking
 - Bridges" instructions below; ``base_imgs`` must match the name of the base
 headnode libvirt instance created in the "Libvirt" instructions below.
