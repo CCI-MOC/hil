@@ -5,6 +5,14 @@
 -- Dumped from database version 9.5.7
 -- Dumped by pg_dump version 9.5.7
 
+-- Dump taken after PK migration to BIGINT
+-- Commit: d521b5a242b267720ffb3d299f04dad636736215
+-- Extensions: hil.ext.switches.mock, hil.ext.obm.mock, hil.ext.obm.ipmi,
+-- hil.ext.switches.dell, hil.ext.switches.brocade, hil.ext.switches.nexus
+-- hil.ext.switches.n3000, hil.ext.auth.database,
+-- hil.ext.network_allocators.vlan_pool
+
+
 SET statement_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
