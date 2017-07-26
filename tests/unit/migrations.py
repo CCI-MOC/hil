@@ -30,16 +30,7 @@ from pprint import pformat
 import difflib
 
 MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/v0/switches/mock'
-DELL_SWITCH_TYPE = \
-        'http://schema.massopencloud.org/haas/v0/switches/powerconnect55xx'
-N3000_SWITCH_TYPE = \
-        'http://schema.massopencloud.org/haas/v0/switches/delln3000'
-NEXUS_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/v0/switches/nexus'
-BROCADE_SWITCH_TYPE = \
-        'http://schema.massopencloud.org/haas/v0/switches/brocade'
-MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/v0/switches/mock'
 MOCK_OBM_TYPE = 'http://schema.massopencloud.org/haas/v0/obm/mock'
-IPMI_OBM_TYPE = 'http://schema.massopencloud.org/haas/v0/obm/ipmi'
 
 
 def create_pending_actions_db():
@@ -75,82 +66,6 @@ def create_pending_actions_db():
     # deferred.apply_networking, as that would flush the action and
     # remove it from the database.
     api.node_connect_network('node-1', 'pxe', 'runway_pxe')
-
-
-def create_bigint_db():
-    """Create database objects representing those whose PKs are now BIGINTs.
-
-    The first version of this function was used to create the dump
-    'after-PK-bigint.sql'.
-    """
-    # At a minimum we need a project, node, nic, switch, port, and network:
-    api.project_create('runway')
-    api.node_register(
-        'node-1',
-        obm={
-            'type': MOCK_OBM_TYPE,
-            'user': 'user',
-            'host': 'host',
-            'password': 'pass',
-        },
-    )
-    api.node_register(
-        'node-2',
-        obm={
-            'type': IPMI_OBM_TYPE,
-            'user': 'user',
-            'host': 'host',
-            'password': 'pass',
-        },
-    )
-    api.node_register_nic('node-1', 'pxe', 'de:ad:be:ef:20:16')
-    api.node_register_nic('node-2', 'pxe-dell', 'be:ad:be:ef:20:18')
-    api.switch_register('sw0',
-                        type=MOCK_SWITCH_TYPE,
-                        username='user',
-                        hostname='host',
-                        password='pass',
-                        )
-    api.switch_register('sw-dell',
-                        type=DELL_SWITCH_TYPE,
-                        username='user',
-                        hostname='host',
-                        password='pass',
-                        )
-    api.switch_register('sw-nexus',
-                        type=NEXUS_SWITCH_TYPE,
-                        username='user',
-                        hostname='host',
-                        password='pass',
-                        dummy_vlan=4,
-                        )
-    api.switch_register('sw-n3000',
-                        type=N3000_SWITCH_TYPE,
-                        username='user',
-                        hostname='host',
-                        password='pass',
-                        dummy_vlan=5,
-                        )
-    api.switch_register('sw-brocade',
-                        type=BROCADE_SWITCH_TYPE,
-                        username='user',
-                        hostname='host',
-                        password='pass',
-                        interface_type=5,
-                        )
-    api.switch_register_port('sw0', 'gi1/0/4')
-    api.switch_register_port('sw-dell', 'gi1/0/5')
-    api.port_connect_nic('sw0', 'gi1/0/4', 'node-1', 'pxe')
-    api.port_connect_nic('sw-dell', 'gi1/0/5', 'node-2', 'pxe-dell')
-    api.project_connect_node('runway', 'node-1')
-    api.project_connect_node('runway', 'node-2')
-    api.network_create('runway_pxe', 'runway', 'runway', 'vlan/100')
-
-    # Queue up a networking action. Importantly, we do *not* call
-    # deferred.apply_networking, as that would flush the action and
-    # remove it from the database.
-    api.node_connect_network('node-1', 'pxe', 'runway_pxe', 'vlan/100')
-    api.node_connect_network('node-2', 'pxe-dell', 'runway_pxe', 'vlan/100')
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
@@ -286,28 +201,6 @@ def get_db_state():
             'hil.ext.switches.mock': '',
             'hil.ext.auth.null': '',
             'hil.ext.network_allocators.null': '',
-        },
-    }],
-    ['after-PK-bigint.sql', create_bigint_db, {
-        'auth': {
-            'require_authentication': 'False',
-        },
-        'extensions': {
-            'hil.ext.switches.mock': '',
-            'hil.ext.switches.nexus': '',
-            'hil.ext.switches.dell': '',
-            'hil.ext.switches.n3000': '',
-            'hil.ext.switches.brocade': '',
-            'hil.ext.obm.ipmi': '',
-            'hil.ext.obm.mock': '',
-            'hil.ext.auth.database': '',
-            'hil.ext.network_allocators.vlan_pool': '',
-            # These are on by default; disable them.
-            'hil.ext.auth.null': None,
-            'hil.ext.network_allocators.null': None,
-        },
-        'hil.ext.network_allocators.vlan_pool': {
-            'vlans': '100-200, 300-500',
         },
     }],
 ])
