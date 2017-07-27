@@ -67,6 +67,7 @@ def create_pending_actions_db():
     # remove it from the database.
     api.node_connect_network('node-1', 'pxe', 'runway_pxe')
 
+
 def create_bigint_db():
     from hil import model
     from hil.model import db
@@ -129,7 +130,7 @@ def create_bigint_db():
         node1 = model.Node(label='node-1',
                            obm=ipmi)
         db.session.add(node1)
-                          
+
         db.session.add(model.Metadata(label='meta',
                                       value="it is a true value",
                                       node=node1))
@@ -161,6 +162,9 @@ def create_bigint_db():
 
         dbauth.user_add_project('jim', 'runway')
 
+        db.session.commit()
+
+        db.session.query(User).get(1).hashed_password = 'pass'
         db.session.commit()
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)

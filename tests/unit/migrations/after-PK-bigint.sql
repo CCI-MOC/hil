@@ -967,7 +967,7 @@ SELECT pg_catalog.setval('switch_id_seq', 5, true);
 -- Data for Name: user; Type: TABLE DATA; Schema: public; Owner: hil
 --
 
-INSERT INTO "user" (id, label, is_admin, hashed_password) VALUES (1, 'jim', true, '$6$rounds=656000$Fv6N6xIpE9wFiIns$vNBgplytqqe5L58DwlWLdupIaBLvGaKoAtntXfT62S1T2sgjgG6kROBxEcYYY/N7KAGsdQhTfjwanYMatLSMa1');
+INSERT INTO "user" (id, label, is_admin, hashed_password) VALUES (1, 'jim', true, 'pass');
 
 
 --
