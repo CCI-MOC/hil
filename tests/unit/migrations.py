@@ -75,6 +75,11 @@ def create_bigint_db():
     from hil.ext.switches.brocade import Brocade
     from hil.ext.switches.nexus import Nexus
     from hil.ext.switches.mock import MockSwitch
+    from hil.ext.obm.ipmi import Ipmi
+    from hil.ext.obm.mock import MockObm
+    from hil.ext.auth.database import User, user_projects
+    from hil.rest import local
+    from hil.ext.auth import database as dbauth
     with app.app_context():
         db.session.add(DellN3000(label='sw-n3000',
                                  hostname='host',
@@ -82,36 +87,80 @@ def create_bigint_db():
                                  password='pass',
                                  dummy_vlan='5',
                                  type=DellN3000.api_name))
-        db.session.add(PowerConnect55xx(label='sw-dell',
+        dell1 = PowerConnect55xx(label='sw-dell',
                                  hostname='host',
                                  username='user',
                                  password='pass',
-                                 type=PowerConnect55xx.api_name))
+                                 type=PowerConnect55xx.api_name)
+        db.session.add(dell1)
         db.session.add(Nexus(label='sw-nexus',
-                                 hostname='host',
-                                 username='user',
-                                 password='pass',
-                                 dummy_vlan='5',
-                                 type=Nexus.api_name))
+                             hostname='host',
+                             username='user',
+                             password='pass',
+                             dummy_vlan='5',
+                             type=Nexus.api_name))
         db.session.add(Brocade(label='sw-brocade',
-                                 hostname='host',
-                                 username='user',
-                                 password='pass',
-                                 interface_type='4',
-                                 type=Brocade.api_name))
+                               hostname='host',
+                               username='user',
+                               password='pass',
+                               interface_type='4',
+                               type=Brocade.api_name))
         db.session.add(MockSwitch(label='sw0',
-                                 hostname='host',
-                                 username='user',
-                                 password='pass',
-                                 type=MockSwitch.api_name))
+                                  hostname='host',
+                                  username='user',
+                                  password='pass',
+                                  type=MockSwitch.api_name))
         proj = model.Project(label='runway')
-        db.session.add(proj);
+        db.session.add(proj)
         headnode1 = model.Headnode(label='runway_headnode',
-                                      project=proj,
-                                      base_img='image1')
-        db.session.add(headnode1);
+                                   project=proj,
+                                   base_img='image1')
+        db.session.add(headnode1)
         db.session.add(model.Hnic(label='hnic1',
                                   headnode=headnode1))
+        ipmi = Ipmi(host='host',
+                    user='user',
+                    password='pass')
+        db.session.add(ipmi)
+        mock_obm = MockObm(host='host',
+                           user='user',
+                           password='pass')
+        db.session.add(mock_obm)
+        node1 = model.Node(label='node-1',
+                           obm=ipmi)
+        db.session.add(node1)
+                          
+        db.session.add(model.Metadata(label='meta',
+                                      value="it is a true value",
+                                      node=node1))
+        network1 = model.Network(owner=None,
+                                 access=[proj],
+                                 allocated=False,
+                                 network_id="networking network",
+                                 label='hil wireless')
+        db.session.add(network1)
+        nic1 = model.Nic(node=node1,
+                         label='pxe',
+                         mac_addr='ff:ff:ff:ff:ff:fe')
+        port1 = model.Port(label='A fine port',
+                           switch=dell1)
+        db.session.add(nic1)
+        db.session.add(model.NetworkAttachment(nic=nic1,
+                                               network_id=1,
+                                               channel='vlan/100'))
+        db.session.add(model.NetworkingAction(type='modify_port',
+                                              nic=nic1,
+                                              new_network=network1,
+                                              channel='vlan/100'))
+        jim = User(label='jim',
+                   password='heyimjim',
+                   is_admin=True)
+        db.session.add(jim)
+
+        local.auth = dbauth.User.query.filter_by(label='jim').one()
+
+        dbauth.user_add_project('jim', 'runway')
+
         db.session.commit()
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
