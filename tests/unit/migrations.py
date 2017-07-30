@@ -164,7 +164,10 @@ def create_bigint_db():
 
         db.session.commit()
 
-        db.session.query(User).get(1).hashed_password = 'pass'
+        db.session.query(User).get(1).hashed_password = \
+            ('$6$rounds=656000$iTyrApYTUhMx4b4g$YcaMExV'
+             'YtS0ut2yXWrT64OggFpE4lLg12QsAuyMA3YKX6Czth'
+             'XeisA47dJZW9GwU2q2CTIVrsbpxAVT64Pih2/')
         db.session.commit()
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
