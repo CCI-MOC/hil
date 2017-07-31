@@ -101,7 +101,7 @@ $ psql -c '\dg'
 
 **Note**: It is recommended that the PostgreSQL role and database you create correspond to an existing system user. 
 eg. There should be a system user `hil` to access database named `hil` as database role named `hil`.
-Advanced user/roll/database configurations may not need to follow this rule.  More information is available in the [Database Roles and Privileges](https://www.postgresql.org/docs/9.0/static/user-manag.html) reference guide.
+Advanced user/role/database configurations may not need to follow this rule.  More information is available in the [Database Roles and Privileges](https://www.postgresql.org/docs/9.0/static/user-manag.html) reference guide.
 
 
 **7. Create database hil owned by database role hil:**
