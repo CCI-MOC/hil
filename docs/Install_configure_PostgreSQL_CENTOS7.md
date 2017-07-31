@@ -99,13 +99,9 @@ $ psql -c '\dg'
  postgres  | Superuser, Create role, Create DB, Replication | {}
 ```
 
-If you wish to delete the user, do the following:
-
-```
-$ sudo -u postgres dropuser hil
-```
-**Note**: Make sure that the database role you create corresponds to an existing system user. 
-eg. There has to be a system user `hil` to access database named `hil` as database role named `hil`.
+**Note**: It is recommended that the PostgreSQL role and database you create correspond to an existing system user. 
+eg. There should be a system user `hil` to access database named `hil` as database role named `hil`.
+Advanced user/roll/database configurations may not need to follow this rule.  More information is available in the [Database Roles and Privileges](https://www.postgresql.org/docs/9.0/static/user-manag.html) reference guide.
 
 
 **7. Create database hil owned by database role hil:**

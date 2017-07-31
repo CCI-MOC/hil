@@ -146,6 +146,16 @@ To enable the database backend, make sure the **[extensions]** section of
 
   hil.ext.auth.database =
 
+Keystone Backend
+^^^^^^^^^^^^^^^^
+
+To enable the Keystone backend, make sure the **[extensions]** section of
+``hil.cfg`` contains::
+
+  hil.ext.auth.keystone =
+
+Visit the `Keystone configuration guide <http://hil.readthedocs.io/en/latest/keystone-auth.html>`_ for more information.
+
 Null Backend
 ^^^^^^^^^^^^
 
