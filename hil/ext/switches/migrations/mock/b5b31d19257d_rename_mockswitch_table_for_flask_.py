@@ -8,19 +8,17 @@ Create Date: 2016-03-22 05:11:19.585905
 
 """
 from alembic import op
-import sqlalchemy as sa
 from hil.model import db
-from hil.flaskapp import app
 
 # revision identifiers, used by Alembic.
 revision = 'b5b31d19257d'
 down_revision = None
-branch_labels = ('hil.ext.switches.mock',)
+branch_labels = None
 
 
 def upgrade():
-    metadata = sa.MetaData(bind=db.get_engine(app), reflect=True)
-    if 'mockswitch' in metadata.tables:
+    metadata = db.inspect(db.engine).get_table_names()
+    if 'mockswitch' in metadata:
         op.rename_table('mockswitch', 'mock_switch')
 
 

@@ -22,9 +22,10 @@ from hil.model import Switch
 from hil.migrations import paths
 import schema
 import re
-from sqlalchemy import Column, Integer, ForeignKey, String
+from sqlalchemy import Column, ForeignKey, String
 from os.path import dirname, join
 from hil.errors import BadArgumentError
+from hil.model import BigIntegerType
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'mock')
 
@@ -45,7 +46,7 @@ class MockSwitch(Switch):
         'polymorphic_identity': api_name,
     }
 
-    id = Column(Integer, ForeignKey('switch.id'), primary_key=True)
+    id = Column(BigIntegerType, ForeignKey('switch.id'), primary_key=True)
     hostname = Column(String, nullable=False)
     username = Column(String, nullable=False)
     password = Column(String, nullable=False)
@@ -60,6 +61,7 @@ class MockSwitch(Switch):
 
     @staticmethod
     def validate_port_name(port):
+
         """
         Valid port names for this switch are of the form gi1/0/11,
         te1/0/12, gi1/12, or te1/3

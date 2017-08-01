@@ -23,11 +23,21 @@ from hil.dev_support import no_dry_run
 from subprocess import call, Popen, PIPE
 import os
 
+from os.path import join, dirname
+from hil.migrations import paths
+from sqlalchemy import BigInteger
+from sqlalchemy.dialects import sqlite
+
+paths[__name__] = join(dirname(__file__), 'migrations', 'ipmi')
+
+BigIntegerType = BigInteger().with_variant(
+                sqlite.INTEGER(), 'sqlite')
+
 
 class Ipmi(Obm):
     valid_bootdevices = ['disk', 'pxe', 'none']
 
-    id = db.Column(db.Integer, db.ForeignKey('obm.id'), primary_key=True)
+    id = db.Column(BigIntegerType, db.ForeignKey('obm.id'), primary_key=True)
     host = db.Column(db.String, nullable=False)
     user = db.Column(db.String, nullable=False)
     password = db.Column(db.String, nullable=False)

@@ -30,6 +30,7 @@ from hil.ext.switches._dell_base import _BaseSession
 from os.path import dirname, join
 from hil.migrations import paths
 from hil.errors import BadArgumentError
+from hil.model import BigIntegerType
 
 logger = logging.getLogger(__name__)
 paths[__name__] = join(dirname(__file__), 'migrations', 'n3000')
@@ -43,7 +44,8 @@ class DellN3000(Switch):
         'polymorphic_identity': api_name,
     }
 
-    id = db.Column(db.Integer, db.ForeignKey('switch.id'), primary_key=True)
+    id = db.Column(BigIntegerType,
+                   db.ForeignKey('switch.id'), primary_key=True)
     hostname = db.Column(db.String, nullable=False)
     username = db.Column(db.String, nullable=False)
     password = db.Column(db.String, nullable=False)

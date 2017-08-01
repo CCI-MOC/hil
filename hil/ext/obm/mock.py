@@ -14,7 +14,7 @@
 
 """MockObm driver for implementing out of band management. """
 
-from sqlalchemy import Column, String, Integer, ForeignKey
+from sqlalchemy import Column, String, ForeignKey
 import schema
 
 from hil.model import Obm
@@ -22,12 +22,13 @@ from hil.dev_support import no_dry_run
 
 from os.path import join, dirname
 from hil.migrations import paths
+from hil.model import BigIntegerType
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'mock')
 
 
 class MockObm(Obm):
-    id = Column(Integer, ForeignKey('obm.id'), primary_key=True)
+    id = Column(BigIntegerType, ForeignKey('obm.id'), primary_key=True)
     host = Column(String, nullable=False)
     user = Column(String, nullable=False)
     password = Column(String, nullable=False)

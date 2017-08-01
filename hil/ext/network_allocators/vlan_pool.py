@@ -7,6 +7,12 @@ from hil.model import db
 from hil.config import cfg
 from hil.errors import BlockedError
 
+from os.path import join, dirname
+from hil.migrations import paths
+from hil.model import BigIntegerType
+
+paths[__name__] = join(dirname(__file__), 'migrations', 'vlan_pool')
+
 
 def get_vlan_list():
     """Return a list of vlans in the module's config section.
@@ -95,7 +101,7 @@ class Vlan(db.Model):
     2. The VLAN number is actually allocated to the HIL; on some deployments
        we may have specific vlan numbers that we are allowed to use.
     """
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(BigIntegerType, primary_key=True)
     vlan_no = db.Column(db.Integer, nullable=False, unique=True)
     available = db.Column(db.Boolean, nullable=False)
 

@@ -26,8 +26,13 @@ import logging
 from hil.model import db, Switch
 from hil.ext.switches import _console
 from hil.errors import BadArgumentError
+from os.path import join, dirname
+from hil.migrations import paths
+from hil.model import BigIntegerType
 
 logger = logging.getLogger(__name__)
+
+paths[__name__] = join(dirname(__file__), 'migrations', 'nexus')
 
 
 class Nexus(Switch):
@@ -37,7 +42,8 @@ class Nexus(Switch):
         'polymorphic_identity': api_name,
     }
 
-    id = db.Column(db.Integer, db.ForeignKey('switch.id'), primary_key=True)
+    id = db.Column(BigIntegerType,
+                   db.ForeignKey('switch.id'), primary_key=True)
     hostname = db.Column(db.String, nullable=False)
     username = db.Column(db.String, nullable=False)
     password = db.Column(db.String, nullable=False)

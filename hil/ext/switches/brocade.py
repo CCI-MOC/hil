@@ -27,6 +27,7 @@ import schema
 from hil.migrations import paths
 from hil.model import db, Switch
 from hil.errors import BadArgumentError
+from hil.model import BigIntegerType
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'brocade')
 
@@ -40,7 +41,8 @@ class Brocade(Switch):
         'polymorphic_identity': api_name,
     }
 
-    id = db.Column(db.Integer, db.ForeignKey('switch.id'), primary_key=True)
+    id = db.Column(BigIntegerType,
+                   db.ForeignKey('switch.id'), primary_key=True)
     hostname = db.Column(db.String, nullable=False)
     username = db.Column(db.String, nullable=False)
     password = db.Column(db.String, nullable=False)
