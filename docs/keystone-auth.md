@@ -4,7 +4,7 @@ An authentication backend for Openstack's Keystone is maintained in this
 source tree as `hil.ext.auth.keystone`. This document describes its
 configuration and usage in detail.
 
-NOTE: The HIL command line interface only supports the keystone v3 API.
+NOTE: The HIL command line interface only supports the Keystone v3 API.
 The server supports anything supported by [keystonemiddleware][1].
 
 ## Usage
@@ -39,8 +39,8 @@ As with any other extension, you must load the extension in `hil.cfg`:
     [extensions]
     hil.ext.auth.keystone =
 
-The backend must then be configured to talk to your keystone server.
-The keystone project maintains documentation on how to do this at:
+The backend must then be configured to talk to your Keystone server.
+The Keystone project maintains documentation on how to do this at:
 
 <http://docs.openstack.org/developer/keystonemiddleware/middlewarearchitecture.html>
 
@@ -63,4 +63,4 @@ If a text token is returned, then authentication to OpenStack is working.
 Testing authentication directly to the HIL API is also helpful.
 Using the token from the tip above, run:
 ``curl -H 'x-auth-token: <token>' <HIL address>/nodes/free``.
-If the response lists the nodes in the current HIL setup, then the keystone middleware has been setup correctly. 
+If the response lists the nodes in the current HIL setup, then the Keystone middleware has been setup correctly. 
