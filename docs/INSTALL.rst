@@ -154,7 +154,7 @@ To enable the Keystone backend, make sure the **[extensions]** section of
 
   hil.ext.auth.keystone =
 
-Visit the `Keystone configuration guide <http://hil.readthedocs.io/en/latest/keystone-auth.html>`_ for more information.
+Visit the `Keystone configuration guide <keystone-auth.html>`_ for more information.
 
 Null Backend
 ^^^^^^^^^^^^
