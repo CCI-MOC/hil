@@ -25,11 +25,11 @@ Setting python virtual environment::
 
   virtualenv .venv
   source .venv/bin/activate
-  pip install -e .
+  pip install -e .[tests]
 
 Configure HIL::
 
-  cp examples/hil.cfg.dev-no-hardware hil.cfg 
+  cp examples/hil.cfg.dev-no-hardware hil.cfg
 
 
 Initialize database::
@@ -53,7 +53,7 @@ Testing the setup::
 
   hil list_nodes all
 
-If the above command reports an empty list. 
-HIL is successfully installed and ready for hacking. 
+If the above command reports an empty list.
+HIL is successfully installed and ready for hacking.
 
 

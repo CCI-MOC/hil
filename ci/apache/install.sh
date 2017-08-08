@@ -18,8 +18,8 @@ fi
 mkdir -p ~/.python-eggs
 chmod go-w ~/.python-eggs # Eliminate "writable by group/others" warnings
 
-# Install HIL
-python setup.py install
+# Install HIL, incl. test dependencies
+pip install .[tests]
 
 # Apache Setup
 sudo chown -R travis:travis /var/www

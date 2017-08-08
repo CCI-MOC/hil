@@ -1,7 +1,8 @@
 #!/usr/bin/env sh
 set -ex
-pip install keystonemiddleware
-pip install python-keystoneclient
+
+pip install .[keystone-auth-backend,keystone-cli]
+
 # The exact commit we use here is somewhat arbitrary, but we want
 # something that (a) won't change out from under our feet, and (b)
 # works with our existing tests.
