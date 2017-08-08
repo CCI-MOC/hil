@@ -106,6 +106,6 @@ def apply_networking():
         action = model.NetworkingAction.query \
             .order_by(model.NetworkingAction.id).first()
 
-    db.session.commit() # Can only get here for action == None
+    db.session.commit()  # Can only get here for action == None
     session.close()
     return True
