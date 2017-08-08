@@ -14,7 +14,7 @@
 
 from hil.dev_support import no_dry_run
 import pytest
-from hil.test_common import *
+from hil.test_common import fail_on_log_warnings, config_merge
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 

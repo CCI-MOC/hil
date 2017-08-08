@@ -2,11 +2,10 @@
 
 Includes API calls for managing users.
 """
-from hil import api, model, auth
+from hil import api, model, auth, errors
 from hil.model import db
 from hil.auth import get_auth_backend
 from hil.rest import rest_call, local, ContextLogger
-from hil.errors import *
 from passlib.hash import sha512_crypt
 from schema import Schema, Optional
 import flask
@@ -111,8 +110,8 @@ def user_add_project(user, project):
     user = api._must_find(User, user)
     project = api._must_find(model.Project, project)
     if project in user.projects:
-        raise DuplicateError('User %s is already in project %s' %
-                             (user.label, project.label))
+        raise errors.DuplicateError(
+            'User %s is already in project %s' % (user.label, project.label))
     user.projects.append(project)
     db.session.commit()
 
@@ -130,8 +129,8 @@ def user_remove_project(user, project):
     user = api._must_find(User, user)
     project = api._must_find(model.Project, project)
     if project not in user.projects:
-        raise NotFoundError("User %s is not in project %s" %
-                            (user.label, project.label))
+        raise errors.NotFoundError(
+            "User %s is not in project %s" % (user.label, project.label))
     user.projects.remove(project)
     db.session.commit()
 
@@ -144,7 +143,7 @@ def user_set_admin(user, is_admin):
     get_auth_backend().require_admin()
     user = api._must_find(User, user)
     if user.label == local.auth.label:
-        raise IllegalStateError("Cannot set own admin status")
+        raise errors.IllegalStateError("Cannot set own admin status")
     user.is_admin = is_admin
     db.session.commit()
 

@@ -9,5 +9,6 @@ if [ -z "$DB" ] || [ "$DB" = sqlite ]; then
 	  --disable=all \
 	  --enable=undefined-variable \
 	  --enable=unused-import \
+	  --enable=wildcard-import \
 	  $(./ci/list_tracked_pyfiles.sh)
 fi

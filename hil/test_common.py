@@ -12,11 +12,12 @@
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
 
-from hil.model import *
 from hil.migrations import create_db
 from hil.network_allocator import get_network_allocator
 from hil.config import cfg
 from hil.rest import app, init_auth
+from hil.model import db, init_db, Node, Nic, Network, Project, Headnode, \
+    Hnic, Switch, Port, Metadata
 from hil import api, config
 from abc import ABCMeta, abstractmethod
 import json
