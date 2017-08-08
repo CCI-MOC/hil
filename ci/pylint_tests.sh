@@ -7,6 +7,7 @@ if [ -z "$DB" ] || [ "$DB" = sqlite ]; then
   cd "$(dirname $0)/.."
   pylint \
 	  --disable=all \
+	  --enable=undefined-variable \
 	  --enable=unused-import \
 	  $(./ci/list_tracked_pyfiles.sh)
 fi
