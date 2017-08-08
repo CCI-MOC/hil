@@ -238,7 +238,7 @@ class NetworkTest:
             return set()
         result = set()
         for k, v in port_networks.iteritems():
-            networks = set([net for channel, net in v])
+            networks = set([net for _channel, net in v])
             for _, net in port_networks[port]:
                 if net in networks:
                     result.add(k)

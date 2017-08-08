@@ -542,7 +542,7 @@ class TestNodeRegisterDeleteNic:
                   "user": "root",
                   "password": "tapeworm"})
         api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
-        nic = api._must_find(model.Nic, '01-eth0')
+        api._must_find(model.Nic, '01-eth0')
         with pytest.raises(errors.DuplicateError):
             api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:15')
 
@@ -1038,7 +1038,7 @@ class TestHeadnodeCreateDeleteHnic:
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         api.headnode_delete_hnic('hn-0', 'hn-0-eth0')
         api._assert_absent(model.Hnic, 'hn-0-eth0')
-        hn = api._must_find(model.Headnode, 'hn-0')
+        api._must_find(model.Headnode, 'hn-0')
 
     def test_headnode_delete_hnic_hnic_nexist(self):
         api.project_create('anvil-nextgen')
@@ -2103,7 +2103,7 @@ class TestQuery_unpopulated_db:
 
         # Verify UUID is well formed, then delete it, since we can't match it
         # exactly in the check below
-        temp = uuid.UUID(result['uuid'])
+        uuid.UUID(result['uuid'])
         del result['uuid']
 
         # For the lists to be equal, the ordering must be the same:

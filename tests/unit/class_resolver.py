@@ -10,6 +10,7 @@ fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
 @pytest.fixture(autouse=True)
 def mock_extensions():
+    # pylint: disable=unused-variable
     from hil.ext.obm import mock
     from hil.ext.switches import mock
 

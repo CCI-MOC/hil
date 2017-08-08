@@ -85,7 +85,7 @@ def test_many_http_queries():
             # At least make sure the body parses:
             json.loads(resp.get_data())
 
-    for i in range(100):
+    for _i in range(100):
         _show_nodes('/nodes/free')
         resp = client.get('/projects')
         assert resp.status_code == 200

@@ -18,6 +18,11 @@ use pytest fixtures and decorators. The latter are newer,and make it workable
 to use stuff like `parametrize`.
 """
 
+# Note regarding pylint: in this module, we define a number of methods that
+# are only called implicitly via the HTTP/flask machinery. As such, pylint
+# will erroneously flag them as unused variables -- we disable that warning
+# locally in many places in this module.
+
 from hil import rest, config
 
 from abc import ABCMeta, abstractmethod
@@ -148,6 +153,7 @@ class TestUrlArgs(HttpEquivalenceTest, HttpTest):
             'foo': basestring,
             'bar': basestring,
         }))
+        # pylint: disable=unused-variable
         def func(foo, bar):
             return json.dumps([foo, bar])
 
@@ -168,6 +174,7 @@ class TestBodyArgs(HttpEquivalenceTest, HttpTest):
             'bar': basestring,
             'baz': basestring,
         }))
+        # pylint: disable=unused-variable
         def foo(bar, baz):
             return json.dumps([bar, baz])
 
@@ -191,6 +198,7 @@ class TestRestCallSchema(HttpEquivalenceTest, HttpTest):
             'y': int,
             Optional('z'): int,
         }))
+        # pylint: disable=unused-variable
         def product(x, y, z=1):
             return json.dumps(x * y * z)
 
@@ -209,6 +217,7 @@ class TestEquiv_basic_APIError(HttpEquivalenceTest, HttpTest):
         HttpTest.setUp(self)
 
         @rest.rest_call('GET', '/some_error', Schema({}))
+        # pylint: disable=unused-variable
         def some_error():
             self.api_call()
 
@@ -230,6 +239,7 @@ class TestNoneReturnValue(HttpTest):
         HttpTest.setUp(self)
 
         @rest.rest_call('GET', '/nothing', Schema({}))
+        # pylint: disable=unused-variable
         def api_call():
             return None
 
@@ -245,10 +255,11 @@ def validation_setup():
     # better coverage. The particulars of which PUT and POST calls get which
     # methods are arbitrary, though GET calls have some specificity.
 
-    # We have four kinds of calls we want to validate here:
+    # We have several kinds of calls we want to validate here:
 
     # 1. No arguments in the URL or body (no_args)
     @rest.rest_call(['GET', 'POST'], '/no/args', Schema({}))
+    # pylint: disable=unused-variable
     def no_args():
         pass
 
@@ -257,6 +268,7 @@ def validation_setup():
         'arg1': basestring,
         'arg2': basestring,
     }))
+    # pylint: disable=unused-variable
     def url_args(arg1, arg2):
         return json.dumps([arg1, arg2])
 
@@ -265,6 +277,7 @@ def validation_setup():
         'arg1': basestring,
         'arg2': basestring,
     }))
+    # pylint: disable=unused-variable
     def mixed_args(arg1, arg2):
         return json.dumps([arg1, arg2])
 
@@ -273,6 +286,7 @@ def validation_setup():
         'arg1': basestring,
         'arg2': basestring,
     }))
+    # pylint: disable=unused-variable
     def just_bodyargs(arg1, arg2):
         return json.dumps([arg1, arg2])
 
@@ -281,6 +295,7 @@ def validation_setup():
                     Schema({'arg1': basestring,
                             Optional('arg2'): Use(int),
                             }))
+    # pylint: disable=unused-variable
     def bodyargs_optional_arg2_int(arg1, arg2=-42):
         return json.dumps([arg1, arg2])
 
@@ -288,11 +303,13 @@ def validation_setup():
     # just basestring:
     @rest.rest_call('PUT', '/put-int-body-arg',
                     schema=Schema({"the_value": int}))
+    # pylint: disable=unused-variable
     def put_int_body_arg(the_value):
         return json.dumps(the_value)
 
     @rest.rest_call('GET', '/get-int-body-arg-with-use',
                     schema=Schema({"the_value": Use(int)}))
+    # pylint: disable=unused-variable
     def get_int_body_arg_with_use(the_value):
         return json.dumps(the_value)
 
@@ -557,6 +574,7 @@ class TestCallOnce(HttpTest):
         # the correct number of times.
 
         @rest.rest_call('POST', '/increment', Schema({}))
+        # pylint: disable=unused-variable
         def increment():
             """Increment a counter each time this function is called."""
             self.num_calls += 1
@@ -571,6 +589,7 @@ def test_dont_log(client, caplog):
         'private': basestring,
         'stuff': basestring,
     }), dont_log=('private',))
+    # pylint: disable=unused-variable
     def some_call(public, private, stuff):
         pass
 

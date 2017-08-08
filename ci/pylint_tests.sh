@@ -8,6 +8,7 @@ if [ -z "$DB" ] || [ "$DB" = sqlite ]; then
   pylint \
 	  --disable=all \
 	  --enable=undefined-variable \
+	  --enable=unused-variable \
 	  --enable=unused-import \
 	  --enable=wildcard-import \
 	  $(./ci/list_tracked_pyfiles.sh)
