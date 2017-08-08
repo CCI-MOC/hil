@@ -109,5 +109,5 @@ setup(name='hil',
           ],
           'postgres': ['psycopg2>=2.7,<3.0'],
           'keystone-auth-backend': ['keystonemiddleware>=4.17,<5.0'],
-          'keystone-cli': ['python-keystoneclient>=3.13,<4.0'],
+          'keystone-client': ['python-keystoneclient>=3.13,<4.0'],
       })

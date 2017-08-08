@@ -17,9 +17,9 @@ the problem scenario so that we can ensure the bug doesn't return!
 
 ## Configuration
 
-By installing HIL and its dependencies in the virtual environment (done
-via: `pip install -e .` in the root directory), you will automatically
-receive a recent version of pytest and be ready to test the code. Using
+Install HIL and its test dependencies in the virtual environment, done
+via: `pip install -e .[tests]` in the root directory. This will pull
+a recent version of pytest and you'll be ready to test the code. Using
 pip's `-e` option installs the hil in editable mode, which has the
 advantage that one need not reinstall every time a file is changed!
 
