@@ -13,7 +13,7 @@
 # governing permissions and limitations under the License.
 
 """Unit tests for port_register"""
-from hil import api, server
+from hil import api, server, errors
 from hil.test_common import config_testsuite, config_merge, config, \
     fail_on_log_warnings, with_request_context, fresh_database
 import pytest
@@ -69,13 +69,13 @@ class TestPortValidate:
                             interface_type="Tengigabitethernet")
 
         # test some random invalid port names for brocade switch
-        with pytest.raises(api.BadArgumentError):
+        with pytest.raises(errors.BadArgumentError):
             api.switch_register_port('brocade', 'blah-blah')
 
-        with pytest.raises(api.BadArgumentError):
+        with pytest.raises(errors.BadArgumentError):
             api.switch_register_port('brocade', '1/q/1')
 
-        with pytest.raises(api.BadArgumentError):
+        with pytest.raises(errors.BadArgumentError):
             api.switch_register_port('brocade', '1/12/32q')
 
         # register some valid port names
@@ -92,16 +92,16 @@ class TestPortValidate:
                             dummy_vlan=2222)
 
         # test some random invalid port names for cisco nexus
-        with pytest.raises(api.BadArgumentError):
+        with pytest.raises(errors.BadArgumentError):
             api.switch_register_port('nexus', 'blah-blah')
 
-        with pytest.raises(api.BadArgumentError):
+        with pytest.raises(errors.BadArgumentError):
             api.switch_register_port('nexus', 'eethernet1/2')
 
-        with pytest.raises(api.BadArgumentError):
+        with pytest.raises(errors.BadArgumentError):
             api.switch_register_port('nexus', 'Ethernet1')
 
-        with pytest.raises(api.BadArgumentError):
+        with pytest.raises(errors.BadArgumentError):
             api.switch_register_port('nexus', 'Ethernet/12')
 
         # register some valid port names
@@ -118,13 +118,13 @@ class TestPortValidate:
                             hostname="switchname")
 
         # test some random invalid port names for both delll switches
-        with pytest.raises(api.BadArgumentError):
+        with pytest.raises(errors.BadArgumentError):
             api.switch_register_port('dell', 'blah-blah')
 
-        with pytest.raises(api.BadArgumentError):
+        with pytest.raises(errors.BadArgumentError):
             api.switch_register_port('dell', 'gi1/0/1q')
 
-        with pytest.raises(api.BadArgumentError):
+        with pytest.raises(errors.BadArgumentError):
             api.switch_register_port('dell', 'gi/0/1')
 
         # register some valid port names

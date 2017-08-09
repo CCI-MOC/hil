@@ -3,7 +3,7 @@ import pytest
 from hil.test_common import \
     config_testsuite, config_merge, fail_on_log_warnings, \
     initial_db, newDB, releaseDB
-from hil import api, config, deferred, model
+from hil import api, config, deferred, model, errors
 from hil.flaskapp import app
 
 
@@ -44,7 +44,7 @@ class Test_port_revert(unittest.TestCase):
         releaseDB()
 
     def test_no_nic(self):
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             # free_port_0 is not attached to a nic.
             api.port_revert('stock_switch_0', 'free_port_0')
         deferred.apply_networking()

@@ -1,9 +1,8 @@
-from hil import api, model, config, server
+from hil import api, model, config, server, errors
 from hil.test_common import config_testsuite, config_merge, fresh_database, \
     ModelTest, fail_on_log_warnings
 from hil.flaskapp import app
 from hil.model import db
-from hil.errors import AuthorizationError, IllegalStateError
 from hil.rest import init_auth, local
 import flask
 import pytest
@@ -145,7 +144,7 @@ class TestUserCreateDelete(DBAuthTestCase):
 
     def test_duplicate_user(self):
         self.dbauth.user_create('charlie', 'secret')
-        with pytest.raises(api.DuplicateError):
+        with pytest.raises(errors.DuplicateError):
             self.dbauth.user_create('charlie', 'password')
 
     def test_delete_user(self):
@@ -153,13 +152,13 @@ class TestUserCreateDelete(DBAuthTestCase):
         self.dbauth.user_delete('charlie')
 
     def test_delete_missing_user(self):
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             self.dbauth.user_delete('charlie')
 
     def test_delete_user_twice(self):
         self.dbauth.user_create('charlie', 'foo')
         self.dbauth.user_delete('charlie')
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             self.dbauth.user_delete('charlie')
 
     def _new_user(self, is_admin):
@@ -187,7 +186,7 @@ class TestUserCreateDelete(DBAuthTestCase):
     def test_new_non_admin_cannot_admin(self):
         """Verify that a newly created regular user can't do admin stuff."""
         self._new_user(is_admin=False)
-        with pytest.raises(AuthorizationError):
+        with pytest.raises(errors.AuthorizationError):
             self.dbauth.user_delete('charlie')
 
 
@@ -238,19 +237,19 @@ class TestUserSetAdmin(DBAuthTestCase):
         self.dbauth.user_set_admin('charlie', False)
         flask.request = FakeAuthRequest('charlie', 'foo')
         local.auth = self.dbauth.User.query.filter_by(label='charlie').one()
-        with pytest.raises(AuthorizationError):
+        with pytest.raises(errors.AuthorizationError):
             self.dbauth.user_delete('charlie')
 
     def test_user_cannot_self_promote(self):
         """Verify that a user cannot self-promote to admin."""
         self._new_user(is_admin=False)
-        with pytest.raises(AuthorizationError):
+        with pytest.raises(errors.AuthorizationError):
             self.dbauth.user_set_admin('charlie', True)
 
     def test_user_cannot_self_demote(self):
         """Verify that a user cannot self-demote to regular."""
         self._new_user(is_admin=True)
-        with pytest.raises(IllegalStateError):
+        with pytest.raises(errors.IllegalStateError):
             self.dbauth.user_set_admin('charlie', False)
 
 
@@ -281,14 +280,14 @@ class TestUserAddRemoveProject(DBAuthTestCase):
         self.dbauth.user_create('charlie', 'secret')
         api.project_create('acme-corp')
         self.dbauth.user_add_project('charlie', 'acme-corp')
-        with pytest.raises(api.DuplicateError):
+        with pytest.raises(errors.DuplicateError):
             self.dbauth.user_add_project('charlie', 'acme-corp')
 
     def test_bad_user_remove_project(self):
         """Tests that removing a user from a project they're not in fails."""
         self.dbauth.user_create('charlie', 'secret')
         api.project_create('acme-corp')
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             self.dbauth.user_remove_project('charlie', 'acme-corp')
 
 
@@ -331,7 +330,7 @@ def test_admin_runway_fail(fn, args):
     """
     from hil.ext.auth import database as dbauth
     fn = getattr(dbauth, fn)
-    with pytest.raises(AuthorizationError):
+    with pytest.raises(errors.AuthorizationError):
         fn(*args)
 
 
@@ -343,5 +342,5 @@ def test_admin_noauth_fail(fn, args):
     """
     from hil.ext.auth import database as dbauth
     fn = getattr(dbauth, fn)
-    with pytest.raises(AuthorizationError):
+    with pytest.raises(errors.AuthorizationError):
         fn(*args)

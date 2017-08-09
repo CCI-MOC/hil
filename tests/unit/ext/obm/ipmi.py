@@ -14,7 +14,7 @@
 
 """Unit tests for ipmi.py"""
 import pytest
-from hil import server, api
+from hil import server, api, errors
 from hil.test_common import config, config_testsuite, fresh_database, \
     fail_on_log_warnings, with_request_context, config_merge
 
@@ -65,7 +65,7 @@ class TestIpmi:
                   "password": "tapeworm"})
 
         # throw BadArgumentError for an invalid bootdevice
-        with pytest.raises(api.BadArgumentError):
+        with pytest.raises(errors.BadArgumentError):
             api.node_set_bootdev('node-99', 'invalid-device')
 
     def test_require_legal_bootdev(self):
@@ -76,5 +76,5 @@ class TestIpmi:
                   password="tapeworm")
         instance.require_legal_bootdev("none")
 
-        with pytest.raises(api.BadArgumentError):
+        with pytest.raises(errors.BadArgumentError):
             instance.require_legal_bootdev("not_valid_bootdev")
