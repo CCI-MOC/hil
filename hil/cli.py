@@ -235,7 +235,8 @@ def serve(port):
         debug = False
     # We need to import api here so that the functions within it get registered
     # (via `rest_call`), though we don't use it directly:
-    from hil import model, api, rest
+    # pylint: disable=unused-variable
+    from hil import api, rest
     server.init()
     migrations.check_db_schema()
     server.stop_orphan_consoles()

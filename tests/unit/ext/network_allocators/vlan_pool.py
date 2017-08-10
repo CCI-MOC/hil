@@ -2,8 +2,9 @@ from hil.config import load_extensions
 from hil.flaskapp import app
 from hil.model import db
 from hil.migrations import create_db
-from hil import api, server
-from hil.test_common import *
+from hil import api, server, errors
+from hil.test_common import fail_on_log_warnings, with_request_context, \
+    fresh_database, config_testsuite, config_merge
 from hil import model
 import pytest
 
@@ -67,15 +68,15 @@ def test_vlanid_for_admin_network():
     Test for valid vlanID for administrator-owned networks.
     """
     # create a network with a string vlan id
-    with pytest.raises(api.BadArgumentError):
+    with pytest.raises(errors.BadArgumentError):
         api.network_create('hammernet', 'admin', '', 'yes')
 
     # create a network with a vlanid>4096
-    with pytest.raises(api.BadArgumentError):
+    with pytest.raises(errors.BadArgumentError):
         api.network_create('nailnet', 'admin', '', '5023')
 
     # create a netowrk with a vlanid<1
-    with pytest.raises(api.BadArgumentError):
+    with pytest.raises(errors.BadArgumentError):
         api.network_create('nailnet', 'admin', '', '-2')
 
 
@@ -100,9 +101,9 @@ class TestAdminCreatedNetworks():
         assert network.allocated is True
 
         # creating a network with the same network id should raise an error
-        with pytest.raises(api.BlockedError):
+        with pytest.raises(errors.BlockedError):
             api.network_create('redbone', 'admin', '', 103)
-        with pytest.raises(api.BlockedError):
+        with pytest.raises(errors.BlockedError):
             api.network_create('starfish', 'admin', '', net_id)
 
         # free the network ids by deleting the networks

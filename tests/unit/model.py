@@ -21,7 +21,8 @@
 # some point, which is definitely wrong. The test_repr methods are there just
 # to make sure it isn't throwing an exception.
 
-from hil.model import *
+from hil.model import Node, Nic, Project, Headnode, Hnic, Network, \
+    NetworkingAction, Metadata
 from hil import config
 
 from hil.test_common import fresh_database, config_testsuite, ModelTest, \

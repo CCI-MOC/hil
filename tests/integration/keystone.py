@@ -159,19 +159,26 @@ def extra_apis(keystone_project_uuids):
 
     backend = auth.get_auth_backend()
 
+    # We're not calling these functions directly in this module (only
+    # implicitly through HTTP), so pylint flags an error about unused variable,
+    # which we manually silence:
+
     @rest.rest_call('GET', '/admin-only', Schema({}))
+    # pylint: disable=unused-variable
     def admin_only():
         backend.require_admin()
 
     @rest.rest_call('GET', '/project-only/<project_name>', Schema({
         'project_name': basestring,
     }))
+    # pylint: disable=unused-variable
     def project_only(project_name):
         project_uuid = keystone_project_uuids[project_name]
         project = model.Project.query.filter_by(label=project_uuid).one()
         backend.require_project_access(project)
 
     @rest.rest_call('GET', '/anyone', Schema({}))
+    # pylint: disable=unused-variable
     def anyone():
         pass
 

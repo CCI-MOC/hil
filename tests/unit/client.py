@@ -279,7 +279,7 @@ class Test_ClientBase:
 
     def test_init_error(self):
         with pytest.raises(TypeError):
-            x = ClientBase()
+            ClientBase()
 
     def test_object_url(self):
         x = ClientBase(ep, 'some_base64_string')

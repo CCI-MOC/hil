@@ -20,14 +20,13 @@ import json
 
 from schema import Schema, Optional
 
-from hil import model
+from hil import model, errors
 from hil.model import db
 from hil.auth import get_auth_backend
 from hil.config import cfg
 from hil.rest import rest_call
 from hil.class_resolver import concrete_class_for
 from hil.network_allocator import get_network_allocator
-from hil.errors import *
 
 
 # Project Code #
@@ -68,9 +67,9 @@ def project_delete(project):
     get_auth_backend().require_admin()
     project = _must_find(model.Project, project)
     if project.nodes:
-        raise BlockedError("Project has nodes still")
+        raise errors.BlockedError("Project has nodes still")
     if project.networks_created:
-        raise BlockedError("Project still has networks")
+        raise errors.BlockedError("Project still has networks")
     if project.networks_access:
         # FIXME: This is not the user's fault, and they cannot fix it.  The
         # only reason we need to error here is that, with how network access
@@ -81,9 +80,9 @@ def project_delete(project):
         # network accessible to ALL PROJECTS!  Once we use real ACLs, this
         # will not be an issue---instead, the network will be accessible by
         # NO projects.
-        raise BlockedError("Project can still access networks")
+        raise errors.BlockedError("Project can still access networks")
     if project.headnodes:
-        raise BlockedError("Project still has a headnode")
+        raise errors.BlockedError("Project still has a headnode")
     db.session.delete(project)
     db.session.commit()
 
@@ -102,7 +101,7 @@ def project_connect_node(project, node):
     get_auth_backend().require_project_access(project)
     node = _must_find(model.Node, node)
     if node.project is not None:
-        raise BlockedError("Node is already owned by a project.")
+        raise errors.BlockedError("Node is already owned by a project.")
     project.nodes.append(node)
     db.session.commit()
 
@@ -122,15 +121,15 @@ def project_detach_node(project, node):
     get_auth_backend().require_project_access(project)
     node = _must_find(model.Node, node)
     if node not in project.nodes:
-        raise NotFoundError("Node not in project")
+        raise errors.NotFoundError("Node not in project")
     num_attachments = model.NetworkAttachment.query \
         .filter(model.Nic.owner == node,
                 model.NetworkAttachment.nic_id == model.Nic.id).count()
     if num_attachments != 0:
-        raise BlockedError("Node attached to a network")
+        raise errors.BlockedError("Node attached to a network")
     for nic in node.nics:
         if nic.current_action is not None:
-            raise BlockedError("Node has pending network actions")
+            raise errors.BlockedError("Node has pending network actions")
     node.obm.stop_console()
     node.obm.delete_console()
     project.nodes.remove(node)
@@ -158,8 +157,9 @@ def network_grant_project_access(project, network):
         auth_backend.require_project_access(network.owner)
 
     if project in network.access:
-        raise DuplicateError('Network %s is already in project %s' %
-                             (network.label, project.label))
+        raise errors.DuplicateError(
+            'Network %s is already in project %s' % (network.label,
+                                                     project.label))
 
     network.access.append(project)
     db.session.commit()
@@ -186,27 +186,30 @@ def network_revoke_project_access(project, network):
                     auth_backend.have_project_access(network.owner)) or
                 (project in network.access and
                     auth_backend.have_project_access(project))):
-            raise AuthorizationError("You are not authorized to remove the "
-                                     "specified project from this network.")
+            raise errors.AuthorizationError(
+                "You are not authorized to remove the "
+                "specified project from this network.")
 
     if project not in network.access:
-        raise NotFoundError("Network %r is not in project %r" %
-                            (network.label, project.label))
+        raise errors.NotFoundError(
+            "Network %r is not in project %r" %
+            (network.label, project.label))
 
     if project is network.owner:
-        raise BlockedError("Project %r is owner of network %r and "
-                           "its access cannot be removed" %
-                           (project.label, network.label))
+        raise errors.BlockedError(
+            "Project %r is owner of network %r and "
+            "its access cannot be removed" % (project.label,
+                                              network.label))
 
     # TODO: Make this and the next loop more SQLAlchemy-friendly
     for attachment in network.attachments:
         if attachment.nic.owner.project.label == project.label:
-            raise BlockedError(
+            raise errors.BlockedError(
                 "Project still has node(s) attached to the network")
 
     for hnic in network.hnics:
         if hnic.owner.project.label == project.label:
-            raise BlockedError(
+            raise errors.BlockedError(
                 "Project still has headnode(s) attached to the network")
 
     network.access.remove(project)
@@ -235,7 +238,7 @@ def node_register(node, **kwargs):
     obm_type = kwargs['obm']['type']
     cls = concrete_class_for(model.Obm, obm_type)
     if cls is None:
-        raise BadArgumentError('%r is not a valid OBM type.' % obm_type)
+        raise errors.BadArgumentError('%r is not a valid OBM type.' % obm_type)
     cls.validate(kwargs['obm'])
     node_obj = model.Node(label=node, obm=cls(**kwargs['obm']))
     if 'metadata' in kwargs:
@@ -296,12 +299,13 @@ def node_delete(node):
     get_auth_backend().require_admin()
     node = _must_find(model.Node, node)
     if node.project:
-        raise BlockedError("Node %r is part of project %r; remove from "
-                           "project before deleting"
-                           % (node.label, node.project.label))
+        raise errors.BlockedError(
+            "Node %r is part of project %r; remove from "
+            "project before deleting" % (node.label, node.project.label))
     if node.nics != []:
-        raise BlockedError("Node %r has nics; remove them before deleting %r."
-                           % (node.label, node.label))
+        raise errors.BlockedError(
+            "Node %r has nics; remove them before deleting %r." % (node.label,
+                                                                   node.label))
     node.obm.stop_console()
     node.obm.delete_console()
     db.session.delete(node)
@@ -377,7 +381,7 @@ def node_connect_network(node, nic, network, channel=None):
     network = _must_find(model.Network, network)
 
     if not node.project:
-        raise ProjectMismatchError("Node not in project")
+        raise errors.ProjectMismatchError("Node not in project")
     auth_backend.require_project_access(node.project)
 
     project = node.project
@@ -385,28 +389,29 @@ def node_connect_network(node, nic, network, channel=None):
     allocator = get_network_allocator()
 
     if nic.port is None:
-        raise NotFoundError("No port is connected to given nic.")
+        raise errors.NotFoundError("No port is connected to given nic.")
 
     if nic.current_action:
-        raise BlockedError(
+        raise errors.BlockedError(
             "A networking operation is already active on the nic.")
 
     if (network.access) and (project not in network.access):
-        raise ProjectMismatchError(
+        raise errors.ProjectMismatchError(
             "Project does not have access to given network.")
 
     if _have_attachment(nic, model.NetworkAttachment.network == network):
-        raise BlockedError("The network is already attached to the nic.")
+        raise errors.BlockedError(
+            "The network is already attached to the nic.")
 
     if channel is None:
         channel = allocator.get_default_channel()
 
     if _have_attachment(nic, model.NetworkAttachment.channel == channel):
-        raise BlockedError("The channel is already in use on the nic.")
+        raise errors.BlockedError("The channel is already in use on the nic.")
 
     if not allocator.is_legal_channel_for(channel, network.network_id):
-        raise BadArgumentError("Channel %r, is not legal for this network." %
-                               channel)
+        raise errors.BadArgumentError(
+            "Channel %r, is not legal for this network." % channel)
 
     db.session.add(model.NetworkingAction(type='modify_port',
                                           nic=nic,
@@ -435,16 +440,17 @@ def node_detach_network(node, nic, network):
     nic = _must_find_n(node, model.Nic, nic)
 
     if not node.project:
-        raise ProjectMismatchError("Node not in project")
+        raise errors.ProjectMismatchError("Node not in project")
     auth_backend.require_project_access(node.project)
 
     if nic.current_action:
-        raise BlockedError(
+        raise errors.BlockedError(
             "A networking operation is already active on the nic.")
     attachment = model.NetworkAttachment.query \
         .filter_by(nic=nic, network=network).first()
     if attachment is None:
-        raise BadArgumentError("The network is not attached to the nic.")
+        raise errors.BadArgumentError(
+            "The network is not attached to the nic.")
     db.session.add(model.NetworkingAction(type='modify_port',
                                           nic=nic,
                                           channel=attachment.channel,
@@ -510,7 +516,7 @@ def headnode_create(headnode, project, base_img):
     valid_imgs = [img.strip() for img in valid_imgs.split(',')]
 
     if base_img not in valid_imgs:
-        raise BadArgumentError('Provided image is not a valid image.')
+        raise errors.BadArgumentError('Provided image is not a valid image.')
 
     _assert_absent(model.Headnode, headnode)
     project = _must_find(model.Project, project)
@@ -591,7 +597,7 @@ def headnode_create_hnic(headnode, hnic):
     _assert_absent_n(headnode, model.Hnic, hnic)
 
     if not headnode.dirty:
-        raise IllegalStateError
+        raise errors.IllegalStateError
 
     hnic = model.Hnic(headnode, hnic)
     db.session.add(hnic)
@@ -614,7 +620,7 @@ def headnode_delete_hnic(headnode, hnic):
     hnic = _must_find_n(headnode, model.Hnic, hnic)
 
     if not headnode.dirty:
-        raise IllegalStateError
+        raise errors.IllegalStateError
 
     db.session.delete(hnic)
     db.session.commit()
@@ -641,16 +647,17 @@ def headnode_connect_network(headnode, hnic, network):
     network = _must_find(model.Network, network)
 
     if not network.allocated:
-        raise BadArgumentError("Headnodes may only be connected to networks "
-                               "allocated by the project.")
+        raise errors.BadArgumentError(
+            "Headnodes may only be connected to networks "
+            "allocated by the project.")
 
     if not headnode.dirty:
-        raise IllegalStateError
+        raise errors.IllegalStateError
 
     project = headnode.project
 
     if (network.access) and (project not in network.access):
-        raise ProjectMismatchError(
+        raise errors.ProjectMismatchError(
             "Project does not have access to given network.")
 
     hnic.network = network
@@ -670,7 +677,7 @@ def headnode_detach_network(headnode, hnic):
     hnic = _must_find_n(headnode, model.Hnic, hnic)
 
     if not headnode.dirty:
-        raise IllegalStateError
+        raise errors.IllegalStateError
 
     hnic.network = None
     db.session.commit()
@@ -720,8 +727,9 @@ def list_network_attachments(network, project=None):
         # Only access to the project that owns the network or an admin can do
         # this
         if not owner_access:
-            raise AuthorizationError("Operation requires admin rights or"
-                                     " access to network's owning project")
+            raise errors.AuthorizationError(
+                "Operation requires admin rights or access to network's "
+                "owning project")
     else:
         # Only list the nodes coming from the specified project that are
         # connected to this network.
@@ -731,7 +739,7 @@ def list_network_attachments(network, project=None):
             # to the network, and access to tueh queried project.
             if not (project in network.access and
                     auth_backend.have_project_access(project)):
-                raise AuthorizationError(
+                raise errors.AuthorizationError(
                     "You do not have access to this project.")
 
     attachments = network.attachments
@@ -783,10 +791,10 @@ def network_create(network, owner, access, net_id):
         auth_backend.require_project_access(owner)
         # Project-owned network
         if access != owner.label:
-            raise BadArgumentError(
+            raise errors.BadArgumentError(
                 "Project-owned networks must be accessible by the owner.")
         if net_id != "":
-            raise BadArgumentError(
+            raise errors.BadArgumentError(
                 "Project-owned networks must use network ID allocation")
         access = [_must_find(model.Project, access)]
     else:
@@ -802,10 +810,10 @@ def network_create(network, owner, access, net_id):
     if net_id == "":
         net_id = get_network_allocator().get_new_network_id()
         if net_id is None:
-            raise AllocationError('No more networks')
+            raise errors.AllocationError('No more networks')
     else:
         if not get_network_allocator().validate_network_id(net_id):
-            raise BadArgumentError("Invalid net_id")
+            raise errors.BadArgumentError("Invalid net_id")
         get_network_allocator().claim_network_id(net_id)
 
     allocated = get_network_allocator().is_network_id_in_pool(net_id)
@@ -833,11 +841,11 @@ def network_delete(network):
         auth_backend.require_project_access(network.owner)
 
     if len(network.attachments) != 0:
-        raise BlockedError("Network still connected to nodes")
+        raise errors.BlockedError("Network still connected to nodes")
     if network.hnics:
-        raise BlockedError("Network still connected to headnodes")
+        raise errors.BlockedError("Network still connected to headnodes")
     if len(network.scheduled_nics) != 0:
-        raise BlockedError("There are pending actions on this network")
+        raise errors.BlockedError("There are pending actions on this network")
     if network.allocated:
         get_network_allocator().free_network_id(network.network_id)
 
@@ -863,7 +871,8 @@ def show_network(network):
             authorized = authorized or auth_backend.have_project_access(proj)
 
         if not authorized:
-            raise AuthorizationError("You do not have access to this network.")
+            raise errors.AuthorizationError(
+                "You do not have access to this network.")
 
     result = {
         'name': network.label,
@@ -893,7 +902,7 @@ def switch_register(switch, type, **kwargs):
 
     cls = concrete_class_for(model.Switch, type)
     if cls is None:
-        raise BadArgumentError('%r is not a valid switch type.' % type)
+        raise errors.BadArgumentError('%r is not a valid switch type.' % type)
     cls.validate(kwargs)
     obj = cls(**kwargs)
     obj.label = switch
@@ -909,8 +918,8 @@ def switch_delete(switch):
     switch = _must_find(model.Switch, switch)
 
     if switch.ports != []:
-        raise BlockedError("Switch %r has ports; delete them first." %
-                           switch.label)
+        raise errors.BlockedError(
+            "Switch %r has ports; delete them first." % switch.label)
 
     db.session.delete(switch)
     db.session.commit()
@@ -948,8 +957,9 @@ def switch_delete_port(switch, port):
     switch = _must_find(model.Switch, switch)
     port = _must_find_n(switch, model.Port, port)
     if port.nic is not None:
-        raise BlockedError("Port %r is attached to a nic; please detach "
-                           "it first." % port.label)
+        raise errors.BlockedError(
+            "Port %r is attached to a nic; please detach "
+            "it first." % port.label)
 
     db.session.delete(port)
     db.session.commit()
@@ -1034,10 +1044,10 @@ def port_connect_nic(switch, port, node, nic):
     nic = _must_find_n(node, model.Nic, nic)
 
     if nic.port is not None:
-        raise DuplicateError(nic.label)
+        raise errors.DuplicateError(nic.label)
 
     if port.nic is not None:
-        raise DuplicateError(port.label)
+        raise errors.DuplicateError(port.label)
 
     nic.port = port
     db.session.commit()
@@ -1061,9 +1071,10 @@ def port_detach_nic(switch, port):
     port = _must_find_n(switch, model.Port, port)
 
     if port.nic is None:
-        raise NotFoundError(port.label + " not attached")
+        raise errors.NotFoundError(port.label + " not attached")
     if port.nic.owner.project is not None:
-        raise BlockedError("The port is attached to a node which is not free")
+        raise errors.BlockedError("The port is attached to a node which is "
+                                  "not free")
 
     port.nic = None
     db.session.commit()
@@ -1078,9 +1089,9 @@ def port_revert(switch, port):
     port = _must_find_n(switch, model.Port, port)
 
     if port.nic is None:
-        raise NotFoundError(port.label + " not attached")
+        raise errors.NotFoundError(port.label + " not attached")
     if port.nic.current_action:
-        raise BlockedError("Port already has a pending action.")
+        raise errors.BlockedError("Port already has a pending action.")
 
     db.session.add(model.NetworkingAction(type='revert_port',
                                           nic=port.nic,
@@ -1255,8 +1266,8 @@ def show_console(nodename):
     node = _must_find(model.Node, nodename)
     log = node.obm.get_console()
     if log is None:
-        raise NotFoundError('The console log for %s '
-                            'does not exist.' % nodename)
+        raise errors.NotFoundError(
+            'The console log for %s does not exist.' % nodename)
     return log
 
 
@@ -1293,7 +1304,8 @@ def _assert_absent(cls, name):
     """
     obj = db.session.query(cls).filter_by(label=name).first()
     if obj:
-        raise DuplicateError("%s %s already exists." % (cls.__name__, name))
+        raise errors.DuplicateError("%s %s already exists." % (cls.__name__,
+                                                               name))
 
 
 def _must_find(cls, name):
@@ -1311,7 +1323,8 @@ def _must_find(cls, name):
     """
     obj = db.session.query(cls).filter_by(label=name).first()
     if not obj:
-        raise NotFoundError("%s %s does not exist." % (cls.__name__, name))
+        raise errors.NotFoundError("%s %s does not exist." % (cls.__name__,
+                                                              name))
     return obj
 
 
@@ -1338,9 +1351,11 @@ def _assert_absent_n(obj_outer, cls_inner, name_inner):
     """
     obj_inner = _namespaced_query(obj_outer, cls_inner, name_inner)
     if obj_inner is not None:
-        raise DuplicateError("%s %s on %s %s already exists" %
-                             (cls_inner.__name__, name_inner,
-                              obj_outer.__class__.__name__, obj_outer.label))
+        raise errors.DuplicateError(
+            "%s %s on %s %s already exists" % (cls_inner.__name__,
+                                               name_inner,
+                                               obj_outer.__class__.__name__,
+                                               obj_outer.label))
 
 
 def _must_find_n(obj_outer, cls_inner, name_inner):
@@ -1358,7 +1373,9 @@ def _must_find_n(obj_outer, cls_inner, name_inner):
     """
     obj_inner = _namespaced_query(obj_outer, cls_inner, name_inner)
     if obj_inner is None:
-        raise NotFoundError("%s %s on %s %s does not exist." %
-                            (cls_inner.__name__, name_inner,
-                             obj_outer.__class__.__name__, obj_outer.label))
+        raise errors.NotFoundError("%s %s on %s %s does not exist." %
+                                   (cls_inner.__name__,
+                                    name_inner,
+                                    obj_outer.__class__.__name__,
+                                    obj_outer.label))
     return obj_inner

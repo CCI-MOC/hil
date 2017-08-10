@@ -78,7 +78,7 @@ def create_bigint_db():
     from hil.ext.switches.mock import MockSwitch
     from hil.ext.obm.ipmi import Ipmi
     from hil.ext.obm.mock import MockObm
-    from hil.ext.auth.database import User, user_projects
+    from hil.ext.auth.database import User
     from hil.rest import local
     from hil.ext.auth import database as dbauth
     with app.app_context():
@@ -143,8 +143,8 @@ def create_bigint_db():
         nic1 = model.Nic(node=node1,
                          label='pxe',
                          mac_addr='ff:ff:ff:ff:ff:fe')
-        port1 = model.Port(label='A fine port',
-                           switch=dell1)
+        model.Port(label='A fine port',
+                   switch=dell1)
         db.session.add(nic1)
         db.session.add(model.NetworkAttachment(nic=nic1,
                                                network_id=1,

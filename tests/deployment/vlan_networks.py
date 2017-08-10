@@ -16,8 +16,12 @@
 internal setup only and will most likely not work on
 other HIL configurations."""
 
-from hil import api, model, deferred, server
-from hil.test_common import *
+import json
+
+from hil import api, model, deferred, server, config
+from hil.test_common import config_testsuite, fail_on_log_warnings, \
+    fresh_database, with_request_context, site_layout, NetworkTest, \
+    network_create_simple
 import pytest
 
 

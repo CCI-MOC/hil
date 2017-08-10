@@ -14,8 +14,10 @@
 
 """Unit tests for api.py"""
 import hil
-from hil import model, deferred, server
-from hil.test_common import *
+from hil import model, deferred, server, errors, config, api
+from hil.test_common import config_testsuite, config_merge, fresh_database, \
+    fail_on_log_warnings, additional_db, with_request_context, \
+    network_create_simple
 from hil.network_allocator import get_network_allocator
 import pytest
 import json
@@ -93,20 +95,20 @@ class TestProjectCreateDelete:
         api._must_find(model.Project, 'anvil-nextgen')
 
     def test_project_create_duplicate(self):
-        with pytest.raises(api.DuplicateError):
+        with pytest.raises(errors.DuplicateError):
             api.project_create('manhattan')
 
     def test_project_delete(self):
         api.project_delete('empty-project')
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api._must_find(model.Project, 'empty-project')
 
     def test_project_delete_nexist(self):
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.project_delete('anvil-nextgen')
 
     def test_project_delete_hasnode(self):
-        with pytest.raises(api.BlockedError):
+        with pytest.raises(errors.BlockedError):
             api.project_delete('manhattan')
 
     def test_project_delete_success_nodesdeleted(self):
@@ -123,7 +125,7 @@ class TestProjectCreateDelete:
     def test_project_delete_hasnetwork(self):
         api.project_create('anvil-nextgen')
         network_create_simple('hammernet', 'anvil-nextgen')
-        with pytest.raises(api.BlockedError):
+        with pytest.raises(errors.BlockedError):
             api.project_delete('anvil-nextgen')
 
     def test_project_delete_success_networksdeleted(self):
@@ -135,12 +137,12 @@ class TestProjectCreateDelete:
     def test_project_delete_hasheadnode(self):
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-01', 'anvil-nextgen', 'base-headnode')
-        with pytest.raises(api.BlockedError):
+        with pytest.raises(errors.BlockedError):
             api.project_delete('anvil-nextgen')
 
     def test_duplicate_project_create(self):
         api.project_create('acme-corp')
-        with pytest.raises(api.DuplicateError):
+        with pytest.raises(errors.DuplicateError):
             api.project_create('acme-corp')
 
 
@@ -171,11 +173,11 @@ class TestProjectAddDeleteNetwork:
             'runway_provider')
         deferred.apply_networking()
 
-        with pytest.raises(api.BlockedError):
+        with pytest.raises(errors.BlockedError):
             api.network_revoke_project_access('runway', 'runway_provider')
 
     def test_project_remove_network_owner(self):
-        with pytest.raises(api.BlockedError):
+        with pytest.raises(errors.BlockedError):
             api.network_revoke_project_access('runway', 'runway_pxe')
 
 
@@ -233,7 +235,7 @@ class TestNetworking:
 
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.node_connect_network('node-99', 'eth0', 'hammernet')
 
 
@@ -260,13 +262,13 @@ class TestProjectConnectDetachNode:
                   "host": "ipmihost",
                   "user": "root",
                   "password": "tapeworm"})
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.project_connect_node('anvil-nextgen', 'node-99')
 
     def test_project_connect_node_node_nexist(self):
         """Tests that connecting a nonexistent node to a projcet fails"""
         api.project_create('anvil-nextgen')
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.project_connect_node('anvil-nextgen', 'node-99')
 
     def test_project_connect_node_node_busy(self):
@@ -281,7 +283,7 @@ class TestProjectConnectDetachNode:
         api.project_create('anvil-nextgen')
 
         api.project_connect_node('anvil-oldtimer', 'node-99')
-        with pytest.raises(api.BlockedError):
+        with pytest.raises(errors.BlockedError):
             api.project_connect_node('anvil-nextgen', 'node-99')
 
     def test_project_detach_node(self):
@@ -306,7 +308,7 @@ class TestProjectConnectDetachNode:
                   "host": "ipmihost",
                   "user": "root",
                   "password": "tapeworm"})
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.project_detach_node('anvil-nextgen', 'node-99')
 
     def test_project_detach_node_project_nexist(self):
@@ -316,13 +318,13 @@ class TestProjectConnectDetachNode:
                   "host": "ipmihost",
                   "user": "root",
                   "password": "tapeworm"})
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.project_detach_node('anvil-nextgen', 'node-99')
 
     def test_project_detach_node_node_nexist(self):
         """Tests that removing a nonexistent node from a project fails."""
         api.project_create('anvil-nextgen')
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.project_detach_node('anvil-nextgen', 'node-99')
 
     def test_project_detach_node_on_network(self, switchinit):
@@ -337,7 +339,7 @@ class TestProjectConnectDetachNode:
         network_create_simple('hammernet', 'anvil-nextgen')
         api.port_connect_nic('sw0', PORTS[2], 'node-99', 'eth0')
         api.node_connect_network('node-99', 'eth0', 'hammernet')
-        with pytest.raises(api.BlockedError):
+        with pytest.raises(errors.BlockedError):
             api.project_detach_node('anvil-nextgen', 'node-99')
 
     def test_project_detach_node_success_nic_not_on_network(self):
@@ -472,7 +474,7 @@ class TestNodeRegisterDelete:
                   "host": "ipmihost",
                   "user": "root",
                   "password": "tapeworm"})
-        with pytest.raises(api.DuplicateError):
+        with pytest.raises(errors.DuplicateError):
             api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -486,11 +488,11 @@ class TestNodeRegisterDelete:
                   "user": "root",
                   "password": "tapeworm"})
         api.node_delete('node-99')
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api._must_find(model.Node, 'node-99')
 
     def test_node_delete_nexist(self):
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.node_delete('node-99')
 
     def test_node_delete_nic_exist(self):
@@ -501,7 +503,7 @@ class TestNodeRegisterDelete:
                   "user": "root",
                   "password": "tapeworm"})
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
-        with pytest.raises(api.BlockedError):
+        with pytest.raises(errors.BlockedError):
             api.node_delete('node-99')
 
     def test_node_delete_in_project(self):
@@ -513,7 +515,7 @@ class TestNodeRegisterDelete:
                   "password": "tapeworm"})
         api.project_create('skeleton')
         api.project_connect_node('skeleton', 'node-99')
-        with pytest.raises(api.BlockedError):
+        with pytest.raises(errors.BlockedError):
             api.node_delete('node-99')
 
 
@@ -530,7 +532,7 @@ class TestNodeRegisterDeleteNic:
         assert nic.owner.label == 'compute-01'
 
     def test_node_register_nic_no_node(self):
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
 
     def test_node_register_nic_duplicate_nic(self):
@@ -540,8 +542,8 @@ class TestNodeRegisterDeleteNic:
                   "user": "root",
                   "password": "tapeworm"})
         api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
-        nic = api._must_find(model.Nic, '01-eth0')
-        with pytest.raises(api.DuplicateError):
+        api._must_find(model.Nic, '01-eth0')
+        with pytest.raises(errors.DuplicateError):
             api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:15')
 
     def test_node_delete_nic_success(self):
@@ -561,11 +563,11 @@ class TestNodeRegisterDeleteNic:
                   "host": "ipmihost",
                   "user": "root",
                   "password": "tapeworm"})
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.node_delete_nic('compute-01', '01-eth0')
 
     def test_node_delete_nic_node_nexist(self):
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.node_delete_nic('compute-01', '01-eth0')
 
     def test_node_delete_nic_wrong_node(self):
@@ -580,7 +582,7 @@ class TestNodeRegisterDeleteNic:
                   "user": "root",
                   "password": "tapeworm"})
         api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.node_delete_nic('compute-02', '01-eth0')
 
     def test_node_delete_nic_wrong_nexist_node(self):
@@ -590,7 +592,7 @@ class TestNodeRegisterDeleteNic:
                   "user": "root",
                   "password": "tapeworm"})
         api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.node_delete_nic('compute-02', '01-eth0')
 
     def test_node_register_nic_diff_nodes(self):
@@ -628,7 +630,7 @@ class TestNodeRegisterDeleteMetadata:
         assert json.loads(metadata.value) == 'new_pk'
 
     def test_node_set_metadata_no_node(self):
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.node_set_metadata('compute-01', 'EK', 'pk')
 
     def test_node_delete_metadata_success(self):
@@ -639,21 +641,21 @@ class TestNodeRegisterDeleteMetadata:
                              model.Metadata, 'EK')
 
     def test_node_delete_metadata_metadata_nexist(self):
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.node_delete_metadata('free_node_0', 'EK')
 
     def test_node_delete_metadata_node_nexist(self):
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.node_delete_metadata('compute-01', 'EK')
 
     def test_node_delete_metadata_wrong_node(self):
         api.node_set_metadata('free_node_0', 'EK', 'pk')
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.node_delete_metadata('free_node_1', 'EK')
 
     def test_node_delete_metadata_wrong_nexist_node(self):
         api.node_set_metadata('free_node_0', 'EK', 'pk')
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.node_delete_metadata('compute-02', 'EK')
 
     def test_node_set_metadata_diff_nodes(self):
@@ -710,7 +712,7 @@ class TestNodeConnectDetachNetwork:
                   "password": "tapeworm"})
         api.project_connect_node('anvil-nextgen', 'node-98')   # added
 
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.node_connect_network('node-98', '99-eth0', 'hammernet')
 
     def test_node_connect_network_wrong_node_not_in_project(self):
@@ -729,7 +731,7 @@ class TestNodeConnectDetachNetwork:
                   "user": "root",
                   "password": "tapeworm"})
 
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.node_connect_network('node-98', '99-eth0', 'hammernet')
 
     def test_node_connect_network_no_such_node(self):
@@ -743,7 +745,7 @@ class TestNodeConnectDetachNetwork:
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
 
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.node_connect_network('node-98', '99-eth0', 'hammernet')  # changed # noqa
 
     def test_node_connect_network_no_such_nic(self):
@@ -757,7 +759,7 @@ class TestNodeConnectDetachNetwork:
         api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
 
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
     def test_node_connect_network_no_such_network(self):
@@ -770,7 +772,7 @@ class TestNodeConnectDetachNetwork:
         api.project_create('anvil-nextgen')
         api.project_connect_node('anvil-nextgen', 'node-99')
 #        network_create_simple('hammernet', 'anvil-nextgen')
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
     def test_node_connect_network_node_not_in_project(self):
@@ -784,7 +786,7 @@ class TestNodeConnectDetachNetwork:
 #        api.project_connect_node('anvil-nextgen', 'node-99')
         network_create_simple('hammernet', 'anvil-nextgen')
 
-        with pytest.raises(api.ProjectMismatchError):
+        with pytest.raises(errors.ProjectMismatchError):
             api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
     def test_node_connect_network_different_projects(self, switchinit):
@@ -801,7 +803,7 @@ class TestNodeConnectDetachNetwork:
         network_create_simple('hammernet', 'anvil-oldtimer')  # changed
         api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
 
-        with pytest.raises(api.ProjectMismatchError):
+        with pytest.raises(errors.ProjectMismatchError):
             api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
     def test_node_connect_network_already_attached_to_same(self, switchinit):
@@ -819,7 +821,7 @@ class TestNodeConnectDetachNetwork:
         api.node_connect_network('node-99', '99-eth0', 'hammernet')  # added
         deferred.apply_networking()  # added
 
-        with pytest.raises(api.BlockedError):
+        with pytest.raises(errors.BlockedError):
             api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
     def test_node_connect_network_already_attached_differently(self,
@@ -838,7 +840,7 @@ class TestNodeConnectDetachNetwork:
         api.node_connect_network('node-99', '99-eth0', 'hammernet')  # added
         deferred.apply_networking()  # added
 
-        with pytest.raises(api.BlockedError):
+        with pytest.raises(errors.BlockedError):
             api.node_connect_network('node-99', '99-eth0', 'hammernet2')
 
     def test_node_detach_network_success(self, switchinit):
@@ -876,7 +878,7 @@ class TestNodeConnectDetachNetwork:
         network_create_simple('hammernet', 'anvil-nextgen')
 #        api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
-        with pytest.raises(api.BadArgumentError):
+        with pytest.raises(errors.BadArgumentError):
             api.node_detach_network('node-99', '99-eth0', 'hammernet')
 
     def test_node_detach_network_wrong_node_in_project(self, switchinit):
@@ -898,7 +900,7 @@ class TestNodeConnectDetachNetwork:
         api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.node_detach_network('node-98', '99-eth0', 'hammernet')  # changed  # noqa
 
     def test_node_detach_network_wrong_node_not_in_project(self, switchinit):
@@ -919,7 +921,7 @@ class TestNodeConnectDetachNetwork:
         api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.node_detach_network('node-98', '99-eth0', 'hammernet')  # changed  # noqa
 
     def test_node_detach_network_no_such_node(self, switchinit):
@@ -935,7 +937,7 @@ class TestNodeConnectDetachNetwork:
         api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.node_detach_network('node-98', '99-eth0', 'hammernet')  # changed  # noqa
 
     def test_node_detach_network_no_such_nic(self, switchinit):
@@ -951,7 +953,7 @@ class TestNodeConnectDetachNetwork:
         api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.node_detach_network('node-99', '99-eth1', 'hammernet')  # changed  # noqa
 
     def test_node_detach_network_node_not_in_project(self, switchinit):
@@ -967,7 +969,7 @@ class TestNodeConnectDetachNetwork:
         api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
 #        api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
-        with pytest.raises(api.ProjectMismatchError):
+        with pytest.raises(errors.ProjectMismatchError):
             api.node_detach_network('node-99', '99-eth0', 'hammernet')
 
 
@@ -981,7 +983,7 @@ class TestHeadnodeCreateDelete:
 
     def test_headnode_create_badproject(self):
         """Tests that creating a headnode with a nonexistent project fails"""
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
 
     def test_headnode_create_duplicate(self):
@@ -989,7 +991,7 @@ class TestHeadnodeCreateDelete:
         api.project_create('anvil-nextgen')
         api.project_create('anvil-oldtimer')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
-        with pytest.raises(api.DuplicateError):
+        with pytest.raises(errors.DuplicateError):
             api.headnode_create('hn-0', 'anvil-oldtimer', 'base-headnode')
 
     def test_headnode_create_second(self):
@@ -1006,7 +1008,7 @@ class TestHeadnodeCreateDelete:
 
     def test_headnode_delete_nonexistent(self):
         """Tests that deleting a nonexistent headnode fails"""
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.headnode_delete('hn-0')
 
 
@@ -1020,14 +1022,14 @@ class TestHeadnodeCreateDeleteHnic:
         assert nic.owner.label == 'hn-0'
 
     def test_headnode_create_hnic_no_headnode(self):
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.headnode_create_hnic('hn-0', 'hn-0-eth0')
 
     def test_headnode_create_hnic_duplicate_hnic(self):
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
-        with pytest.raises(api.DuplicateError):
+        with pytest.raises(errors.DuplicateError):
             api.headnode_create_hnic('hn-0', 'hn-0-eth0')
 
     def test_headnode_delete_hnic_success(self):
@@ -1036,16 +1038,16 @@ class TestHeadnodeCreateDeleteHnic:
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         api.headnode_delete_hnic('hn-0', 'hn-0-eth0')
         api._assert_absent(model.Hnic, 'hn-0-eth0')
-        hn = api._must_find(model.Headnode, 'hn-0')
+        api._must_find(model.Headnode, 'hn-0')
 
     def test_headnode_delete_hnic_hnic_nexist(self):
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.headnode_delete_hnic('hn-0', 'hn-0-eth0')
 
     def test_headnode_delete_hnic_headnode_nexist(self):
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.headnode_delete_hnic('hn-0', 'hn-0-eth0')
 
     def test_headnode_delete_hnic_wrong_headnode(self):
@@ -1054,14 +1056,14 @@ class TestHeadnodeCreateDeleteHnic:
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create('hn-1', 'anvil-oldtimer', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.headnode_delete_hnic('hn-1', 'hn-0-eth0')
 
     def test_headnode_delete_hnic_wrong_nexist_headnode(self):
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.headnode_delete_hnic('hn-1', 'hn-0-eth0')
 
     def test_headnode_create_hnic_diff_headnodes(self):
@@ -1093,7 +1095,7 @@ class TestHeadnodeConnectDetachNetwork:
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         network_create_simple('hammernet', 'anvil-nextgen')
 
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.headnode_connect_network('hn-1', 'hn-0-eth0', 'hammernet')  # changed  # noqa
 
     def test_headnode_connect_network_no_such_hnic(self):
@@ -1102,7 +1104,7 @@ class TestHeadnodeConnectDetachNetwork:
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         network_create_simple('hammernet', 'anvil-nextgen')
 
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.headnode_connect_network('hn-0', 'hn-0-eth1', 'hammernet')  # changed  # noqa
 
     def test_headnode_connect_network_no_such_network(self):
@@ -1111,7 +1113,7 @@ class TestHeadnodeConnectDetachNetwork:
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         network_create_simple('hammernet', 'anvil-nextgen')
 
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet2')  # changed  # noqa
 
     def test_headnode_connect_network_already_attached_to_same(self):
@@ -1140,7 +1142,7 @@ class TestHeadnodeConnectDetachNetwork:
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         network_create_simple('hammernet', 'anvil-oldtimer')  # changed
 
-        with pytest.raises(api.ProjectMismatchError):
+        with pytest.raises(errors.ProjectMismatchError):
             api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
 
     def test_headnode_connect_network_non_allocated(self):
@@ -1165,7 +1167,7 @@ class TestHeadnodeConnectDetachNetwork:
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         api.network_create('hammernet', 'admin', 'anvil-nextgen', '7')
-        with pytest.raises(api.BadArgumentError):
+        with pytest.raises(errors.BadArgumentError):
             api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
 
     def test_headnode_detach_network_success(self):
@@ -1197,7 +1199,7 @@ class TestHeadnodeConnectDetachNetwork:
         network_create_simple('hammernet', 'anvil-nextgen')
         api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
 
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.headnode_detach_network('hn-1', 'hn-0-eth0')  # changed
 
     def test_headnode_detach_network_no_such_hnic(self):
@@ -1207,7 +1209,7 @@ class TestHeadnodeConnectDetachNetwork:
         network_create_simple('hammernet', 'anvil-nextgen')
         api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
 
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.headnode_detach_network('hn-0', 'hn-0-eth1')  # changed
 
 
@@ -1244,7 +1246,7 @@ class TestHeadnodeFreeze:
         self._prep()
 
         api.headnode_start('hn-0')
-        with pytest.raises(api.IllegalStateError):
+        with pytest.raises(errors.IllegalStateError):
             api.headnode_create_hnic('hn-0', 'hn-0-eth0')
 
     def test_succeed_create_hnic(self):
@@ -1256,7 +1258,7 @@ class TestHeadnodeFreeze:
         self._prep_delete_hnic()
 
         api.headnode_start('hn-0')
-        with pytest.raises(api.IllegalStateError):
+        with pytest.raises(errors.IllegalStateError):
             api.headnode_delete_hnic('hn-0', 'hn-0-eth0')
 
     def test_succeed_delete_hnic(self):
@@ -1268,7 +1270,7 @@ class TestHeadnodeFreeze:
         self._prep_connect_network()
 
         api.headnode_start('hn-0')
-        with pytest.raises(api.IllegalStateError):
+        with pytest.raises(errors.IllegalStateError):
             api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
 
     def test_succeed_connect_network(self):
@@ -1280,7 +1282,7 @@ class TestHeadnodeFreeze:
         self._prep_detach_network()
 
         api.headnode_start('hn-0')
-        with pytest.raises(api.IllegalStateError):
+        with pytest.raises(errors.IllegalStateError):
             api.headnode_detach_network('hn-0', 'hn-0-eth0')
 
     def test_succeed_detach_network(self):
@@ -1300,7 +1302,7 @@ class TestNetworkCreateDelete:
 
     def test_network_create_badproject(self):
         """Tests that creating a network with a nonexistent project fails"""
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             network_create_simple('hammernet', 'anvil-nextgen')
 
     def test_network_create_duplicate(self):
@@ -1308,7 +1310,7 @@ class TestNetworkCreateDelete:
         api.project_create('anvil-nextgen')
         api.project_create('anvil-oldtimer')
         network_create_simple('hammernet', 'anvil-nextgen')
-        with pytest.raises(api.DuplicateError):
+        with pytest.raises(errors.DuplicateError):
             network_create_simple('hammernet', 'anvil-oldtimer')
 
     def test_network_delete_success(self):
@@ -1336,7 +1338,7 @@ class TestNetworkCreateDelete:
 
     def test_network_delete_nonexistent(self):
         """Tests that deleting a nonexistent network fails"""
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.network_delete('hammernet')
 
     def test_network_delete_node_on_network(self, switchinit):
@@ -1351,7 +1353,7 @@ class TestNetworkCreateDelete:
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.port_connect_nic('sw0', PORTS[2], 'node-99', 'eth0')
         api.node_connect_network('node-99', 'eth0', 'hammernet')
-        with pytest.raises(api.BlockedError):
+        with pytest.raises(errors.BlockedError):
             api.network_delete('hammernet')
 
     def test_network_delete_headnode_on_network(self):
@@ -1360,7 +1362,7 @@ class TestNetworkCreateDelete:
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'eth0')
         api.headnode_connect_network('hn-0', 'eth0', 'hammernet')
-        with pytest.raises(api.BlockedError):
+        with pytest.raises(errors.BlockedError):
             api.network_delete('hammernet')
 
 
@@ -1381,7 +1383,7 @@ class TestSwitch:
                             username="switch_user",
                             password="switch_pass",
                             hostname="switchname")
-        with pytest.raises(api.DuplicateError):
+        with pytest.raises(errors.DuplicateError):
             api.switch_register('sw0', type=MOCK_SWITCH_TYPE,
                                 username="switch_user",
                                 password="switch_pass",
@@ -1404,7 +1406,7 @@ class Test_switch_delete:
         switch_delete should complain if asked to delete a switch
         that doesn't exist.
         """
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.switch_delete('sw0')
 
 
@@ -1423,7 +1425,7 @@ class Test_switch_register_port:
 
     def test_register_port_nonexisting_switch(self):
         """Creating  port on a non-existant switch should fail."""
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.switch_register_port('sw0', PORTS[4])
 
 
@@ -1445,7 +1447,7 @@ class Test_switch_delete_port:
         Removing a port on a switch that does not exist should
         report the error.
         """
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.switch_delete_port('sw0', PORTS[4])
 
     def test_delete_port_nonexisting_port(self):
@@ -1455,7 +1457,7 @@ class Test_switch_delete_port:
                             username="switch_user",
                             password="switch_pass",
                             hostname="switchname")
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.switch_delete_port('sw0', PORTS[4])
 
 
@@ -1519,10 +1521,10 @@ class TestShowPort:
                   "password": "tapeworm"})
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         # call show port on a switch that doesn't exist
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.show_port('non-existing-switch', 'some-port')
         # call show port on a port that's not registered on that switch
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.show_port('sw0', 'non-existing-port')
 
         assert json.loads(api.show_port('sw0', PORTS[2])) == {}
@@ -1552,7 +1554,7 @@ class TestPortConnectDetachNic:
                   "user": "root",
                   "password": "tapeworm"})
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
 
     def test_port_connect_nic_no_such_port(self):
@@ -1567,7 +1569,7 @@ class TestPortConnectDetachNic:
                   "user": "root",
                   "password": "tapeworm"})
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
 
     def test_port_connect_nic_no_such_node(self):
@@ -1577,7 +1579,7 @@ class TestPortConnectDetachNic:
                             password="switch_pass",
                             hostname="switchname")
         api.switch_register_port('sw0', PORTS[2])
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
 
     def test_port_connect_nic_no_such_nic(self):
@@ -1592,7 +1594,7 @@ class TestPortConnectDetachNic:
                   "host": "ipmihost",
                   "user": "root",
                   "password": "tapeworm"})
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
 
     def test_port_connect_nic_already_attached_to_same(self, switchinit):
@@ -1603,7 +1605,7 @@ class TestPortConnectDetachNic:
                   "password": "tapeworm"})
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
-        with pytest.raises(api.DuplicateError):
+        with pytest.raises(errors.DuplicateError):
             api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
 
     def test_port_connect_nic_nic_already_attached_differently(self,
@@ -1616,7 +1618,7 @@ class TestPortConnectDetachNic:
                   "password": "tapeworm"})
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
-        with pytest.raises(api.DuplicateError):
+        with pytest.raises(errors.DuplicateError):
             api.port_connect_nic('sw0', PORTS[3], 'compute-01', 'eth0')
 
     def test_port_connect_nic_port_already_attached_differently(self,
@@ -1634,7 +1636,7 @@ class TestPortConnectDetachNic:
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
         api.node_register_nic('compute-02', 'eth1', 'DE:AD:BE:EF:20:15')
         api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
-        with pytest.raises(api.DuplicateError):
+        with pytest.raises(errors.DuplicateError):
             api.port_connect_nic('sw0', PORTS[2], 'compute-02', 'eth1')
 
     def test_port_detach_nic_success(self, switchinit):
@@ -1648,7 +1650,7 @@ class TestPortConnectDetachNic:
         api.port_detach_nic('sw0', PORTS[2])
 
     def test_port_detach_nic_no_such_port(self):
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.port_detach_nic('sw0', PORTS[2])
 
     def test_port_detach_nic_not_attached(self):
@@ -1664,7 +1666,7 @@ class TestPortConnectDetachNic:
                   "user": "root",
                   "password": "tapeworm"})
         api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.port_detach_nic('sw0', PORTS[2])
 
     def port_detach_nic_node_not_free(self, switchinit):
@@ -1680,7 +1682,7 @@ class TestPortConnectDetachNic:
         api.project_create('anvil-nextgen')
         api.project_connect_node('anvil-nextgen', 'compute-01')
 
-        with pytest.raises(api.BlockedError):
+        with pytest.raises(errors.BlockedError):
             api.port_detach_nic('sw0', PORTS[2])
 
 
@@ -1987,7 +1989,7 @@ class TestQuery_unpopulated_db:
         self._compare_node_dumps(actual, expected)
 
     def test_show_nonexistant_node(self):
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.show_node('master-control-program')
 
     def test_project_nodes_exist(self):
@@ -2101,7 +2103,7 @@ class TestQuery_unpopulated_db:
 
         # Verify UUID is well formed, then delete it, since we can't match it
         # exactly in the check below
-        temp = uuid.UUID(result['uuid'])
+        uuid.UUID(result['uuid'])
         del result['uuid']
 
         # For the lists to be equal, the ordering must be the same:
@@ -2118,7 +2120,7 @@ class TestQuery_unpopulated_db:
         }
 
     def test_show_nonexistant_headnode(self):
-        with pytest.raises(api.NotFoundError):
+        with pytest.raises(errors.NotFoundError):
             api.show_headnode('BGH')
 
     def test_list_headnode_images(self):
@@ -2195,7 +2197,7 @@ class TestFancyNetworkCreate:
     def test_project_network_imported_fails(self):
         """Fail to make a project-owned network with a supplied net-id."""
         api.project_create('anvil-nextgen')
-        with pytest.raises(api.BadArgumentError):
+        with pytest.raises(errors.BadArgumentError):
             api.network_create('hammernet',
                                'anvil-nextgen',
                                'anvil-nextgen',
@@ -2207,7 +2209,7 @@ class TestFancyNetworkCreate:
         api.project_create('anvil-oldtimer')
         for access in ['', 'anvil-oldtimer']:
             for net_id in ['', '35']:
-                with pytest.raises(api.BadArgumentError):
+                with pytest.raises(errors.BadArgumentError):
                     api.network_create('hammernet',
                                        'anvil-nextgen',
                                        access, net_id)
