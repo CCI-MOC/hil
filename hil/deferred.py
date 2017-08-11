@@ -93,7 +93,6 @@ def apply_networking():
     action = model.NetworkingAction.query \
         .order_by(model.NetworkingAction.id).first()
     if action is None:
-        # Optimization - avoid opening a switch session if there's no action
         db.session.commit()
         return False
 
@@ -106,6 +105,5 @@ def apply_networking():
         action = model.NetworkingAction.query \
             .order_by(model.NetworkingAction.id).first()
 
-    db.session.commit()  # Can only get here for action == None
     session.close()
     return True
