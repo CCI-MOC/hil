@@ -20,7 +20,8 @@ from hil import config, deferred, model
 from hil.model import db, Switch
 from hil.test_common import config_testsuite, config_merge, \
                              fresh_database, fail_on_log_warnings
-
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 fresh_database = pytest.fixture(fresh_database)
@@ -34,11 +35,19 @@ DeferredTestSwitch = None
 @pytest.fixture
 def configure():
     config_testsuite()
-    config_merge({
+
+    additional_config = {
         'extensions': {
             'hil.ext.obm.mock': ''
-        },
-    })
+            }
+        }
+
+    # if we are using sqlite's in memory db, then change uri to a db on disk
+    uri = config.cfg.get('database', 'uri')
+    if uri == 'sqlite:///:memory:':
+        additional_config['database'] = {'uri': 'sqlite:////tmp/hil.db'}
+
+    config_merge(additional_config)
     config.load_extensions()
 
 
@@ -80,7 +89,18 @@ def _deferred_test_switch_class():
             pass
 
         def modify_port(self, port, channel, network_id):
-            current_count = db.session.query(model.NetworkingAction).count()
+
+            # setup a different connection to database so that this method does
+            # not see uncommited changes by `apply_networking`
+
+            local_app = Flask(__name__.split('.')[0])
+            uri = config.cfg.get('database', 'uri')
+            local_app.config.update(SQLALCHEMY_TRACK_MODIFICATIONS=False)
+            local_app.config.update(SQLALCHEMY_DATABASE_URI=uri)
+            local_db = SQLAlchemy(local_app)
+
+            current_count = local_db.session \
+                .query(model.NetworkingAction).count()
 
             if self.last_count is None:
                 self.last_count = current_count
