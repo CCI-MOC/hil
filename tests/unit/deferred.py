@@ -45,6 +45,7 @@ def configure():
     # if we are using sqlite's in memory db, then change uri to a db on disk
     uri = config.cfg.get('database', 'uri')
     if uri == 'sqlite:///:memory:':
+        assert False
         additional_config['database'] = {'uri': 'sqlite:////tmp/hil.db'}
 
     config_merge(additional_config)
