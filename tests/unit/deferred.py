@@ -171,7 +171,6 @@ def test_apply_networking(switch, nic1, nic2, network, fresh_database):
     is thrown on the 3rd action, the 1st and 2nd action will have already been
     committed)
     '''
-    from hil.ext.obm.mock import MockObm
 
     port = model.Port(label=INTERFACE1, switch=switch)
     nic1.port = port
