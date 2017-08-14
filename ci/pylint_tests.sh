@@ -12,5 +12,6 @@ if [ -z "$DB" ] || [ "$DB" = sqlite ]; then
 	  --enable=unused-import \
 	  --enable=wildcard-import \
 	  --enable=signature-differs \
+	  --enable=arguments-differ \
 	  $(./ci/list_tracked_pyfiles.sh)
 fi

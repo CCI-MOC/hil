@@ -313,10 +313,13 @@ class Obm(db.Model):
         """
         assert False, "Subclasses MUST override the validate method "
 
-    def power_cycle(self):
+    def power_cycle(self, force):
         """Power cycles the node.
 
         Exact implementation is left to the subclasses.
+
+        ``force`` indicates that the node should be *forced* off, as opposed to
+        e.g. given an ACPI shutdown signal, to which the node respond.
         """
         assert False, "Subclasses MUST override the power_cycle method "
 
