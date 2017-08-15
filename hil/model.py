@@ -319,7 +319,7 @@ class Obm(db.Model):
         Exact implementation is left to the subclasses.
 
         ``force`` indicates that the node should be *forced* off, as opposed to
-        e.g. given an ACPI shutdown signal, to which the node respond.
+        e.g. given an ACPI shutdown signal, to which the node may respond.
         """
         assert False, "Subclasses MUST override the power_cycle method "
 
