@@ -21,7 +21,7 @@ class HTTPClient(object):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def request(method, url, data=None, params=None):
+    def request(self, method, url, data=None, params=None):
         """Make an HTTP request
 
         Makes an HTTP request on URL `url` with method `method`, request body
@@ -77,6 +77,12 @@ class RequestsHTTPClient(requests.Session, HTTPClient):
     odds of accidentally depending on requests-specific functionality.
     """
 
+    # disable a pylint warning about arguments that don't match the
+    # superclass's; we just pass these straight through to the super
+    # class's method, so *args, **kwargs let's us ignore what they
+    # are entirely.
+    #
+    # pylint: disable=arguments-differ
     def request(self, *args, **kwargs):
         resp = requests.Session.request(self, *args, **kwargs)
         return HTTPResponse(status_code=resp.status_code,
