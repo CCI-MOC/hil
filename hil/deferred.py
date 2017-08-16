@@ -105,5 +105,9 @@ def apply_networking():
         action = model.NetworkingAction.query \
             .order_by(model.NetworkingAction.id).first()
 
+    # the last statement in the while loop opens a new db session that we must
+    # close when we exit the loop.
+    db.session.commit()
+
     session.close()
     return True

@@ -15,6 +15,8 @@
 '''Functional test for deferred.py'''
 
 import pytest
+import os
+import tempfile
 
 from hil import config, deferred, model
 from hil.model import db, Switch
@@ -30,6 +32,7 @@ INTERFACE1 = '104/0/10'
 INTERFACE2 = '104/0/18'
 
 DeferredTestSwitch = None
+temp_db = tempfile.NamedTemporaryFile()
 
 
 @pytest.fixture
@@ -45,8 +48,8 @@ def configure():
     # if we are using sqlite's in memory db, then change uri to a db on disk
     uri = config.cfg.get('database', 'uri')
     if uri == 'sqlite:///:memory:':
-        assert False
-        additional_config['database'] = {'uri': 'sqlite:////tmp/hil.db'}
+        uri = 'sqlite:///' + temp_db.name
+        additional_config['database'] = {'uri': uri}
 
     config_merge(additional_config)
     config.load_extensions()
@@ -102,6 +105,8 @@ def _deferred_test_switch_class():
 
             current_count = local_db.session \
                 .query(model.NetworkingAction).count()
+
+            local_db.session.commit()
 
             if self.last_count is None:
                 self.last_count = current_count
@@ -193,3 +198,4 @@ def test_apply_networking(switch, nic1, nic2, network, fresh_database):
     db.session.commit()
 
     deferred.apply_networking()
+    os.remove(temp_db.name)
