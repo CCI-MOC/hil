@@ -22,13 +22,15 @@ from hil.model import db, Switch
 from hil.flaskapp import app
 from hil.test_common import config_testsuite, config_merge, \
                              fresh_database, fail_on_log_warnings
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 fresh_database = pytest.fixture(fresh_database)
 
 INTERFACE1 = '104/0/10'
 INTERFACE2 = '104/0/18'
-INTERFACE3 = '104/0/20'
+INTERFACE3 = '104/0/18'
 
 DeferredTestSwitch = None
 
@@ -103,9 +105,17 @@ def _deferred_test_switch_class():
 
             # setup a different connection to database so that this method does
             # not see uncommited changes by `apply_networking`
-            with app.app_context():
-                current_count = db.session \
-                    .query(model.NetworkingAction).count()
+            local_app = Flask(__name__.split('.')[0])
+            uri = config.cfg.get('database', 'uri')
+            local_app.config.update(SQLALCHEMY_TRACK_MODIFICATIONS=False)
+            local_app.config.update(SQLALCHEMY_DATABASE_URI=uri)
+            local_db = SQLAlchemy(local_app)
+
+            current_count = local_db.session \
+                .query(model.NetworkingAction).count()
+
+            local_db.session.commit()
+            local_db.session.close()
 
             if self.last_count is None:
                 self.last_count = current_count
@@ -115,7 +125,7 @@ def _deferred_test_switch_class():
                 self.last_count = current_count
 
         def revert_port(self, port):
-            raise SwitchError('Switch failed')
+            raise SwitchError('switch failed')
 
     DeferredTestSwitch_.__name__ = 'DeferredTestSwitch'
     DeferredTestSwitch = DeferredTestSwitch_
@@ -175,7 +185,7 @@ def test_apply_networking(switch, network, fresh_database):
 
     port = model.Port(label=INTERFACE3, switch=switch)
     nic3.port = port
-
+    
     action_native1 = model.NetworkingAction(nic=nic1,
                                             new_network=network,
                                             channel='vlan/native',
@@ -186,8 +196,8 @@ def test_apply_networking(switch, network, fresh_database):
                                             type='modify_port')
 
     action_native3 = model.NetworkingAction(nic=nic3,
-                                            new_network=None,
-                                            channel='',
+                                            new_network=network,
+                                            channel='vlan/native',
                                             type='revert_port')
     db.session.add(action_native1)
     db.session.add(action_native2)
@@ -196,15 +206,23 @@ def test_apply_networking(switch, network, fresh_database):
     try:
         deferred.apply_networking()
     except SwitchError:
-        with app.app_context():
-            pending_action = db.session \
-                .query(model.NetworkingAction). \
-                order_by(model.NetworkingAction.id).first()
-            current_count = db.session \
-                .query(model.NetworkingAction).count()
-
-        # assert that there's only 1 remaining action and that has type
-        # revert_port. confirming that previous modify_port operations were
-        # completed successfully.
+        local_app = Flask(__name__.split('.')[0])
+        uri = config.cfg.get('database', 'uri')
+        local_app.config.update(SQLALCHEMY_TRACK_MODIFICATIONS=False)
+        local_app.config.update(SQLALCHEMY_DATABASE_URI=uri)
+        local_db = SQLAlchemy(local_app)
+        
+        pending_action = local_db.session \
+            .query(model.NetworkingAction) \
+            .filter_by(type='revert_port').first()
+        current_count = local_db.session \
+            .query(model.NetworkingAction).count()
+        local_db.session.delete(pending_action)
+        local_db.session.commit()
+        local_db.session.close()
+        
         assert current_count == 1
-        assert pending_action.type == 'revert_port'
+        assert pending_action == 'revert_port'
+        # close the session opepend by `apply_networking` when `session.handle`
+        # fails
+        db.session.close()
