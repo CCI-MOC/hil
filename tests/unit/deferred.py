@@ -22,8 +22,6 @@ from hil.model import db, Switch
 from hil.flaskapp import app
 from hil.test_common import config_testsuite, config_merge, \
                              fresh_database, fail_on_log_warnings
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 fresh_database = pytest.fixture(fresh_database)
@@ -148,21 +146,6 @@ def new_nic(name):
 
 
 @pytest.fixture()
-def nic1():
-    return new_nic('nic1')
-
-
-@pytest.fixture()
-def nic2():
-    return new_nic('nic2')
-
-
-@pytest.fixture()
-def nic3():
-    return new_nic('nic3')
-
-
-@pytest.fixture()
 def network():
     project = model.Project('anvil-nextgen')
     return model.Network(project, [project], True, '102', 'hammernet')
@@ -171,7 +154,7 @@ pytestmark = pytest.mark.usefixtures('configure',
                                      'fail_on_log_warnings')
 
 
-def test_apply_networking(switch, nic1, nic2, nic3, network, fresh_database):
+def test_apply_networking(switch, network, fresh_database):
     '''Test to validate apply_networking commits actions incrementally
 
     This test verifies that the apply_networking() function in hil/deferred.py
@@ -180,6 +163,9 @@ def test_apply_networking(switch, nic1, nic2, nic3, network, fresh_database):
     is thrown on the 3rd action, the 1st and 2nd action will have already been
     committed)
     '''
+    nic1 = new_nic('nic1')
+    nic2 = new_nic('nic2')
+    nic3 = new_nic('nic3')
 
     port = model.Port(label=INTERFACE1, switch=switch)
     nic1.port = port
