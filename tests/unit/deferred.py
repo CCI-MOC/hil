@@ -15,7 +15,6 @@
 '''Functional test for deferred.py'''
 
 import pytest
-import os
 import tempfile
 
 from hil import config, deferred, model
@@ -34,7 +33,6 @@ INTERFACE2 = '104/0/18'
 INTERFACE3 = '104/0/20'
 
 DeferredTestSwitch = None
-temp_db = tempfile.NamedTemporaryFile()
 
 
 class SwitchError(Exception):
@@ -54,11 +52,16 @@ def configure():
     # if we are using sqlite's in memory db, then change uri to a db on disk
     uri = config.cfg.get('database', 'uri')
     if uri == 'sqlite:///:memory:':
-        uri = 'sqlite:///' + temp_db.name
-        additional_config['database'] = {'uri': uri}
-
-    config_merge(additional_config)
-    config.load_extensions()
+        with tempfile.NamedTemporaryFile() as temp_db:
+            uri = 'sqlite:///' + temp_db.name
+            additional_config['database'] = {'uri': uri}
+            config_merge(additional_config)
+            config.load_extensions()
+            yield
+    else:
+        config_merge(additional_config)
+        config.load_extensions()
+        yield
 
 
 @pytest.fixture()
