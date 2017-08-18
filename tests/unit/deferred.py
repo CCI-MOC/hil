@@ -20,6 +20,7 @@ import tempfile
 
 from hil import config, deferred, model
 from hil.model import db, Switch
+from hil.flaskapp import app
 from hil.test_common import config_testsuite, config_merge, \
                              fresh_database, fail_on_log_warnings
 from flask import Flask
@@ -30,9 +31,14 @@ fresh_database = pytest.fixture(fresh_database)
 
 INTERFACE1 = '104/0/10'
 INTERFACE2 = '104/0/18'
+INTERFACE3 = '104/0/20'
 
 DeferredTestSwitch = None
 temp_db = tempfile.NamedTemporaryFile()
+
+
+class SwitchError(Exception):
+    pass
 
 
 @pytest.fixture
@@ -96,17 +102,9 @@ def _deferred_test_switch_class():
 
             # setup a different connection to database so that this method does
             # not see uncommited changes by `apply_networking`
-
-            local_app = Flask(__name__.split('.')[0])
-            uri = config.cfg.get('database', 'uri')
-            local_app.config.update(SQLALCHEMY_TRACK_MODIFICATIONS=False)
-            local_app.config.update(SQLALCHEMY_DATABASE_URI=uri)
-            local_db = SQLAlchemy(local_app)
-
-            current_count = local_db.session \
-                .query(model.NetworkingAction).count()
-
-            local_db.session.commit()
+            with app.app_context():
+                current_count = db.session \
+                    .query(model.NetworkingAction).count()
 
             if self.last_count is None:
                 self.last_count = current_count
@@ -114,6 +112,9 @@ def _deferred_test_switch_class():
                 assert current_count == self.last_count - 1, \
                   "network daemon did not commit previous change!"
                 self.last_count = current_count
+
+        def revert_port(self, port):
+            raise SwitchError('Switch failed')
 
     DeferredTestSwitch_.__name__ = 'DeferredTestSwitch'
     DeferredTestSwitch = DeferredTestSwitch_
@@ -129,8 +130,7 @@ def switch(_deferred_test_switch_class):
     ).session()
 
 
-@pytest.fixture()
-def nic1():
+def new_nic(name):
     from hil.ext.obm.mock import MockObm
     return model.Nic(
         model.Node(
@@ -140,23 +140,23 @@ def nic1():
                 host="ipmihost",
                 user="root",
                 password="tapeworm")),
-        'ipmi',
+        name,
         '00:11:22:33:44:55')
 
 
 @pytest.fixture()
+def nic1():
+    return new_nic('nic1')
+
+
+@pytest.fixture()
 def nic2():
-    from hil.ext.obm.mock import MockObm
-    return model.Nic(
-        model.Node(
-            label='node-98',
-            obm=MockObm(
-                type="http://schema.massopencloud.org/haas/v0/obm/mock",
-                host="ipmihost",
-                user="root",
-                password="tapeworm")),
-        'ipmi',
-        '00:11:22:33:44:55')
+    return new_nic('nic2')
+
+
+@pytest.fixture()
+def nic3():
+    return new_nic('nic3')
 
 
 @pytest.fixture()
@@ -168,7 +168,7 @@ pytestmark = pytest.mark.usefixtures('configure',
                                      'fail_on_log_warnings')
 
 
-def test_apply_networking(switch, nic1, nic2, network, fresh_database):
+def test_apply_networking(switch, nic1, nic2, nic3, network, fresh_database):
     '''Test to validate apply_networking commits actions incrementally
 
     This test verifies that the apply_networking() function in hil/deferred.py
@@ -184,6 +184,9 @@ def test_apply_networking(switch, nic1, nic2, network, fresh_database):
     port = model.Port(label=INTERFACE2, switch=switch)
     nic2.port = port
 
+    port = model.Port(label=INTERFACE3, switch=switch)
+    nic3.port = port
+
     action_native1 = model.NetworkingAction(nic=nic1,
                                             new_network=network,
                                             channel='vlan/native',
@@ -193,9 +196,26 @@ def test_apply_networking(switch, nic1, nic2, network, fresh_database):
                                             channel='vlan/native',
                                             type='modify_port')
 
+    action_native3 = model.NetworkingAction(nic=nic3,
+                                            new_network=None,
+                                            channel='',
+                                            type='revert_port')
     db.session.add(action_native1)
     db.session.add(action_native2)
+    db.session.add(action_native3)
     db.session.commit()
+    try:
+        deferred.apply_networking()
+    except SwitchError:
+        with app.app_context():
+            pending_action = db.session \
+                .query(model.NetworkingAction). \
+                order_by(model.NetworkingAction.id).first()
+            current_count = db.session \
+                .query(model.NetworkingAction).count()
 
-    deferred.apply_networking()
-    os.remove(temp_db.name)
+        # assert that there's only 1 remaining action and that has type
+        # revert_port. confirming that previous modify_port operations were
+        # completed successfully.
+        assert current_count == 1
+        assert pending_action.type == 'revert_port'
