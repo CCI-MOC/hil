@@ -80,6 +80,11 @@ def _deferred_test_switch_class():
         function.  It is needed for a custom implementation of the switch's
         apply_networking() that counts the networking actions as
         apply_networking() is called to ensure it is incremental.
+
+        It is defined as a fixture because if it is defined as a class with
+        global scope it's going to be defined for every test; so this will be
+        picked up by migration tests and those would fail because there will be
+        no migration scripts for this switch's table.
         '''
 
         api_name = 'http://schema.massopencloud.org/haas/v0/switches/deferred'
@@ -187,36 +192,36 @@ def test_apply_networking(switch, network, fresh_database):
                                              channel='vlan/native',
                                              type='modify_port'))
 
-    # this makes the last action invalid for the test switch which will raise
-    # an exception.
+    # this makes the last action invalid for the test switch because the switch
+    # raises an error when the networking action is of type revert port.
     action[2] = model.NetworkingAction(nic=nic[2],
                                        new_network=None,
                                        channel='',
                                        type='revert_port')
-    db.session.add(action[0])
-    db.session.add(action[1])
-    db.session.add(action[2])
+    for i in range(0, 3):
+        db.session.add(action[i])
     db.session.commit()
-    try:
+
+    with pytest.raises(SwitchError):
         deferred.apply_networking()
-    except SwitchError:
-        # close the session opened by `apply_networking` when `handle_actions`
-        # fails; without this the tests would just stall (when using postgres)
-        db.session.close()
 
-        local_db = new_db()
+    # close the session opened by `apply_networking` when `handle_actions`
+    # fails; without this the tests would just stall (when using postgres)
+    db.session.close()
 
-        pending_action = local_db.session \
-            .query(model.NetworkingAction) \
-            .order_by(model.NetworkingAction.id).first()
-        current_count = local_db.session \
-            .query(model.NetworkingAction).count()
+    local_db = new_db()
 
-        local_db.session.delete(pending_action)
-        local_db.session.commit()
-        local_db.session.close()
+    pending_action = local_db.session \
+        .query(model.NetworkingAction) \
+        .order_by(model.NetworkingAction.id).first()
+    current_count = local_db.session \
+        .query(model.NetworkingAction).count()
 
-        # test that there's only pending action in the queue and it is of type
-        # revert_port
-        assert current_count == 1
-        assert pending_action.type == 'revert_port'
+    local_db.session.delete(pending_action)
+    local_db.session.commit()
+    local_db.session.close()
+
+    # test that there's only pending action in the queue and it is of type
+    # revert_port
+    assert current_count == 1
+    assert pending_action.type == 'revert_port'
