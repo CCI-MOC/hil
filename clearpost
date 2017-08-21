@@ -1,3 +1,0 @@
-sudo service postgresql restart
-dropdb centos
-createdb centos

@@ -19,7 +19,6 @@ import tempfile
 
 from hil import config, deferred, model
 from hil.model import db, Switch
-from hil.flaskapp import app
 from hil.test_common import config_testsuite, config_merge, \
                              fresh_database, fail_on_log_warnings
 from flask import Flask
@@ -28,15 +27,21 @@ from flask_sqlalchemy import SQLAlchemy
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 fresh_database = pytest.fixture(fresh_database)
 
-INTERFACE1 = '104/0/10'
-INTERFACE2 = '104/0/18'
-INTERFACE3 = '104/0/18'
-
 DeferredTestSwitch = None
 
 
 class SwitchError(Exception):
     pass
+
+
+def new_db():
+    """ returns a new database connection"""
+    local_app = Flask(__name__.split('.')[0])
+    uri = config.cfg.get('database', 'uri')
+    local_app.config.update(SQLALCHEMY_TRACK_MODIFICATIONS=False)
+    local_app.config.update(SQLALCHEMY_DATABASE_URI=uri)
+    local_db = SQLAlchemy(local_app)
+    return local_db
 
 
 @pytest.fixture
@@ -103,14 +108,9 @@ def _deferred_test_switch_class():
 
         def modify_port(self, port, channel, network_id):
 
-            # setup a different connection to database so that this method does
+            # get a new connection to database so that this method does
             # not see uncommited changes by `apply_networking`
-            local_app = Flask(__name__.split('.')[0])
-            uri = config.cfg.get('database', 'uri')
-            local_app.config.update(SQLALCHEMY_TRACK_MODIFICATIONS=False)
-            local_app.config.update(SQLALCHEMY_DATABASE_URI=uri)
-            local_db = SQLAlchemy(local_app)
-
+            local_db = new_db()
             current_count = local_db.session \
                 .query(model.NetworkingAction).count()
 
@@ -172,57 +172,51 @@ def test_apply_networking(switch, network, fresh_database):
     will not require a complete rerun of the prior actions (e.g. if an error
     is thrown on the 3rd action, the 1st and 2nd action will have already been
     committed)
+
+    The test also verifies that if a new networking action fails, then the
+    old networking actions in the queue were commited.
     '''
-    nic1 = new_nic('nic1')
-    nic2 = new_nic('nic2')
-    nic3 = new_nic('nic3')
+    nic = []
+    action = []
+    # initialize 3 nics and networking actions
+    for i in range(0, 3):
+        interface = 'gi1/0/%d' % (i)
+        nic.append(new_nic(str(i)))
+        nic[i].port = model.Port(label=interface, switch=switch)
+        action.append(model.NetworkingAction(nic=nic[i], new_network=network,
+                                             channel='vlan/native',
+                                             type='modify_port'))
 
-    port = model.Port(label=INTERFACE1, switch=switch)
-    nic1.port = port
-
-    port = model.Port(label=INTERFACE2, switch=switch)
-    nic2.port = port
-
-    port = model.Port(label=INTERFACE3, switch=switch)
-    nic3.port = port
-    
-    action_native1 = model.NetworkingAction(nic=nic1,
-                                            new_network=network,
-                                            channel='vlan/native',
-                                            type='modify_port')
-    action_native2 = model.NetworkingAction(nic=nic2,
-                                            new_network=network,
-                                            channel='vlan/native',
-                                            type='modify_port')
-
-    action_native3 = model.NetworkingAction(nic=nic3,
-                                            new_network=network,
-                                            channel='vlan/native',
-                                            type='revert_port')
-    db.session.add(action_native1)
-    db.session.add(action_native2)
-    db.session.add(action_native3)
+    # this makes the last action invalid for the test switch which will raise
+    # an exception.
+    action[2] = model.NetworkingAction(nic=nic[2],
+                                       new_network=None,
+                                       channel='',
+                                       type='revert_port')
+    db.session.add(action[0])
+    db.session.add(action[1])
+    db.session.add(action[2])
     db.session.commit()
     try:
         deferred.apply_networking()
     except SwitchError:
-        local_app = Flask(__name__.split('.')[0])
-        uri = config.cfg.get('database', 'uri')
-        local_app.config.update(SQLALCHEMY_TRACK_MODIFICATIONS=False)
-        local_app.config.update(SQLALCHEMY_DATABASE_URI=uri)
-        local_db = SQLAlchemy(local_app)
-        
+        # close the session opened by `apply_networking` when `handle_actions`
+        # fails; without this the tests would just stall (when using postgres)
+        db.session.close()
+
+        local_db = new_db()
+
         pending_action = local_db.session \
             .query(model.NetworkingAction) \
             .filter_by(type='revert_port').first()
         current_count = local_db.session \
             .query(model.NetworkingAction).count()
+
         local_db.session.delete(pending_action)
         local_db.session.commit()
         local_db.session.close()
-        
+
+        # test that there's only pending action in the queue and it is of type
+        # revert_port
         assert current_count == 1
-        assert pending_action == 'revert_port'
-        # close the session opepend by `apply_networking` when `session.handle`
-        # fails
-        db.session.close()
+        assert pending_action.type == 'revert_port'
