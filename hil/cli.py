@@ -79,7 +79,7 @@ def cmd(f):
         except InvalidAPIArgumentsException as e:
             if e.message != '':
                 sys.stderr.write(e.message + '\n\n')
-            sys.stderr.write('Invalid arguements.  Usage:\n')
+            sys.stderr.write('Invalid arguments.  Usage:\n')
             help(f.__name__)
 
     command_dict[f.__name__] = wrapped
