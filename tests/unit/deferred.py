@@ -208,7 +208,7 @@ def test_apply_networking(switch, network, fresh_database):
 
         pending_action = local_db.session \
             .query(model.NetworkingAction) \
-            .filter_by(type='revert_port').first()
+            .order_by(model.NetworkingAction.id).first()
         current_count = local_db.session \
             .query(model.NetworkingAction).count()
 
