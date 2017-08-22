@@ -6,8 +6,8 @@ a specific configuration and database contents. The script
 this up. This is done automatically in our travis config.
 """
 from hil import test_common as tc
-from hil.test_common import fail_on_log_warnings
-from hil import server, config, model, rest, auth
+from hil.test_common import fail_on_log_warnings, server_init
+from hil import config, model, rest, auth
 from hil.flaskapp import app
 import pytest
 import requests
@@ -23,6 +23,7 @@ from keystoneauth1.exceptions.http import HttpError
 from keystoneclient import client
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
+server_init = pytest.fixture(server_init)
 
 
 # A list of projects to be added to HIL's database.
@@ -124,12 +125,6 @@ def keystone_project_uuids(keystone_client):
     """
     return dict([(project.name, project.id)
                  for project in keystone_client.projects.list()])
-
-
-@pytest.fixture
-def server_init():
-    server.register_drivers()
-    server.validate_state()
 
 
 @pytest.fixture

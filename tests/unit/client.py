@@ -17,9 +17,9 @@ from hil.flaskapp import app
 from hil.client.base import ClientBase, FailedAPICallException
 from hil.client.client import Client, HTTPClient, HTTPResponse
 from hil.test_common import config_testsuite, config_merge, \
-    fresh_database, fail_on_log_warnings
+    fresh_database, fail_on_log_warnings, server_init
 from hil.model import db
-from hil import config, deferred, server
+from hil import config, deferred
 
 import json
 import pytest
@@ -63,6 +63,7 @@ C = Client(ep, http_client)  # Initializing client library
 
 fail_on_log_warnings = pytest.fixture(fail_on_log_warnings)
 fresh_database = pytest.fixture(fresh_database)
+server_init = pytest.fixture(server_init)
 
 
 @pytest.fixture
@@ -128,12 +129,6 @@ def configure():
         },
     })
     config.load_extensions()
-
-
-@pytest.fixture
-def server_init():
-    server.register_drivers()
-    server.validate_state()
 
 
 # Allocating nodes to projects

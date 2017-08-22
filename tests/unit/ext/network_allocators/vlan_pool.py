@@ -2,21 +2,16 @@ from hil.config import load_extensions
 from hil.flaskapp import app
 from hil.model import db
 from hil.migrations import create_db
-from hil import api, server, errors
+from hil import api, errors
 from hil.test_common import fail_on_log_warnings, with_request_context, \
-    fresh_database, config_testsuite, config_merge
+    fresh_database, config_testsuite, config_merge, server_init
 from hil import model
 import pytest
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 with_request_context = pytest.yield_fixture(with_request_context)
 fresh_database = pytest.fixture(fresh_database)
-
-
-@pytest.fixture
-def server_init():
-    server.register_drivers()
-    server.validate_state()
+server_init = pytest.server_init(server_init)
 
 
 @pytest.fixture

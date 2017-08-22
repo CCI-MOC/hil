@@ -1,9 +1,9 @@
-from hil import config, server
+from hil import config
 from hil.auth import get_auth_backend
 from hil.errors import AuthorizationError
 from hil.model import db, Project
 from hil.test_common import config_testsuite, config_merge, fresh_database, \
-    with_request_context, fail_on_log_warnings
+    with_request_context, fail_on_log_warnings, server_init
 import pytest
 
 
@@ -21,15 +21,8 @@ def configure():
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 fresh_database = pytest.fixture(fresh_database)
-
-
-@pytest.fixture
-def server_init():
-    server.register_drivers()
-    server.validate_state()
-
-
-with_request_contex = pytest.yield_fixture(with_request_context)
+server_init = pytest.fixture(server_init)
+with_request_context = pytest.yield_fixture(with_request_context)
 
 
 @pytest.fixture

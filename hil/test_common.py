@@ -18,13 +18,19 @@ from hil.config import cfg
 from hil.rest import app, init_auth
 from hil.model import db, init_db, Node, Nic, Network, Project, Headnode, \
     Hnic, Switch, Port, Metadata
-from hil import api, config
+from hil import api, config, server
 from abc import ABCMeta, abstractmethod
 import json
 import subprocess
 import sys
 import os.path
 import logging
+
+
+def server_init():
+    """Fixture to do server-specific setup."""
+    server.register_drivers()
+    server.validate_state()
 
 
 def config_testsuite():

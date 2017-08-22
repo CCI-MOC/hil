@@ -1,7 +1,7 @@
 
 from hil.test_common import config_testsuite, fresh_database, config_merge, \
-    fail_on_log_warnings
-from hil import api, config, server, rest
+    fail_on_log_warnings, server_init
+from hil import api, config, rest
 
 import json
 import pytest
@@ -18,12 +18,7 @@ def configure():
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 fresh_database = pytest.fixture(fresh_database)
-
-
-@pytest.fixture
-def server_init():
-    server.register_drivers()
-    server.validate_state()
+server_init = pytest.fixture(server_init)
 
 
 pytestmark = pytest.mark.usefixtures('configure',

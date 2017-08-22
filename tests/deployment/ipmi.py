@@ -19,9 +19,9 @@ difficult to run in other contexts.
 """
 
 from hil.test_common import config, config_testsuite, fresh_database, \
-    fail_on_log_warnings, with_request_context, site_layout
+    fail_on_log_warnings, with_request_context, site_layout, server_init
 from hil.model import Node
-from hil import config, server, api
+from hil import config, api
 import pytest
 
 
@@ -33,12 +33,7 @@ def configure():
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 fresh_database = pytest.fixture(fresh_database)
-
-
-@pytest.fixture
-def server_init():
-    server.register_drivers()
-    server.validate_state()
+server_init = pytest.fixture(server_init)
 
 
 with_request_context = pytest.yield_fixture(with_request_context)

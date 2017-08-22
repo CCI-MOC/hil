@@ -16,10 +16,10 @@
 internal setup only and will most likely not work on
 other HIL configurations."""
 
-from hil import api, model, deferred, server, config
+from hil import api, model, deferred, config
 from hil.test_common import config_testsuite, fail_on_log_warnings, \
     fresh_database, with_request_context, site_layout, NetworkTest, \
-    network_create_simple
+    network_create_simple, server_init
 import pytest
 
 
@@ -31,12 +31,7 @@ def configure():
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 fresh_database = pytest.fixture(fresh_database)
-
-
-@pytest.fixture
-def server_init():
-    server.register_drivers()
-    server.validate_state()
+server_init = pytest.fixture(server_init)
 
 
 with_request_context = pytest.yield_fixture(with_request_context)

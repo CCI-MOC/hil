@@ -10,12 +10,12 @@ the mix. They are still tested here, since they are important for security.
 
 import pytest
 import unittest
-from hil import api, config, model, server, deferred
+from hil import api, config, model, deferred
 from hil.auth import get_auth_backend
 from hil.errors import AuthorizationError, BadArgumentError, \
     ProjectMismatchError, BlockedError
 from hil.test_common import config_testsuite, config_merge, fresh_database, \
-    with_request_context, additional_db, fail_on_log_warnings
+    with_request_context, additional_db, fail_on_log_warnings, server_init
 
 MOCK_OBM_API_NAME = 'http://schema.massopencloud.org/haas/v0/obm/mock'
 MOCK_SWITCH_API_NAME = 'http://schema.massopencloud.org/haas/v0/switches/mock'
@@ -69,14 +69,9 @@ def configure():
     config.load_extensions()
 
 
-@pytest.fixture
-def server_init():
-    server.register_drivers()
-    server.validate_state()
-
-
 fresh_database = pytest.fixture(fresh_database)
 with_request_context = pytest.yield_fixture(with_request_context)
+server_init = pytest.fixture(server_init)
 
 
 pytestmark = pytest.mark.usefixtures('configure',

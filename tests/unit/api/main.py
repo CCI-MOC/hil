@@ -14,10 +14,10 @@
 
 """Unit tests for api.py"""
 import hil
-from hil import model, deferred, server, errors, config, api
+from hil import model, deferred, errors, config, api
 from hil.test_common import config_testsuite, config_merge, fresh_database, \
     fail_on_log_warnings, additional_db, with_request_context, \
-    network_create_simple
+    network_create_simple, server_init
 from hil.network_allocator import get_network_allocator
 import pytest
 import json
@@ -54,12 +54,7 @@ def configure():
 fresh_database = pytest.fixture(fresh_database)
 additional_database = pytest.fixture(additional_db)
 fail_on_log_warnings = pytest.fixture(fail_on_log_warnings)
-
-
-@pytest.fixture
-def server_init():
-    server.register_drivers()
-    server.validate_state()
+server_init = pytest.fixture(server_init)
 
 
 with_request_context = pytest.yield_fixture(with_request_context)

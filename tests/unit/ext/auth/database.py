@@ -1,6 +1,6 @@
-from hil import api, model, config, server, errors
+from hil import api, model, config, errors
 from hil.test_common import config_testsuite, config_merge, fresh_database, \
-    ModelTest, fail_on_log_warnings
+    ModelTest, fail_on_log_warnings, server_init
 from hil.flaskapp import app
 from hil.model import db
 from hil.rest import init_auth, local
@@ -9,6 +9,7 @@ import pytest
 import unittest
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
+server_init = pytest.fixture(server_init)
 
 
 @pytest.fixture
@@ -61,12 +62,6 @@ def initial_db(request, dbauth):
         runway.users.append(alice)
         db.session.add(runway)
         db.session.commit()
-
-
-@pytest.fixture
-def server_init():
-    server.register_drivers()
-    server.validate_state()
 
 
 @pytest.yield_fixture
