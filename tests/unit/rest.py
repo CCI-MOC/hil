@@ -594,9 +594,12 @@ def test_dont_log(client, caplog):
         pass
 
     with caplog.at_level(logging.DEBUG):
-        client.post('/some-path', data=json.dumps({
+        resp = client.post('/some-path', data=json.dumps({
             'public': 'common knowledge',
             'private': 'sensitive info',
+            'stuff': 'Other stuff',
         }))
+        assert resp.status_code == 200, \
+            "An error occured handling the request!"
         for record in caplog.records():
             assert 'sensitive info' not in record.getMessage()
