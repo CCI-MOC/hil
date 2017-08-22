@@ -82,26 +82,32 @@ def apply_networking():
     The networking server calls this function in a loop, to ensure that all
     pending network operations get processed within a reasonable amount of
     time.  The return value from this function lets the server know whether it
-    should check for new journal entries, or if it should wait.  If this
-    function does work, the server should immediately check again, because new
-    entries might have been added in the meantime.  But, if this function
-    returns immediately, the server should sleep, because there was no time
-    for new entries to be added.  This keeps the networking server from
+    should check for new journal entries immediately, or if it should wait.  If
+    this function does work, the server should immediately check again, because
+    new entries might have been added in the meantime.  But, if this function
+    returns immediately, the server should sleep, because there was no time for
+    new entries to be added.  This keeps the networking server from
     tight-looping.
     """
-    # Get the journal enries
-    actions = model.NetworkingAction.query \
-        .order_by(model.NetworkingAction.id).all()
 
-    if actions == []:
-        # No actions to perform.  Return False immediately.
+    action = model.NetworkingAction.query \
+        .order_by(model.NetworkingAction.id).first()
+    if action is None:
         db.session.commit()
         return False
 
     session = DaemonSession()
-    for action in actions:
+    while action is not None:
         session.handle_action(action)
-    session.close()
-    model.NetworkingAction.query.delete()
+        db.session.delete(action)
+        db.session.commit()
+        # Get the next action
+        action = model.NetworkingAction.query \
+            .order_by(model.NetworkingAction.id).first()
+
+    # the last statement in the while loop opens a new db session that we must
+    # close when we exit the loop.
     db.session.commit()
+
+    session.close()
     return True
