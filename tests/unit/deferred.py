@@ -182,24 +182,24 @@ def test_apply_networking(switch, network, fresh_database):
     old networking actions in the queue were commited.
     '''
     nic = []
-    action = []
+    actions = []
     # initialize 3 nics and networking actions
     for i in range(0, 3):
         interface = 'gi1/0/%d' % (i)
         nic.append(new_nic(str(i)))
         nic[i].port = model.Port(label=interface, switch=switch)
-        action.append(model.NetworkingAction(nic=nic[i], new_network=network,
-                                             channel='vlan/native',
-                                             type='modify_port'))
+        actions.append(model.NetworkingAction(nic=nic[i], new_network=network,
+                                              channel='vlan/native',
+                                              type='modify_port'))
 
     # this makes the last action invalid for the test switch because the switch
     # raises an error when the networking action is of type revert port.
-    action[2] = model.NetworkingAction(nic=nic[2],
-                                       new_network=None,
-                                       channel='',
-                                       type='revert_port')
-    for i in range(0, 3):
-        db.session.add(action[i])
+    actions[2] = model.NetworkingAction(nic=nic[2],
+                                        new_network=None,
+                                        channel='',
+                                        type='revert_port')
+    for action in actions:
+        db.session.add(action)
     db.session.commit()
 
     with pytest.raises(SwitchError):
