@@ -161,6 +161,7 @@ def extra_apis(keystone_project_uuids):
     @rest.rest_call('GET', '/admin-only', Schema({}))
     # pylint: disable=unused-variable
     def admin_only():
+        """An API call requiring admin access."""
         backend.require_admin()
 
     @rest.rest_call('GET', '/project-only/<project_name>', Schema({
@@ -168,6 +169,7 @@ def extra_apis(keystone_project_uuids):
     }))
     # pylint: disable=unused-variable
     def project_only(project_name):
+        """An API call requiring access to the named project."""
         project_uuid = keystone_project_uuids[project_name]
         project = model.Project.query.filter_by(label=project_uuid).one()
         backend.require_project_access(project)
@@ -175,7 +177,7 @@ def extra_apis(keystone_project_uuids):
     @rest.rest_call('GET', '/anyone', Schema({}))
     # pylint: disable=unused-variable
     def anyone():
-        pass
+        """An API call that anyone may invoke."""
 
 
 @pytest.fixture
@@ -238,6 +240,10 @@ def _do_get(sess, path):
 
 @pytest.mark.parametrize('user_info', user_db)
 def test_admin_call(keystone_projects, user_info):
+    """Test an admin-only call.
+
+    This should succeed for an admin, and fail otherwise.
+    """
     sess = _get_keystone_session(username=user_info['name'],
                                  password=user_info['password'],
                                  project_name=user_info['project_name'])
@@ -256,6 +262,11 @@ def test_admin_call(keystone_projects, user_info):
     (user, project) for user in user_db for project in project_db
 ])
 def test_project_call(keystone_projects, caller_info, project_name):
+    """Test a call that requires project access.
+
+    This should succeed for admins and members of that project, and fail
+    otherwise.
+    """
     sess = _get_keystone_session(username=caller_info['name'],
                                  password=caller_info['password'],
                                  project_name=caller_info['project_name'])
@@ -274,6 +285,7 @@ def test_project_call(keystone_projects, caller_info, project_name):
 
 @pytest.mark.parametrize('caller_info', user_db)
 def test_anyone_call_authenticated(keystone_projects, caller_info):
+    """Test a call that should succeed if authenticated at all."""
     sess = _get_keystone_session(username=caller_info['name'],
                                  password=caller_info['password'],
                                  project_name=caller_info['project_name'])
@@ -285,11 +297,13 @@ def test_anyone_call_authenticated(keystone_projects, caller_info):
 
 
 def test_anyone_call_unknown_project(keystone_projects):
-    # Calls to the API with no special authorization requirements should fail
-    # if the user is not authenticated for a project in the database. This is
-    # true even if the project exists in keystone; it must be added to the
-    # HIL database before it will be recognized as valid.
+    """Test a call with an unknown project.
 
+    Calls to the API with no special authorization requirements should fail
+    if the user is not authenticated for a project in the database. This is
+    true even if the project exists in keystone; it must be added to the
+    HIL database before it will be recognized as valid.
+    """
     # This user is created in `/ci/keystone/keystone.sh` for use by this test
     # (but naturally is never added to tha hil db).
     sess = _get_keystone_session(username='non-hil-user',
@@ -303,8 +317,11 @@ def test_anyone_call_unknown_project(keystone_projects):
 
 
 def test_unregistered_admin():
-    # Admin-only calls should still work when invoked by anopenstack admin,
-    # even when that admin's project does not exist in the database.
+    """Test a call by an admin with an unknown project.
+
+    Admin-only calls should still work when invoked by an openstack admin,
+    even when that admin's project does not exist in the database.
+    """
     sess = _get_keystone_session(username='admin',
                                  password='s3cr3t',
                                  project_name='admin')
@@ -317,7 +334,7 @@ def test_unregistered_admin():
 
 @pytest.mark.parametrize('user_info', user_db)
 def test_cli_call(keystone_projects, user_info):
-    # Tests to make sure the CLI can interact with keystone.
+    """Tests to make sure the CLI can interact with keystone."""
     os.environ["HIL_ENDPOINT"] = "http://127.0.0.1:6000"
     os.environ["OS_AUTH_URL"] = str(_keystone_cfg_opt('auth_url'))
     os.environ["OS_PASSWORD"] = user_info['password']

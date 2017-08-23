@@ -1,3 +1,4 @@
+"""Client support for project related api calls."""
 import json
 from hil.client.base import ClientBase
 

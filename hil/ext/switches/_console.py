@@ -22,6 +22,7 @@ _CHANNEL_RE = re.compile(r'vlan/(\d+)')
 
 
 class Session(SwitchSession):
+    """Common base class for sessions in console-based drivers."""
 
     __metaclass__ = ABCMeta
 
@@ -138,6 +139,17 @@ class Session(SwitchSession):
 
 
 def get_prompts(console):
+        """Determine the prompts used by the console.
+
+        console should be a pexpect connection.
+
+        The return value is a dictionary mapping prompt names to regexes
+        matching them. The keys are:
+
+            * config_prompt
+            * if_prompt
+            * main_prompt
+        """
         # Regex to handle different prompt at switch
         # [\r\n]+ will handle any newline
         # .+ will handle any character after newline

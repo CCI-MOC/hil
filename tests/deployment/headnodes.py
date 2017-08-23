@@ -30,6 +30,7 @@ import pytest
 
 @pytest.fixture
 def configure():
+    """Configure HIL"""
     config_testsuite()
     config.load_extensions()
 
@@ -51,8 +52,18 @@ pytestmark = pytest.mark.usefixtures('configure',
 
 
 class TestHeadNode:
+    """Headnode related deployment tests."""
 
     def test_headnode(self):
+        """Test each of the headnode related operations
+
+        * create
+        * connect_hnic,
+        * connect_network
+        * start
+        * stop
+        * delete
+        """
         api.project_create('anvil-nextgen')
         network_create_simple('spider-web', 'anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
@@ -67,6 +78,7 @@ class TestHeadNode:
         api.headnode_delete('hn-0')
 
     def test_headnode_deletion_while_running(self):
+        """Test deleting a headnode while it's running."""
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode-2')
         api.headnode_start('hn-0')

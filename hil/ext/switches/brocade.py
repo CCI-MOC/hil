@@ -35,6 +35,8 @@ logger = logging.getLogger(__name__)
 
 
 class Brocade(Switch, SwitchSession):
+    """Brocade switch"""
+
     api_name = 'http://schema.massopencloud.org/haas/v0/switches/brocade'
 
     __mapper_args__ = {

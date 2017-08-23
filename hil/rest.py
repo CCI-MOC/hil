@@ -62,8 +62,10 @@ class _RequestInfo(object):
             self.init_app(app)
 
     def init_app(self, app):
+        """
+        Standard init_app method for extensions; see the Flask documentation.
+        """
         # We don't actually need to do anything here yet.
-        pass
 
     @property
     def uuid(self):
@@ -174,6 +176,7 @@ def rest_call(methods, path, schema, dont_log=()):
           whose second is an integer (the status code).
     """
     def register(f):
+        """Return value from rest call; this decorates the function itself."""
 
         if isinstance(methods, list):
             # Methods can be either passed as a single string
@@ -268,6 +271,7 @@ def _rest_wrapper(f, schema, dont_log):
     """
 
     def wrapper(**kwargs):
+        """The wrapper described above."""
         kwargs = _do_validation(schema, kwargs)
 
         censored_kwargs = kwargs.copy()
@@ -298,6 +302,12 @@ def _format_arglist(*args, **kwargs):
 
 
 def init_auth():
+    """Process authentication.
+
+    This invokes the auth backend. If HIL is configured to *require*
+    authentication, and authentication fails, it raises an
+    AuthorizationError.
+    """
     ok = auth.get_auth_backend().authenticate()
     if cfg.has_option('auth', 'require_authentication'):
         require_auth = cfg.getboolean('auth', 'require_authentication')

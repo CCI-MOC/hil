@@ -111,4 +111,5 @@ class Vlan(db.Model):
 
 
 def setup(*args, **kwargs):
+    """Register a VlanAllocator as the network allocator."""
     set_network_allocator(VlanAllocator())

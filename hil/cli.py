@@ -45,7 +45,7 @@ C = None
 
 
 class InvalidAPIArgumentsException(Exception):
-    pass
+    """Exception indicating that the user passed invalid arguments."""
 
 
 def cmd(f):
@@ -68,6 +68,7 @@ def cmd(f):
 
     @wraps(f)
     def wrapped(*args, **kwargs):
+        """Wrapper that implements the functionality described above."""
         try:
             # For commands which accept a variable number of arguments,
             # num_args is the *minimum* required arguments; there is no
@@ -162,6 +163,12 @@ def setup_http_client():
 
 
 def check_status_code(response):
+    """Check the status code of the response.
+
+    If it is a successful status code, print the body of the response to
+    stdout. Otherwise, print an error message, and raise a
+    FailedAPICallException.
+    """
     if response.status_code < 200 or response.status_code >= 300:
         sys.stderr.write('Unexpected status code: %d\n' % response.status_code)
         sys.stderr.write('Response text:\n')
@@ -171,11 +178,15 @@ def check_status_code(response):
         sys.stdout.write(response.content + "\n")
 
 # Function object_url should be DELETED.
-# TODO: This function's name is no longer very accurate.  As soon as it is
-# safe, we should change it to something more generic.
 
 
 def object_url(*args):
+    """Return a url with a prefix of the HIL endpoing, and args as the
+    (remaining) segments of the path.
+
+    TODO: This function's name is no longer very accurate.  As soon as it is
+    safe, we should change it to something more generic.
+    """
     # Prefer an environmental variable for getting the endpoint if available.
     url = os.environ.get('HIL_ENDPOINT')
     if url is None:
@@ -197,18 +208,22 @@ def object_url(*args):
 #        `params` - query parameters (for GET)
 
 def do_put(url, data={}):
+    """do a put request and check the response."""
     check_status_code(http_client.request('PUT', url, data=json.dumps(data)))
 
 
 def do_post(url, data={}):
+    """do a post request and check the response."""
     check_status_code(http_client.request('POST', url, data=json.dumps(data)))
 
 
 def do_get(url, params=None):
+    """do a get request and check the response."""
     check_status_code(http_client.request('GET', url, params=params))
 
 
 def do_delete(url):
+    """do a delete request and check the response."""
     check_status_code(http_client.request('DELETE', url))
 
 # DELETE UPTIL HERE once all calls have client library support.
@@ -216,6 +231,7 @@ def do_delete(url):
 
 @cmd
 def serve(port):
+    """Run a development api server. Don't use this in production."""
     try:
         port = schema.And(
             schema.Use(int),

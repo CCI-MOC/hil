@@ -11,6 +11,11 @@
 # IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
+"""Misc. utilities for use in the test siute.
+
+Modules outside of the test suite are not permitted to import this module.
+TODO: we should separate this out from the main package.
+"""
 
 from hil.migrations import create_db
 from hil.network_allocator import get_network_allocator
@@ -214,9 +219,15 @@ class ModelTest:
         """
 
     def test_repr(self):
+        """Test that printing the sample object doesn't explode.
+
+        Early on there were a few bugs where __repr__ threw an exception.
+        """
         print(self.sample_obj())
 
     def test_insert(self):
+        """Test inserting the sample object into the database.
+        """
         db.session.add(self.sample_obj())
 
 
@@ -224,6 +235,14 @@ class NetworkTest:
     """Superclass for network-related deployment tests"""
 
     def get_port_networks(self, ports):
+        """Get the networks associated with ports.
+
+        ports is a list of Port objects.
+
+        The return value is like that of
+        Switch.session().get_port_networks(), except that it includes the
+        results for all of the port objects listed.
+        """
         ret = {}
         ports_by_switch = {}
         for port in ports:
@@ -251,6 +270,12 @@ class NetworkTest:
         return result
 
     def get_all_ports(self, nodes):
+        """Return all ports that the node is attached to.
+
+        nodes is a list of Node objects.
+
+        The return value is a list of Port objects.
+        """
         ports = []
         for node in nodes:
             for nic in node.nics:
@@ -318,12 +343,17 @@ def headnode_cleanup(request):
     """
 
     def undefine_headnodes():
+        """Delete all of the headnodes."""
         for hn in Headnode.query:
             # XXX: Our current version of libvirt has a bug that causes this
             # command to hang for a minute and throw an error before
             # completing successfully.  For this reason, we are ignoring any
             # errors thrown by 'virsh undefine'. This should be changed once
             # we start using a version of libvirt that has fixed this bug.
+            #
+            # TODO: the above was written *years* ago; we should check if this
+            # is still true for any system that we care about, and if not,
+            # stop silencing the error.
             try:
                 hn.delete()
             except subprocess.CalledProcessError:

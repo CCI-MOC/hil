@@ -15,6 +15,7 @@ revision = ${repr(up_revision)}
 down_revision = ${repr(down_revision)}
 branch_labels = ${repr(branch_labels)}
 
+# pylint: disable=missing-docstring
 
 def upgrade():
     ${upgrades if upgrades else "pass"}

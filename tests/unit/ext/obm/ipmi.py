@@ -21,6 +21,7 @@ from hil.test_common import config, config_testsuite, fresh_database, \
 
 @pytest.fixture
 def configure():
+    """Configure HIL."""
     config_testsuite()
     config_merge({
         'extensions': {
@@ -65,6 +66,11 @@ class TestIpmi:
             api.node_set_bootdev('node-99', 'invalid-device')
 
     def test_require_legal_bootdev(self):
+        """Test the require_legal_bootdev method.
+
+        Try a valid and an invalid bootdev, and make sure it does the right
+        thing.
+        """
         from hil.ext.obm import ipmi
         instance = ipmi.Ipmi(
                   host="ipmihost",

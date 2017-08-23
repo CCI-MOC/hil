@@ -15,6 +15,7 @@ revision = 'fcb23cd2e9b7'
 down_revision = None
 branch_labels = ('hil.ext.obm.ipmi',)
 
+# pylint: disable=missing-docstring
 
 def upgrade():
     op.alter_column('ipmi', 'id',

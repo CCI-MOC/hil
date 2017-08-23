@@ -54,6 +54,7 @@ fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
 @pytest.fixture
 def configure():
+    "Configure HIL"
     config_testsuite()
     config_merge({
         'extensions': {
@@ -593,6 +594,11 @@ auth_call_params += [
 
 @pytest.mark.parametrize('kwargs', auth_call_params)
 def test_auth_call(kwargs):
+    """Call auth_call_test on our huge list of cases.
+
+    We use auth_call_test in a few other places, hence the separate wrapper
+    for the actual test case.
+    """
     return auth_call_test(**kwargs)
 
 
@@ -675,6 +681,7 @@ project_calls = [
 
 @pytest.mark.parametrize('fn,args,kwargs', admin_calls)
 def test_admin_succeed(fn, args, kwargs):
+    """Verify that a call succeeds as admin."""
     auth_call_test(fn=fn,
                    error=None,
                    admin=True,
@@ -685,6 +692,7 @@ def test_admin_succeed(fn, args, kwargs):
 
 @pytest.mark.parametrize('fn,args,kwargs', admin_calls)
 def test_admin_fail(fn, args, kwargs):
+    """Verify that a call fails when not admin."""
     auth_call_test(fn=fn,
                    error=AuthorizationError,
                    admin=False,
@@ -695,6 +703,7 @@ def test_admin_fail(fn, args, kwargs):
 
 @pytest.mark.parametrize('fn,args,kwargs', project_calls)
 def test_runway_succeed(fn, args, kwargs):
+    """Verify that a call succeeds when run as the 'runway' project."""
     auth_call_test(fn=fn,
                    error=None,
                    admin=False,
@@ -705,6 +714,7 @@ def test_runway_succeed(fn, args, kwargs):
 
 @pytest.mark.parametrize('fn,args,kwargs', project_calls)
 def test_manhattan_fail(fn, args, kwargs):
+    """Verify that a call fails when run as the 'manhattan' project."""
     auth_call_test(fn=fn,
                    error=AuthorizationError,
                    admin=False,
@@ -714,24 +724,38 @@ def test_manhattan_fail(fn, args, kwargs):
 
 
 class Test_node_detach_network(unittest.TestCase):
+    """Test authorization properties of node_detach_network."""
 
     def setUp(self):
+        """Common setup for the tests.
+
+        * node 'manhattan_node_0' is attached to network 'stock_int_pub', via
+          'boot-nic'.
+
+        This also sets some properties for easy access to the projects.
+        """
         self.auth_backend = get_auth_backend()
         self.runway = model.Project.query.filter_by(label='runway').one()
         self.manhattan = model.Project.query.filter_by(label='manhattan').one()
+
+        # The individual tests set the right project, but we need this to
+        # connect the network during setup:
         self.auth_backend.set_project(self.manhattan)
+
         api.node_connect_network('manhattan_node_0',
                                  'boot-nic',
                                  'stock_int_pub')
         deferred.apply_networking()
 
     def test_success(self):
+        """Project 'manhattan' can detach it's own node."""
         self.auth_backend.set_project(self.manhattan)
         api.node_detach_network('manhattan_node_0',
                                 'boot-nic',
                                 'stock_int_pub')
 
     def test_wrong_project(self):
+        """Project 'runway' cannot detach "manhattan"'s node."""
         self.auth_backend.set_project(self.runway)
         with pytest.raises(AuthorizationError):
             api.node_detach_network('manhattan_node_0',

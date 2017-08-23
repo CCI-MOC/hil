@@ -15,6 +15,7 @@ revision = '57f4c30b0ad4'
 down_revision = '89630e3872ec'
 branch_labels = None
 
+# pylint: disable=missing-docstring
 
 def upgrade():
     op.create_table('metadata',

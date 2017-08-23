@@ -15,8 +15,11 @@ logger = rest.ContextLogger(logging.getLogger(__name__), {})
 
 
 class KeystoneAuthBackend(auth.AuthBackend):
+    """Authenticate with keystone."""
 
     def authenticate(self):
+        # pylint: disable=missing-docstring
+
         # keystonemiddleware makes auth info available from two places:
         #
         # 1. Variables in the wsgi environment
@@ -51,6 +54,10 @@ class KeystoneAuthBackend(auth.AuthBackend):
 
 
 def setup(*args, **kwargs):
+    """Set a KeystoneAuthBackend as the auth backend.
+
+    Loads keystone settings from hil.cfg.
+    """
     if not cfg.has_section(__name__):
         logger.error('No section for [%s] in hil.cfg; authentication will '
                      'not work without this. Please add this section and try '

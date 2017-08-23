@@ -15,6 +15,7 @@ revision = '655e037522d0'
 down_revision = 'df8d9f423f2b'
 branch_labels = ('hil.ext.obm.mock',)
 
+# pylint: disable=missing-docstring
 
 def upgrade():
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""WSGI script for the HIL api server."""
 
 # imported for the side-effect of registering the request handlers:
 from hil import api  # pylint: disable=unused-import

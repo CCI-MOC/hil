@@ -12,7 +12,7 @@ import pytest
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 with_request_context = pytest.yield_fixture(with_request_context)
 fresh_database = pytest.fixture(fresh_database)
-server_init = pytest.server_init(server_init)
+server_init = pytest.fixture(server_init)
 
 
 @pytest.fixture

@@ -28,6 +28,8 @@ paths[__name__] = join(dirname(__file__), 'migrations', 'mock')
 
 
 class MockObm(Obm):
+    """Mock OBM object, for use in tests."""
+
     id = Column(BigIntegerType, ForeignKey('obm.id'), primary_key=True)
     host = Column(String, nullable=False)
     user = Column(String, nullable=False)

@@ -12,9 +12,11 @@
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
 
-"""Deployment Unit Tests - These tests are intended for our
-internal setup only and will most likely not work on
-other HIL configurations."""
+"""Test various properties re: vlan native networks, on real hardware.
+
+For guidance on running these tests, see the section on deployment
+tests in doc/testing.md
+"""
 
 from hil import api, model, deferred, config
 from hil.test_common import config_testsuite, fail_on_log_warnings, \
@@ -25,6 +27,7 @@ import pytest
 
 @pytest.fixture
 def configure():
+    """Configure HIL."""
     config_testsuite()
     config.load_extensions()
 
@@ -47,10 +50,22 @@ pytestmark = pytest.mark.usefixtures('configure',
 
 
 class TestNativeNetwork(NetworkTest):
+    """NetworkTest using native vlan networks."""
 
     def test_isolated_networks(self):
+        """Do a bunch of network operations on the switch, and verify things
+        along the way.
+
+        The above is super vague; unfortunately the setup operations are very
+        slow, so it makes a huge difference to do everything in one pass. See
+        the comments in-line to understand exactly what is being tested.
+        """
 
         def create_networks():
+            """Create networks and connect things to them.
+
+            Test various things along the way.
+            """
             nodes = self.collect_nodes()
 
             # Create two networks
@@ -101,6 +116,10 @@ class TestNativeNetwork(NetworkTest):
                 set([nodes[1].nics[0].port, nodes[3].nics[0].port])
 
         def delete_networks():
+            """Tear down things set up by create_networks
+
+            again, we do various checks along the way.
+            """
             # Query the DB for nodes on this project
             project = api._must_find(model.Project, 'anvil-nextgen')
             nodes = project.nodes

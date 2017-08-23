@@ -1,3 +1,8 @@
+"""Stress tests.
+
+Tests here are catch problems like resource leaks, that only become apparent
+after a certain amount of use.
+"""
 
 from hil.test_common import config_testsuite, fresh_database, config_merge, \
     fail_on_log_warnings, server_init
@@ -9,6 +14,7 @@ import pytest
 
 @pytest.fixture
 def configure():
+    """Configure HIL"""
     config_testsuite()
     config_merge(
             {'extensions': {'hil.ext.obm.ipmi': '', }, })

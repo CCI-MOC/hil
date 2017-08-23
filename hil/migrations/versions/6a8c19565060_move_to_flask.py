@@ -16,6 +16,7 @@ revision = '6a8c19565060'
 down_revision = None
 branch_labels = None
 
+# pylint: disable=missing-docstring
 
 def upgrade():
     op.rename_table('networkattachment', 'network_attachment')

@@ -12,10 +12,11 @@
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
 
-"""Deployment Tests - These tests are intended for our
-internal setup only and will most likely not work on
-other HIL configurations. This test is for the dell
-and the cisco nexus switches only"""
+"""Deployment tests re: switch configuration.
+
+For guidance on running these tests, see the section on deployment tests
+in docs/testing.md.
+"""
 
 
 from hil import api, model, deferred
@@ -33,6 +34,7 @@ DELLN3000 = 'http://schema.massopencloud.org/haas/v0/switches/delln3000'
 
 @pytest.fixture
 def configure():
+    """Confgure HIL."""
     config_testsuite()
     config_merge({
         'hil.ext.switches.dell': {
@@ -89,7 +91,7 @@ class TestSwitchSavingToFlash(NetworkTest):
         return config
 
     def test_saving_config_file(self):
-
+        """Test saving the switch config to flash."""
         api.project_create('anvil-nextgen')
         nodes = self.collect_nodes()
 

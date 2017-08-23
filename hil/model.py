@@ -367,12 +367,15 @@ class Obm(db.Model):
         assert False, "Subclasses MUST override the stop_console method"
 
     def delete_console(self):
+        """Delete the console log."""
         assert False, "Subclasses MUST override the delete_console method"
 
     def get_console(self):
+        """Return the contents of the console log."""
         assert False, "Subclasses MUST override the get_console method"
 
     def get_console_log_filename(self):
+        """Return the name of the file containing the console log."""
         assert False, "Subclasses MUST override the get_console_log_filename" \
             "method"
 

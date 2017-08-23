@@ -15,6 +15,7 @@ revision = 'b1b0e6d4302e'
 down_revision = '099b939261c1'
 branch_labels = ('hil.ext.switches.dell',)
 
+# pylint: disable=missing-docstring
 
 def upgrade():
     op.alter_column('power_connect55xx', 'id',

@@ -12,7 +12,49 @@
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
 
-"""Unit tests for api.py"""
+"""Unit tests for hil.api
+
+Some general notes:
+
+Probably most of our technical debt is in this module; about 75% of it
+was written in one day by one person, way back when the HIL codebase
+was somewhat embarassing, we basically didn't have a test suite, and
+we decided we needed one in a hurry. The biggest problem is that it's
+a bit difficult to tell what properties a test is verifying, since
+there's lots of setup code mixed in with the actual check. Unfortunately,
+the setup code isn't really regular enough to factor out into one fixture.
+
+A few efforts have been made to make reading the tests a bit easier to
+navigate:
+
+* In some places, you'll see a statement making some api call commented
+  out. This is a hint that this test is similar to another one near by,
+  which has that statement un-commented.
+* Some lines have a comment "# changed" after them. This indicates that
+  nearby tests have a similar line, but something has been changed from
+  those lines (perhaps a single argument has a different value for
+  example).
+* When two tests are very similar in what they test, the docstrings say
+  things like "same as above, but with foo instead of bar." Make sure when
+  modifying this file you don't change things such that those references are
+  no longer correct.
+
+General advice on working with this module:
+
+* Leave the code in better condition than you found it.
+* Be wary of comments that make broad statements about what operations are
+  supported, particulary if that test doesn't actually verify that property;
+  sometimes the way HIL works changes, and we have historically not been
+  very good at updating every comment in here to match.
+* Accordingly, avoid writing comments that state things about HIL that the
+  test doesn't verify; this file is huge and you're never going to remember
+  to update those statements if the changes don't cause failures.
+* With new tests, cleanly separate setup code from the actual tests. This
+  might take the form of a single setUp() method on a class that holds
+  similar tests, or the use of a fixture. Just make sure it improves
+  readability and maintainability.
+* make sure it is easy to see what a new test is trying to verify.
+"""
 import hil
 from hil import model, deferred, errors, config, api
 from hil.test_common import config_testsuite, config_merge, fresh_database, \
@@ -930,6 +972,7 @@ class TestNodeConnectDetachNetwork:
             api.node_connect_network('node-99', '99-eth0', 'hammernet2')
 
     def test_node_detach_network_success(self, switchinit):
+        """Detaching a node from a network removes the NetworkAttachment."""
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -953,6 +996,9 @@ class TestNodeConnectDetachNetwork:
             .filter_by(network=network, nic=nic).count() == 0
 
     def test_node_detach_network_not_attached(self):
+        """
+        Detaching a node from a network fails, if it isn't attached already.
+        """
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -968,6 +1014,12 @@ class TestNodeConnectDetachNetwork:
             api.node_detach_network('node-99', '99-eth0', 'hammernet')
 
     def test_node_detach_network_wrong_node_in_project(self, switchinit):
+        """Detaching the "wrong" node from a network fails.
+
+        In particular, if we have a two nodes in a project with nics by the
+        same name, with one connected to a network, specifying the wrong
+        node name (but right nic and network) will fail.
+        """
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -990,6 +1042,7 @@ class TestNodeConnectDetachNetwork:
             api.node_detach_network('node-98', '99-eth0', 'hammernet')  # changed  # noqa
 
     def test_node_detach_network_wrong_node_not_in_project(self, switchinit):
+        """Same as above, but the "wrong" node is not part of the project."""
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -1011,6 +1064,7 @@ class TestNodeConnectDetachNetwork:
             api.node_detach_network('node-98', '99-eth0', 'hammernet')  # changed  # noqa
 
     def test_node_detach_network_no_such_node(self, switchinit):
+        """Same as above, but the "wrong" node doeesn't exist."""
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -1027,6 +1081,7 @@ class TestNodeConnectDetachNetwork:
             api.node_detach_network('node-98', '99-eth0', 'hammernet')  # changed  # noqa
 
     def test_node_detach_network_no_such_nic(self, switchinit):
+        """Detaching a nic that doesn't exist raises not found."""
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -1043,6 +1098,14 @@ class TestNodeConnectDetachNetwork:
             api.node_detach_network('node-99', '99-eth1', 'hammernet')  # changed  # noqa
 
     def test_node_detach_network_node_not_in_project(self, switchinit):
+        """Detaching a node that is not in a network fails.
+
+        In particular, this should raise ProjectMismatchError.
+
+        Note that if this is the case, the node should never actually be
+        connected to a network; this is mostly checking the ordering of
+        the errors.
+        """
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -1060,8 +1123,13 @@ class TestNodeConnectDetachNetwork:
 
 
 class TestHeadnodeCreateDelete:
+    """Test headnode_{create,delete}"""
 
     def test_headnode_create_success(self):
+        """(successful) call to headnode_create creates the headnode.
+
+        (in the database; this doesn't verify that a VM is actually created).
+        """
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         hn = api._must_find(model.Headnode, 'hn-0')
@@ -1087,6 +1155,7 @@ class TestHeadnodeCreateDelete:
         api.headnode_create('hn-1', 'anvil-nextgen', 'base-headnode')
 
     def test_headnode_delete_success(self):
+        """headnode_delete removes the object from the database."""
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_delete('hn-0')
@@ -1099,8 +1168,10 @@ class TestHeadnodeCreateDelete:
 
 
 class TestHeadnodeCreateDeleteHnic:
+    """Test headnode_{create,delete}_hnic"""
 
     def test_headnode_create_hnic_success(self):
+        """headnode_create_hnic adds the object to the database."""
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
@@ -1108,10 +1179,12 @@ class TestHeadnodeCreateDeleteHnic:
         assert nic.owner.label == 'hn-0'
 
     def test_headnode_create_hnic_no_headnode(self):
+        """Creating an hnic for a non-existant headnode raises not found."""
         with pytest.raises(errors.NotFoundError):
             api.headnode_create_hnic('hn-0', 'hn-0-eth0')
 
     def test_headnode_create_hnic_duplicate_hnic(self):
+        """Creating an hnic that already exists fails."""
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
@@ -1119,6 +1192,7 @@ class TestHeadnodeCreateDeleteHnic:
             api.headnode_create_hnic('hn-0', 'hn-0-eth0')
 
     def test_headnode_delete_hnic_success(self):
+        """headnode_delete_hnic removes the Hnic from the database."""
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
@@ -1127,16 +1201,25 @@ class TestHeadnodeCreateDeleteHnic:
         api._must_find(model.Headnode, 'hn-0')
 
     def test_headnode_delete_hnic_hnic_nexist(self):
+        """Deleting an hnic that does not exist raises not found."""
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         with pytest.raises(errors.NotFoundError):
             api.headnode_delete_hnic('hn-0', 'hn-0-eth0')
 
     def test_headnode_delete_hnic_headnode_nexist(self):
+        """
+        Deleting an hnic on a headnode that does not exist raises not found.
+        """
         with pytest.raises(errors.NotFoundError):
             api.headnode_delete_hnic('hn-0', 'hn-0-eth0')
 
     def test_headnode_delete_hnic_wrong_headnode(self):
+        """Deleting an hnic from the "wrong" headnode fails.
+
+        i.e. if we have an hnic 'hn-0-eth0' scoped to headnode 'hn-0', and
+        try to delete it from headnode 'hn-1', this should fail.
+        """
         api.project_create('anvil-nextgen')
         api.project_create('anvil-oldtimer')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
@@ -1146,6 +1229,7 @@ class TestHeadnodeCreateDeleteHnic:
             api.headnode_delete_hnic('hn-1', 'hn-0-eth0')
 
     def test_headnode_delete_hnic_wrong_nexist_headnode(self):
+        """Same thing, but when 'hn-1' does not exist."""
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
@@ -1153,6 +1237,7 @@ class TestHeadnodeCreateDeleteHnic:
             api.headnode_delete_hnic('hn-1', 'hn-0-eth0')
 
     def test_headnode_create_hnic_diff_headnodes(self):
+        """Creating two hnics by the same name on different headnodes works."""
         api.project_create('anvil-legacy')
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-legacy', 'base-headnode')
@@ -1162,8 +1247,10 @@ class TestHeadnodeCreateDeleteHnic:
 
 
 class TestHeadnodeConnectDetachNetwork:
+    """Test headnode_{connect,detach}_network."""
 
     def test_headnode_connect_network_success(self):
+        """headnode_connect_network connects the database objects."""
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
@@ -1176,6 +1263,7 @@ class TestHeadnodeConnectDetachNetwork:
         assert hnic in network.hnics
 
     def test_headnode_connect_network_no_such_headnode(self):
+        """headnode_connect_network fails if the headnode does not exist."""
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
@@ -1185,6 +1273,7 @@ class TestHeadnodeConnectDetachNetwork:
             api.headnode_connect_network('hn-1', 'hn-0-eth0', 'hammernet')  # changed  # noqa
 
     def test_headnode_connect_network_no_such_hnic(self):
+        """...or if the hnic does not exist."""
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
@@ -1194,6 +1283,7 @@ class TestHeadnodeConnectDetachNetwork:
             api.headnode_connect_network('hn-0', 'hn-0-eth1', 'hammernet')  # changed  # noqa
 
     def test_headnode_connect_network_no_such_network(self):
+        """...or if the network does not exist."""
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
@@ -1203,6 +1293,10 @@ class TestHeadnodeConnectDetachNetwork:
             api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet2')  # changed  # noqa
 
     def test_headnode_connect_network_already_attached_to_same(self):
+        """Connecting an hnic to a network twice is ok.
+
+        This should be idempotent.
+        """
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
@@ -1212,6 +1306,7 @@ class TestHeadnodeConnectDetachNetwork:
         api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
 
     def test_headnode_connect_network_already_attached_differently(self):
+        """Connecting an hnic to a network when already on another is ok."""
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
@@ -1222,6 +1317,9 @@ class TestHeadnodeConnectDetachNetwork:
         api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet2')  # changed  # noqa
 
     def test_headnode_connect_network_different_projects(self):
+        """
+        Connecting a headnode to a network owned by a different project fails.
+        """
         api.project_create('anvil-nextgen')
         api.project_create('anvil-oldtimer')  # added
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
@@ -1257,6 +1355,10 @@ class TestHeadnodeConnectDetachNetwork:
             api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
 
     def test_headnode_detach_network_success(self):
+        """Detaching a headnode from a network works.
+
+        (in particular, the database is updated correctly).
+        """
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
@@ -1270,6 +1372,11 @@ class TestHeadnodeConnectDetachNetwork:
         assert hnic not in network.hnics
 
     def test_headnode_detach_network_not_attached(self):
+        """
+        Detaching a from a network works, even if it is not already attached.
+
+        In this case, it's just a noop.
+        """
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
@@ -1279,6 +1386,7 @@ class TestHeadnodeConnectDetachNetwork:
         api.headnode_detach_network('hn-0', 'hn-0-eth0')
 
     def test_headnode_detach_network_no_such_headnode(self):
+        """Detaching a non-existant headnode raises not found."""
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
@@ -1289,6 +1397,7 @@ class TestHeadnodeConnectDetachNetwork:
             api.headnode_detach_network('hn-1', 'hn-0-eth0')  # changed
 
     def test_headnode_detach_network_no_such_hnic(self):
+        """Detaching a non-existant hnic raises not found."""
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
@@ -1300,21 +1409,33 @@ class TestHeadnodeConnectDetachNetwork:
 
 
 class TestHeadnodeFreeze:
+    """Test the "freezing" behavior of headnodes.
 
-    # We can't start the headnodes for real in the test suite, but we need
-    # "starting" them to still clear the dirty bit.
+    i.e, modifications become illegal once the headnode is started.
+    """
+
     @pytest.fixture(autouse=True)
     def patch_start(self, monkeypatch):
+        """Monkeypatch headnode.start for test purposes.
+
+        We can't start the headnodes for real in the test suite, but we need
+        "starting" them to still clear the dirty bit.
+        """
         def start(self):
+            """Set the dirty bit, to mark the headnode as started."""
             self.dirty = False
         monkeypatch.setattr(model.Headnode, 'start', start)
 
     def _prep(self):
-        """Helper to set up common state."""
+        """Helper to set up common state.
+
+        Creates a project and headnode to work with.
+        """
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
 
     def _prep_delete_hnic(self):
+        """Like _prep, but also creates an hnic that we will delete."""
         self._prep()
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
 
@@ -1329,6 +1450,7 @@ class TestHeadnodeFreeze:
         api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
 
     def test_freeze_fail_create_hnic(self):
+        """Creating an hnic after staring a headnode fails."""
         self._prep()
 
         api.headnode_start('hn-0')
@@ -1336,11 +1458,13 @@ class TestHeadnodeFreeze:
             api.headnode_create_hnic('hn-0', 'hn-0-eth0')
 
     def test_succeed_create_hnic(self):
+        """Creating an hnic before starting a headnode succeeds."""
         self._prep()
 
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
 
     def test_freeze_fail_delete_hnic(self):
+        """Deleting an hnic after starting a headnode fails."""
         self._prep_delete_hnic()
 
         api.headnode_start('hn-0')
@@ -1348,11 +1472,13 @@ class TestHeadnodeFreeze:
             api.headnode_delete_hnic('hn-0', 'hn-0-eth0')
 
     def test_succeed_delete_hnic(self):
+        """Deleting an hnic before starting a headnode works."""
         self._prep_delete_hnic()
 
         api.headnode_delete_hnic('hn-0', 'hn-0-eth0')
 
     def test_freeze_fail_connect_network(self):
+        """Connect network fails after starting the headnode."""
         self._prep_connect_network()
 
         api.headnode_start('hn-0')
@@ -1360,11 +1486,13 @@ class TestHeadnodeFreeze:
             api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
 
     def test_succeed_connect_network(self):
+        """Connect network succeeds before starting the headnode."""
         self._prep_connect_network()
 
         api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
 
     def test_freeze_fail_detach_network(self):
+        """Detach network fails after starting the headnode."""
         self._prep_detach_network()
 
         api.headnode_start('hn-0')
@@ -1372,15 +1500,17 @@ class TestHeadnodeFreeze:
             api.headnode_detach_network('hn-0', 'hn-0-eth0')
 
     def test_succeed_detach_network(self):
+        """Connect network succeeds after starting the headnode."""
         self._prep_detach_network()
 
         api.headnode_detach_network('hn-0', 'hn-0-eth0')
 
 
 class TestNetworkCreateDelete:
-    """Tests for the hil.api.network_* functions."""
+    """Tests for the hil.api.network_{create,delete} functions."""
 
     def test_network_create_success(self):
+        """network_create creates the network in the db."""
         api.project_create('anvil-nextgen')
         network_create_simple('hammernet', 'anvil-nextgen')
         net = api._must_find(model.Network, 'hammernet')
@@ -1400,12 +1530,23 @@ class TestNetworkCreateDelete:
             network_create_simple('hammernet', 'anvil-oldtimer')
 
     def test_network_delete_success(self):
+        """network_delete removes the network from the db."""
         api.project_create('anvil-nextgen')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.network_delete('hammernet')
         api._assert_absent(model.Network, 'hammernet')
 
     def test_network_delete_project_complex_success(self, switchinit):
+        """Do a handful of operations, and make sure nothing explodes.
+
+        In particular, the sequence:
+
+            * add a node to a network
+            * remove it
+            * delete the network
+
+        should not signal an error.
+        """
         api.project_create('anvil-nextgen')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.node_register('node-99', obm={
@@ -1428,6 +1569,7 @@ class TestNetworkCreateDelete:
             api.network_delete('hammernet')
 
     def test_network_delete_node_on_network(self, switchinit):
+        """Deleting a node that is attached to a network should fail."""
         api.project_create('anvil-nextgen')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.node_register('node-99', obm={
@@ -1443,6 +1585,7 @@ class TestNetworkCreateDelete:
             api.network_delete('hammernet')
 
     def test_network_delete_headnode_on_network(self):
+        """Deleting a headnode that is attached to a network should fail."""
         api.project_create('anvil-nextgen')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
@@ -1452,7 +1595,8 @@ class TestNetworkCreateDelete:
             api.network_delete('hammernet')
 
 
-class TestSwitch:
+class Test_switch_register:
+    """Test switch_register."""
 
     def test_register(self):
         """Calling switch_register should create an object in the db."""
@@ -1477,6 +1621,7 @@ class TestSwitch:
 
 
 class Test_switch_delete:
+    """Test switch_delete."""
 
     def test_delete(self):
         """Deleting a switch should actually remove it."""
@@ -1497,6 +1642,7 @@ class Test_switch_delete:
 
 
 class Test_switch_register_port:
+    """Test switch_register_port"""
 
     def test_register_port(self):
         """Creating a port on an existing switch should succeed."""
@@ -1516,6 +1662,7 @@ class Test_switch_register_port:
 
 
 class Test_switch_delete_port:
+    """Test switch_delete_port"""
 
     def test_delete_port(self):
         """Removing a port should remove it from the db."""
@@ -1547,9 +1694,15 @@ class Test_switch_delete_port:
             api.switch_delete_port('sw0', PORTS[4])
 
 
-class Test_list_switches:
+class Test_list_show_switch:
+    """Test list_switches/show_switch"""
 
     def test_list_switches(self):
+        """Test list_switches.
+
+        This registers switches, checking the output of list_switches
+        beforehand and in between.
+        """
         assert json.loads(api.list_switches()) == []
 
         api.switch_register('sw0',
@@ -1581,7 +1734,10 @@ class Test_list_switches:
         ]
 
     def test_show_switch(self, switchinit):
+        """Test show_switch
 
+        This checks the output of show_switch before and after adding a port.
+        """
         assert json.loads(api.show_switch('sw0')) == {
             'name': 'sw0',
             'ports': [{'label': PORTS[2]}]
@@ -1597,9 +1753,17 @@ class Test_list_switches:
         }
 
 
-class TestShowPort:
+class Test_show_port:
+    """Test show_port"""
 
     def test_show_port(self, switchinit):
+        """Test show_port
+
+        * Fails on non-existing switch
+        * Fails on existant switch & non-existing port
+        * Attaching a nic to the port causes the nic's info to show up
+          in show_port.
+        """
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -1623,8 +1787,10 @@ class TestShowPort:
 
 
 class TestPortConnectDetachNic:
+    """Test port_{connect,detach}_nic."""
 
     def test_port_connect_nic_success(self, switchinit):
+        """Basic port_connect_nic doesn't raise an error."""
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -1634,6 +1800,7 @@ class TestPortConnectDetachNic:
         api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
 
     def test_port_connect_nic_no_such_switch(self):
+        """Connecting to a non-existant switch raises not found."""
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -1644,6 +1811,7 @@ class TestPortConnectDetachNic:
             api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
 
     def test_port_connect_nic_no_such_port(self):
+        """Connecting a non-existant port raises not found."""
         api.switch_register('sw0',
                             type=MOCK_SWITCH_TYPE,
                             username="switch_user",
@@ -1659,6 +1827,7 @@ class TestPortConnectDetachNic:
             api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
 
     def test_port_connect_nic_no_such_node(self):
+        """Connecting a non-existing node raises not found."""
         api.switch_register('sw0',
                             type=MOCK_SWITCH_TYPE,
                             username="switch_user",
@@ -1669,6 +1838,7 @@ class TestPortConnectDetachNic:
             api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
 
     def test_port_connect_nic_no_such_nic(self):
+        """Connecting a non-existing nic raises not found."""
         api.switch_register('sw0',
                             type=MOCK_SWITCH_TYPE,
                             username="switch_user",
@@ -1684,6 +1854,7 @@ class TestPortConnectDetachNic:
             api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
 
     def test_port_connect_nic_already_attached_to_same(self, switchinit):
+        """Connecting a port to a nic twice fails."""
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -1696,6 +1867,10 @@ class TestPortConnectDetachNic:
 
     def test_port_connect_nic_nic_already_attached_differently(self,
                                                                switchinit):
+        """
+        Connecting a port to a nic fails, if the nic is attached to another
+        port.
+        """
         api.switch_register_port('sw0', PORTS[3])
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
@@ -1709,6 +1884,10 @@ class TestPortConnectDetachNic:
 
     def test_port_connect_nic_port_already_attached_differently(self,
                                                                 switchinit):
+        """
+        Connecting a port to a nic fails, if the port is attached to
+        another nic.
+        """
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -1726,6 +1905,7 @@ class TestPortConnectDetachNic:
             api.port_connect_nic('sw0', PORTS[2], 'compute-02', 'eth1')
 
     def test_port_detach_nic_success(self, switchinit):
+        """Basic call to port_detach_nic doesn't raise an error."""
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -1736,10 +1916,12 @@ class TestPortConnectDetachNic:
         api.port_detach_nic('sw0', PORTS[2])
 
     def test_port_detach_nic_no_such_port(self):
+        """Detaching a non-existant port raises not found."""
         with pytest.raises(errors.NotFoundError):
             api.port_detach_nic('sw0', PORTS[2])
 
     def test_port_detach_nic_not_attached(self):
+        """Detaching a port that is not attached fails."""
         api.switch_register('sw0',
                             type=MOCK_SWITCH_TYPE,
                             username="switch_user",
@@ -1773,12 +1955,16 @@ class TestPortConnectDetachNic:
 
 
 class TestQuery_populated_db:
-    """test portions of the query api with a populated database"""
+    """test portions of the query api with a populated database
+
+    Specifically, check against the objects created by ``additional_database.``
+    """
 
     pytestmark = pytest.mark.usefixtures(*(default_fixtures +
                                            ['additional_database']))
 
     def test_list_networks(self):
+        """Test list_networks."""
         result = json.loads(api.list_networks())
         for net in result.keys():
             del result[net]['network_id']
@@ -1795,6 +1981,9 @@ class TestQuery_populated_db:
         }
 
     def test_list_network_attachments(self):
+        """
+        Attach some nodes to networks, and check list_network_attachments.
+        """
         api.node_connect_network(
             'runway_node_0', 'boot-nic', 'manhattan_runway_pxe')
         api.node_connect_network(
@@ -1820,6 +2009,7 @@ class TestQuery_populated_db:
         assert actual == expected
 
     def test_list_network_attachments_for_project(self):
+        """Same thing, but limit the call to a project."""
         api.node_connect_network(
             'runway_node_0',
             'boot-nic',
@@ -1848,10 +2038,7 @@ class TestQuery_unpopulated_db:
 
     def _compare_node_dumps(self, actual, expected):
         """This is a helper method which compares the parsed json output of
-        two show_headnode calls for equality. There are a couple issue to work
-        around to get an accurate result - in particular, we often don't care
-        about the order of lists, which needs special handling (especially when
-        the arguments aren't orderable).
+        two show_headnode calls for equality.
         """
         # For two lists to be equal, their elements have to be in the same
         # order. However, there is no ordering defined on dictionaries, so we
@@ -1872,6 +2059,7 @@ class TestQuery_unpopulated_db:
         assert expected == actual
 
     def test_free_nodes(self):
+        """Register some nodes, and check the output of list_nodes('free')."""
         api.node_register('master-control-program', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -1897,9 +2085,14 @@ class TestQuery_unpopulated_db:
         ]
 
     def test_list_networks_none(self):
+        """list_networks should return an empty list if the db is empty."""
         assert json.loads(api.list_networks()) == {}
 
     def test_list_projects(self):
+        """Add a few projects and check the output of list_projects
+
+        Before, between, and after adding the projects.
+        """
         assert json.loads(api.list_projects()) == []
         api.project_create('anvil-nextgen')
         assert json.loads(api.list_projects()) == ['anvil-nextgen']
@@ -1912,7 +2105,10 @@ class TestQuery_unpopulated_db:
         ]
 
     def test_no_free_nodes(self):
-        assert json.loads(api.list_nodes("ree")) == []
+        """
+        list_nodes('free') should return an empty list if the db is empty.
+        """
+        assert json.loads(api.list_nodes("free")) == []
 
     def test_some_non_free_nodes(self):
         """Make sure that allocated nodes don't show up in the free list."""
@@ -1987,7 +2183,8 @@ class TestQuery_unpopulated_db:
         }
         self._compare_node_dumps(actual, expected)
 
-    def test_show_node_unavailable(self):
+    def test_show_node_free(self):
+        """Register a node and show it."""
         api.node_register('robocop', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -2021,6 +2218,7 @@ class TestQuery_unpopulated_db:
         self._compare_node_dumps(actual, expected)
 
     def test_show_node_multiple_network(self):
+        """Show a node connected to multiple networks."""
         api.switch_register('sw0',
                             type=MOCK_SWITCH_TYPE,
                             username="switch_user",
@@ -2075,10 +2273,12 @@ class TestQuery_unpopulated_db:
         self._compare_node_dumps(actual, expected)
 
     def test_show_nonexistant_node(self):
+        """Showing a node that does not exist should raise not found."""
         with pytest.raises(errors.NotFoundError):
             api.show_node('master-control-program')
 
     def test_project_nodes_exist(self):
+        """Test list_project_nodes given a project that has nodes."""
         api.node_register('master-control-program', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -2109,6 +2309,7 @@ class TestQuery_unpopulated_db:
         ]
 
     def test_project_headnodes_exist(self):
+        """Test list_project_headnodes given a project with headnodes."""
         api.project_create('anvil-nextgen')
         api.headnode_create('hn0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create('hn1', 'anvil-nextgen', 'base-headnode')
@@ -2124,10 +2325,12 @@ class TestQuery_unpopulated_db:
         ]
 
     def test_no_project_nodes(self):
+        """Test list_project_nodes on a project with no nodes."""
         api.project_create('anvil-nextgen')
         assert json.loads(api.list_project_nodes('anvil-nextgen')) == []
 
     def test_no_project_headnodes(self):
+        """Test list_project_headnodes on a project with no headnodes."""
         api.project_create('anvil-nextgen')
         assert json.loads(api.list_project_headnodes('anvil-nextgen')) == []
 
@@ -2158,6 +2361,7 @@ class TestQuery_unpopulated_db:
         assert result == ['data', 'robocop']
 
     def test_project_list_networks(self):
+        """Test list_project_networks on a project with networks."""
         api.project_create('anvil-nextgen')
 
         network_create_simple('pxe', 'anvil-nextgen')
@@ -2174,10 +2378,12 @@ class TestQuery_unpopulated_db:
         ]
 
     def test_no_project_networks(self):
+        """Test list_project_nodes given a project with no networks."""
         api.project_create('anvil-nextgen')
-        assert json.loads(api.list_project_nodes('anvil-nextgen')) == []
+        assert json.loads(api.list_project_networks('anvil-nextgen')) == []
 
     def test_show_headnode(self):
+        """Create and show a headnode."""
         api.project_create('anvil-nextgen')
         network_create_simple('spiderwebs', 'anvil-nextgen')
         api.headnode_create('BGH', 'anvil-nextgen', 'base-headnode')
@@ -2206,10 +2412,12 @@ class TestQuery_unpopulated_db:
         }
 
     def test_show_nonexistant_headnode(self):
+        """show_headnode on a non-existent headnode should raise not found."""
         with pytest.raises(errors.NotFoundError):
             api.show_headnode('BGH')
 
     def test_list_headnode_images(self):
+        """Test list_headnode_images."""
         result = json.loads(api.list_headnode_images())
         assert result == ['base-headnode', 'img1', 'img2', 'img3', 'img4']
 
@@ -2218,6 +2426,7 @@ class TestShowNetwork:
     """Test the show_network api cal."""
 
     def test_show_network_simple(self):
+        """Call network_create_simple and show the result."""
         api.project_create('anvil-nextgen')
         network_create_simple('spiderwebs', 'anvil-nextgen')
 
@@ -2230,6 +2439,7 @@ class TestShowNetwork:
         }
 
     def test_show_network_public(self):
+        """show a public network."""
         api.network_create('public-network',
                            owner='admin',
                            access='',
@@ -2244,6 +2454,7 @@ class TestShowNetwork:
         }
 
     def test_show_network_provider(self):
+        """show a "provider" network."""
         api.project_create('anvil-nextgen')
         api.network_create('spiderwebs',
                            owner='admin',
@@ -2329,6 +2540,7 @@ class TestExtensions:
     """
 
     def test_extension_list(self):
+        """Test the list_active_extensions api call."""
         result = json.loads(api.list_active_extensions())
         assert result == [
             'hil.ext.auth.null',
