@@ -25,7 +25,7 @@ import requests
 import schema
 
 from hil.migrations import paths
-from hil.model import db, Switch
+from hil.model import db, Switch, SwitchSession
 from hil.errors import BadArgumentError
 from hil.model import BigIntegerType
 
@@ -34,7 +34,7 @@ paths[__name__] = join(dirname(__file__), 'migrations', 'brocade')
 logger = logging.getLogger(__name__)
 
 
-class Brocade(Switch):
+class Brocade(Switch, SwitchSession):
     api_name = 'http://schema.massopencloud.org/haas/v0/switches/brocade'
 
     __mapper_args__ = {

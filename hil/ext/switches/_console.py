@@ -14,14 +14,14 @@
 """Common functionality for switches with a cisco-like console."""
 
 from abc import ABCMeta, abstractmethod
-from hil.model import Port, NetworkAttachment
+from hil.model import Port, NetworkAttachment, SwitchSession
 import re
 from hil.config import cfg
 
 _CHANNEL_RE = re.compile(r'vlan/(\d+)')
 
 
-class Session(object):
+class Session(SwitchSession):
 
     __metaclass__ = ABCMeta
 

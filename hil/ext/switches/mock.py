@@ -18,7 +18,7 @@ Meant for use in the test suite.
 """
 
 from collections import defaultdict
-from hil.model import Switch
+from hil.model import Switch, SwitchSession
 from hil.migrations import paths
 import schema
 import re
@@ -32,7 +32,7 @@ paths[__name__] = join(dirname(__file__), 'migrations', 'mock')
 LOCAL_STATE = defaultdict(lambda: defaultdict(dict))
 
 
-class MockSwitch(Switch):
+class MockSwitch(Switch, SwitchSession):
     """A switch which stores configuration in memory.
 
     This class conforms to the interface specified by ``hil.model.Switch``.
