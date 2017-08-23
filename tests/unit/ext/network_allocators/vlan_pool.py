@@ -1,3 +1,4 @@
+"""Test the vlan_pool network allocator."""
 from hil.config import load_extensions
 from hil.flaskapp import app
 from hil.model import db
@@ -16,6 +17,7 @@ server_init = pytest.server_init(server_init)
 
 @pytest.fixture
 def configure():
+    """Configure HIL"""
     config_testsuite()
     config_merge({
         'extensions': {
@@ -81,6 +83,7 @@ class TestAdminCreatedNetworks():
     """
 
     def test_create_network_with_id_from_pool(self):
+        """Test creation of networks with IDs from the pool."""
 
         api.project_create('nuggets')
 
@@ -118,6 +121,7 @@ class TestAdminCreatedNetworks():
         assert int(network.network_id) == net_id
 
     def test_create_network_with_id_outside_pool(self):
+        """Test creation of networks whose ID is not in the pool."""
 
         # create an admin owned network
         api.network_create('hammernet', 'admin', '', 1511)

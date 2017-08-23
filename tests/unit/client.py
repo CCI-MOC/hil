@@ -34,6 +34,7 @@ password = "hil_pass1234"
 
 
 class FlaskHTTPClient(HTTPClient):
+    """Implementation of HTTPClient wrapping Flask's test client."""
 
     def __init__(self):
         self._flask_client = app.test_client()
@@ -97,6 +98,7 @@ def dummy_verify():
 
     @staticmethod
     def dummy(*args, **kwargs):
+        """dummy replacement, which just returns True."""
         return True
 
     old = sha512_crypt.verify
@@ -107,6 +109,7 @@ def dummy_verify():
 
 @pytest.fixture
 def configure():
+    """Configure HIL"""
     config_testsuite()
     config_merge({
         'auth': {
@@ -273,10 +276,16 @@ class Test_ClientBase:
     """Tests client initialization and object_url creation. """
 
     def test_init_error(self):
+        """Test that we get a TypeError given bad arguments to ClientBase()"""
+        # XXX: I(zenhack) think this test is of dubious utility; At some point
+        # during review, Sahil had some explicit logic to throw this error, but
+        # we got rid of that. Arguably we should remove this, but I want to do
+        # so in a separate patch, so just noting it now.
         with pytest.raises(TypeError):
             ClientBase()
 
     def test_object_url(self):
+        """Test the object_url method."""
         x = ClientBase(ep, 'some_base64_string')
         y = x.object_url('abc', '123', 'xy23z')
         assert y == 'http://127.0.0.1:8000/abc/123/xy23z'
@@ -286,17 +295,20 @@ class Test_node:
     """ Tests Node related client calls. """
 
     def test_list_nodes_free(self):
+        """(successful) to list_nodes('free')"""
         assert C.node.list('free') == [
                 u'node-06', u'node-07', u'node-08', u'node-09'
                 ]
 
     def test_list_nodes_all(self):
+        """(successful) to list_nodes('all')"""
         assert C.node.list('all') == [
                 u'node-01', u'node-02', u'node-03', u'node-04', u'node-05',
                 u'node-06', u'node-07', u'node-08', u'node-09'
                 ]
 
     def test_show_node(self):
+        """(successful) to show_node"""
         assert C.node.show('node-07') == {
                 u'metadata': {},
                 u'project': None,
@@ -312,56 +324,70 @@ class Test_node:
                 }
 
     def test_power_cycle(self):
+        """(successful) to node_power_cycle"""
         assert C.node.power_cycle('node-07') is None
 
     def test_power_cycle_force(self):
+        """(successful) to node_power_cycle(force=True)"""
         assert C.node.power_cycle('node-07', True) is None
 
     def test_power_cycle_no_force(self):
+        """(successful) to node_power_cycle(force=False)"""
         assert C.node.power_cycle('node-07', False) is None
 
     def test_power_cycle_bad_arg(self):
+        """error on call to power_cycle with bad argument."""
         with pytest.raises(FailedAPICallException):
             C.node.power_cycle('node-07', 'wrong')
 
     def test_power_off(self):
+        """(successful) to node_power_off"""
         assert C.node.power_off('node-07') is None
 
     def test_node_add_nic(self):
+        """Test removing and then adding a nic."""
         C.node.remove_nic('node-08', 'eth0')
         assert C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff') is None
 
     def test_node_add_duplicate_nic(self):
+        """Adding a nic twice should fail"""
         C.node.remove_nic('node-08', 'eth0')
         C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff')
         with pytest.raises(FailedAPICallException):
             C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff')
 
     def test_nosuch_node_add_nic(self):
+        """Adding a nic to a non-existant node should fail."""
         with pytest.raises(FailedAPICallException):
             C.node.add_nic('abcd', 'eth0', 'aa:bb:cc:dd:ee:ff')
 
     def test_remove_nic(self):
+        """(successful) call to node_remove_nic"""
         assert C.node.remove_nic('node-08', 'eth0') is None
 
     def test_remove_duplicate_nic(self):
+        """Removing a nic twice should fail"""
         C.node.remove_nic('node-08', 'eth0')
         with pytest.raises(FailedAPICallException):
             C.node.remove_nic('node-08', 'eth0')
 
     def test_node_start_console(self):
+        """(successful) call to node_start_console"""
         assert C.node.start_console('node-01') is None
 
     def test_node_stop_console(self):
+        """(successful) call to node_stop_console"""
         assert C.node.stop_console('node-01') is None
 
     def test_node_connect_network(self):
+        """(successful) call to node_connect_network"""
         assert C.node.connect_network(
                 'node-01', 'eth0', 'net-01', 'vlan/native'
                 ) is None
         deferred.apply_networking()
 
     def test_node_connect_network_error(self):
+        """Duplicate call to node_connect_network should fail."""
         C.node.connect_network('node-02', 'eth0', 'net-04', 'vlan/native')
         deferred.apply_networking()
         with pytest.raises(FailedAPICallException):
@@ -369,12 +395,14 @@ class Test_node:
         deferred.apply_networking()
 
     def test_node_detach_network(self):
+        """(successful) call to node_detach_network"""
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
         deferred.apply_networking()
         assert C.node.detach_network('node-04', 'eth0', 'net-04') is None
         deferred.apply_networking()
 
     def test_node_detach_network_error(self):
+        """Duplicate call to node_detach_network should fail."""
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
         deferred.apply_networking()
         C.node.detach_network('node-04', 'eth0', 'net-04')
@@ -460,14 +488,17 @@ class Test_switch:
     """ Tests switch related client calls."""
 
     def test_list_switches(self):
+        """(successful) call to list_switches"""
         assert C.switch.list() == [
                 u'brocade-01', u'dell-01', u'mock-01', u'nexus-01'
                 ]
 
     def test_show_switch(self):
+        """(successful) call to show_switch"""
         assert C.switch.show('dell-01') == {u'name': u'dell-01', u'ports': []}
 
     def test_delete_switch(self):
+        """(successful) call to switch_delete"""
         assert C.switch.delete('nexus-01') is None
 
 
@@ -475,30 +506,36 @@ class Test_port:
     """ Tests port related client calls."""
 
     def test_port_register(self):
+        """(successful) call to port_register."""
         assert C.port.register('mock-01', 'gi1/1/1') is None
 
     def test_port_dupregister(self):
+        """Duplicate call to port_register should raise an error."""
         C.port.register('mock-01', 'gi1/1/2')
         with pytest.raises(FailedAPICallException):
             C.port.register('mock-01', 'gi1/1/2')
 
     def test_port_delete(self):
+        """(successful) call to port_delete"""
         C.port.register('mock-01', 'gi1/1/3')
         assert C.port.delete('mock-01', 'gi1/1/3') is None
 
     def test_port_delete_error(self):
+        """Deleting a port twice should fail with an error."""
         C.port.register('mock-01', 'gi1/1/4')
         C.port.delete('mock-01', 'gi1/1/4')
         with pytest.raises(FailedAPICallException):
             C.port.delete('mock-01', 'gi1/1/4')
 
     def test_port_connect_nic(self):
+        """(successfully) Call port_connect_nic on an existant port"""
         C.port.register('mock-01', 'gi1/1/5')
         assert C.port.connect_nic(
                 'mock-01', 'gi1/1/5', 'node-08', 'eth0'
                 ) is None
 
     def test_port_connect_nic_errors(self):
+        """Test various error conditions for port_connect_nic."""
         C.port.register('mock-01', 'gi1/1/6')
         C.port.connect_nic('mock-01', 'gi1/1/6', 'node-09', 'eth0')
 
@@ -511,16 +548,19 @@ class Test_port:
             C.port.connect_nic('mock-01', 'gi1/1/6', 'node-09', 'eth0')
 
     def test_port_detach_nic(self):
+        """(succesfully) call port_detach_nic."""
         C.port.register('mock-01', 'gi1/1/7')
         C.port.connect_nic('mock-01', 'gi1/1/7', 'node-09', 'eth0')
         assert C.port.detach_nic('mock-01', 'gi1/1/7') is None
 
     def test_port_detach_nic_error(self):
+        """port_detach_nic on a port w/ no nic should error."""
         C.port.register('mock-01', 'gi1/1/8')
         with pytest.raises(FailedAPICallException):
             C.port.detach_nic('mock-01', 'gi1/1/8')
 
     def test_show_port(self):
+        """Test show_port"""
         # do show port on a port that's not registered yet
         with pytest.raises(FailedAPICallException):
             C.port.show('mock-01', 'gi1/1/8')

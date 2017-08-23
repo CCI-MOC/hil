@@ -1,3 +1,4 @@
+"""Test the port_revert api call."""
 import unittest
 import pytest
 from hil.test_common import \
@@ -8,6 +9,7 @@ from hil.flaskapp import app
 
 
 class Test_port_revert(unittest.TestCase):
+    """TestCase for port_revert."""
 
     def setUp(self):
         from hil.ext.switches.mock import LOCAL_STATE
@@ -44,6 +46,7 @@ class Test_port_revert(unittest.TestCase):
         releaseDB()
 
     def test_no_nic(self):
+        """port_revert on a port with no nic should raise not found."""
         with pytest.raises(errors.NotFoundError):
             # free_port_0 is not attached to a nic.
             api.port_revert('stock_switch_0', 'free_port_0')
@@ -51,6 +54,7 @@ class Test_port_revert(unittest.TestCase):
         assert self.LOCAL_STATE['stock_switch_0']['free_port_0'] == {}
 
     def test_one_network(self):
+        """Test port_revert on a port attached to one network."""
         api.node_connect_network('runway_node_0',
                                  'nic-with-port',
                                  'runway_pxe',
@@ -78,6 +82,7 @@ class Test_port_revert(unittest.TestCase):
         )
 
     def test_two_networks(self):
+        """Test port_revert on a port attached to two networks."""
         pxe_net_id = model.Network.query.filter_by(label='runway_pxe')\
             .one().network_id
         pub_net_id = model.Network.query.filter_by(label='stock_int_pub')\

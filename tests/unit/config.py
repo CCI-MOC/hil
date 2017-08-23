@@ -1,3 +1,4 @@
+"""Test the hil.config module."""
 from hil.test_common import config_set, fail_on_log_warnings
 from hil import config
 import sys

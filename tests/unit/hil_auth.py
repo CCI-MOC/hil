@@ -18,6 +18,7 @@ fresh_database = pytest.fixture(fresh_database)
 
 @pytest.fixture
 def configure():
+    """Configure HIL"""
     config_testsuite()
     config_merge({
         'extensions': {

@@ -1,3 +1,4 @@
+"""Test the mock auth backend"""
 from hil import config
 from hil.auth import get_auth_backend
 from hil.errors import AuthorizationError
@@ -9,6 +10,7 @@ import pytest
 
 @pytest.fixture
 def configure():
+    """Configure HIL"""
     config_testsuite()
     config_merge({
         'extensions': {
@@ -34,6 +36,7 @@ def load_projects():
 
 @pytest.fixture
 def auth_backend():
+    """Fixture returning the auth backend"""
     return get_auth_backend()
 
 

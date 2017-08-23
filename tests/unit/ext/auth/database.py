@@ -1,3 +1,4 @@
+"""Test the database auth backend."""
 from hil import api, model, config, errors
 from hil.test_common import config_testsuite, config_merge, fresh_database, \
     ModelTest, fail_on_log_warnings, server_init
@@ -14,11 +15,20 @@ server_init = pytest.fixture(server_init)
 
 @pytest.fixture
 def dbauth():
+    """Fixture returing hil.ext.auth.database
+
+    This is useful because we can't import it at top level, so this lets us
+    still refer to it by a single expression.
+    """
     from hil.ext.auth import database
     return database
 
 
 class DBAuthTestCase(unittest.TestCase):
+    """Superclass for ``TestCase``s which use the dbauth() fixture.
+
+    This just calls the fixture once, and stores its result in self.
+    """
 
     def setUp(self):
         self.dbauth = dbauth()
@@ -26,6 +36,7 @@ class DBAuthTestCase(unittest.TestCase):
 
 @pytest.fixture
 def configure():
+    """Configure HIL."""
     config_testsuite()
     config_merge({
         'auth': {
@@ -46,6 +57,10 @@ def configure():
 
 @pytest.fixture
 def initial_db(request, dbauth):
+    """Populate the database with an initial set of objects.
+
+    Just a few users & projects.
+    """
     fresh_database(request)
     with app.app_context():
         alice = dbauth.User(label='alice',
@@ -66,6 +81,7 @@ def initial_db(request, dbauth):
 
 @pytest.yield_fixture
 def auth_context():
+    """Run the test in a request context, after calling init_auth."""
     with app.test_request_context():
         init_auth()
         yield
@@ -84,6 +100,11 @@ class FakeAuthRequest(object):
 
     @property
     def authorization(self):
+        """Spoof the 'authorization' property.
+
+        We just return 'self' for this, since we already have the username &
+        password properties.
+        """
         return self
 
 
@@ -118,6 +139,14 @@ def no_auth():
 
 
 def use_fixtures(auth_fixture):
+    """Load standard fixtures + auth_fixture.
+
+    auth_fixture is the name of a fixture used to authenticate the request,
+    e.g. 'admin_auth', 'runway_auth'...
+
+    This is useful since most of our tests use the same set of fixtures, but
+    test different levels of authorization/authentication
+    """
     return pytest.mark.usefixtures('configure',
                                    'initial_db',
                                    'server_init',
@@ -134,23 +163,31 @@ class TestUserCreateDelete(DBAuthTestCase):
         self.dbauth = dbauth
 
     def test_new_user(self):
+        """Creating a (previously absent) user should succeed."""
         api._assert_absent(self.dbauth.User, 'charlie')
         self.dbauth.user_create('charlie', 'foo')
 
     def test_duplicate_user(self):
+        """Creating a user that already exists should fail."""
         self.dbauth.user_create('charlie', 'secret')
         with pytest.raises(errors.DuplicateError):
             self.dbauth.user_create('charlie', 'password')
 
     def test_delete_user(self):
+        """Try creating and deleting a user.
+
+        Requests should succeed.
+        """
         self.dbauth.user_create('charlie', 'foo')
         self.dbauth.user_delete('charlie')
 
     def test_delete_missing_user(self):
+        """Test that deleting a missing user raises not found."""
         with pytest.raises(errors.NotFoundError):
             self.dbauth.user_delete('charlie')
 
     def test_delete_user_twice(self):
+        """Test that deleting a user twice raises not found."""
         self.dbauth.user_create('charlie', 'foo')
         self.dbauth.user_delete('charlie')
         with pytest.raises(errors.NotFoundError):
@@ -211,6 +248,11 @@ class TestUserSetAdmin(DBAuthTestCase):
         local.auth = self.dbauth.User.query.filter_by(label='charlie').one()
 
     def test_user_set_admin(self):
+        """Try promoting and demoting users.
+
+        This just checks that the api calls "succeed" in the sense of not
+        throwing returning errors.
+        """
         self.dbauth.user_create('charlie', 'foo', False)
         self.dbauth.user_set_admin('charlie', True)
         self.dbauth.user_delete('charlie')
@@ -253,6 +295,7 @@ class TestUserAddRemoveProject(DBAuthTestCase):
     """Tests for user_add_project/user_remove_project."""
 
     def test_user_add_project(self):
+        """Test that user_add_project correctly adds the user."""
         self.dbauth.user_create('charlie', 'secret')
         api.project_create('acme-corp')
         self.dbauth.user_add_project('charlie', 'acme-corp')
@@ -262,6 +305,7 @@ class TestUserAddRemoveProject(DBAuthTestCase):
         assert user in project.users
 
     def test_user_remove_project(self):
+        """Test that user_remove_project correctly removes the user."""
         self.dbauth.user_create('charlie', 'secret')
         api.project_create('acme-corp')
         self.dbauth.user_add_project('charlie', 'acme-corp')
@@ -272,6 +316,7 @@ class TestUserAddRemoveProject(DBAuthTestCase):
         assert user not in project.users
 
     def test_duplicate_user_add_project(self):
+        """Test that adding a user that already exists fails."""
         self.dbauth.user_create('charlie', 'secret')
         api.project_create('acme-corp')
         self.dbauth.user_add_project('charlie', 'acme-corp')

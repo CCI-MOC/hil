@@ -31,6 +31,7 @@ PORTS = ['gi1/0/1', 'gi1/0/2', 'gi1/0/3', 'gi1/0/4', 'gi1/0/5']
 
 @pytest.fixture
 def configure():
+    """Configure HIL"""
     config_testsuite()
     config_merge({
         'auth': {
@@ -62,6 +63,7 @@ with_request_context = pytest.yield_fixture(with_request_context)
 
 @pytest.fixture
 def switchinit():
+    """Create a switch with one port"""
     api.switch_register('sw0',
                         type=MOCK_SWITCH_TYPE,
                         username="switch_user",
@@ -80,33 +82,39 @@ pytestmark = pytest.mark.usefixtures(*default_fixtures)
 
 
 class TestProjectCreateDelete:
-    """Tests for the hil.api.project_* functions."""
+    """Tests for the hil.api.project_{create,delete} functions."""
 
     pytestmark = pytest.mark.usefixtures(*(default_fixtures +
                                            ['additional_database']))
 
     def test_project_create_success(self):
+        """(successful) call to project_create"""
         api.project_create('anvil-nextgen')
         api._must_find(model.Project, 'anvil-nextgen')
 
     def test_project_create_duplicate(self):
+        """Call to project_create should fail if the project already exists."""
         with pytest.raises(errors.DuplicateError):
             api.project_create('manhattan')
 
     def test_project_delete(self):
+        """project_delete should successfully delete a project."""
         api.project_delete('empty-project')
         with pytest.raises(errors.NotFoundError):
             api._must_find(model.Project, 'empty-project')
 
     def test_project_delete_nexist(self):
+        """Deleting a project which doesn't exist should raise not found."""
         with pytest.raises(errors.NotFoundError):
             api.project_delete('anvil-nextgen')
 
     def test_project_delete_hasnode(self):
+        """Deleting a project which has nodes should fail."""
         with pytest.raises(errors.BlockedError):
             api.project_delete('manhattan')
 
     def test_project_delete_success_nodesdeleted(self):
+        """...but after deleting the nodes, should succeed."""
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -118,24 +126,28 @@ class TestProjectCreateDelete:
         api.project_delete('anvil-nextgen')
 
     def test_project_delete_hasnetwork(self):
+        """Deleting a project that has networks should fail."""
         api.project_create('anvil-nextgen')
         network_create_simple('hammernet', 'anvil-nextgen')
         with pytest.raises(errors.BlockedError):
             api.project_delete('anvil-nextgen')
 
     def test_project_delete_success_networksdeleted(self):
+        """...but after deleting the networks, should succeed."""
         api.project_create('anvil-nextgen')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.network_delete('hammernet')
         api.project_delete('anvil-nextgen')
 
     def test_project_delete_hasheadnode(self):
+        """Deleting a project that has headnodes should fail."""
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-01', 'anvil-nextgen', 'base-headnode')
         with pytest.raises(errors.BlockedError):
             api.project_delete('anvil-nextgen')
 
     def test_duplicate_project_create(self):
+        """Creating a project that already exists should fail."""
         api.project_create('acme-corp')
         with pytest.raises(errors.DuplicateError):
             api.project_create('acme-corp')
@@ -148,6 +160,7 @@ class TestProjectAddDeleteNetwork:
                                            ['additional_database']))
 
     def test_network_grant_project_access(self):
+        """network_grant_project_access should actually grant access."""
         api.network_grant_project_access('manhattan', 'runway_pxe')
         network = api._must_find(model.Network, 'runway_pxe')
         project = api._must_find(model.Project, 'manhattan')
@@ -155,6 +168,7 @@ class TestProjectAddDeleteNetwork:
         assert network in project.networks_access
 
     def test_network_revoke_project_access(self):
+        """network_revoke_project_access should actually revoke access."""
         api.network_revoke_project_access('runway', 'runway_provider')
         network = api._must_find(model.Network, 'runway_provider')
         project = api._must_find(model.Project, 'runway')
@@ -162,6 +176,10 @@ class TestProjectAddDeleteNetwork:
         assert network not in project.networks_access
 
     def test_network_revoke_project_access_connected_node(self):
+        """Test reovking access to a project that has nodes on the network.
+
+        This should fail.
+        """
         api.node_connect_network(
             'runway_node_0',
             'boot-nic',
@@ -172,13 +190,16 @@ class TestProjectAddDeleteNetwork:
             api.network_revoke_project_access('runway', 'runway_provider')
 
     def test_project_remove_network_owner(self):
+        """Revoking access to a network's owner should fail."""
         with pytest.raises(errors.BlockedError):
             api.network_revoke_project_access('runway', 'runway_pxe')
 
 
 class TestNetworking:
+    """Misc. Networking related tests."""
 
     def test_networking_involved(self):
+        """Do a bunch of network related operations."""
         api.switch_register('sw0',
                             type=MOCK_SWITCH_TYPE,
                             username="switch_user",
@@ -219,6 +240,7 @@ class TestNetworking:
         api.node_connect_network('node-98', 'eth0', 'hammernet')
 
     def test_networking_nic_no_port(self):
+        """Connecting a nic with no port to a network should fail."""
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -235,8 +257,10 @@ class TestNetworking:
 
 
 class TestProjectConnectDetachNode:
+    """Test project_{connect,detach}_node."""
 
     def test_project_connect_node(self):
+        """Check that project_connect_node adds the node to the project."""
         api.project_create('anvil-nextgen')
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
@@ -282,6 +306,7 @@ class TestProjectConnectDetachNode:
             api.project_connect_node('anvil-nextgen', 'node-99')
 
     def test_project_detach_node(self):
+        """Test that project_detach_node removes the node from the project."""
         api.project_create('anvil-nextgen')
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
@@ -323,6 +348,7 @@ class TestProjectConnectDetachNode:
             api.project_detach_node('anvil-nextgen', 'node-99')
 
     def test_project_detach_node_on_network(self, switchinit):
+        """Tests that project_detach_node fails if the node is on a network."""
         api.project_create('anvil-nextgen')
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
@@ -338,6 +364,7 @@ class TestProjectConnectDetachNode:
             api.project_detach_node('anvil-nextgen', 'node-99')
 
     def test_project_detach_node_success_nic_not_on_network(self):
+        """...but succeeds if not, all else being equal."""
         api.project_create('anvil-nextgen')
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
@@ -350,6 +377,10 @@ class TestProjectConnectDetachNode:
         api.project_detach_node('anvil-nextgen', 'node-99')
 
     def test_project_detach_node_removed_from_network(self, switchinit):
+        """Same as above, but we connect/disconnect from the network.
+
+        ...rather than just having the node disconnected to begin with.
+        """
         api.project_create('anvil-nextgen')
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
@@ -375,6 +406,7 @@ class TestRegisterCorrectObm:
     """
 
     def test_ipmi(self):
+        """...for the ipmi driver."""
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -392,6 +424,7 @@ class TestRegisterCorrectObm:
         assert str(node_obj.obm.host) == 'ipmihost'
 
     def test_mockobm(self):
+        """...for the mock driver."""
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/mock",
                   "host": "mockObmhost",
@@ -410,9 +443,10 @@ class TestRegisterCorrectObm:
 
 
 class TestNodeRegisterDelete:
-    """Tests for the hil.api.node_* functions."""
+    """Tests for the hil.api.node_{register,delete} functions."""
 
     def test_node_register(self):
+        """node_register should add the node to the db."""
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -421,6 +455,7 @@ class TestNodeRegisterDelete:
         api._must_find(model.Node, 'node-99')
 
     def test_node_register_with_metadata(self):
+        """Same thing, but try it with metadata."""
         api.node_register('node-99',
                           obm={
                               "type": "http://schema.massopencloud.org/haas/v0"
@@ -435,6 +470,7 @@ class TestNodeRegisterDelete:
         api._must_find(model.Node, 'node-99')
 
     def test_node_register_JSON_metadata(self):
+        """...and with the metadata being something other than a string."""
         api.node_register('node-99',
                           obm={
                               "type": "http://schema.massopencloud.org/haas/v0"
@@ -448,6 +484,7 @@ class TestNodeRegisterDelete:
         api._must_find(model.Node, 'node-99')
 
     def test_node_register_with_multiple_metadata(self):
+        """...and with multiple metadata keys."""
         api.node_register('node-99',
                           obm={
                               "type": "http://schema.massopencloud.org/haas/v0"
@@ -464,6 +501,7 @@ class TestNodeRegisterDelete:
         api._must_find(model.Node, 'node-99')
 
     def test_duplicate_node_register(self):
+        """Duplicate calls to node_register should fail."""
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -477,6 +515,7 @@ class TestNodeRegisterDelete:
                   "password": "tapeworm"})
 
     def test_node_delete(self):
+        """node_delete should remove the node from the db."""
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -487,6 +526,7 @@ class TestNodeRegisterDelete:
             api._must_find(model.Node, 'node-99')
 
     def test_node_delete_nexist(self):
+        """node_delete should fail if the node does not exist."""
         with pytest.raises(errors.NotFoundError):
             api.node_delete('node-99')
 
@@ -515,8 +555,10 @@ class TestNodeRegisterDelete:
 
 
 class TestNodeRegisterDeleteNic:
+    """Test node_{register,delete}_nic."""
 
     def test_node_register_nic(self):
+        """node_register_nic should add the nic to the db."""
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -527,10 +569,12 @@ class TestNodeRegisterDeleteNic:
         assert nic.owner.label == 'compute-01'
 
     def test_node_register_nic_no_node(self):
+        """node_register_nic should fail if the node does not exist."""
         with pytest.raises(errors.NotFoundError):
             api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
 
     def test_node_register_nic_duplicate_nic(self):
+        """node_register_nic should fail if the nic already exists."""
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -542,6 +586,10 @@ class TestNodeRegisterDeleteNic:
             api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:15')
 
     def test_node_delete_nic_success(self):
+        """node_delete_nic should remove the nic from the db.
+
+        However, it should *not* remove the node.
+        """
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -553,6 +601,7 @@ class TestNodeRegisterDeleteNic:
         api._must_find(model.Node, 'compute-01')
 
     def test_node_delete_nic_nic_nexist(self):
+        """node_delete_nic should fail if the nic does not exist."""
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -562,10 +611,15 @@ class TestNodeRegisterDeleteNic:
             api.node_delete_nic('compute-01', '01-eth0')
 
     def test_node_delete_nic_node_nexist(self):
+        """node_delete_nic should fail if the node does not exist."""
         with pytest.raises(errors.NotFoundError):
             api.node_delete_nic('compute-01', '01-eth0')
 
     def test_node_delete_nic_wrong_node(self):
+        """node_delete_nic should fail if the nic does not match the node.
+
+        ...even if there is another node that has a nic by that name.
+        """
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -581,6 +635,7 @@ class TestNodeRegisterDeleteNic:
             api.node_delete_nic('compute-02', '01-eth0')
 
     def test_node_delete_nic_wrong_nexist_node(self):
+        """Same thing, but with a node that does not exist."""
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -591,6 +646,7 @@ class TestNodeRegisterDeleteNic:
             api.node_delete_nic('compute-02', '01-eth0')
 
     def test_node_register_nic_diff_nodes(self):
+        """Registering two nics with the same name on diff. nodes is ok."""
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -606,11 +662,13 @@ class TestNodeRegisterDeleteNic:
 
 
 class TestNodeRegisterDeleteMetadata:
+    """Test node_{set,delete}_metadata."""
 
     pytestmark = pytest.mark.usefixtures(*(default_fixtures +
                                            ['additional_database']))
 
     def test_node_set_metadata(self):
+        """Setting new metadata on a node adds the metadata."""
         api.node_set_metadata('free_node_0', 'EK', 'pk')
         metadata = api._must_find_n(api._must_find(model.Node,
                                                    'free_node_0'),
@@ -618,6 +676,7 @@ class TestNodeRegisterDeleteMetadata:
         assert metadata.owner.label == 'free_node_0'
 
     def test_node_update_metadata(self):
+        """Updating existing metadata on a node works."""
         api.node_set_metadata('runway_node_0', 'EK', 'new_pk')
         metadata = api._must_find_n(api._must_find(model.Node,
                                                    'runway_node_0'),
@@ -625,10 +684,12 @@ class TestNodeRegisterDeleteMetadata:
         assert json.loads(metadata.value) == 'new_pk'
 
     def test_node_set_metadata_no_node(self):
+        """Setting metadata on a node that does not exist should fail."""
         with pytest.raises(errors.NotFoundError):
             api.node_set_metadata('compute-01', 'EK', 'pk')
 
     def test_node_delete_metadata_success(self):
+        """Deleting metadata from a node removes that key."""
         api.node_set_metadata('free_node_0', 'EK', 'pk')
         api.node_delete_metadata('free_node_0', 'EK')
         api._assert_absent_n(api._must_find(model.Node,
@@ -636,35 +697,43 @@ class TestNodeRegisterDeleteMetadata:
                              model.Metadata, 'EK')
 
     def test_node_delete_metadata_metadata_nexist(self):
+        """Deleting a metadata key that does not exist fails."""
         with pytest.raises(errors.NotFoundError):
             api.node_delete_metadata('free_node_0', 'EK')
 
     def test_node_delete_metadata_node_nexist(self):
+        """Deleting a metadata key on a node that does not exist fails."""
         with pytest.raises(errors.NotFoundError):
             api.node_delete_metadata('compute-01', 'EK')
 
     def test_node_delete_metadata_wrong_node(self):
+        """Deleting metadata on the wrong node fails."""
         api.node_set_metadata('free_node_0', 'EK', 'pk')
         with pytest.raises(errors.NotFoundError):
             api.node_delete_metadata('free_node_1', 'EK')
 
     def test_node_delete_metadata_wrong_nexist_node(self):
+        """...same thing, but with a node that doesn't exist."""
         api.node_set_metadata('free_node_0', 'EK', 'pk')
         with pytest.raises(errors.NotFoundError):
             api.node_delete_metadata('compute-02', 'EK')
 
     def test_node_set_metadata_diff_nodes(self):
+        """Setting the same metadata key on two different nodes succeeds."""
         api.node_set_metadata('free_node_0', 'EK', 'pk')
         api.node_set_metadata('free_node_1', 'EK', 'pk')
 
     def test_node_set_metadata_non_string(self):
+        """Setting metadata whose value is not just a string works."""
         api.node_set_metadata('free_node_0', 'JSON',
                               {"val1": 1, "val2": 2})
 
 
 class TestNodeConnectDetachNetwork:
+    """Test node_{connect,detach}_network."""
 
     def test_node_connect_network_success(self, switchinit):
+        """Call to node_connect_network adds a NetowrkAttachment."""
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -689,6 +758,10 @@ class TestNodeConnectDetachNetwork:
                                                 nic=nic).one()
 
     def test_node_connect_network_wrong_node_in_project(self, switchinit):
+        """Connecting a nic that does not exist to a network fails
+
+        ...even if the project has another node with a nic by that name.
+        """
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -711,6 +784,7 @@ class TestNodeConnectDetachNetwork:
             api.node_connect_network('node-98', '99-eth0', 'hammernet')
 
     def test_node_connect_network_wrong_node_not_in_project(self):
+        """...same thing, but with a node that is *not* part that project."""
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -730,6 +804,10 @@ class TestNodeConnectDetachNetwork:
             api.node_connect_network('node-98', '99-eth0', 'hammernet')
 
     def test_node_connect_network_no_such_node(self):
+        """Connecting a non-existant nic to a network fails.
+
+        ...even if there is another node with a nic by that name.
+        """
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -744,6 +822,7 @@ class TestNodeConnectDetachNetwork:
             api.node_connect_network('node-98', '99-eth0', 'hammernet')  # changed # noqa
 
     def test_node_connect_network_no_such_nic(self):
+        """Connecting a node to a network via a nic it doesn't have fails."""
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -758,6 +837,7 @@ class TestNodeConnectDetachNetwork:
             api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
     def test_node_connect_network_no_such_network(self):
+        """Connecting a node to a non-existant network fails."""
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -771,6 +851,7 @@ class TestNodeConnectDetachNetwork:
             api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
     def test_node_connect_network_node_not_in_project(self):
+        """Connecting a node not in a project to a network fails."""
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -785,6 +866,10 @@ class TestNodeConnectDetachNetwork:
             api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
     def test_node_connect_network_different_projects(self, switchinit):
+        """Connecting a node to a network owned by a different project fails.
+
+        (without a specific call to grant access).
+        """
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -802,6 +887,7 @@ class TestNodeConnectDetachNetwork:
             api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
     def test_node_connect_network_already_attached_to_same(self, switchinit):
+        """Connecting a nic to a network twice should fail."""
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -821,6 +907,11 @@ class TestNodeConnectDetachNetwork:
 
     def test_node_connect_network_already_attached_differently(self,
                                                                switchinit):
+        """Test connecting a nic that is busy to another network.
+
+        i.e., If the nic is already connected to a different network (on
+        the same channel), trying to connect it should fail.
+        """
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",

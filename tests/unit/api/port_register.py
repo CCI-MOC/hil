@@ -25,6 +25,7 @@ NEXUS = 'http://schema.massopencloud.org/haas/v0/switches/nexus'
 
 @pytest.fixture
 def configure():
+    """Configure HIL"""
     config_testsuite()
     config_merge({
         'extensions': {
@@ -51,6 +52,7 @@ pytestmark = pytest.mark.usefixtures(*default_fixtures)
 
 
 class TestPortValidate:
+    """Test port_register with invalid port names for various switches."""
 
     def test_register_port_invalid_name_brocade(self):
         """Registering a port with an invalid name should fail"""
