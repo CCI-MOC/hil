@@ -18,7 +18,7 @@ somewhat particular to the MOC's development environment. They may be
 difficult to run in other contexts.
 """
 
-from hil.test_common import config, config_testsuite, fresh_database, \
+from hil.test_common import config_testsuite, fresh_database, \
     fail_on_log_warnings, with_request_context, site_layout, server_init
 from hil.model import Node
 from hil import config, api
