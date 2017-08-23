@@ -73,7 +73,7 @@ class Brocade(Switch, SwitchSession):
     def disconnect(self):
         pass
 
-    def modify_port(self, port, channel, network_id):
+    def modify_port(self, port, channel, new_network):
         # XXX: We ought to be able to do a Port.query ... one() here, but
         # there's somthing I(zenhack)  don't understand going on with when
         # things are committed in the tests for this driver, and we don't
@@ -83,20 +83,20 @@ class Brocade(Switch, SwitchSession):
         interface = port.label
 
         if channel == 'vlan/native':
-            if network_id is None:
+            if new_network is None:
                 self._remove_native_vlan(interface)
             else:
-                self._set_native_vlan(interface, network_id)
+                self._set_native_vlan(interface, new_network)
         else:
             match = re.match(re.compile(r'vlan/(\d+)'), channel)
             assert match is not None, "HIL passed an invalid channel to the" \
                 " switch!"
             vlan_id = match.groups()[0]
 
-            if network_id is None:
+            if new_network is None:
                 self._remove_vlan_from_trunk(interface, vlan_id)
             else:
-                assert network_id == vlan_id
+                assert new_network == vlan_id
                 self._add_vlan_to_trunk(interface, vlan_id)
 
     def revert_port(self, port):

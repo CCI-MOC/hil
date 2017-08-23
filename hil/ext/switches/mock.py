@@ -77,13 +77,13 @@ class MockSwitch(Switch, SwitchSession):
     def session(self):
         return self
 
-    def modify_port(self, port, channel, network_id):
+    def modify_port(self, port, channel, new_network):
         state = LOCAL_STATE[self.label]
 
-        if network_id is None:
+        if new_network is None:
             del state[port][channel]
         else:
-            state[port][channel] = network_id
+            state[port][channel] = new_network
 
     def revert_port(self, port):
         del LOCAL_STATE[self.label][port]

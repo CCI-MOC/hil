@@ -73,7 +73,7 @@ class Session(SwitchSession):
     def disconnect(self):
         """End the session. Must be at the main prompt."""
 
-    def modify_port(self, port, channel, network_id):
+    def modify_port(self, port, channel, new_network):
         interface = port
         port = Port.query.filter_by(label=port,
                                     owner_id=self.switch.id).one()
@@ -88,8 +88,8 @@ class Session(SwitchSession):
             if old_native is not None:
                 old_native = old_native.network.network_id
 
-            if network_id is not None:
-                self.set_native(old_native, network_id)
+            if new_network is not None:
+                self.set_native(old_native, new_network)
             elif old_native is not None:
                 self.disable_native(old_native)
         else:
@@ -101,10 +101,10 @@ class Session(SwitchSession):
             assert match is not None, "HIL passed an invalid channel to the" \
                 "switch!"
             vlan_id = match.groups()[0]
-            if network_id is None:
+            if new_network is None:
                 self.disable_vlan(vlan_id)
             else:
-                assert network_id == vlan_id
+                assert new_network == vlan_id
                 self.enable_vlan(vlan_id)
 
         self.exit_if_prompt()
