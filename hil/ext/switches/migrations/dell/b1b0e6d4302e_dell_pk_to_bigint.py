@@ -17,6 +17,7 @@ branch_labels = ('hil.ext.switches.dell',)
 
 # pylint: disable=missing-docstring
 
+
 def upgrade():
     op.alter_column('power_connect55xx', 'id',
                     existing_type=sa.Integer(),

@@ -17,6 +17,7 @@ branch_labels = ('hil.ext.obm.mock',)
 
 # pylint: disable=missing-docstring
 
+
 def upgrade():
 
     op.alter_column('mock_obm', 'id',

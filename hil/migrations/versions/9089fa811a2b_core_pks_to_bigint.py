@@ -17,6 +17,7 @@ branch_labels = ('hil',)
 
 # pylint: disable=missing-docstring
 
+
 def downgrade():
     op.alter_column(
         'headnode',

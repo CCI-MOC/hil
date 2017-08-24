@@ -17,6 +17,7 @@ branch_labels = None
 
 # pylint: disable=missing-docstring
 
+
 def upgrade():
     db.session.close()
     metadata = db.inspect(db.engine).get_table_names()

@@ -17,6 +17,7 @@ branch_labels = ('hil.ext.switches.mock',)
 
 # pylint: disable=missing-docstring
 
+
 def upgrade():
     op.alter_column('mock_switch', 'id',
                     existing_type=sa.Integer(),

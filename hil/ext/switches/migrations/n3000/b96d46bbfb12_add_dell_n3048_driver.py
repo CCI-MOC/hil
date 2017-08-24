@@ -17,6 +17,7 @@ branch_labels = None
 
 # pylint: disable=missing-docstring
 
+
 def upgrade():
     op.create_table('dell_n3000',
                     sa.Column('id', sa.Integer(), nullable=False),

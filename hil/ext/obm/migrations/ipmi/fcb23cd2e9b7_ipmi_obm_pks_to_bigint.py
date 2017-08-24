@@ -17,6 +17,7 @@ branch_labels = ('hil.ext.obm.ipmi',)
 
 # pylint: disable=missing-docstring
 
+
 def upgrade():
     op.alter_column('ipmi', 'id',
                     existing_type=sa.Integer(),

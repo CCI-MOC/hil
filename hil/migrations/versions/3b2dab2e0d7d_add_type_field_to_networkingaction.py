@@ -18,6 +18,7 @@ branch_labels = None
 
 # pylint: disable=missing-docstring
 
+
 def upgrade():
     # We first introduce the table with null 'type' fields allowed.
     # Any existing actions will have null type fields, so we then

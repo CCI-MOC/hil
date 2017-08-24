@@ -16,6 +16,7 @@ branch_labels = ('hil.ext.switches.nexus',)
 
 # pylint: disable=missing-docstring
 
+
 def upgrade():
     op.alter_column('nexus', 'id',
                     existing_type=sa.Integer(),

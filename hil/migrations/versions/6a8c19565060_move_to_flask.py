@@ -18,6 +18,7 @@ branch_labels = None
 
 # pylint: disable=missing-docstring
 
+
 def upgrade():
     op.rename_table('networkattachment', 'network_attachment')
     # The _id_seq is a postgres-specific thing; it has to do with the

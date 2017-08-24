@@ -17,6 +17,7 @@ branch_labels = ('hil.ext.auth.database',)
 
 # pylint: disable=missing-docstring
 
+
 def upgrade():
     op.alter_column(
         'user',

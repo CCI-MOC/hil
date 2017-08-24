@@ -17,6 +17,7 @@ branch_labels = None
 
 # pylint: disable=missing-docstring
 
+
 def upgrade():
     metadata = db.inspect(db.engine).get_table_names()
     if 'mockswitch' in metadata:

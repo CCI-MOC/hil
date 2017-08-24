@@ -17,6 +17,7 @@ branch_labels = ('hil.ext.switches.brocade',)
 
 # pylint: disable=missing-docstring
 
+
 def upgrade():
     op.alter_column('brocade', 'id',
                     existing_type=sa.Integer(),
