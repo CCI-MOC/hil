@@ -15,7 +15,7 @@
 """Test various properties re: vlan native networks, on real hardware.
 
 For guidance on running these tests, see the section on deployment
-tests in doc/testing.md
+tests in docs/testing.md
 """
 
 from hil import api, model, deferred, config

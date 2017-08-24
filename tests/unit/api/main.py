@@ -775,7 +775,7 @@ class TestNodeConnectDetachNetwork:
     """Test node_{connect,detach}_network."""
 
     def test_node_connect_network_success(self, switchinit):
-        """Call to node_connect_network adds a NetowrkAttachment."""
+        """Call to node_connect_network adds a NetworkAttachment."""
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -846,7 +846,7 @@ class TestNodeConnectDetachNetwork:
             api.node_connect_network('node-98', '99-eth0', 'hammernet')
 
     def test_node_connect_network_no_such_node(self):
-        """Connecting a non-existant nic to a network fails.
+        """Connecting a non-existent nic to a network fails.
 
         ...even if there is another node with a nic by that name.
         """
@@ -879,7 +879,7 @@ class TestNodeConnectDetachNetwork:
             api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
     def test_node_connect_network_no_such_network(self):
-        """Connecting a node to a non-existant network fails."""
+        """Connecting a node to a non-existent network fails."""
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -1016,7 +1016,7 @@ class TestNodeConnectDetachNetwork:
     def test_node_detach_network_wrong_node_in_project(self, switchinit):
         """Detaching the "wrong" node from a network fails.
 
-        In particular, if we have a two nodes in a project with nics by the
+        In particular, if we have two nodes in a project with nics by the
         same name, with one connected to a network, specifying the wrong
         node name (but right nic and network) will fail.
         """
@@ -1064,7 +1064,7 @@ class TestNodeConnectDetachNetwork:
             api.node_detach_network('node-98', '99-eth0', 'hammernet')  # changed  # noqa
 
     def test_node_detach_network_no_such_node(self, switchinit):
-        """Same as above, but the "wrong" node doeesn't exist."""
+        """Same as above, but the "wrong" node doesn't exist."""
         api.node_register('node-99', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -1179,7 +1179,7 @@ class TestHeadnodeCreateDeleteHnic:
         assert nic.owner.label == 'hn-0'
 
     def test_headnode_create_hnic_no_headnode(self):
-        """Creating an hnic for a non-existant headnode raises not found."""
+        """Creating an hnic for a non-existent headnode raises not found."""
         with pytest.raises(errors.NotFoundError):
             api.headnode_create_hnic('hn-0', 'hn-0-eth0')
 
@@ -1373,7 +1373,8 @@ class TestHeadnodeConnectDetachNetwork:
 
     def test_headnode_detach_network_not_attached(self):
         """
-        Detaching a from a network works, even if it is not already attached.
+        Detaching a headnode from a network works, even if it is not already
+        attached.
 
         In this case, it's just a noop.
         """
@@ -1386,7 +1387,7 @@ class TestHeadnodeConnectDetachNetwork:
         api.headnode_detach_network('hn-0', 'hn-0-eth0')
 
     def test_headnode_detach_network_no_such_headnode(self):
-        """Detaching a non-existant headnode raises not found."""
+        """Detaching a non-existent headnode raises not found."""
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
@@ -1397,7 +1398,7 @@ class TestHeadnodeConnectDetachNetwork:
             api.headnode_detach_network('hn-1', 'hn-0-eth0')  # changed
 
     def test_headnode_detach_network_no_such_hnic(self):
-        """Detaching a non-existant hnic raises not found."""
+        """Detaching a non-existent hnic raises not found."""
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
@@ -1656,7 +1657,7 @@ class Test_switch_register_port:
         assert port.owner.label == 'sw0'
 
     def test_register_port_nonexisting_switch(self):
-        """Creating  port on a non-existant switch should fail."""
+        """Creating  port on a non-existent switch should fail."""
         with pytest.raises(errors.NotFoundError):
             api.switch_register_port('sw0', PORTS[4])
 
@@ -1760,7 +1761,7 @@ class Test_show_port:
         """Test show_port
 
         * Fails on non-existing switch
-        * Fails on existant switch & non-existing port
+        * Fails on existent switch & non-existing port
         * Attaching a nic to the port causes the nic's info to show up
           in show_port.
         """
@@ -1800,7 +1801,7 @@ class TestPortConnectDetachNic:
         api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
 
     def test_port_connect_nic_no_such_switch(self):
-        """Connecting to a non-existant switch raises not found."""
+        """Connecting to a non-existent switch raises not found."""
         api.node_register('compute-01', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",
@@ -1811,7 +1812,7 @@ class TestPortConnectDetachNic:
             api.port_connect_nic('sw0', PORTS[2], 'compute-01', 'eth0')
 
     def test_port_connect_nic_no_such_port(self):
-        """Connecting a non-existant port raises not found."""
+        """Connecting a non-existent port raises not found."""
         api.switch_register('sw0',
                             type=MOCK_SWITCH_TYPE,
                             username="switch_user",
@@ -1916,7 +1917,7 @@ class TestPortConnectDetachNic:
         api.port_detach_nic('sw0', PORTS[2])
 
     def test_port_detach_nic_no_such_port(self):
-        """Detaching a non-existant port raises not found."""
+        """Detaching a non-existent port raises not found."""
         with pytest.raises(errors.NotFoundError):
             api.port_detach_nic('sw0', PORTS[2])
 
@@ -2272,7 +2273,7 @@ class TestQuery_unpopulated_db:
         }
         self._compare_node_dumps(actual, expected)
 
-    def test_show_nonexistant_node(self):
+    def test_show_nonexistent_node(self):
         """Showing a node that does not exist should raise not found."""
         with pytest.raises(errors.NotFoundError):
             api.show_node('master-control-program')
@@ -2411,7 +2412,7 @@ class TestQuery_unpopulated_db:
             'vncport': None
         }
 
-    def test_show_nonexistant_headnode(self):
+    def test_show_nonexistent_headnode(self):
         """show_headnode on a non-existent headnode should raise not found."""
         with pytest.raises(errors.NotFoundError):
             api.show_headnode('BGH')

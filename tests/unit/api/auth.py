@@ -748,7 +748,7 @@ class Test_node_detach_network(unittest.TestCase):
         deferred.apply_networking()
 
     def test_success(self):
-        """Project 'manhattan' can detach it's own node."""
+        """Project 'manhattan' can detach its own node."""
         self.auth_backend.set_project(self.manhattan)
         api.node_detach_network('manhattan_node_0',
                                 'boot-nic',

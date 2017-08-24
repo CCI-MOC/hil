@@ -357,7 +357,7 @@ class Test_node:
             C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff')
 
     def test_nosuch_node_add_nic(self):
-        """Adding a nic to a non-existant node should fail."""
+        """Adding a nic to a non-existent node should fail."""
         with pytest.raises(FailedAPICallException):
             C.node.add_nic('abcd', 'eth0', 'aa:bb:cc:dd:ee:ff')
 
@@ -528,7 +528,7 @@ class Test_port:
             C.port.delete('mock-01', 'gi1/1/4')
 
     def test_port_connect_nic(self):
-        """(successfully) Call port_connect_nic on an existant port"""
+        """(successfully) Call port_connect_nic on an existent port"""
         C.port.register('mock-01', 'gi1/1/5')
         assert C.port.connect_nic(
                 'mock-01', 'gi1/1/5', 'node-08', 'eth0'

@@ -73,14 +73,14 @@ def test_class_resolver():
 
 
 def test_class_Obm():
-    """Test class_resovler with MockObm"""
+    """Test class_resolver with MockObm"""
     build_class_map_for(model.Obm)
     assert concrete_class_for(model.Obm, mockapi_name + "obm/mock") \
         is hil.ext.obm.mock.MockObm
 
 
 def test_class_Switch():
-    """Test class_resovler with MockSwitch"""
+    """Test class_resolver with MockSwitch"""
     build_class_map_for(model.Switch)
     assert concrete_class_for(model.Switch, mockapi_name + "switches/mock") \
         is hil.ext.switches.mock.MockSwitch

@@ -196,7 +196,7 @@ def new_nic(name):
 
 @pytest.fixture()
 def network():
-    """Create a test network (ans associated project) to work with."""
+    """Create a test network (and associated project) to work with."""
     project = model.Project('anvil-nextgen')
     return model.Network(project, [project], True, '102', 'hammernet')
 

@@ -181,7 +181,7 @@ def check_status_code(response):
 
 
 def object_url(*args):
-    """Return a url with a prefix of the HIL endpoing, and args as the
+    """Return a url with a prefix of the HIL endpoint, and args as the
     (remaining) segments of the path.
 
     TODO: This function's name is no longer very accurate.  As soon as it is

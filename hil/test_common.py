@@ -11,7 +11,7 @@
 # IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
-"""Misc. utilities for use in the test siute.
+"""Misc. utilities for use in the test suite.
 
 Modules outside of the test suite are not permitted to import this module.
 TODO: we should separate this out from the main package.
