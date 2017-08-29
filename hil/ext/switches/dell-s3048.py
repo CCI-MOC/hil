@@ -45,7 +45,7 @@ class DellNOS9(Switch):
     username = db.Column(db.String, nullable=False)
     password = db.Column(db.String, nullable=False)
     interface_type = db.Column(db.String, nullable=False)
-
+    
     @staticmethod
     def validate(kwargs):
         schema.Schema({
@@ -242,6 +242,8 @@ class DellNOS9(Switch):
             interface: interface to set the native vlan to
             vlan: vlan to set as the native vlan
         """
+        #turn on port first
+        
         self._enable_and_set_mode(interface, 'trunk')
         self._disable_native_tag(interface)
         url = self._construct_url(interface, suffix='trunk')
@@ -266,6 +268,18 @@ class DellNOS9(Switch):
         """
         url = self._construct_url(interface, suffix='trunk/tag/native-vlan')
         self._make_request('DELETE', url, acceptable_error_codes=(404,))
+
+
+    def _get_weird_interface_name(self, interface):
+        """Gets the weird port name that the switch keeps track of.
+
+        It seems to be constant for for every interface, but let's not make
+        that assumption
+        """
+
+        url = self._construct_url(interface)
+        import pdb; pdb.set_trace()
+        response = self._make_request('GET', url)
 
 
     def _port_shutdown(self, interface):
@@ -293,9 +307,15 @@ class DellNOS9(Switch):
 
         Returns: string with the url for a specific interface and operation
         """
-        # the urls have dashes instead of slashes in interface names
-        interface = interface.replace('/', '-')
-        interface_type = self._convert_interface(self.interface_type)
+        val = re.compile(r'^\d+/\d+(/\d+)?$')
+        if val.match(interface):
+            # if `interface` refers to port name
+            # the urls have dashes instead of slashes in interface names
+            interface = interface.replace('/', '-')
+            interface_type = self._convert_interface(self.interface_type)
+        else:
+            # interface refers to `vlan`
+            interface_type = 'vlan-'
 
         return '%(hostname)s/api/running/dell/interfaces/interface/' \
             '%(interface_type)s%(interface)s%(suffix)s' \
@@ -341,3 +361,4 @@ class DellNOS9(Switch):
             print r.text
             logger.error('Bad Request to switch. Response: %s', r.text)
         return r
+
