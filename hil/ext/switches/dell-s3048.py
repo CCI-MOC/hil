@@ -45,7 +45,7 @@ class DellNOS9(Switch):
     username = db.Column(db.String, nullable=False)
     password = db.Column(db.String, nullable=False)
     interface_type = db.Column(db.String, nullable=False)
-    
+
     @staticmethod
     def validate(kwargs):
         schema.Schema({
@@ -241,48 +241,39 @@ class DellNOS9(Switch):
         Args:
             interface: interface to set the native vlan to
             vlan: vlan to set as the native vlan
-        """
-        #turn on port first
-        
-        self._enable_and_set_mode(interface, 'trunk')
-        self._disable_native_tag(interface)
-        url = self._construct_url(interface, suffix='trunk')
-        payload = '<trunk><native-vlan>%s</native-vlan></trunk>' % vlan
-        self._make_request('PUT', url, data=payload)
 
-    def _remove_native_vlan(self, interface):
+        We are using a patch here since this switch is Vlan Centric.
+        """
+        # TODO: turn on port first
+        url = self._construct_url(vlan)
+        payload = self._native_vlan_payload(interface, vlan)
+        self._make_request('PATCH', url, data=payload)
+
+    def _remove_native_vlan(self, interface, vlan):
         """ Remove the native vlan from an interface.
 
         Args:
-            interface: interface to remove the native vlan from
+            interface: interface to remove the native vlan from.vlan
+            vlan: the vlan id that's set as native. It is required because the
+            rest API is vlan Centric.
         """
-        url = self._construct_url(interface, suffix='trunk/native-vlan')
-        self._make_request('DELETE', url)
+        url = self._construct_url(vlan, suffix='untagged')
+        payload = self._native_vlan_payload(interface, vlan)
+        self._make_request('DELETE', url, data=payload)
 
-    def _disable_native_tag(self, interface):
-        """ Disable tagging of the native vlan
+    def _native_vlan_payload(self, interface, vlan):
+        """ Returns payload for setting/removing the native vlan"""
 
-        Args:
-            interface: interface to disable the native vlan tagging of
+        # the urls have dashes instead of slashes in interface names
+        interface = interface.replace('/', '-')
+        interface_type = self._convert_interface(self.interface_type)
 
-        """
-        url = self._construct_url(interface, suffix='trunk/tag/native-vlan')
-        self._make_request('DELETE', url, acceptable_error_codes=(404,))
+        vlan_interface = self._get_vlan_interface_name(vlan)
+        payload = vlan_interface + '<untagged><name>' + interface_type + \
+            interface + '</name></untagged></interface>'
+        return payload
 
-
-    def _get_weird_interface_name(self, interface):
-        """Gets the weird port name that the switch keeps track of.
-
-        It seems to be constant for for every interface, but let's not make
-        that assumption
-        """
-
-        url = self._construct_url(interface)
-        import pdb; pdb.set_trace()
-        response = self._make_request('GET', url)
-
-
-    def _port_shutdown(self, interface):
+    def port_shutdown(self, interface):
         """ Shuts down <interface>
 
         Turn off portmode hybrid, disable switchport, and then shut down the
@@ -291,12 +282,27 @@ class DellNOS9(Switch):
 
         url = self._construct_url(interface)
         interface = self._convert_interface(self.interface_type) + \
-                    interface.replace('/', '-')
+            interface.replace('/', '-')
         payload = '<interface><name>%s</name><portmode><hybrid>false' \
                   '</hybrid></portmode><shutdown>true</shutdown>' \
-                  '</interface>' %interface
+                  '</interface>' % interface
 
         self._make_request('PUT', url, data=payload)
+
+    # HELPER METHODS *********************************************
+
+    def _get_vlan_interface_name(self, interface):
+        """Gets the weird port name that the switch keeps track of.
+
+        It seems to be constant for every interface. And I have tested
+        this on 2 different switches. I'll probably hardcode this.
+        """
+
+        url = self._construct_url(interface)
+        response = self._make_request('GET', url)
+        begin = response.text.find('<')
+        end = response.text.find('>')
+        return response.text[begin-1:end+1]
 
     def _construct_url(self, interface, suffix=''):
         """ Construct the API url for a specific interface appending suffix.
@@ -320,10 +326,10 @@ class DellNOS9(Switch):
         return '%(hostname)s/api/running/dell/interfaces/interface/' \
             '%(interface_type)s%(interface)s%(suffix)s' \
             % {
-                  'hostname': self.hostname,
-                  'interface_type': interface_type,
-                  'interface': interface,
-                  'suffix': '/switchport/%s' % suffix if suffix else ''
+                'hostname': self.hostname,
+                'interface_type': interface_type,
+                'interface': interface,
+                'suffix': '/%s' % suffix if suffix else ''
             }
 
     def _convert_interface(self, interface_type):
@@ -336,13 +342,12 @@ class DellNOS9(Switch):
         Returns: string interface
         """
         iftypes = {'GigabitEthernet': 'gige-', 'TenGigabitEthernet': 'tengig-',
-                   'TwentyfiveGigabitEthernet': 'twentyfivegig-', 
-                   'fortyGigE':'fortygig-', 'peGigabitEthernet': 'pegig-',
+                   'TwentyfiveGigabitEthernet': 'twentyfivegig-',
+                   'fortyGigE': 'fortygig-', 'peGigabitEthernet': 'pegig-',
                    'FiftyGigabitEthernet': 'fiftygig-',
                    'HundredGigabitEthernet': 'hundredgig-'}
 
         return iftypes[interface_type]
-
 
     @property
     def _auth(self):
@@ -352,7 +357,6 @@ class DellNOS9(Switch):
     def _construct_tag(name):
         pass
 
-
     def _make_request(self, method, url, data=None,
                       acceptable_error_codes=()):
         r = requests.request(method, url, data=data, auth=self._auth)
@@ -361,4 +365,3 @@ class DellNOS9(Switch):
             print r.text
             logger.error('Bad Request to switch. Response: %s', r.text)
         return r
-
