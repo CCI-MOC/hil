@@ -27,7 +27,7 @@ switch = "mock01"
 
 
 def hil(*args):
-    """Convienence function that calls the hil command line tool with
+    """Convenience function that calls the hil command line tool with
     the given arguments.
     """
     args = map(str, args)
