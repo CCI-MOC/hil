@@ -58,7 +58,7 @@ def configure_logging():
             # Set to 'warning', and warn that the config is bad
             logging.basicConfig(level=logging.WARNING)
             logging.getLogger(__name__).warning(
-                "Invalid debugging level %s defaulted to WARNING" % log_level)
+                "Invalid debugging level %s defaulted to WARNING", log_level)
     else:
         # Default to 'warning'
         logging.basicConfig(level=logging.WARNING)

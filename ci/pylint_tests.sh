@@ -14,5 +14,6 @@ if [ -z "$DB" ] || [ "$DB" = sqlite ]; then
 	  --enable=signature-differs \
 	  --enable=arguments-differ \
 	  --enable=missing-docstring \
+	  --enable=logging-not-lazy \
 	  $(./ci/list_tracked_pyfiles.sh)
 fi

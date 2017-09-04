@@ -74,7 +74,7 @@ class LogCallVisitor(ast.NodeVisitor):
         #    in a variable (don't do that). We could be smarter about
         #    figuring out what function is being called, but this is
         #    probably good enough:
-        logfunc_names = {'critical', 'error', 'warn', 'info', 'debug'}
+        logfunc_names = {'critical', 'error', 'warn', 'warning', 'info', 'debug'}
         if node.func.attr not in logfunc_names:
             return
 
