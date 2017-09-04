@@ -30,8 +30,11 @@ fresh_database = pytest.fixture(fresh_database)
 DeferredTestSwitch = None
 
 
-class SwitchError(Exception):
-    pass
+class RevertPortError(Exception):
+    """An exception thrown by the switch implementation's revert_port.
+
+    This is used as part of the error handling tests.
+    """
 
 
 def new_db():
@@ -46,6 +49,12 @@ def new_db():
 
 @pytest.fixture
 def configure():
+    """Configure HIL.
+
+    The tests in this module require two separate sessions, so if the
+    configuration specifies an in-memory sqlite database, we use a
+    temporary file instead.
+    """
     config_testsuite()
 
     additional_config = {
@@ -103,16 +112,34 @@ def _deferred_test_switch_class():
 
         @staticmethod
         def validate(kwargs):
-            pass
+            """Implement Switch.validate.
+
+            This currently doesn't check anything; in theory we should validate
+            that the arguments are sane, but right now aren't worrying about it
+            since this method is only called from the API server, and we never
+            use this switch type there.
+            """
 
         def session(self):
+            """Return a switch session.
+
+            This just returns self, since there's no connection to speak of.
+            """
             return self
 
         def disconnect(self):
-            pass
+            """Implement the session's disconnect() method.
+
+            This is a no-op, since session() doesn't establish a connection.
+            """
 
         def modify_port(self, port, channel, network_id):
+            """Implement Switch.modify_port.
 
+            This implementation keeps track of how many pending
+            NetworkingActions there are, and fails the test if apply_networking
+            calls it without committing the previous change.
+            """
             # get a new connection to database so that this method does
             # not see uncommited changes by `apply_networking`
             local_db = new_db()
@@ -130,7 +157,12 @@ def _deferred_test_switch_class():
                 self.last_count = current_count
 
         def revert_port(self, port):
-            raise SwitchError('switch failed')
+            """Implement Switch.revert_port.
+
+            This always fails, which the tests rely on to check
+            error handling behavior.
+            """
+            raise RevertPortError('revert_port always fails.')
 
     DeferredTestSwitch_.__name__ = 'DeferredTestSwitch'
     DeferredTestSwitch = DeferredTestSwitch_
@@ -138,15 +170,17 @@ def _deferred_test_switch_class():
 
 @pytest.fixture()
 def switch(_deferred_test_switch_class):
+    """Get an instance of DeferredTestSwitch."""
     return DeferredTestSwitch(
         label='switch',
         hostname='http://example.com',
         username='admin',
         password='admin',
-    ).session()
+    )
 
 
 def new_nic(name):
+    """Create a new nic named ``name``, and an associated Node + Obm."""
     from hil.ext.obm.mock import MockObm
     return model.Nic(
         model.Node(
@@ -162,6 +196,7 @@ def new_nic(name):
 
 @pytest.fixture()
 def network():
+    """Create a test network (and associated project) to work with."""
     project = model.Project('anvil-nextgen')
     return model.Network(project, [project], True, '102', 'hammernet')
 
@@ -202,7 +237,7 @@ def test_apply_networking(switch, network, fresh_database):
         db.session.add(action)
     db.session.commit()
 
-    with pytest.raises(SwitchError):
+    with pytest.raises(RevertPortError):
         deferred.apply_networking()
 
     # close the session opened by `apply_networking` when `handle_actions`

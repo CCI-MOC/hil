@@ -1,3 +1,4 @@
+"""Implement the ``hil-admin db`` subcommand."""
 from hil import server
 from hil.migrations import command, create_db
 

@@ -18,27 +18,23 @@ somewhat particular to the MOC's development environment. They may be
 difficult to run in other contexts.
 """
 
-from hil.test_common import config, config_testsuite, fresh_database, \
-    fail_on_log_warnings, with_request_context, site_layout
+from hil.test_common import config_testsuite, fresh_database, \
+    fail_on_log_warnings, with_request_context, site_layout, server_init
 from hil.model import Node
-from hil import config, server, api
+from hil import config, api
 import pytest
 
 
 @pytest.fixture
 def configure():
+    """Configure HIL"""
     config_testsuite()
     config.load_extensions()
 
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 fresh_database = pytest.fixture(fresh_database)
-
-
-@pytest.fixture
-def server_init():
-    server.register_drivers()
-    server.validate_state()
+server_init = pytest.fixture(server_init)
 
 
 with_request_context = pytest.yield_fixture(with_request_context)
@@ -60,21 +56,25 @@ class TestIpmi():
         return free_nodes
 
     def test_node_power_cycle(self):
+        """Test power cycling nodes."""
         nodes = self.collect_nodes()
         for node in nodes:
             api.node_power_cycle(node.label)
 
     def test_node_power_force(self):
+        """Test power cycling nodes, with force=True."""
         nodes = self.collect_nodes()
         for node in nodes:
             api.node_power_cycle(node.label, True)
 
     def test_node_power_off(self):
+        """Test shutting down nodes properly"""
         nodes = self.collect_nodes()
         for node in nodes:
             api.node_power_off(node.label)
 
     def test_node_set_bootdev(self):
+        """Test setting the boot device."""
         nodes = self.collect_nodes()
         for node in nodes:
             # change a node's bootdevice to a valid boot device
@@ -86,6 +86,9 @@ class TestIpmi():
                 api.node_set_bootdev(node.label, 'invalid-device')
 
         # register a node with erroneous ipmi details to raise OBMError
+        # XXX: In theory, this could actually be a real node; we should take
+        # some measure to ensure this never collides with something actually
+        # in our test setup.
         api.node_register('node-99-z4qa63', obm={
                   "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
                   "host": "ipmihost",

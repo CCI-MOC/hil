@@ -13,9 +13,9 @@
 # governing permissions and limitations under the License.
 
 """Unit tests for port_register"""
-from hil import api, server, errors
+from hil import api, errors
 from hil.test_common import config_testsuite, config_merge, config, \
-    fail_on_log_warnings, with_request_context, fresh_database
+    fail_on_log_warnings, with_request_context, fresh_database, server_init
 import pytest
 
 BROCADE = 'http://schema.massopencloud.org/haas/v0/switches/brocade'
@@ -25,6 +25,7 @@ NEXUS = 'http://schema.massopencloud.org/haas/v0/switches/nexus'
 
 @pytest.fixture
 def configure():
+    """Configure HIL"""
     config_testsuite()
     config_merge({
         'extensions': {
@@ -38,14 +39,7 @@ def configure():
 
 fresh_database = pytest.fixture(fresh_database)
 fail_on_log_warnings = pytest.fixture(fail_on_log_warnings)
-
-
-@pytest.fixture
-def server_init():
-    server.register_drivers()
-    server.validate_state()
-
-
+server_init = pytest.fixture(server_init)
 with_request_context = pytest.yield_fixture(with_request_context)
 
 default_fixtures = ['fail_on_log_warnings',
@@ -58,6 +52,7 @@ pytestmark = pytest.mark.usefixtures(*default_fixtures)
 
 
 class TestPortValidate:
+    """Test port_register with invalid port names for various switches."""
 
     def test_register_port_invalid_name_brocade(self):
         """Registering a port with an invalid name should fail"""

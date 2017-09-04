@@ -5,17 +5,20 @@ if we call it `auth`, it chokes on the fact that there's a file `api/auth.py`
 as well. grr.
 """
 import pytest
-from hil import config, server
+from hil import config
 from hil.auth import get_auth_backend
 from hil.rest import app
 from hil.test_common import config_testsuite, config_merge, fresh_database, \
-    fail_on_log_warnings
+    fail_on_log_warnings, server_init
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
+server_init = pytest.fixture(server_init)
+fresh_database = pytest.fixture(fresh_database)
 
 
 @pytest.fixture
 def configure():
+    """Configure HIL"""
     config_testsuite()
     config_merge({
         'extensions': {
@@ -30,14 +33,6 @@ def configure():
     })
     config.load_extensions()
 
-
-fresh_database = pytest.fixture(fresh_database)
-
-
-@pytest.fixture
-def server_init():
-    server.register_drivers()
-    server.validate_state()
 
 pytestmark = pytest.mark.usefixtures('configure',
                                      'fresh_database',

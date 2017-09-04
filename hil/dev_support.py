@@ -11,6 +11,7 @@
 # IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
+"""Utilities to aid with development."""
 
 import logging
 from hil import config
@@ -40,6 +41,7 @@ def no_dry_run(f):
     """
     @wraps(f)
     def wrapper(*args, **kwargs):
+        """Wrapper that conditionally disables f, based on config."""
         if have_dry_run():
             logger = logging.getLogger(__name__)
             logger.info('dry run, not executing: %s.%s(*%r,**%r)',

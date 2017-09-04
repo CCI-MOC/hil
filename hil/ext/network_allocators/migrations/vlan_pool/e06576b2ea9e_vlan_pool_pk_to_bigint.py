@@ -15,6 +15,8 @@ revision = 'e06576b2ea9e'
 down_revision = None
 branch_labels = ('hil.ext.network_allocators.vlan_pool',)
 
+# pylint: disable=missing-docstring
+
 
 def upgrade():
     op.alter_column('vlan', 'id',

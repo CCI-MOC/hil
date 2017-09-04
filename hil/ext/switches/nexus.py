@@ -36,6 +36,8 @@ paths[__name__] = join(dirname(__file__), 'migrations', 'nexus')
 
 
 class Nexus(Switch):
+    """A Cisco Nexus switch."""
+
     api_name = 'http://schema.massopencloud.org/haas/v0/switches/nexus'
 
     __mapper_args__ = {
@@ -123,6 +125,7 @@ class _Session(_console.Session):
 
     @staticmethod
     def connect(switch):
+        """Connect to the switch."""
         console = pexpect.spawn('telnet ' + switch.hostname)
         console.expect('login: ')
         console.sendline(switch.username)

@@ -1,3 +1,8 @@
+"""HIL Client library.
+
+This is the main client library module that users of this library will
+be interested in; importing other modules directly is typically unnecessary.
+"""
 from hil.client.node import Node
 from hil.client.project import Project
 from hil.client.switch import Switch
@@ -134,6 +139,7 @@ class KeystoneHTTPClient(HTTPClient):
 
 
 class Client(object):
+    """A HIL API client."""
 
     def __init__(self, endpoint, httpClient):
         self.httpClient = httpClient

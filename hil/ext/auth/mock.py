@@ -26,6 +26,7 @@ class MockAuthBackend(auth.AuthBackend):
         self._auth_success = True
 
     def authenticate(self):
+        # pylint: disable=missing-docstring
         rest.local.auth = {
             'project': None,
             'admin': False,
@@ -34,6 +35,7 @@ class MockAuthBackend(auth.AuthBackend):
         return self._auth_success
 
     def get_user(self):
+        """Return the user who is authenticated."""
         return rest.local.auth['user']
 
     def set_auth_success(self, ok):
@@ -51,11 +53,18 @@ class MockAuthBackend(auth.AuthBackend):
         rest.local.auth['project'] = project
 
     def set_admin(self, admin):
+        """Change whether the request has admin access.
+
+        admin is a boolean indicating whether the request should have admin
+        access.
+        """
         rest.local.auth['admin'] = admin
 
     def set_user(self, user):
+        """Set the user the request is running as."""
         rest.local.auth['user'] = user
 
 
 def setup(*args, **kwargs):
+    """Set a MockAuthBackend as the auth backend."""
     auth.set_auth_backend(MockAuthBackend())

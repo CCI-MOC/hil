@@ -1,3 +1,4 @@
+"""Client support for switch related api calls."""
 import json
 from hil.client.base import ClientBase
 
@@ -24,6 +25,7 @@ class Switch(ClientBase):
         raise NotImplementedError
 
     def delete(self, switch):
+        """Deletes the switch named <switch>."""
         url = self.object_url('switch', switch)
         return self.check_response(self.httpClient.request("DELETE", url))
 

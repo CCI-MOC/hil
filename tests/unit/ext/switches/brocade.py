@@ -11,6 +11,7 @@
 # IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
 # express or implied. See the License for the specific language
 # governing permissions and limitations under the License.
+"""Tests for the brocade switch driver"""
 
 import pytest
 import requests_mock
@@ -139,6 +140,7 @@ class TestBrocade(object):
 
     @pytest.fixture()
     def switch(self):
+        """Create a brocade Switch object to work with."""
         from hil.ext.switches import brocade
         return brocade.Brocade(
             label='theSwitch',
@@ -150,6 +152,7 @@ class TestBrocade(object):
 
     @pytest.fixture()
     def nic(self):
+        """Create a Nic object (and associated Node) to work with."""
         from hil.ext.obm.ipmi import Ipmi
         return model.Nic(
             model.Node(
@@ -164,10 +167,12 @@ class TestBrocade(object):
 
     @pytest.fixture
     def network(self):
+        """Create a network object (and associated project) to work with."""
         project = model.Project('anvil-nextgen')
         return model.Network(project, [project], True, '102', 'hammernet')
 
     def test_get_port_networks(self, switch):
+        """Test the get_port_networks method"""
         with requests_mock.mock() as mock:
 
             PORT1 = model.Port(label=INTERFACE1, switch=switch)
@@ -196,6 +201,7 @@ class TestBrocade(object):
             }
 
     def test_get_mode(self, switch):
+        """Test the _get_mode helper method"""
         with requests_mock.mock() as mock:
             mock.get(switch._construct_url(INTERFACE1, suffix='mode'),
                      text=MODE_RESPONSE_ACCESS)
@@ -208,6 +214,7 @@ class TestBrocade(object):
             assert response == 'trunk'
 
     def test_modify_port(self, switch, nic, network):
+        """Test the modify_port method"""
         # Create a port on the switch and connect it to the nic
         port = model.Port(label=INTERFACE1, switch=switch)
         port.nic = nic
@@ -301,6 +308,7 @@ class TestBrocade(object):
             assert mock.request_history[0].text == TRUNK_REMOVE_VLAN_PAYLOAD
 
     def test_construct_url(self, switch):
+        """Test the _construct_url helper method"""
         assert switch._construct_url('1/0/4') == (
             'http://example.com/rest/config/running/interface/'
             'TenGigabitEthernet/%221/0/4%22'

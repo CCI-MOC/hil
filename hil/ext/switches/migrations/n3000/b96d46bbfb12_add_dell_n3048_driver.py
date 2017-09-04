@@ -15,6 +15,8 @@ revision = 'b96d46bbfb12'
 down_revision = None
 branch_labels = None
 
+# pylint: disable=missing-docstring
+
 
 def upgrade():
     op.create_table('dell_n3000',

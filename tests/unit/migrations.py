@@ -69,6 +69,7 @@ def create_pending_actions_db():
 
 
 def create_bigint_db():
+    """Create database objects used in 'after-PK-bigint.sql'"""
     from hil import model
     from hil.model import db
     from hil.ext.switches.n3000 import DellN3000
@@ -207,6 +208,10 @@ def drop_tables():
 
 @pytest.fixture(autouse=True)
 def configure():
+    """Configure HIL, and test which db we're using.
+
+    Skips the test unless we're using postgres.
+    """
     config_testsuite()
     if not cfg.get('database', 'uri').startswith('postgresql:'):
         pytest.skip('Database migrations are only supported for postgresql.')

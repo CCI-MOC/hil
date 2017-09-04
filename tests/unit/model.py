@@ -34,6 +34,7 @@ fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
 @pytest.fixture
 def configure():
+    """Configure HIL."""
     config_testsuite()
     config.load_extensions()
 
@@ -45,6 +46,7 @@ pytestmark = pytest.mark.usefixtures('configure', 'fresh_database')
 
 
 class TestNic(ModelTest):
+    """ModelTest for Nic objects."""
 
     def sample_obj(self):
         from hil.ext.obm.ipmi import Ipmi
@@ -57,6 +59,7 @@ class TestNic(ModelTest):
 
 
 class TestNode(ModelTest):
+    """ModelTest for Node objects."""
 
     def sample_obj(self):
         from hil.ext.obm.ipmi import Ipmi
@@ -68,12 +71,14 @@ class TestNode(ModelTest):
 
 
 class TestProject(ModelTest):
+    """ModelTest for Project objects."""
 
     def sample_obj(self):
         return Project('manhattan')
 
 
 class TestHeadnode(ModelTest):
+    """ModelTest for Headnode objects."""
 
     def sample_obj(self):
         return Headnode(Project('anvil-nextgen'),
@@ -81,6 +86,7 @@ class TestHeadnode(ModelTest):
 
 
 class TestHnic(ModelTest):
+    """ModelTest for Hnic objects."""
 
     def sample_obj(self):
         return Hnic(Headnode(Project('anvil-nextgen'),
@@ -89,6 +95,7 @@ class TestHnic(ModelTest):
 
 
 class TestNetwork(ModelTest):
+    """ModelTest for Network objects."""
 
     def sample_obj(self):
         pj = Project('anvil-nextgen')
@@ -96,6 +103,7 @@ class TestNetwork(ModelTest):
 
 
 class TestMetadata(ModelTest):
+    """ModelTest for Metadata objects."""
 
     def sample_obj(self):
         from hil.ext.obm.ipmi import Ipmi
@@ -108,6 +116,7 @@ class TestMetadata(ModelTest):
 
 
 class TestNetworkingAction(ModelTest):
+    """ModelTest for NetworkingAction objects."""
 
     def sample_obj(self):
         from hil.ext.obm.ipmi import Ipmi

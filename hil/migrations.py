@@ -1,3 +1,11 @@
+"""Database migration support.
+
+Contains code for:
+
+* adding migration related commands to the hil-admin cli
+* initializing alembic
+* validating the database schema
+"""
 from flask_migrate import Migrate, MigrateCommand
 from hil.flaskapp import app
 from hil.model import db

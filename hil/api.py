@@ -254,6 +254,11 @@ def node_register(node, **kwargs):
     Optional('force'): bool
 }))
 def node_power_cycle(node, force=False):
+    """Reboot the node.
+
+    Force indicates whether the node should be forced off, or allowed
+    to respond to the shutdown signal.
+    """
     auth_backend = get_auth_backend()
     node = _must_find(model.Node, node)
     if node.project is None:
@@ -265,6 +270,7 @@ def node_power_cycle(node, force=False):
 
 @rest_call('POST', '/node/<node>/power_off', Schema({'node': basestring}))
 def node_power_off(node):
+    """Power off the node."""
     auth_backend = get_auth_backend()
     node = _must_find(model.Node, node)
     if node.project is None:
@@ -278,6 +284,7 @@ def node_power_off(node):
     'node': basestring, 'bootdev': basestring,
 }))
 def node_set_bootdev(node, bootdev):
+    """Set the node's boot device."""
     auth_backend = get_auth_backend()
     node = _must_find(model.Node, node)
     if node.project is None:
@@ -897,6 +904,7 @@ def show_network(network):
     Optional(object): object,
 }))
 def switch_register(switch, type, **kwargs):
+    """Register a new switch"""
     get_auth_backend().require_admin()
     _assert_absent(model.Switch, switch)
 
@@ -914,6 +922,7 @@ def switch_register(switch, type, **kwargs):
 
 @rest_call('DELETE', '/switch/<switch>', Schema({'switch': basestring}))
 def switch_delete(switch):
+    """Delete a switch"""
     get_auth_backend().require_admin()
     switch = _must_find(model.Switch, switch)
 
@@ -1084,6 +1093,7 @@ def port_detach_nic(switch, port):
     'switch': basestring, 'port': basestring,
 }))
 def port_revert(switch, port):
+    """Detach the port from all networks."""
     get_auth_backend().require_admin()
     switch = _must_find(model.Switch, switch)
     port = _must_find_n(switch, model.Port, port)

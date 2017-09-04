@@ -22,11 +22,19 @@ logger = logging.getLogger(__name__)
 
 
 class DaemonSession(object):
+    """A daemon session tracks switch sessions during a call to
+    apply_networking, and applies networking actions.
+
+    When applying a networking action, if the DaemonSession does not
+    already have a switch session for the relevant switch, it will
+    create one, and cache it for next time.
+    """
 
     def __init__(self):
         self.switch_sessions = {}
 
     def handle_action(self, action):
+        """apply the networking action ``action``."""
         if action.type not in model.NetworkingAction.legal_types:
             logger.warn('Illegal action type %r from server; ignoring.')
         elif not action.nic.port:
@@ -36,6 +44,7 @@ class DaemonSession(object):
             getattr(self, action.type)(action)
 
     def modify_port(self, action):
+        """Apply a modify_port action."""
         session = self.get_session(action.nic.port.owner)
 
         if action.new_network is None:
@@ -57,16 +66,23 @@ class DaemonSession(object):
                 channel=action.channel))
 
     def revert_port(self, action):
+        """Apply a revert_port action."""
         session = self.get_session(action.nic.port.owner)
         session.revert_port(action.nic.port.label)
         model.NetworkAttachment.query.filter_by(nic=action.nic).delete()
 
     def get_session(self, switch):
+        """Get a session for the switch.
+
+        If we don't already have one, create a new one and cache it. Otherwise,
+        return the cached session.
+        """
         if switch.label not in self.switch_sessions:
             self.switch_sessions[switch.label] = switch.session()
         return self.switch_sessions[switch.label]
 
     def close(self):
+        """Shut down all of the open switch sessions."""
         for session in self.switch_sessions.values():
             session.disconnect()
         self.switch_sessions = {}

@@ -1,3 +1,4 @@
+"""Client support for extension related api calls."""
 from hil.client.base import ClientBase
 
 

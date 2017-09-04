@@ -16,6 +16,8 @@ revision = '3b2dab2e0d7d'
 down_revision = '57f4c30b0ad4'
 branch_labels = None
 
+# pylint: disable=missing-docstring
+
 
 def upgrade():
     # We first introduce the table with null 'type' fields allowed.

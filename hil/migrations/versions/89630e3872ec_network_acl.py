@@ -14,6 +14,8 @@ revision = '89630e3872ec'
 down_revision = '6a8c19565060'
 branch_labels = None
 
+# pylint: disable=missing-docstring
+
 
 def upgrade():
     op.create_table(

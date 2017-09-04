@@ -35,6 +35,8 @@ logger = logging.getLogger(__name__)
 
 
 class PowerConnect55xx(Switch):
+    """Dell powerconnect 5500 series switch."""
+
     api_name = 'http://schema.massopencloud.org/haas/v0/switches/' \
         'powerconnect55xx'
 
@@ -91,7 +93,7 @@ class _PowerConnect55xxSession(_BaseSession):
 
     @staticmethod
     def connect(switch):
-        # connect to the switch, and log in:
+        """connect to the switch, and log in."""
         console = pexpect.spawn('telnet ' + switch.hostname)
         console.expect('User Name:')
         console.sendline(switch.username)

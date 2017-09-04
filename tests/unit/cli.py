@@ -17,6 +17,7 @@ fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
 @pytest.fixture(autouse=True)
 def make_config(request):
+    """Generate a temporary config file."""
     tmpdir = tempfile.mkdtemp()
     cwd = os.getcwd()
     os.chdir(tmpdir)
@@ -36,6 +37,7 @@ def make_config(request):
         f.write(config)
 
     def cleanup():
+        """Remove the config file, database, and temp dir."""
         os.remove('hil.cfg')
         os.remove('hil.db')
         os.chdir(cwd)
@@ -45,6 +47,7 @@ def make_config(request):
 
 
 def test_db_create():
+    """Create the database via the cli."""
     check_call(['hil-admin', 'db', 'create'])
 
 
@@ -73,11 +76,13 @@ def runs_for_seconds(cmd, seconds=1):
 
 
 def test_serve():
+    """Check that hil serve doesn't immediately die."""
     check_call(['hil-admin', 'db', 'create'])
     assert runs_for_seconds(['hil', 'serve', '5000'], seconds=1)
 
 
 def test_serve_networks():
+    """Check that hil serve_networks doesn't immediately die."""
     check_call(['hil-admin', 'db', 'create'])
     assert runs_for_seconds(['hil', 'serve_networks'], seconds=1)
 
@@ -87,6 +92,7 @@ def test_serve_networks():
     ['hil', 'serve_networks'],
 ])
 def test_db_init_error(command):
+    """Test that a command fails if the database has not been created."""
     try:
         check_output(command, stderr=STDOUT)
         assert False, 'Should have failed, but exited successfully.'

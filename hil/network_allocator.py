@@ -108,4 +108,8 @@ def set_network_allocator(network_allocator):
 
 
 def get_network_allocator():
+    """Return the network allocator.
+
+    This may not be called before set_network_allocator.
+    """
     return _network_allocator

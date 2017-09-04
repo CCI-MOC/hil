@@ -53,13 +53,14 @@ class LogCallVisitor(ast.NodeVisitor):
         self.filename = filename
 
     def visit_Call(self, node):
-        # This function is called on all "Call" nodes in the ast, i.e.
-        # anything where an expression is being called:
-        #
-        # foo(bar)
-        # foo.baz(bar)
-        # foo[quux](bar, baz)
-        #
+        """
+        This function is called on all "Call" nodes in the ast, i.e.
+        anything where an expression is being called:
+
+        foo(bar)
+        foo.baz(bar)
+        foo[quux](bar, baz)
+        """
         # First, filter this out to the set of calls we care about:
         #
         # 1. Make sure this a call to an attribute (method), e.g.

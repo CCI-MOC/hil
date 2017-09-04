@@ -41,6 +41,11 @@ class AuthBackend(object):
         This method must return a boolean indicating whether or not
         authentication was successful -- True if so, False if not.
         """
+        # FIXME: for some reason I(zenhack) don't understand, pylint doesn't
+        # pick up on this being an abstract method, and still gives warnings
+        # about missing docstrings on implementations. For now, we just
+        # locally disable the warnings in those places, but we ought to figure
+        # out what's going on.
 
     @abstractmethod
     def _have_admin(self):

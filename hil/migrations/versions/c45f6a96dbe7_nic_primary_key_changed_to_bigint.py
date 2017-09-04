@@ -15,6 +15,8 @@ revision = 'c45f6a96dbe7'
 down_revision = '3b2dab2e0d7d'
 branch_labels = None
 
+# pylint: disable=missing-docstring
+
 
 def upgrade():
     op.alter_column(

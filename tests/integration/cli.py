@@ -1,3 +1,5 @@
+"""Test invoking the command line tool."""
+
 import subprocess
 import pytest
 from hil.test_common import fail_on_log_warnings

@@ -84,6 +84,9 @@ class ProjectMismatchError(APIError):
 
 
 class AuthorizationError(APIError):
+    """An exception indicating that the user is not authorized to perform
+    the requested action.
+    """
     status_code = 401
 
 

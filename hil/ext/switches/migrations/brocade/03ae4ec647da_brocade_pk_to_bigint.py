@@ -15,6 +15,8 @@ revision = '03ae4ec647da'
 down_revision = '5a6db7a7222d'
 branch_labels = ('hil.ext.switches.brocade',)
 
+# pylint: disable=missing-docstring
+
 
 def upgrade():
     op.alter_column('brocade', 'id',
