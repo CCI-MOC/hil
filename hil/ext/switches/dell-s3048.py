@@ -31,6 +31,9 @@ from hil.model import BigIntegerType
 
 logger = logging.getLogger(__name__)
 
+CONFIG = 'config-commands'
+SHOW = 'show-command'
+
 
 class DellNOS9(Switch):
     api_name = 'http://schema.massopencloud.org/haas/v0/switches/dellnos9'
@@ -93,9 +96,9 @@ class DellNOS9(Switch):
                 self._add_vlan_to_trunk(interface, vlan_id)
 
     def revert_port(self, port):
-        self._remove_all_vlans_from_trunk(port)
-        if self._get_native_vlan(port) is not None:
-            self._remove_native_vlan(port)
+        """ Toggling the switchport resets the port to factory defaults"""
+        self._port_shutdown(port)
+        self._port_on(port)
 
     def get_port_networks(self, ports):
         """Get port configurations of the switch.
@@ -118,42 +121,6 @@ class DellNOS9(Switch):
                                     [self._get_native_vlan(port.label)]) \
                                     + self._get_vlans(port.label)
         return response
-
-    def _get_mode(self, interface):
-        """ Return the mode of an interface.
-
-        Args:
-            interface: interface to return the mode of
-
-        Returns: 'access' or 'trunk'
-
-        Raises: AssertionError if mode is invalid.
-
-        """
-
-    def _enable_and_set_mode(self, interface, mode):
-        """ Enables switching and sets the mode of an interface.
-
-        Args:
-            interface: interface to set the mode of
-            mode: 'access' or 'trunk'
-
-        Raises: AssertionError if mode is invalid.
-
-        """
-        # Enable switching
-        url = self._construct_url(interface)
-        payload = '<switchport></switchport>'
-        self._make_request('POST', url, data=payload,
-                           acceptable_error_codes=(409,))
-
-        # Set the interface mode
-        if mode in ['access', 'trunk']:
-            url = self._construct_url(interface, suffix='mode')
-            payload = '<mode><vlan-mode>%s</vlan-mode></mode>' % mode
-            self._make_request('PUT', url, data=payload)
-        else:
-            raise AssertionError('Invalid mode')
 
     def _get_vlans(self, interface):
         """ Return the vlans of a trunk port.
@@ -185,6 +152,11 @@ class DellNOS9(Switch):
             interface: interface to add the vlan to
             vlan: vlan to add
         """
+        url = self._construct_url()
+        command = 'interface vlan ' + vlan + '\r\n tagged ' + \
+            self.interface_type + ' ' + interface
+        payload = self._construct_tag(CONFIG, command)
+        self._make_request('POST', url, data=payload)
 
     def _remove_vlan_from_trunk(self, interface, vlan):
         """ Remove a vlan from a trunk port.
@@ -193,6 +165,11 @@ class DellNOS9(Switch):
             interface: interface to remove the vlan from
             vlan: vlan to remove
         """
+        url = self._construct_url()
+        command = 'interface vlan ' + vlan + '\r\n no tagged ' + \
+            self.interface_type + ' ' + interface
+        payload = self._construct_tag(CONFIG, command)
+        self._make_request('POST', url, data=payload)
 
     def _remove_all_vlans_from_trunk(self, interface):
         """ Remove all vlan from a trunk port.
@@ -205,14 +182,14 @@ class DellNOS9(Switch):
             interface: interface to set the native vlan to
             vlan: vlan to set as the native vlan
 
-        We are using a patch here since this switch is Vlan Centric.
-
-        Fast method, but might break if somebody changes the cli manually.
+        Method relies on the REST API CLI which is slow
         """
         # TODO: turn on port first
-        url = self._construct_url(vlan)
-        payload = self._native_vlan_payload(interface, vlan)
-        self._make_request('PATCH', url, data=payload)
+        url = self._construct_url()
+        command = 'interface vlan ' + vlan + '\r\n untagged ' + \
+            self.interface_type + ' ' + interface
+        payload = self._construct_tag(CONFIG, command)
+        self._make_request('POST', url, data=payload)
 
     def _remove_native_vlan(self, interface, vlan):
         """ Remove the native vlan from an interface.
@@ -222,34 +199,25 @@ class DellNOS9(Switch):
             vlan: the vlan id that's set as native. It is required because the
             rest API is vlan Centric.
 
-        Fast method that always works.
+        Method relies on the REST API CLI which is slow.
+        TODO: Get native vlan from switch.
         """
-        url = self._construct_url(vlan, suffix='untagged')
-        payload = self._native_vlan_payload(interface, vlan)
-        self._make_request('DELETE', url, data=payload)
+        url = self._construct_url()
+        command = 'interface vlan ' + vlan + '\r\n no untagged ' + \
+            self.interface_type + ' ' + interface
+        payload = self._construct_tag(CONFIG, command)
+        self._make_request('POST', url, data=payload)
 
-    def _native_vlan_payload(self, interface, vlan):
-        """ Returns payload for setting/removing the native vlan"""
-
-        # the urls have dashes instead of slashes in interface names
-        interface = interface.replace('/', '-')
-        interface_type = self._convert_interface(self.interface_type)
-
-        vlan_interface = self._get_vlan_interface_name(vlan)
-        payload = vlan_interface + '<untagged><name>' + interface_type + \
-            interface + '</name></untagged></interface>'
-        return payload
-
-    def port_shutdown(self, interface):
-        """ Shuts down <interface>
+    def _port_shutdown(self, port):
+        """ Shuts down <port>
 
         Turn off portmode hybrid, disable switchport, and then shut down the
         port. All non-default vlans must be removed before calling this.
 
-        Fast method that always works.
+        Fast method that uses the REST API (no hackery).
         """
 
-        url = self._construct_url(interface)
+        url = self._construct_url(interface=interface)
         interface = self._convert_interface(self.interface_type) + \
             interface.replace('/', '-')
         payload = '<interface><name>%s</name><portmode><hybrid>false' \
@@ -258,22 +226,32 @@ class DellNOS9(Switch):
 
         self._make_request('PUT', url, data=payload)
 
-    # HELPER METHODS *********************************************
+    def _port_on(self, port):
+        """ Turns on <port>
 
-    def _get_vlan_interface_name(self, interface):
-        """Gets the weird port name that the switch keeps track of.
-
-        It seems to be constant for every interface. And I have tested
-        this on 2 different switches. I'll probably hardcode this.
+        Turn on port and enable hybrid portmode and switchport.
+        Fast method that uses the REST API (no hackery).
         """
 
-        url = self._construct_url(interface)
-        response = self._make_request('GET', url)
-        begin = response.text.find('<')
-        end = response.text.find('>')
-        return response.text[begin-1:end+1]
+        url = self._construct_url(interface=interface)
+        interface = self._convert_interface(self.interface_type) + \
+            interface.replace('/', '-')
+        payload = '<interface><name>%s</name><portmode><hybrid>true' \
+                  '</hybrid></portmode><switchport></switchport>' \
+                  '<shutdown>false</shutdown></interface>' % interface
 
-    def _construct_url(self, interface, suffix=''):
+        self._make_request('PUT', url, data=payload)
+
+    def _is_port_on(self, port):
+        """ Returns a boolean that tells the status of a switchport
+        Fast method that uses the REST API (no hackery)
+        """
+
+        url = self._construct_url(interface=interface)
+        self._make_request('GET', url, data=payload)
+
+    # HELPER METHODS *********************************************
+    def _construct_url(self, interface=None, suffix=''):
         """ Construct the API url for a specific interface appending suffix.
 
         Args:
@@ -281,7 +259,13 @@ class DellNOS9(Switch):
             suffix: suffix to append at the end of the url (for get methods)
 
         Returns: string with the url for a specific interface and operation
+
+        If interface is None, then it returns the URL for REST API CLI.
         """
+
+        if interface is None:
+            return '%s/api/running/dell/_operations/cli' % self.hostname
+
         val = re.compile(r'^\d+/\d+(/\d+)?$')
         if val.match(interface):
             # if `interface` refers to port name
@@ -301,7 +285,8 @@ class DellNOS9(Switch):
                 'suffix': '/%s' % suffix if suffix else ''
             }
 
-    def _convert_interface(self, interface_type):
+    @staticmethod
+    def _convert_interface(interface_type):
         """ Convert the interface name from switch CLI form to what the API
         server understands.
 
@@ -323,8 +308,10 @@ class DellNOS9(Switch):
         return self.username, self.password
 
     @staticmethod
-    def _construct_tag(name):
-        pass
+    def _construct_tag(command, command_type):
+        """Consutrcts tag for passing CLI commands using the REST API"""
+
+        return '<input><%s>%s</%s></input>' % (command, command_type, command)
 
     def _make_request(self, method, url, data=None,
                       acceptable_error_codes=()):
