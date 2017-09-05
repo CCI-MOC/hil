@@ -130,11 +130,6 @@ class DellNOS9(Switch):
         Raises: AssertionError if mode is invalid.
 
         """
-        url = self._construct_url(interface, suffix='mode')
-        response = self._make_request('GET', url)
-        root = etree.fromstring(response.text)
-        mode = root.find(self._construct_tag('vlan-mode')).text
-        return mode
 
     def _enable_and_set_mode(self, interface, mode):
         """ Enables switching and sets the mode of an interface.
@@ -171,17 +166,6 @@ class DellNOS9(Switch):
         Returns: List containing the vlans of the form:
         [('vlan/vlan1', vlan1), ('vlan/vlan2', vlan2)]
         """
-        try:
-            url = self._construct_url(interface, suffix='trunk')
-            response = self._make_request('GET', url)
-            root = etree.fromstring(response.text)
-            vlans = root.\
-                find(self._construct_tag('allowed')).\
-                find(self._construct_tag('vlan')).\
-                find(self._construct_tag('add')).text
-            return [('vlan/%s' % x, x) for x in vlans.split(',')]
-        except AttributeError:
-            return []
 
     def _get_native_vlan(self, interface):
         """ Return the native vlan of an interface.
@@ -191,14 +175,6 @@ class DellNOS9(Switch):
 
         Returns: Tuple of the form ('vlan/native', vlan) or None
         """
-        try:
-            url = self._construct_url(interface, suffix='trunk')
-            response = self._make_request('GET', url)
-            root = etree.fromstring(response.text)
-            vlan = root.find(self._construct_tag('native-vlan')).text
-            return ('vlan/native', vlan)
-        except AttributeError:
-            return None
 
     def _add_vlan_to_trunk(self, interface, vlan):
         """ Add a vlan to a trunk port.
@@ -209,10 +185,6 @@ class DellNOS9(Switch):
             interface: interface to add the vlan to
             vlan: vlan to add
         """
-        self._enable_and_set_mode(interface, 'trunk')
-        url = self._construct_url(interface, suffix='trunk/allowed/vlan')
-        payload = '<vlan><add>%s</vlan></vlan>' % vlan
-        self._make_request('PUT', url, data=payload)
 
     def _remove_vlan_from_trunk(self, interface, vlan):
         """ Remove a vlan from a trunk port.
@@ -221,19 +193,10 @@ class DellNOS9(Switch):
             interface: interface to remove the vlan from
             vlan: vlan to remove
         """
-        url = self._construct_url(interface, suffix='trunk/allowed/vlan')
-        payload = '<vlan><remove>%s</remove></vlan>' % vlan
-        self._make_request('PUT', url, data=payload)
 
     def _remove_all_vlans_from_trunk(self, interface):
         """ Remove all vlan from a trunk port.
-
-        Args:
-            interface: interface to remove the vlan from
         """
-        url = self._construct_url(interface, suffix='trunk/allowed/vlan')
-        payload = '<vlan><none>true</none></vlan>'
-        requests.put(url, data=payload, auth=self._auth)
 
     def _set_native_vlan(self, interface, vlan):
         """ Set the native vlan of an interface.
@@ -243,6 +206,8 @@ class DellNOS9(Switch):
             vlan: vlan to set as the native vlan
 
         We are using a patch here since this switch is Vlan Centric.
+
+        Fast method, but might break if somebody changes the cli manually.
         """
         # TODO: turn on port first
         url = self._construct_url(vlan)
@@ -256,6 +221,8 @@ class DellNOS9(Switch):
             interface: interface to remove the native vlan from.vlan
             vlan: the vlan id that's set as native. It is required because the
             rest API is vlan Centric.
+
+        Fast method that always works.
         """
         url = self._construct_url(vlan, suffix='untagged')
         payload = self._native_vlan_payload(interface, vlan)
@@ -278,6 +245,8 @@ class DellNOS9(Switch):
 
         Turn off portmode hybrid, disable switchport, and then shut down the
         port. All non-default vlans must be removed before calling this.
+
+        Fast method that always works.
         """
 
         url = self._construct_url(interface)
