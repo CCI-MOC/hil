@@ -215,7 +215,7 @@ class DellNOS9(Switch):
         payload = self._make_payload(CONFIG, command)
         self._make_request('POST', url, data=payload)
 
-    def _remove_native_vlan(self, interface, vlan):
+    def _remove_native_vlan(self, interface):
         """ Remove the native vlan from an interface.
 
         Args:
@@ -224,8 +224,8 @@ class DellNOS9(Switch):
             rest API is vlan Centric.
 
         Method relies on the REST API CLI which is slow.
-        TODO: Get native vlan from switch.
         """
+        vlan = self._get_native_vlan(interface)[1]
         url = self._construct_url()
         command = 'interface vlan ' + vlan + '\r\n no untagged ' + \
             self.interface_type + ' ' + interface
