@@ -155,7 +155,7 @@ class DellNOS9(Switch):
         url = self._construct_url()
         command = 'interface vlan ' + vlan + '\r\n tagged ' + \
             self.interface_type + ' ' + interface
-        payload = self._construct_tag(CONFIG, command)
+        payload = self._make_payload(CONFIG, command)
         self._make_request('POST', url, data=payload)
 
     def _remove_vlan_from_trunk(self, interface, vlan):
@@ -168,7 +168,7 @@ class DellNOS9(Switch):
         url = self._construct_url()
         command = 'interface vlan ' + vlan + '\r\n no tagged ' + \
             self.interface_type + ' ' + interface
-        payload = self._construct_tag(CONFIG, command)
+        payload = self._make_payload(CONFIG, command)
         self._make_request('POST', url, data=payload)
 
     def _remove_all_vlans_from_trunk(self, interface):
@@ -188,7 +188,7 @@ class DellNOS9(Switch):
         url = self._construct_url()
         command = 'interface vlan ' + vlan + '\r\n untagged ' + \
             self.interface_type + ' ' + interface
-        payload = self._construct_tag(CONFIG, command)
+        payload = self._make_payload(CONFIG, command)
         self._make_request('POST', url, data=payload)
 
     def _remove_native_vlan(self, interface, vlan):
@@ -205,11 +205,11 @@ class DellNOS9(Switch):
         url = self._construct_url()
         command = 'interface vlan ' + vlan + '\r\n no untagged ' + \
             self.interface_type + ' ' + interface
-        payload = self._construct_tag(CONFIG, command)
+        payload = self._make_payload(CONFIG, command)
         self._make_request('POST', url, data=payload)
 
-    def _port_shutdown(self, port):
-        """ Shuts down <port>
+    def _port_shutdown(self, interface):
+        """ Shuts down <interface>
 
         Turn off portmode hybrid, disable switchport, and then shut down the
         port. All non-default vlans must be removed before calling this.
@@ -226,8 +226,8 @@ class DellNOS9(Switch):
 
         self._make_request('PUT', url, data=payload)
 
-    def _port_on(self, port):
-        """ Turns on <port>
+    def _port_on(self, interface):
+        """ Turns on <interface>
 
         Turn on port and enable hybrid portmode and switchport.
         Fast method that uses the REST API (no hackery).
@@ -247,8 +247,12 @@ class DellNOS9(Switch):
         Fast method that uses the REST API (no hackery)
         """
 
-        url = self._construct_url(interface=interface)
-        self._make_request('GET', url, data=payload)
+        url = self._construct_url(interface=port, suffix='\?with-defaults')
+        response = self._make_request('GET', url)
+        root = etree.fromstring(response.text)
+        shutdown = root.find(self._construct_tag('shutdown')).text
+        # is error handling needed here?
+        return (shutdown == 'false')
 
     # HELPER METHODS *********************************************
     def _construct_url(self, interface=None, suffix=''):
@@ -308,10 +312,15 @@ class DellNOS9(Switch):
         return self.username, self.password
 
     @staticmethod
-    def _construct_tag(command, command_type):
+    def _make_payload(command, command_type):
         """Consutrcts tag for passing CLI commands using the REST API"""
 
         return '<input><%s>%s</%s></input>' % (command, command_type, command)
+
+    @staticmethod
+    def _construct_tag(name):
+        """ Construct the xml tag by prepending the dell tag prefix. """
+        return '{http://www.dell.com/ns/dell:0.1/root}%s' % name
 
     def _make_request(self, method, url, data=None,
                       acceptable_error_codes=()):
