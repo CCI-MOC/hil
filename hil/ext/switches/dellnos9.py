@@ -23,7 +23,7 @@ import re
 import requests
 import schema
 
-from hil.model import db, Switch
+from hil.model import db, Switch, SwitchSession
 from hil.errors import BadArgumentError
 from hil.model import BigIntegerType
 
@@ -33,7 +33,7 @@ CONFIG = 'config-commands'
 SHOW = 'show-command'
 
 
-class DellNOS9(Switch):
+class DellNOS9(Switch, SwitchSession):
     api_name = 'http://schema.massopencloud.org/haas/v0/switches/dellnos9'
 
     __mapper_args__ = {
