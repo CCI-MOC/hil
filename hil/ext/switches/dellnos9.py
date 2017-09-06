@@ -94,9 +94,9 @@ class DellNOS9(Switch):
                 self._add_vlan_to_trunk(interface, vlan_id)
 
     def revert_port(self, port):
-        """ Toggling the switchport resets the port to factory defaults"""
-        self._port_shutdown(port)
-        self._port_on(port)
+        """ Removes all vlans"""
+        self._remove_all_vlans_from_trunk(port)
+        self._remove_native_vlan(port)
 
     def get_port_networks(self, ports):
         """Get port configurations of the switch.
@@ -203,6 +203,25 @@ class DellNOS9(Switch):
             self.interface_type + ' ' + interface
         payload = self._make_payload(CONFIG, command)
         self._make_request('POST', url, data=payload)
+
+    def _remove_all_vlans_from_trunk(self, interface):
+        """ Remove all vlan from a trunk port.
+
+        Args:
+            interface: interface to remove the vlan from
+
+        this is kind slow for a number of reasons
+        1. we are using the REST API CLI
+        2. we have to go to every vlan and then remove our port from it;
+           that makes multiple calls.
+        """
+        url = self._construct_url()
+        vlan_list = self._get_vlans(interface)
+        for vlan in vlan_list:
+            command = 'interface vlan ' + vlan[1] + '\r\n no tagged ' + \
+                self.interface_type + ' ' + interface
+            payload = self._make_payload(CONFIG, command)
+            self._make_request('POST', url, data=payload)
 
     def _set_native_vlan(self, interface, vlan):
         """ Set the native vlan of an interface.
