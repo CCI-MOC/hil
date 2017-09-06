@@ -228,13 +228,8 @@ class DellNOS9(Switch, SwitchSession):
         2. we have to go to every vlan and then remove our port from it;
            that makes multiple calls.
         """
-        url = self._construct_url()
-        vlan_list = self._get_vlans(interface)
-        for vlan in vlan_list:
-            command = 'interface vlan ' + vlan[1] + '\r\n no tagged ' + \
-                self.interface_type + ' ' + interface
-            payload = self._make_payload(CONFIG, command)
-            self._make_request('POST', url, data=payload)
+        for vlan in self._get_vlans(interface):
+            self._remove_vlan_from_trunk(interface, vlan[1])
 
     def _set_native_vlan(self, interface, vlan):
         """ Set the native vlan of an interface.
