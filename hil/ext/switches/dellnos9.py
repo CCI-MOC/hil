@@ -180,6 +180,8 @@ class DellNOS9(Switch):
             interface: interface to add the vlan to
             vlan: vlan to add
         """
+        if not self._is_port_on(interface):
+            self._port_on(interface)
         url = self._construct_url()
         command = 'interface vlan ' + vlan + '\r\n tagged ' + \
             self.interface_type + ' ' + interface
@@ -208,7 +210,8 @@ class DellNOS9(Switch):
 
         Method relies on the REST API CLI which is slow
         """
-        # TODO: turn on port first
+        if not self._is_port_on(interface):
+            self._port_on(interface)
         url = self._construct_url()
         command = 'interface vlan ' + vlan + '\r\n untagged ' + \
             self.interface_type + ' ' + interface
