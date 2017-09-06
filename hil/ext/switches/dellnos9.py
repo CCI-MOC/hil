@@ -34,6 +34,7 @@ SHOW = 'show-command'
 
 
 class DellNOS9(Switch, SwitchSession):
+    """Dell S3048-ON running Dell NOS9"""
     api_name = 'http://schema.massopencloud.org/haas/v0/switches/dellnos9'
 
     __mapper_args__ = {
@@ -72,25 +73,25 @@ class DellNOS9(Switch, SwitchSession):
     def disconnect(self):
         pass
 
-    def modify_port(self, port, channel, network_id):
+    def modify_port(self, port, channel, new_network):
         (port,) = filter(lambda p: p.label == port, self.ports)
         interface = port.label
 
         if channel == 'vlan/native':
-            if network_id is None:
+            if new_network is None:
                 self._remove_native_vlan(interface)
             else:
-                self._set_native_vlan(interface, network_id)
+                self._set_native_vlan(interface, new_network)
         else:
             match = re.match(re.compile(r'vlan/(\d+)'), channel)
             assert match is not None, "HIL passed an invalid channel to the" \
                 " switch!"
             vlan_id = match.groups()[0]
 
-            if network_id is None:
+            if new_network is None:
                 self._remove_vlan_from_trunk(interface, vlan_id)
             else:
-                assert network_id == vlan_id
+                assert new_network == vlan_id
                 self._add_vlan_to_trunk(interface, vlan_id)
 
     def revert_port(self, port):
