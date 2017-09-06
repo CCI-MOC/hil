@@ -151,8 +151,8 @@ class DellNOS9(Switch, SwitchSession):
         except ValueError:
             return []
         if response[index] == '':
-            # a port with no tagged interface has no section with "T", it's just
-            # an empty line.
+            # a port with no tagged interface has no section with "T",
+            # it's just an empty line.
             return []
         vlan_list = response[index].replace('T', '').split(',')
         return [('vlan/%s' % x, x) for x in vlan_list]
