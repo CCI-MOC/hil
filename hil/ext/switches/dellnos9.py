@@ -253,8 +253,6 @@ class DellNOS9(Switch, SwitchSession):
 
         Args:
             interface: interface to remove the native vlan from.vlan
-            vlan: the vlan id that's set as native. It is required because the
-            rest API is vlan Centric.
 
         Method relies on the REST API CLI which is slow.
         """
@@ -370,7 +368,7 @@ class DellNOS9(Switch, SwitchSession):
 
     @staticmethod
     def _make_payload(command, command_type):
-        """Consutrcts tag for passing CLI commands using the REST API"""
+        """Makes payload for passing CLI commands using the REST API"""
 
         return '<input><%s>%s</%s></input>' % (command, command_type, command)
 
