@@ -379,7 +379,7 @@ def node_connect_network(node, nic, network, channel=None):
         return model.NetworkAttachment.query.filter(
             model.NetworkAttachment.nic == nic,
             query,
-        ).count() != 0
+        ).first() is not None
 
     auth_backend = get_auth_backend()
 
