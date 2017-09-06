@@ -144,7 +144,10 @@ class DellNOS9(Switch):
         response = self._make_request('POST', url, data=payload)
         # parse the output to get a list of all vlans.
         response = response.text.replace(' ', '').splitlines()
-        index = response.index("Vlanmembership:") + 3
+        try:
+            index = response.index("Vlanmembership:") + 3
+        except ValueError:
+            return []
         vlan_list = response[index].replace('T', '').split(',')
         return [('vlan/%s' % x, x) for x in vlan_list]
 
