@@ -19,12 +19,10 @@ Uses the XML REST API for communicating with the switch.
 
 import logging
 from lxml import etree
-from os.path import dirname, join
 import re
 import requests
 import schema
 
-from hil.migrations import paths
 from hil.model import db, Switch
 from hil.errors import BadArgumentError
 from hil.model import BigIntegerType
@@ -132,7 +130,23 @@ class DellNOS9(Switch):
 
         Returns: List containing the vlans of the form:
         [('vlan/vlan1', vlan1), ('vlan/vlan2', vlan2)]
+
+        It uses the REST API CLI which is slow but it is the only way to do it
+        because the switch is VLAN centric. Doing a GET on interface won't
+        return the VLANS on it, we would have to do get on all vlans and then
+        find our interface there which is not feasible.
         """
+
+        url = self._construct_url()
+        command = 'interfaces switchport %s %s' % \
+            (self.interface_type, interface)
+        payload = self._make_payload(SHOW, command)
+        response = self._make_request('POST', url, data=payload)
+        # parse the output to get a list of all vlans.
+        response = response.text.replace(' ', '').splitlines()
+        index = response.index("Vlanmembership:") + 3
+        vlan_list = response[index].replace('T', '').split(',')
+        return [('vlan/%s' % x, x) for x in vlan_list]
 
     def _get_native_vlan(self, interface):
         """ Return the native vlan of an interface.
@@ -141,7 +155,21 @@ class DellNOS9(Switch):
             interface: interface to return the native vlan of
 
         Returns: Tuple of the form ('vlan/native', vlan) or None
+
+        Similar to _get_vlans()
         """
+
+        url = self._construct_url()
+        command = 'interfaces switchport %s %s' % \
+            (self.interface_type, interface)
+        payload = self._make_payload(SHOW, command)
+        response = self._make_request('POST', url, data=payload)
+        # find the Native Vlan ID from the response
+        response = response.text.replace(' ', '')
+        begin = response.find('NativeVlanId:') + len('NativeVlanId:')
+        end = response.find('.', begin)
+        vlan = response[begin:end]
+        return ('vlan/native', vlan)
 
     def _add_vlan_to_trunk(self, interface, vlan):
         """ Add a vlan to a trunk port.
@@ -170,10 +198,6 @@ class DellNOS9(Switch):
             self.interface_type + ' ' + interface
         payload = self._make_payload(CONFIG, command)
         self._make_request('POST', url, data=payload)
-
-    def _remove_all_vlans_from_trunk(self, interface):
-        """ Remove all vlan from a trunk port.
-        """
 
     def _set_native_vlan(self, interface, vlan):
         """ Set the native vlan of an interface.
