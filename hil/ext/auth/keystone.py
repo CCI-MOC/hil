@@ -6,7 +6,7 @@ from keystonemiddleware.auth_token import filter_factory
 from flask import request
 from hil.flaskapp import app
 from hil.config import cfg
-from hil.model import Project
+from hil.model import Project, db
 from hil import auth, rest
 import logging
 import sys
@@ -38,7 +38,9 @@ class KeystoneAuthBackend(auth.AuthBackend):
             return True
 
         project_id = request.environ['HTTP_X_PROJECT_ID']
-        if Project.query.filter_by(label=project_id).first() is None:
+        exists = db.session.query(Project.id).filter(label=project_id). \
+            scalar()
+        if exists is None:
             logger.info("Successful authentication by Openstack project %r, "
                         "but this project is not registered with HIL",
                         project_id)

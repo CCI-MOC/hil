@@ -376,10 +376,9 @@ def node_connect_network(node, nic, network, channel=None):
 
         ``query`` should an argument suitable to pass to db.query(...).filter
         """
-        return model.NetworkAttachment.query.filter(
-            model.NetworkAttachment.nic == nic,
-            query,
-        ).first() is not None
+        exists = db.session.query(model.NetworkAttachment.id). \
+            filter(nic == nic, query).scalar()
+        return exists is not None
 
     auth_backend = get_auth_backend()
 
