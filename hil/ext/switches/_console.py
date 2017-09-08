@@ -85,7 +85,7 @@ class Session(SwitchSession):
         if channel == 'vlan/native':
             old_native = NetworkAttachment.query.filter_by(
                 channel='vlan/native',
-                nic_id=port.nic.id).first()
+                nic_id=port.nic.id).one_or_none()
             if old_native is not None:
                 old_native = old_native.network.network_id
 

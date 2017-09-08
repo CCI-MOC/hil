@@ -44,7 +44,7 @@ class VlanAllocator(NetworkAllocator):
         return returnee
 
     def free_network_id(self, net_id):
-        vlan = Vlan.query.filter_by(vlan_no=net_id).first()
+        vlan = Vlan.query.filter_by(vlan_no=net_id).one_or_none()
         if vlan is None:
             logger = logging.getLogger(__name__)
             logger.error('vlan %s does not exist in database', net_id)
@@ -77,7 +77,7 @@ class VlanAllocator(NetworkAllocator):
             return False
 
     def claim_network_id(self, net_id):
-        vlan = Vlan.query.filter_by(vlan_no=net_id).first()
+        vlan = Vlan.query.filter_by(vlan_no=net_id).one_or_none()
         if vlan is None:
             return
         elif vlan.available:
@@ -87,7 +87,7 @@ class VlanAllocator(NetworkAllocator):
                                " Please choose a different ID.")
 
     def is_network_id_in_pool(self, net_id):
-        vlan = Vlan.query.filter_by(vlan_no=net_id).first()
+        vlan = Vlan.query.filter_by(vlan_no=net_id).one_or_none()
         return vlan is not None
 
 

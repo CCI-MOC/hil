@@ -453,7 +453,7 @@ def node_detach_network(node, nic, network):
         raise errors.BlockedError(
             "A networking operation is already active on the nic.")
     attachment = model.NetworkAttachment.query \
-        .filter_by(nic=nic, network=network).first()
+        .filter_by(nic=nic, network=network).one_or_none()
     if attachment is None:
         raise errors.BadArgumentError(
             "The network is not attached to the nic.")
