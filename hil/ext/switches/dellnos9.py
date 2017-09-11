@@ -101,20 +101,6 @@ class DellNOS9(Switch, SwitchSession):
             self._remove_native_vlan(port)
 
     def get_port_networks(self, ports):
-        """Get port configurations of the switch.
-
-        Args:
-            ports: List of ports to get the configuration for.
-
-        Returns: Dictionary containing the configuration of the form:
-        {
-            Port<"port-3">: [("vlan/native", "23"), ("vlan/52", "52")],
-            Port<"port-7">: [("vlan/23", "23")],
-            Port<"port-8">: [("vlan/native", "52")],
-            ...
-        }
-
-        """
         response = {}
         for port in ports:
             response[port] = filter(None,
@@ -268,8 +254,6 @@ class DellNOS9(Switch, SwitchSession):
 
         Turn off portmode hybrid, disable switchport, and then shut down the
         port. All non-default vlans must be removed before calling this.
-
-        Fast method that uses the REST API (no hackery).
         """
 
         url = self._construct_url(interface=interface)
@@ -285,7 +269,6 @@ class DellNOS9(Switch, SwitchSession):
         """ Turns on <interface>
 
         Turn on port and enable hybrid portmode and switchport.
-        Fast method that uses the REST API (no hackery).
         """
 
         url = self._construct_url(interface=interface)
@@ -302,7 +285,8 @@ class DellNOS9(Switch, SwitchSession):
         Fast method that uses the REST API (no hackery)
         """
 
-        url = self._construct_url(interface=port, suffix='\?with-defaults')
+        # the url here requires a suffix to GET the shutdown tag in response.
+        url = self._construct_url(interface=port) + '\?with-defaults'
         response = self._make_request('GET', url)
         root = etree.fromstring(response.text)
         shutdown = root.find(self._construct_tag('shutdown')).text
@@ -310,12 +294,11 @@ class DellNOS9(Switch, SwitchSession):
         return (shutdown == 'false')
 
     # HELPER METHODS *********************************************
-    def _construct_url(self, interface=None, suffix=''):
-        """ Construct the API url for a specific interface appending suffix.
+    def _construct_url(self, interface=None):
+        """ Construct the API url for a specific interface.
 
         Args:
             interface: interface to construct the url for
-            suffix: suffix to append at the end of the url (for get methods)
 
         Returns: string with the url for a specific interface and operation
 
@@ -335,14 +318,8 @@ class DellNOS9(Switch, SwitchSession):
             # interface refers to `vlan`
             interface_type = 'vlan-'
 
-        return '%(hostname)s/api/running/dell/interfaces/interface/' \
-            '%(interface_type)s%(interface)s%(suffix)s' \
-            % {
-                'hostname': self.hostname,
-                'interface_type': interface_type,
-                'interface': interface,
-                'suffix': '/%s' % suffix if suffix else ''
-            }
+        return ''.join([self.hostname, '/api/running/dell/interfaces/'
+                       'interface/', interface_type, interface])
 
     @staticmethod
     def _convert_interface(interface_type):
@@ -354,9 +331,11 @@ class DellNOS9(Switch, SwitchSession):
 
         Returns: string interface
         """
-        iftypes = {'GigabitEthernet': 'gige-', 'TenGigabitEthernet': 'tengig-',
+        iftypes = {'GigabitEthernet': 'gige-',
+                   'TenGigabitEthernet': 'tengig-',
                    'TwentyfiveGigabitEthernet': 'twentyfivegig-',
-                   'fortyGigE': 'fortygig-', 'peGigabitEthernet': 'pegig-',
+                   'fortyGigE': 'fortygig-',
+                   'peGigabitEthernet': 'pegig-',
                    'FiftyGigabitEthernet': 'fiftygig-',
                    'HundredGigabitEthernet': 'hundredgig-'}
 
