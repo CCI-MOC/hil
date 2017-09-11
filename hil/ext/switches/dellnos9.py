@@ -26,6 +26,7 @@ import schema
 from hil.model import db, Switch, SwitchSession
 from hil.errors import BadArgumentError
 from hil.model import BigIntegerType
+from hil.network_allocator import get_network_allocator
 
 logger = logging.getLogger(__name__)
 
@@ -83,10 +84,10 @@ class DellNOS9(Switch, SwitchSession):
             else:
                 self._set_native_vlan(interface, new_network)
         else:
-            match = re.match(re.compile(r'vlan/(\d+)'), channel)
-            assert match is not None, "HIL passed an invalid channel to the" \
-                " switch!"
-            vlan_id = match.groups()[0]
+            legal = get_network_allocator(). \
+                is_legal_channel_for(channel, new_network)
+            assert legal, "HIL passed an invalid channel to the switch!"
+            vlan_id = channel.replace('vlan/', '')
 
             if new_network is None:
                 self._remove_vlan_from_trunk(interface, vlan_id)
