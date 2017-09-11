@@ -103,9 +103,14 @@ class DellNOS9(Switch, SwitchSession):
     def get_port_networks(self, ports):
         response = {}
         for port in ports:
-            response[port] = filter(None,
-                                    [self._get_native_vlan(port.label)]) \
-                                    + self._get_vlans(port.label)
+            native = self._get_native_vlan(port.label)
+            trunked = self._get_vlans(port.label)
+
+            # return an empty list if native is None
+            native = [native] if native else []
+
+            response[port] = native + trunked
+
         return response
 
     def _get_vlans(self, interface):
@@ -118,13 +123,13 @@ class DellNOS9(Switch, SwitchSession):
 
         Returns: List containing the vlans of the form:
         [('vlan/vlan1', vlan1), ('vlan/vlan2', vlan2)]
-
-        It uses the REST API CLI which is slow but it is the only way to do it
-        because the switch is VLAN centric. Doing a GET on interface won't
-        return the VLANS on it, we would have to do get on all vlans (if that
-        worked reliably in the first place) and then find our interface there
-        which is not feasible.
         """
+
+        # It uses the REST API CLI which is slow but it is the only way
+        # because the switch is VLAN centric. Doing a GET on interface won't
+        # return the VLANS on it, we would have to do get on all vlans (if that
+        # worked reliably in the first place) and then find our interface there
+        # which is not feasible.
 
         url = self._construct_url()
         command = 'interfaces switchport %s %s' % \
@@ -168,9 +173,15 @@ class DellNOS9(Switch, SwitchSession):
         begin = response.find('NativeVlanId:') + len('NativeVlanId:')
         end = response.find('.', begin)
         vlan = response[begin:end]
-        # a really bad temporary workaround to get the deployment tests to pass
+
+        # At this point, we are unable to remove the default native vlan.
+        # The switchport defaults to native vlan 1. Our deployment tests make
+        # assertions that a switchport has no default vlan at start.
+        # To get the tests to pass, we return None if we see the switchport has
+        # a default native vlan (=1). This needs to be fixed ASAP.
         if vlan == '1':
             return None
+
         return ('vlan/native', vlan)
 
     def _add_vlan_to_trunk(self, interface, vlan):
