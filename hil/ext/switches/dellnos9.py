@@ -131,13 +131,7 @@ class DellNOS9(Switch, SwitchSession):
         # worked reliably in the first place) and then find our interface there
         # which is not feasible.
 
-        url = self._construct_url()
-        command = 'interfaces switchport %s %s' % \
-            (self.interface_type, interface)
-        payload = self._make_payload(SHOW, command)
-        response = self._make_request('POST', url, data=payload)
-        # parse the output to get a list of all vlans.
-        response = response.text.replace(' ', '').splitlines()
+        response = _get_port_info(interface).splitlines()
         # should probably make this more reliable
         try:
             index = response.index("Vlanmembership:") + 3
@@ -160,14 +154,7 @@ class DellNOS9(Switch, SwitchSession):
 
         Similar to _get_vlans()
         """
-
-        url = self._construct_url()
-        command = 'interfaces switchport %s %s' % \
-            (self.interface_type, interface)
-        payload = self._make_payload(SHOW, command)
-        response = self._make_request('POST', url, data=payload)
-        # find the Native Vlan ID from the response
-        response = response.text.replace(' ', '')
+        response = self._get_port_info(interface)
         if response.find('NativeVlanId:') == -1:
             return None
         begin = response.find('NativeVlanId:') + len('NativeVlanId:')
@@ -183,6 +170,29 @@ class DellNOS9(Switch, SwitchSession):
             return None
 
         return ('vlan/native', vlan)
+
+    def _get_port_info(self, interface):
+        """Returns the output of a show interface command. This removes all
+        spaces from the response before returning it which is then parsed by
+        the caller.
+
+        Sample Response:
+        u"<outputxmlns='http://www.dell.com/ns/dell:0.1/root'>\n<command>
+        showinterfacesswitchportGigabitEthernet1/3\r\n\r\nCodes:U-Untagged,
+        T-Tagged\r\nx-Dot1xuntagged,X-Dot1xtagged\r\nG-GVRPtagged,M-Trunk\r\n
+        i-Internaluntagged,I-Internaltagged,v-VLTuntagged,V-VLTtagged\r\n\r\n
+        Name:GigabitEthernet1/3\r\n802.1QTagged:Hybrid\r\nVlanmembership:\r\n
+        QVlans\r\nU1512\r\nT1511\r\n\r\nNativeVlanId:1512.\r\n\r\n\r\n\r\n
+        MOC-Dell-S3048-ON#</command>\n</output>\n"
+        """
+
+        url = self._construct_url()
+        command = 'interfaces switchport %s %s' % \
+            (self.interface_type, interface)
+        payload = self._make_payload(SHOW, command)
+        response = self._make_request('POST', url, data=payload)
+        import pdb; pdb.set_trace()
+        return response.text.replace(' ', '')
 
     def _add_vlan_to_trunk(self, interface, vlan):
         """ Add a vlan to a trunk port.
