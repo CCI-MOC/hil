@@ -95,7 +95,6 @@ class DellNOS9(Switch, SwitchSession):
                 self._add_vlan_to_trunk(interface, vlan_id)
 
     def revert_port(self, port):
-        """ Removes all vlans"""
         self._remove_all_vlans_from_trunk(port)
         if self._get_native_vlan(port) is not None:
             self._remove_native_vlan(port)
@@ -104,12 +103,9 @@ class DellNOS9(Switch, SwitchSession):
         response = {}
         for port in ports:
             native = self._get_native_vlan(port.label)
-            trunked = self._get_vlans(port.label)
-
             # return an empty list if native is None
             native = [native] if native else []
-
-            response[port] = native + trunked
+            response[port] = native + self._get_vlans(port.label)
 
         return response
 
@@ -127,19 +123,20 @@ class DellNOS9(Switch, SwitchSession):
 
         # It uses the REST API CLI which is slow but it is the only way
         # because the switch is VLAN centric. Doing a GET on interface won't
-        # return the VLANS on it, we would have to do get on all vlans (if that
+        # return the VLANs on it, we would have to do get on all vlans (if that
         # worked reliably in the first place) and then find our interface there
         # which is not feasible.
 
-        response = _get_port_info(interface).splitlines()
-        # should probably make this more reliable
+        response = self._get_port_info(interface).splitlines()
+
         try:
             index = response.index("Vlanmembership:") + 3
         except ValueError:
+            # happens when our response has almost no info on a switchport
+            # because it's off. the response lacks the word "vlanmembership"
             return []
         if response[index] == '':
-            # a port with no tagged interface has no section with "T",
-            # it's just an empty line.
+            # a port with no tagged interface has no section with "T"
             return []
         vlan_list = response[index].replace('T', '').split(',')
         return [('vlan/%s' % x, x) for x in vlan_list]
@@ -182,16 +179,13 @@ class DellNOS9(Switch, SwitchSession):
         T-Tagged\r\nx-Dot1xuntagged,X-Dot1xtagged\r\nG-GVRPtagged,M-Trunk\r\n
         i-Internaluntagged,I-Internaltagged,v-VLTuntagged,V-VLTtagged\r\n\r\n
         Name:GigabitEthernet1/3\r\n802.1QTagged:Hybrid\r\nVlanmembership:\r\n
-        QVlans\r\nU1512\r\nT1511\r\n\r\nNativeVlanId:1512.\r\n\r\n\r\n\r\n
+        QVlans\r\nU1512\r\n T1511 \r\n\r\n NativeVlanId:1512 .\r\n\r\n\r\n\r\n
         MOC-Dell-S3048-ON#</command>\n</output>\n"
         """
 
-        url = self._construct_url()
         command = 'interfaces switchport %s %s' % \
             (self.interface_type, interface)
-        payload = self._make_payload(SHOW, command)
-        response = self._make_request('POST', url, data=payload)
-        import pdb; pdb.set_trace()
+        response = self._execute(interface, SHOW, command)
         return response.text.replace(' ', '')
 
     def _add_vlan_to_trunk(self, interface, vlan):
@@ -205,11 +199,9 @@ class DellNOS9(Switch, SwitchSession):
         """
         if not self._is_port_on(interface):
             self._port_on(interface)
-        url = self._construct_url()
         command = 'interface vlan ' + vlan + '\r\n tagged ' + \
             self.interface_type + ' ' + interface
-        payload = self._make_payload(CONFIG, command)
-        self._make_request('POST', url, data=payload)
+        self._execute(interface, CONFIG, command)
 
     def _remove_vlan_from_trunk(self, interface, vlan):
         """ Remove a vlan from a trunk port.
@@ -218,11 +210,9 @@ class DellNOS9(Switch, SwitchSession):
             interface: interface to remove the vlan from
             vlan: vlan to remove
         """
-        url = self._construct_url()
         command = 'interface vlan ' + vlan + '\r\n no tagged ' + \
             self.interface_type + ' ' + interface
-        payload = self._make_payload(CONFIG, command)
-        self._make_request('POST', url, data=payload)
+        self._execute(interface, CONFIG, command)
 
     def _remove_all_vlans_from_trunk(self, interface):
         """ Remove all vlan from a trunk port.
@@ -249,26 +239,20 @@ class DellNOS9(Switch, SwitchSession):
         """
         if not self._is_port_on(interface):
             self._port_on(interface)
-        url = self._construct_url()
         command = 'interface vlan ' + vlan + '\r\n untagged ' + \
             self.interface_type + ' ' + interface
-        payload = self._make_payload(CONFIG, command)
-        self._make_request('POST', url, data=payload)
+        self._execute(interface, CONFIG, command)
 
     def _remove_native_vlan(self, interface):
         """ Remove the native vlan from an interface.
 
         Args:
             interface: interface to remove the native vlan from.vlan
-
-        Method relies on the REST API CLI which is slow.
         """
         vlan = self._get_native_vlan(interface)[1]
-        url = self._construct_url()
         command = 'interface vlan ' + vlan + '\r\n no untagged ' + \
             self.interface_type + ' ' + interface
-        payload = self._make_payload(CONFIG, command)
-        self._make_request('POST', url, data=payload)
+        self._execute(interface, CONFIG, command)
 
     def _port_shutdown(self, interface):
         """ Shuts down <interface>
@@ -302,9 +286,7 @@ class DellNOS9(Switch, SwitchSession):
         self._make_request('PUT', url, data=payload)
 
     def _is_port_on(self, port):
-        """ Returns a boolean that tells the status of a switchport
-        Fast method that uses the REST API (no hackery)
-        """
+        """ Returns a boolean that tells the status of a switchport"""
 
         # the url here requires a suffix to GET the shutdown tag in response.
         url = self._construct_url(interface=port) + '\?with-defaults'
@@ -315,6 +297,13 @@ class DellNOS9(Switch, SwitchSession):
         return (shutdown == 'false')
 
     # HELPER METHODS *********************************************
+
+    def _execute(self, interface, command_type, command):
+        """This method gets the url & the payload and executes <command>"""
+        url = self._construct_url()
+        payload = self._make_payload(command_type, command)
+        return self._make_request('POST', url, data=payload)
+
     def _construct_url(self, interface=None):
         """ Construct the API url for a specific interface.
 
