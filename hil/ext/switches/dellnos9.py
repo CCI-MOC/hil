@@ -84,10 +84,10 @@ class DellNOS9(Switch, SwitchSession):
             else:
                 self._set_native_vlan(interface, new_network)
         else:
-            legal = get_network_allocator(). \
-                is_legal_channel_for(channel, new_network)
-            assert legal, "HIL passed an invalid channel to the switch!"
             vlan_id = channel.replace('vlan/', '')
+            legal = get_network_allocator(). \
+                is_legal_channel_for(channel, vlan_id)
+            assert legal, "HIL passed an invalid channel to the switch!"
 
             if new_network is None:
                 self._remove_vlan_from_trunk(interface, vlan_id)
@@ -103,10 +103,10 @@ class DellNOS9(Switch, SwitchSession):
     def get_port_networks(self, ports):
         response = {}
         for port in ports:
+            response[port] = self._get_vlans(port.label)
             native = self._get_native_vlan(port.label)
-            # return an empty list if native is None
-            native = [native] if native else []
-            response[port] = native + self._get_vlans(port.label)
+            if native is not None:
+                response[port].append(native)
 
         return response
 
@@ -159,7 +159,7 @@ class DellNOS9(Switch, SwitchSession):
         end = response.find('.', begin)
         vlan = response[begin:end]
 
-        # At this point, we are unable to remove the default native vlan.
+        # FIXME: At this point, we are unable to remove the default native vlan
         # The switchport defaults to native vlan 1. Our deployment tests make
         # assertions that a switchport has no default vlan at start.
         # To get the tests to pass, we return None if we see the switchport has
@@ -175,12 +175,13 @@ class DellNOS9(Switch, SwitchSession):
         the caller.
 
         Sample Response:
-        u"<outputxmlns='http://www.dell.com/ns/dell:0.1/root'>\n<command>
-        showinterfacesswitchportGigabitEthernet1/3\r\n\r\nCodes:U-Untagged,
-        T-Tagged\r\nx-Dot1xuntagged,X-Dot1xtagged\r\nG-GVRPtagged,M-Trunk\r\n
-        i-Internaluntagged,I-Internaltagged,v-VLTuntagged,V-VLTtagged\r\n\r\n
-        Name:GigabitEthernet1/3\r\n802.1QTagged:Hybrid\r\nVlanmembership:\r\n
-        QVlans\r\nU1512\r\n T1511 \r\n\r\n NativeVlanId:1512 .\r\n\r\n\r\n\r\n
+        u"<outputxmlns='http://www.dell.com/ns/dell:0.1/root'>\n
+        <command>show interfaces switchport GigabitEthernet1/3\r\n\r\n
+        Codes: U-Untagged T-Tagged\r\n x-Dot1x untagged,X-Dot1xtagged\r\n
+        G-GVRP tagged,M-Trunk\r\n i-Internal untagged, I-Internaltagged,
+        v-VLTuntagged, V-VLTtagged\r\n\r\n Name:GigabitEthernet1/3\r\n 802.1Q
+        Tagged:Hybrid\r\n Vlan membership:\r\n Q Vlans\r\n U 1512 \r\n T 1511
+        \r\n\r\n Native Vlan Id: 1512.\r\n\r\n\r\n\r\n
         MOC-Dell-S3048-ON#</command>\n</output>\n"
         """
 
@@ -263,7 +264,7 @@ class DellNOS9(Switch, SwitchSession):
         """
 
         url = self._construct_url(interface=interface)
-        interface = self._convert_interface(self.interface_type) + \
+        interface = self._convert_interface_type(self.interface_type) + \
             interface.replace('/', '-')
         payload = '<interface><name>%s</name><portmode><hybrid>false' \
                   '</hybrid></portmode><shutdown>true</shutdown>' \
@@ -278,7 +279,7 @@ class DellNOS9(Switch, SwitchSession):
         """
 
         url = self._construct_url(interface=interface)
-        interface = self._convert_interface(self.interface_type) + \
+        interface = self._convert_interface_type(self.interface_type) + \
             interface.replace('/', '-')
         payload = '<interface><name>%s</name><portmode><hybrid>true' \
                   '</hybrid></portmode><switchport></switchport>' \
@@ -294,8 +295,9 @@ class DellNOS9(Switch, SwitchSession):
         response = self._make_request('GET', url)
         root = etree.fromstring(response.text)
         shutdown = root.find(self._construct_tag('shutdown')).text
-        # is error handling needed here?
-        return (shutdown == 'false')
+
+        assert shutdown in ('false', 'true'), "unexpected state of switchport"
+        return shutdown == 'false'
 
     # HELPER METHODS *********************************************
 
@@ -324,7 +326,7 @@ class DellNOS9(Switch, SwitchSession):
             # if `interface` refers to port name
             # the urls have dashes instead of slashes in interface names
             interface = interface.replace('/', '-')
-            interface_type = self._convert_interface(self.interface_type)
+            interface_type = self._convert_interface_type(self.interface_type)
         else:
             # interface refers to `vlan`
             interface_type = 'vlan-'
@@ -333,8 +335,8 @@ class DellNOS9(Switch, SwitchSession):
                        'interface/', interface_type, interface])
 
     @staticmethod
-    def _convert_interface(interface_type):
-        """ Convert the interface name from switch CLI form to what the API
+    def _convert_interface_type(interface_type):
+        """ Convert the interface type from switch CLI form to what the API
         server understands.
 
         Args:
@@ -367,11 +369,8 @@ class DellNOS9(Switch, SwitchSession):
         """ Construct the xml tag by prepending the dell tag prefix. """
         return '{http://www.dell.com/ns/dell:0.1/root}%s' % name
 
-    def _make_request(self, method, url, data=None,
-                      acceptable_error_codes=()):
+    def _make_request(self, method, url, data=None):
         r = requests.request(method, url, data=data, auth=self._auth)
-        if r.status_code >= 400 and \
-           r.status_code not in acceptable_error_codes:
-            print r.text
+        if r.status_code >= 400:
             logger.error('Bad Request to switch. Response: %s', r.text)
         return r
