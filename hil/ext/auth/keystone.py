@@ -38,7 +38,7 @@ class KeystoneAuthBackend(auth.AuthBackend):
             return True
 
         project_id = request.environ['HTTP_X_PROJECT_ID']
-        if Project.query.filter_by(label=project_id).count() == 0:
+        if Project.query.filter_by(label=project_id).first() is None:
             logger.info("Successful authentication by Openstack project %r, "
                         "but this project is not registered with HIL",
                         project_id)

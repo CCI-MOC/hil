@@ -53,7 +53,7 @@ def test_populate_dirty_db():
     from hil.ext.network_allocators.vlan_pool import Vlan
     with app.app_context():
         # flag vlan 100 as in-use, just so the db isn't quite pristine.
-        vlan100 = Vlan.query.filter_by(vlan_no=100)
+        vlan100 = Vlan.query.filter_by(vlan_no=100).one()
         vlan100.available = False
         db.session.commit()
     # Okay, now try re-initializing:

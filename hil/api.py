@@ -379,7 +379,7 @@ def node_connect_network(node, nic, network, channel=None):
         return model.NetworkAttachment.query.filter(
             model.NetworkAttachment.nic == nic,
             query,
-        ).count() != 0
+        ).first() is not None
 
     auth_backend = get_auth_backend()
 
@@ -454,7 +454,7 @@ def node_detach_network(node, nic, network):
         raise errors.BlockedError(
             "A networking operation is already active on the nic.")
     attachment = model.NetworkAttachment.query \
-        .filter_by(nic=nic, network=network).first()
+        .filter_by(nic=nic, network=network).one_or_none()
     if attachment is None:
         raise errors.BadArgumentError(
             "The network is not attached to the nic.")

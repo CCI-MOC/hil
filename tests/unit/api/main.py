@@ -456,7 +456,7 @@ class TestRegisterCorrectObm:
                   "password": "tapeworm"})
 
         node_obj = model.Node.query.filter_by(label="compute-01")\
-                        .join(model.Obm).join(hil.ext.obm.ipmi.Ipmi).first()
+                        .join(model.Obm).join(hil.ext.obm.ipmi.Ipmi).one()
 
         # Comes from table node
         assert str(node_obj.label) == 'compute-01'
@@ -474,7 +474,7 @@ class TestRegisterCorrectObm:
                   "password": "tapeworm"})
 
         node_obj = model.Node.query.filter_by(label="compute-01")\
-                        .join(model.Obm).join(hil.ext.obm.mock.MockObm).first()  # noqa
+                        .join(model.Obm).join(hil.ext.obm.mock.MockObm).one()  # noqa
 
         # Comes from table node
         assert str(node_obj.label) == 'compute-01'
