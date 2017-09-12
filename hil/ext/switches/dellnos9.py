@@ -212,8 +212,7 @@ class DellNOS9(Switch, SwitchSession):
             interface: interface to remove the vlan from
             vlan: vlan to remove
         """
-        command = 'interface vlan ' + vlan + '\r\n no tagged ' + \
-            self.interface_type + ' ' + interface
+        command = self._remove_vlan_command(interface, vlan)
         self._execute(interface, CONFIG, command)
 
     def _remove_all_vlans_from_trunk(self, interface):
@@ -221,14 +220,19 @@ class DellNOS9(Switch, SwitchSession):
 
         Args:
             interface: interface to remove the vlan from
-
-        this is kind slow for a number of reasons
-        1. we are using the REST API CLI
-        2. we have to go to every vlan and then remove our port from it;
-           that makes multiple calls.
         """
+        command = ''
         for vlan in self._get_vlans(interface):
-            self._remove_vlan_from_trunk(interface, vlan[1])
+            command += self._remove_vlan_command(interface, vlan[1]) + '\r\n '
+        # execute command only if there are some vlans to remove, otherwise
+        # the switch complains
+        if command is not '':
+            self._execute(interface, CONFIG, command)
+
+    def _remove_vlan_command(self, interface, vlan):
+        """Returns command to remove <vlan> from <interface>"""
+        return 'interface vlan ' + vlan + '\r\n no tagged ' + \
+            self.interface_type + ' ' + interface
 
     def _set_native_vlan(self, interface, vlan):
         """ Set the native vlan of an interface.
