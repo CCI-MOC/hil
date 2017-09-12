@@ -183,10 +183,10 @@ Like the powerconnect driver, the Nexus driver accepts port names of the
 same format accepted by the underlying switch, in this case (e.g.)
 ``ethernet 1/42``. The same concerns about validation apply.
 
-### Brocade driver                                                                                          
-                                                                                                           
-#### switch_register                                                                                        
-                                                                                                           
+### Brocade driver
+
+#### switch_register
+
 The ``type`` field for the Brocade NOS driver has the value:
 
     http://schema.massopencloud.org/haas/v0/switches/brocade
@@ -212,6 +212,40 @@ The body of the api call request will look like:
 
 The brocade driver accepts interface names the same way they would be accepted
 in the console of the switch, ex. ``101/0/10``.
+
+### Dell Networking OS 9 driver
+
+#### switch_register
+
+The ``type`` field for the Dell Networking OS 9 driver has the value:
+
+    http://schema.massopencloud.org/haas/v0/switches/dellnos9
+
+In addition to ``type``, you need to supply ``username``, ``password``,
+``hostname``, and ``interface_type``. ``interface_type`` is of the form
+"GigabitEthernet", "TenGigabitEthernet". Please look at the switch guide for
+more valid interface types.
+
+The API server either runs on port 8008 (HTTP) or 8888 (HTTPS), so be sure to
+specify that in the ``hostname``.
+
+If you have multiple types of ports on the same switch, register the switch
+multiple times with different parameters for ``interface_type``.
+
+The body of the api call request will look like:
+
+    {
+        "type": "http://schema.massopencloud.org/haas/v0/switches/dellnos9",
+        "username": "MyUser",
+        "password": "secret",
+        "hostname": "switch.example.com:8008",
+        "interface_type": "GigabitEthernet"
+    }
+
+#### switch_register_port
+
+It accepts interface names the same way they would be accepted in the console
+of the switch, ex. ``1/3``.
 
 ### Using multiple switches
 
