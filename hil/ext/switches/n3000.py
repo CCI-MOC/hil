@@ -28,7 +28,6 @@ from hil.migrations import paths
 from hil.ext.switches import _console
 from hil.ext.switches._dell_base import _BaseSession
 from os.path import dirname, join
-from hil.migrations import paths
 from hil.errors import BadArgumentError
 from hil.model import BigIntegerType
 

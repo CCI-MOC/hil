@@ -16,8 +16,8 @@ def mock_extensions():
     Just used for the side-effect of registering the subclasses.
     """
     # pylint: disable=unused-variable
-    from hil.ext.obm import mock
-    from hil.ext.switches import mock
+    import hil.ext.obm.mock
+    import hil.ext.switches.mock
 
 
 class Food(object):
