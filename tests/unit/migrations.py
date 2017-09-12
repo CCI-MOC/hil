@@ -16,13 +16,14 @@ The general approach is as follows:
 
 """
 import pytest
-from hil import api, server
+from hil import api, model, server
 from hil.test_common import config_testsuite, config_merge, initial_db, \
     fail_on_log_warnings
 from hil.config import cfg, load_extensions
 from hil.model import db, init_db
 from hil.flaskapp import app
 from hil.migrations import create_db
+from hil.rest import local
 from flask_migrate import upgrade
 from os import path
 import re
@@ -70,8 +71,6 @@ def create_pending_actions_db():
 
 def create_bigint_db():
     """Create database objects used in 'after-PK-bigint.sql'"""
-    from hil import model
-    from hil.model import db
     from hil.ext.switches.n3000 import DellN3000
     from hil.ext.switches.dell import PowerConnect55xx
     from hil.ext.switches.brocade import Brocade
@@ -80,7 +79,6 @@ def create_bigint_db():
     from hil.ext.obm.ipmi import Ipmi
     from hil.ext.obm.mock import MockObm
     from hil.ext.auth.database import User
-    from hil.rest import local
     from hil.ext.auth import database as dbauth
     with app.app_context():
         db.session.add(DellN3000(label='sw-n3000',
