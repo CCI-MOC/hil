@@ -200,6 +200,7 @@ The result must contain the following fields:
 * "owner", the name of the project which created the network, or
   "admin", if it was created by an administrator.
 * "access", a list of projects that have access to the network or null if the network is public
+* "node, nic": node and nic connected to network
 
 Response body (on success):
 
@@ -208,6 +209,7 @@ Response body (on success):
         "channels": <chanel-id-list>,
         "owner": <project or "admin">,
         "access": <project(s) with access to the network/null>
+        "node, nic": <list of node, nic>
     }
 
 Authorization requirements:

@@ -114,6 +114,15 @@ def switchinit():
     api.switch_register_port('sw0', PORTS[2])
 
 
+def new_node(name):
+    """Create a mock node named ``name``"""
+    api.node_register(name, obm={
+              "type": OBM_TYPE_MOCK,
+              "host": "ipmihost",
+              "user": "root",
+              "password": "tapeworm"})
+
+
 default_fixtures = ['fail_on_log_warnings',
                     'configure',
                     'fresh_database',
@@ -2436,7 +2445,8 @@ class TestShowNetwork:
             'name': 'spiderwebs',
             'owner': 'anvil-nextgen',
             'access': ['anvil-nextgen'],
-            "channels": ["vlan/native", "vlan/40"]
+            "channels": ["vlan/native", "vlan/40"],
+            'node, nic': [],
         }
 
     def test_show_network_public(self):
@@ -2452,6 +2462,7 @@ class TestShowNetwork:
             'owner': 'admin',
             'access': None,
             'channels': ['vlan/native', 'vlan/432'],
+            'node, nic': [],
         }
 
     def test_show_network_provider(self):
@@ -2468,6 +2479,26 @@ class TestShowNetwork:
             'owner': 'admin',
             'access': ['anvil-nextgen'],
             'channels': ['vlan/native', 'vlan/451'],
+            'node, nic': []
+        }
+
+    def test_show_network_with_nodes(self, switchinit):
+        """test the output when a node is connected to a network"""
+        api.project_create('anvil-nextgen')
+        network_create_simple('spiderwebs', 'anvil-nextgen')
+        new_node('node-london')
+        api.project_connect_node('anvil-nextgen', 'node-london')
+        api.node_register_nic('node-london', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.port_connect_nic('sw0', PORTS[2], 'node-london', 'eth0')
+        api.node_connect_network('node-london', 'eth0', 'spiderwebs')
+        deferred.apply_networking()
+        result = json.loads(api.show_network('spiderwebs'))
+        assert result == {
+            'name': 'spiderwebs',
+            'owner': 'anvil-nextgen',
+            'access': ['anvil-nextgen'],
+            "channels": ["vlan/native", "vlan/40"],
+            'node, nic': [['node-london', 'eth0']],
         }
 
 

@@ -380,7 +380,6 @@ def node_connect_network(node, nic, network, channel=None):
             model.NetworkAttachment.nic == nic,
             query,
         ).first() is not None
-
     auth_backend = get_auth_backend()
 
     node = _must_find(model.Node, node)
@@ -894,6 +893,9 @@ def show_network(network):
         result['access'] = [p.label for p in network.access]
     else:
         result['access'] = None
+
+    result['node, nic'] = [[n.nic.owner.label, n.nic.label]
+                           for n in network.attachments]
 
     return json.dumps(result, sort_keys=True)
 
