@@ -65,14 +65,14 @@ class DellNOS9(Switch, SwitchSession):
     def validate_port_name(port):
         """Valid port names for this switch are of the form 1/0/1 or 1/2"""
 
-        val = re.compile(r'^\d+/\d+(/\d+)?$')
-        if not val.match(port):
+        if not re.match(r'^\d+/\d+(/\d+)?$', port):
             raise BadArgumentError("Invalid port name. Valid port names for "
-                                   "this switch are of the from 1/0/1 or 1/2")
+                                   "this switch are of the form 1/0/1 or 1/2")
         return
 
     def disconnect(self):
-        pass
+        """Since the switch is not connection oriented, we don't need to
+        establish a session or disconnect from it."""
 
     def modify_port(self, port, channel, new_network):
         (port,) = filter(lambda p: p.label == port, self.ports)
@@ -128,18 +128,12 @@ class DellNOS9(Switch, SwitchSession):
         # worked reliably in the first place) and then find our interface there
         # which is not feasible.
 
-        response = self._get_port_info(interface).splitlines()
-
-        try:
-            index = response.index("Vlanmembership:") + 3
-        except ValueError:
-            # happens when our response has almost no info on a switchport
-            # because it's off. the response lacks the word "vlanmembership"
+        response = self._get_port_info(interface)
+        # finds a comma separated list of integers starting with "T"
+        match = re.search(re.compile(r'T(\d+)((,\d+)?)*'), response)
+        if match is None:
             return []
-        if response[index] == '':
-            # a port with no tagged interface has no section with "T"
-            return []
-        vlan_list = response[index].replace('T', '').split(',')
+        vlan_list = match.group().replace('T', '').split(',')
         return [('vlan/%s' % x, x) for x in vlan_list]
 
     def _get_native_vlan(self, interface):
@@ -153,11 +147,9 @@ class DellNOS9(Switch, SwitchSession):
         Similar to _get_vlans()
         """
         response = self._get_port_info(interface)
-        if response.find('NativeVlanId:') == -1:
-            return None
-        begin = response.find('NativeVlanId:') + len('NativeVlanId:')
-        end = response.find('.', begin)
-        vlan = response[begin:end]
+        match = re.search(re.compile(r'NativeVlanId:(\d+)\.'), response)
+        vlan = re.search(re.compile(r'(\d+)'), match.group())
+        vlan = vlan.group()
 
         # FIXME: At this point, we are unable to remove the default native vlan
         # The switchport defaults to native vlan 1. Our deployment tests make
@@ -255,10 +247,13 @@ class DellNOS9(Switch, SwitchSession):
         Args:
             interface: interface to remove the native vlan from.vlan
         """
-        vlan = self._get_native_vlan(interface)[1]
-        command = 'interface vlan ' + vlan + '\r\n no untagged ' + \
-            self.interface_type + ' ' + interface
-        self._execute(interface, CONFIG, command)
+        try:
+            vlan = self._get_native_vlan(interface)[1]
+            command = 'interface vlan ' + vlan + '\r\n no untagged ' + \
+                self.interface_type + ' ' + interface
+            self._execute(interface, CONFIG, command)
+        except TypeError:
+            logger.error('No native vlan to remove')
 
     def _port_shutdown(self, interface):
         """ Shuts down <interface>
@@ -325,13 +320,13 @@ class DellNOS9(Switch, SwitchSession):
         if interface is None:
             return '%s/api/running/dell/_operations/cli' % self.hostname
 
-        val = re.compile(r'^\d+/\d+(/\d+)?$')
-        if val.match(interface):
+        try:
+            self.validate_port_name(interface)
             # if `interface` refers to port name
             # the urls have dashes instead of slashes in interface names
             interface = interface.replace('/', '-')
             interface_type = self._convert_interface_type(self.interface_type)
-        else:
+        except BadArgumentError:
             # interface refers to `vlan`
             interface_type = 'vlan-'
 

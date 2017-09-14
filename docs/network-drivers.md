@@ -226,8 +226,8 @@ In addition to ``type``, you need to supply ``username``, ``password``,
 "GigabitEthernet", "TenGigabitEthernet". Please look at the switch guide for
 more valid interface types.
 
-The API server either runs on port 8008 (HTTP) or 8888 (HTTPS), so be sure to
-specify that in the ``hostname``.
+The switch's API server either runs on port 8008 (HTTP) or 8888 (HTTPS), so be
+sure to specify that in the ``hostname``.
 
 If you have multiple types of ports on the same switch, register the switch
 multiple times with different parameters for ``interface_type``.
