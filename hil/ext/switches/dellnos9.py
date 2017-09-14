@@ -130,7 +130,7 @@ class DellNOS9(Switch, SwitchSession):
 
         response = self._get_port_info(interface)
         # finds a comma separated list of integers starting with "T"
-        match = re.search(re.compile(r'T(\d+)((,\d+)?)*'), response)
+        match = re.search(r'T(\d+)((,\d+)?)*', response)
         if match is None:
             return []
         vlan_list = match.group().replace('T', '').split(',')
@@ -147,9 +147,12 @@ class DellNOS9(Switch, SwitchSession):
         Similar to _get_vlans()
         """
         response = self._get_port_info(interface)
-        match = re.search(re.compile(r'NativeVlanId:(\d+)\.'), response)
-        vlan = re.search(re.compile(r'(\d+)'), match.group())
-        vlan = vlan.group()
+        match = re.search(r'NativeVlanId:(\d+)\.', response)
+        if match is not None:
+            vlan = match.group(1)
+        else:
+            logger.error('Unexpected: No native vlan found')
+            return
 
         # FIXME: At this point, we are unable to remove the default native vlan
         # The switchport defaults to native vlan 1. Our deployment tests make
