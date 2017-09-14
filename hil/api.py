@@ -894,8 +894,15 @@ def show_network(network):
     else:
         result['access'] = None
 
-    result['node, nic'] = [[n.nic.owner.label, n.nic.label]
-                           for n in network.attachments]
+    if network.owner is None:
+        x = {}
+        for n in network.attachments:
+            if auth_backend.have_project_access(n.nic.owner.project):
+                x.update({n.nic.owner.label: n.nic.label})
+        result['connected-nodes'] = x
+    else:
+        result['connected-nodes'] = {n.nic.owner.label: n.nic.label
+                                     for n in network.attachments}
 
     return json.dumps(result, sort_keys=True)
 
