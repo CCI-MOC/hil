@@ -894,15 +894,16 @@ def show_network(network):
     else:
         result['access'] = None
 
-    if network.owner is None:
-        x = {}
-        for n in network.attachments:
-            if auth_backend.have_project_access(n.nic.owner.project):
-                x.update({n.nic.owner.label: n.nic.label})
-        result['connected-nodes'] = x
-    else:
-        result['connected-nodes'] = {n.nic.owner.label: n.nic.label
-                                     for n in network.attachments}
+    x = {}
+    for n in network.attachments:
+        if auth_backend.have_project_access(n.nic.owner.project):
+            node, nic = n.nic.owner.label, n.nic.label
+            # build a dictonary mapping a node to list of nics
+            if node not in x:
+                x[node] = [nic]
+            else:
+                x[node].append(nic)
+    result['connected-nodes'] = x
 
     return json.dumps(result, sort_keys=True)
 
