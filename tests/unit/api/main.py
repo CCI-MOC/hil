@@ -2446,7 +2446,7 @@ class TestShowNetwork:
             'owner': 'anvil-nextgen',
             'access': ['anvil-nextgen'],
             "channels": ["vlan/native", "vlan/40"],
-            'node, nic': [],
+            'connected-nodes': {},
         }
 
     def test_show_network_public(self):
@@ -2462,7 +2462,7 @@ class TestShowNetwork:
             'owner': 'admin',
             'access': None,
             'channels': ['vlan/native', 'vlan/432'],
-            'node, nic': [],
+            'connected-nodes': {},
         }
 
     def test_show_network_provider(self):
@@ -2479,7 +2479,7 @@ class TestShowNetwork:
             'owner': 'admin',
             'access': ['anvil-nextgen'],
             'channels': ['vlan/native', 'vlan/451'],
-            'node, nic': []
+            'connected-nodes': {},
         }
 
     def test_show_network_with_nodes(self, switchinit):
@@ -2498,7 +2498,7 @@ class TestShowNetwork:
             'owner': 'anvil-nextgen',
             'access': ['anvil-nextgen'],
             "channels": ["vlan/native", "vlan/40"],
-            'node, nic': [['node-london', 'eth0']],
+            'connected-nodes': {'node-london': ['eth0']},
         }
 
 
