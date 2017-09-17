@@ -598,7 +598,7 @@ def switch_register(switch, subtype, *args):
                              ' requires exactly 3 arguments\n'
                              '<hostname> <username> <password>\n')
             return
-    elif subtype == "brocade":
+    elif subtype == "brocade" or "dellnos9":
         if len(args) == 4:
             switchinfo = {"type": switch_api + subtype, "hostname": args[0],
                           "username": args[1], "password": args[2],
