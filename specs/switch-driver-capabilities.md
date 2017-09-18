@@ -18,28 +18,31 @@ We want to expose switch driver capabilities. Capabilities include:
 * Every switch driver will have a list called `capabilities` in the class. So it would look like
 `capabilities = ["require-native-network", "per-port-jumbo-frames"]`
 
-* and then there'll be a method  `get_capabilities()` that returns a boolean if a capability exists or not by checking it in the list.
+* A new column (text) will be added to the switch table. This will store list of
+capabilities encoded as JSON. This could probably default to all capabilities as
+specified in the Class.
+
+* A method called `get_capabilities()` would return all capabilities for a switch
+
+* and then there'll be a method  `have_capability()` that returns a boolean if a capability exists or not by checking it in the list.
 
 * an API that needs to test this, can call that method `switch.get_capabilities('require-native-network`) to ensure that the switch supports that method, and then proceed with the original request or error out.
 
-* `show_node()` can be updated to show the capabilities they support.
+* `show_switch()` will be updated to show switch capabilities.
+
+* `show_node()` can be updated to show the capabilities supported by a nic. This
+will be useful for end users to pick nodes based on capabilities.
+
+*
 
 # Alternative Solutions
 -----------------------
 
-@henn proposed that we store the capabilites in a database and those will be mapped
-to switch objects. That way we can control indiviual switches instead of a whole
-class of switches.
-
-Rest of the steps would remain the same.
 
 # Arch Impact
 -----------------
 
-Are there any new architectural assumptions we are now making?
-I am making an assumption that we would treat all switches that belong to a class
-the same. That is, all brocade switches would have those capabilities as specified
-in the Class.
+None
 
 # Security
 ----------
