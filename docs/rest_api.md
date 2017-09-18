@@ -200,7 +200,7 @@ The result must contain the following fields:
 * "owner", the name of the project which created the network, or
   "admin", if it was created by an administrator.
 * "access", a list of projects that have access to the network or null if the network is public
-* "node, nic": node and nic connected to network
+* "connected-nics": nodes and list of nics connected to network
 
 Response body (on success):
 
@@ -209,7 +209,7 @@ Response body (on success):
         "channels": <chanel-id-list>,
         "owner": <project or "admin">,
         "access": <project(s) with access to the network/null>
-        "node, nic": <list of node, nic>
+        "connected-nodes": {"<node>": [<list of nics connected to network]}
     }
 
 Authorization requirements:
@@ -217,6 +217,8 @@ Authorization requirements:
 * If the network is public, no special access is required.
 * Otherwise, access to a project in the "access" list or
 administrative access is required.
+* Admin access to view all connected-nodes is required; otherwise only the
+nodes that a non-admin user has access to will be shown.
 
 #### Channel Formats
 

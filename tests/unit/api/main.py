@@ -61,6 +61,7 @@ from hil.test_common import config_testsuite, config_merge, fresh_database, \
     fail_on_log_warnings, additional_db, with_request_context, \
     network_create_simple, server_init
 from hil.network_allocator import get_network_allocator
+from hil.auth import get_auth_backend
 import pytest
 import json
 import uuid
@@ -80,7 +81,8 @@ def configure():
             'require_authentication': 'True',
         },
         'extensions': {
-            'hil.ext.auth.null': '',
+            'hil.ext.auth.null': None,
+            'hil.ext.auth.mock': '',
             'hil.ext.switches.mock': '',
             'hil.ext.obm.ipmi': '',
             'hil.ext.obm.mock': '',
@@ -101,6 +103,12 @@ server_init = pytest.fixture(server_init)
 
 
 with_request_context = pytest.yield_fixture(with_request_context)
+
+
+@pytest.fixture
+def set_admin_auth():
+    """Set admin auth for all calls"""
+    get_auth_backend().set_admin(True)
 
 
 @pytest.fixture
@@ -127,7 +135,8 @@ default_fixtures = ['fail_on_log_warnings',
                     'configure',
                     'fresh_database',
                     'server_init',
-                    'with_request_context']
+                    'with_request_context',
+                    'set_admin_auth']
 
 pytestmark = pytest.mark.usefixtures(*default_fixtures)
 
@@ -2482,23 +2491,52 @@ class TestShowNetwork:
             'connected-nodes': {},
         }
 
-    def test_show_network_with_nodes(self, switchinit):
-        """test the output when a node is connected to a network"""
-        api.project_create('anvil-nextgen')
-        network_create_simple('spiderwebs', 'anvil-nextgen')
+    def test_show_network_public_with_nodes(self, switchinit):
+        """test the output when a node is connected to a public network"""
+        auth = get_auth_backend()
+        api.network_create('spiderwebs', 'admin', '', '')
+
         new_node('node-london')
-        api.project_connect_node('anvil-nextgen', 'node-london')
         api.node_register_nic('node-london', 'eth0', 'DE:AD:BE:EF:20:14')
         api.port_connect_nic('sw0', PORTS[2], 'node-london', 'eth0')
+
+        api.project_create('anvil-nextgen')
+        api.project_connect_node('anvil-nextgen', 'node-london')
+        api.network_grant_project_access('anvil-nextgen', 'spiderwebs')
+
         api.node_connect_network('node-london', 'eth0', 'spiderwebs')
         deferred.apply_networking()
         result = json.loads(api.show_network('spiderwebs'))
+
         assert result == {
             'name': 'spiderwebs',
-            'owner': 'anvil-nextgen',
+            'owner': 'admin',
             'access': ['anvil-nextgen'],
             "channels": ["vlan/native", "vlan/40"],
             'connected-nodes': {'node-london': ['eth0']},
+        }
+
+        # create a new project with access to the public network, but its nodes
+        # aren't connected to this network.
+
+        api.project_create('pineapple')
+        project = api._must_find(model.Project, 'pineapple')
+        api.network_grant_project_access('pineapple', 'spiderwebs')
+
+        # switch to a different user and project
+        auth.set_user('spongebob')
+        auth.set_project(project)
+        auth.set_admin(False)
+
+        result = json.loads(api.show_network('spiderwebs'))
+
+        # check that nodes not owned by this project aren't visible in output.
+        assert result == {
+            'name': 'spiderwebs',
+            'owner': 'admin',
+            'access': ['anvil-nextgen', 'pineapple'],
+            "channels": ["vlan/native", "vlan/40"],
+            'connected-nodes': {},
         }
 
 
@@ -2575,7 +2613,7 @@ class TestExtensions:
         """Test the list_active_extensions api call."""
         result = json.loads(api.list_active_extensions())
         assert result == [
-            'hil.ext.auth.null',
+            'hil.ext.auth.mock',
             'hil.ext.network_allocators.vlan_pool',
             'hil.ext.obm.ipmi',
             'hil.ext.obm.mock',
