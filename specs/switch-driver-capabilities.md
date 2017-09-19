@@ -4,7 +4,7 @@
 
 [Issue 410](https://github.com/CCI-MOC/hil/issues/410)
 
-We want to expose switch driver capabilities. Capabilities include:
+We want to expose switch driver capabilities. Capabilities could include:
 
 - Jumbo frames are per-switch on our Dell switches and per-port on our Ciscos (#755)
 -  QoS (#384)
