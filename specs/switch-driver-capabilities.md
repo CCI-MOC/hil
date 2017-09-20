@@ -15,25 +15,22 @@ We want to expose switch driver capabilities. Capabilities could include:
 # Solution
 -----------
 
-* Every switch driver will have a list called `capabilities` in the class. So it would look like
-`capabilities = ["require-native-network", "per-port-jumbo-frames"]`
+* All switch drivers would have a method called get_capabilities.
 
-* A new column (text) will be added to the switch table. This will store list of
-capabilities encoded as JSON. This could probably default to all capabilities as
-specified in the Class.
+* This method would return a list with all capabilities supported by the switch.
+It's implementation could be flexible; it could simply return a hardcoded list, or generate it from some database.
 
-* A method called `get_capabilities()` would return all capabilities for a switch
-
-* and then there'll be a method  `have_capability()` that returns a boolean if a capability exists or not by checking it in the list.
-
-* an API that needs to test this, can call that method `switch.get_capabilities('require-native-network`) to ensure that the switch supports that method, and then proceed with the original request or error out.
+* an API that needs to check for capabilities, can call `get_capabilties()` and then
+check if it exists in the list or not.
 
 * `show_switch()` will be updated to show switch capabilities.
 
 * `show_node()` can be updated to show the capabilities supported by a nic. This
-will be useful for end users to pick nodes based on capabilities.
+will be useful for end users to pick nodes based on capabilities. Admins would
+see all capabilities while non-admin users would only see certain limited capabilities.
+What to show and what not show under this can be decided as we add support for
+a new switch capability.
 
-*
 
 # Alternative Solutions
 -----------------------
