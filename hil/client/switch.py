@@ -65,3 +65,8 @@ class Port(ClientBase):
         """Show what's connected to <port>"""
         url = self.object_url('switch', switch, 'port', port)
         return self.check_response(self.httpClient.request("GET", url))
+
+    def port_revert(self, switch, port):
+        """removes all vlans from a switch port"""
+        url = self.object_url('switch', switch, 'port', port, 'revert')
+        return self.check_response(self.httpClient.request("POST", url))
