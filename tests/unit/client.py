@@ -577,6 +577,21 @@ class Test_port:
         with pytest.raises(FailedAPICallException):
             C.port.show('unknown-switch', 'unknown-port')
 
+    def test_port_revert(self):
+        """Revert port should run without error and remove all networks"""
+        C.node.connect_network('node-01', 'eth0', 'net-01', 'vlan/native')
+        deferred.apply_networking()
+        assert C.port.show('mock-01', 'gi1/0/1') == {
+                'node': 'node-01',
+                'nic': 'eth0',
+                'networks': {'vlan/native': 'net-01'}}
+        assert C.port.port_revert('mock-01', 'gi1/0/1') is None
+        deferred.apply_networking()
+        assert C.port.show('mock-01', 'gi1/0/1') == {
+                'node': 'node-01',
+                'nic': 'eth0',
+                'networks': {}}
+
 
 class Test_user:
     """ Tests user related client calls."""
