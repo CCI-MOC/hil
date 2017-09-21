@@ -29,7 +29,7 @@ hil.ext.obm.mock =
 hil.ext.network_allocators.null =
 hil.ext.auth.null =
 # Depending on what you're doing, you may want to change this to a
-# diffefrent authentication backend:
+# different authentication backend:
 # hil.ext.auth.database =
 # hil.ext.auth.keystone =
 #
