@@ -18,17 +18,20 @@ We want to expose switch driver capabilities. Capabilities could include:
 * All switch drivers would have a method called get_capabilities.
 
 * This method would return a list with all capabilities supported by the switch.
-It's implementation could be flexible; it could simply return a hardcoded list, or generate it from some database.
+Its implementation could be flexible; it could simply return a hardcoded list, or generate it from some database.
 
-* an API that needs to check for capabilities, can call `get_capabilties()` and then
-check if it exists in the list or not.
+* The superclass will have a method `has_capbility(self, name)` that would return
+`name in self.get_capabilities()`. Drivers can overwrite if need be.
+
+* an API that needs to check for capabilities will call `has_capability()` and
+proceed based on the response.
 
 * `show_switch()` will be updated to show switch capabilities.
 
 * `show_node()` can be updated to show the capabilities supported by a nic. This
 will be useful for end users to pick nodes based on capabilities. Admins would
 see all capabilities while non-admin users would only see certain limited capabilities.
-What to show and what not show under this can be decided as we add support for
+What to show and what not to show under this can be decided as we add support for
 a new switch capability.
 
 
