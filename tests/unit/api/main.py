@@ -2491,40 +2491,54 @@ class TestShowNetwork:
             'connected-nodes': {},
         }
 
-    def test_show_network_public_with_nodes(self, switchinit):
-        """test the output when a node is connected to a public network"""
+    def test_show_network_with_nodes(self, switchinit):
+        """test the output when a node is connected to a network"""
         auth = get_auth_backend()
-        api.network_create('spiderwebs', 'admin', '', '')
 
-        new_node('node-london')
-        api.node_register_nic('node-london', 'eth0', 'DE:AD:BE:EF:20:14')
-        api.port_connect_nic('sw0', PORTS[2], 'node-london', 'eth0')
+        # the following is done by an admin user called 'user'.
+        assert auth.get_user() is 'user'
+        assert auth.have_admin() is True
 
+        # register a node
+        new_node('node-anvil')
+        api.node_register_nic('node-anvil', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.port_connect_nic('sw0', PORTS[2], 'node-anvil', 'eth0')
+
+        # create a project and a network owned by it. Also connect a node to it
         api.project_create('anvil-nextgen')
-        api.project_connect_node('anvil-nextgen', 'node-london')
-        api.network_grant_project_access('anvil-nextgen', 'spiderwebs')
+        api.project_connect_node('anvil-nextgen', 'node-anvil')
+        network_create_simple('spiderwebs', 'anvil-nextgen')
 
-        api.node_connect_network('node-london', 'eth0', 'spiderwebs')
+        api.node_connect_network('node-anvil', 'eth0', 'spiderwebs')
         deferred.apply_networking()
         result = json.loads(api.show_network('spiderwebs'))
 
         assert result == {
             'name': 'spiderwebs',
-            'owner': 'admin',
+            'owner': 'anvil-nextgen',
             'access': ['anvil-nextgen'],
             "channels": ["vlan/native", "vlan/40"],
-            'connected-nodes': {'node-london': ['eth0']},
+            'connected-nodes': {'node-anvil': ['eth0']},
         }
 
-        # create a new project with access to the public network, but its nodes
-        # aren't connected to this network.
+        # register another node
+        new_node('node-pineapple')
+        api.node_register_nic('node-pineapple', 'eth0', 'DE:AD:BE:EF:20:14')
+        api.switch_register_port('sw0', PORTS[1])
+        api.port_connect_nic('sw0', PORTS[1], 'node-pineapple', 'eth0')
 
+        # create a new project and give it access to spiderwebs network, and
+        # then connect its node to the network.
         api.project_create('pineapple')
-        project = api._must_find(model.Project, 'pineapple')
         api.network_grant_project_access('pineapple', 'spiderwebs')
+        api.project_connect_node('pineapple', 'node-pineapple')
+
+        api.node_connect_network('node-pineapple', 'eth0', 'spiderwebs')
+        deferred.apply_networking()
 
         # switch to a different user and project
         auth.set_user('spongebob')
+        project = api._must_find(model.Project, 'pineapple')
         auth.set_project(project)
         auth.set_admin(False)
 
@@ -2533,10 +2547,29 @@ class TestShowNetwork:
         # check that nodes not owned by this project aren't visible in output.
         assert result == {
             'name': 'spiderwebs',
-            'owner': 'admin',
+            'owner': 'anvil-nextgen',
             'access': ['anvil-nextgen', 'pineapple'],
             "channels": ["vlan/native", "vlan/40"],
-            'connected-nodes': {},
+            'connected-nodes': {'node-pineapple': ['eth0']},
+        }
+
+        # switch to the network owner and then see the output
+
+        auth.set_user('user')
+        project = api._must_find(model.Project, 'anvil-nextgen')
+        auth.set_project(project)
+        auth.set_admin(False)
+
+        result = json.loads(api.show_network('spiderwebs'))
+
+        # all nodes should be visible now.
+        assert result == {
+            'name': 'spiderwebs',
+            'owner': 'anvil-nextgen',
+            'access': ['anvil-nextgen', 'pineapple'],
+            "channels": ["vlan/native", "vlan/40"],
+            'connected-nodes': {'node-pineapple': ['eth0'],
+                                'node-anvil': ['eth0']},
         }
 
 
