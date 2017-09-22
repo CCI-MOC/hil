@@ -463,7 +463,7 @@ def node_detach_network(node, nic, network):
             "The network is not attached to the nic.")
 
     switch = nic.port.owner
-    switch.ensure_legal_operation(nic, 'detach', None)
+    switch.ensure_legal_operation(nic, 'detach', attachment.channel)
 
     db.session.add(model.NetworkingAction(type='modify_port',
                                           nic=nic,

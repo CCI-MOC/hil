@@ -72,7 +72,7 @@ class DellNOS9(Switch, SwitchSession):
             # checks if it is trying to attach a trunked network, and then in
             # in the db see if nic does not have any networks attached natively
             raise BlockedError("Please attach a native network first")
-        elif channel is None and op_type == 'detach' and \
+        elif channel == 'vlan/native' and op_type == 'detach' and \
                 query.filter(table.channel != 'vlan/native').count() > 0:
             # if it is detaching a network, then check in the database if there
             # are any trunked vlans.
