@@ -67,6 +67,7 @@ def test_ensure_legal_operations():
     # create a project and a network
     api.project_create('anvil-nextgen')
     network_create_simple('hammernet', 'anvil-nextgen')
+    network_create_simple('pineapple', 'anvil-nextgen')
 
     # register a switch of type dellnos9 and add a port to it
     api.switch_register('s3048',
@@ -84,21 +85,34 @@ def test_ensure_legal_operations():
                   "host": "ipmihost",
                   "user": "root",
                   "password": "tapeworm"})
+    api.project_connect_node('anvil-nextgen', 'compute-01')
     api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
     nic = api._must_find(model.Nic, 'eth0')
 
     api.port_connect_nic('s3048', '1/3', 'compute-01', 'eth0')
-    network = api._must_find(model.Network, 'hammernet')
 
-    # connecting a trunked network wihtout having a native should fail
+    # connecting a trunked network wihtout having a native should fail.
+    # call the method directly and test the API too.
     with pytest.raises(BlockedError):
         switch.ensure_legal_operation(nic, 'connect', 'vlan/1212')
 
-    # put a trunked network in the database, and then try to remove native net
+    with pytest.raises(BlockedError):
+        api.node_connect_network('compute-01', 'eth0', 'hammernet', 'vlan/40')
+
+    # put a trunked and native network in the database, and then try to remove
+    # the native network first
     db.session.add(model.NetworkAttachment(
                 nic=nic,
-                network=network,
-                channel='vlan/1212'))
+                network=api._must_find(model.Network, 'hammernet'),
+                channel='vlan/native'))
+
+    db.session.add(model.NetworkAttachment(
+                nic=nic,
+                network=api._must_find(model.Network, 'pineapple'),
+                channel='vlan/40'))
 
     with pytest.raises(BlockedError):
         switch.ensure_legal_operation(nic, 'detach', 'vlan/native')
+
+    with pytest.raises(BlockedError):
+        api.node_detach_network('compute-01', 'eth0', 'hammernet')
