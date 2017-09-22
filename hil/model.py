@@ -246,6 +246,18 @@ class Switch(db.Model):
         and have ``session`` just return ``self``.
         """
 
+    def ensure_legal_operation(self, nic, op_type, channel):
+        """Checks with the switch if the operation is legal before queueing it.
+
+        channel is network channel
+        interface is Port object
+        op_type is type of operation (connect, detach)
+
+        Some drivers don't need this check at all. So the default behaviour is
+        to just return"""
+
+        return
+
 
 class SwitchSession(object):
     """A session object for a switch.
