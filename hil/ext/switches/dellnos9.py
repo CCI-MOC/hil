@@ -63,16 +63,17 @@ class DellNOS9(Switch, SwitchSession):
         return self
 
     def ensure_legal_operation(self, nic, op_type, channel):
+        # get the network attachments for <nic> from the database
         table = model.NetworkAttachment
+        query = db.session.query(table).filter(table.nic_id == nic.id)
+
         if channel != 'vlan/native' and op_type == 'connect' and \
-            db.session.query(table).filter(table.nic_id == nic.id) \
-                .filter(table.channel == 'vlan/native').count() == 0:
+           query.filter(table.channel == 'vlan/native').count() == 0:
             # checks if it is trying to attach a trunked network, and then in
             # in the db see if nic does not have any networks attached natively
             raise BlockedError("Please attach a native network first")
         elif channel is None and op_type == 'detach' and \
-            db.session.query(table).filter(table.nic_id == nic.id) \
-                .filter(table.channel != 'vlan/native').count() > 0:
+                query.filter(table.channel != 'vlan/native').count() > 0:
             # if it is detaching a network, then check in the database if there
             # are any trunked vlans.
             raise BlockedError("Please remove all trunked Vlans"

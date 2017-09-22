@@ -250,7 +250,7 @@ class Switch(db.Model):
         """Checks with the switch if the operation is legal before queueing it.
 
         channel is network channel
-        interface is Port object
+        nic is Nic object
         op_type is type of operation (connect, detach)
 
         Some drivers don't need this check at all. So the default behaviour is
