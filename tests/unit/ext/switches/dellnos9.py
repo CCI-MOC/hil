@@ -1,4 +1,4 @@
-# Copyright 2016 Massachusetts Open Cloud Contributors
+# Copyright 2017 Massachusetts Open Cloud Contributors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the
@@ -11,7 +11,7 @@
 # IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
 # express or implied. See the License for the specific language
 # governing permissions and limitations under the License.
-"""Tests for the brocade switch driver"""
+"""Unit tests for dell switches running Dell Networking OS 9 (with REST API)"""
 
 import pytest
 
@@ -62,7 +62,7 @@ pytestmark = pytest.mark.usefixtures(*default_fixtures)
 
 
 def test_ensure_legal_operations():
-    """qweqweqwe"""
+    """Test to ensure that ensure_legal_operations works as expected"""
 
     # create a project and a network
     api.project_create('anvil-nextgen')
