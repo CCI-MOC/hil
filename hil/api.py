@@ -380,7 +380,6 @@ def node_connect_network(node, nic, network, channel=None):
             model.NetworkAttachment.nic == nic,
             query,
         ).first() is not None
-
     auth_backend = get_auth_backend()
 
     node = _must_find(model.Node, node)
@@ -894,6 +893,18 @@ def show_network(network):
         result['access'] = [p.label for p in network.access]
     else:
         result['access'] = None
+
+    connected_nodes = {}
+    for n in network.attachments:
+        if auth_backend.have_project_access(network.owner) or \
+                auth_backend.have_project_access(n.nic.owner.project):
+            node, nic = n.nic.owner.label, n.nic.label
+            # build a dictonary mapping a node to list of nics
+            if node not in connected_nodes:
+                connected_nodes[node] = [nic]
+            else:
+                connected_nodes[node].append(nic)
+    result['connected-nodes'] = connected_nodes
 
     return json.dumps(result, sort_keys=True)
 

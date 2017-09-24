@@ -691,7 +691,8 @@ class Test_network:
                 u'access': [u'proj-01'],
                 u'channels': [u'vlan/native', u'vlan/1001'],
                 u'name': u'net-01',
-                u'owner': u'proj-01'
+                u'owner': u'proj-01',
+                u'connected-nodes': {},
                 }
 
     def test_network_create(self):
