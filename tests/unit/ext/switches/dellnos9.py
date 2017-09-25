@@ -61,6 +61,30 @@ default_fixtures = ['fail_on_log_warnings',
 pytestmark = pytest.mark.usefixtures(*default_fixtures)
 
 
+def mock_networking_action():
+    """performs the required db operations and clears up the networking action
+    queue, so that we can queue more items to test the api.the
+
+    This is useful because calling deferred.apply_networking would require a
+    real switch
+    """
+    action = db.session.query(model.NetworkingAction) \
+        .order_by(model.NetworkingAction.id).one_or_none()
+
+    if action.new_network is None:
+            db.session.query(model.NetworkAttachment) \
+                .filter_by(nic=action.nic, channel=action.channel)\
+                .delete()
+    else:
+            db.session.add(model.NetworkAttachment(
+                nic=action.nic,
+                network=action.new_network,
+                channel=action.channel))
+
+    db.session.delete(action)
+    db.session.commit()
+
+
 def test_ensure_legal_operations():
     """Test to ensure that ensure_legal_operations works as expected"""
 
@@ -99,20 +123,23 @@ def test_ensure_legal_operations():
     with pytest.raises(BlockedError):
         api.node_connect_network('compute-01', 'eth0', 'hammernet', 'vlan/40')
 
-    # put a trunked and native network in the database, and then try to remove
-    # the native network first
-    db.session.add(model.NetworkAttachment(
-                nic=nic,
-                network=api._must_find(model.Network, 'hammernet'),
-                channel='vlan/native'))
+    # doing these operations in the correct order, that is native network first
+    # and then trunked, should work.
+    api.node_connect_network('compute-01', 'eth0', 'hammernet', 'vlan/native')
+    mock_networking_action()
+    api.node_connect_network('compute-01', 'eth0', 'pineapple', 'vlan/41')
+    mock_networking_action()
 
-    db.session.add(model.NetworkAttachment(
-                nic=nic,
-                network=api._must_find(model.Network, 'pineapple'),
-                channel='vlan/40'))
-
+    # removing these networks in the wrong order should not work.
     with pytest.raises(BlockedError):
         switch.ensure_legal_operation(nic, 'detach', 'vlan/native')
 
     with pytest.raises(BlockedError):
         api.node_detach_network('compute-01', 'eth0', 'hammernet')
+
+    # removing networks in the right order should work
+    api.node_detach_network('compute-01', 'eth0', 'pineapple')
+    mock_networking_action()
+    api.node_detach_network('compute-01', 'eth0', 'hammernet')
+    mock_networking_action()
+    db.session.close()
