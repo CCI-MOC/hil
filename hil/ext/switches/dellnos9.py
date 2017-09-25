@@ -23,8 +23,9 @@ import re
 import requests
 import schema
 
+from hil import model
 from hil.model import db, Switch, SwitchSession
-from hil.errors import BadArgumentError
+from hil.errors import BadArgumentError, BlockedError
 from hil.model import BigIntegerType
 from hil.network_allocator import get_network_allocator
 
@@ -61,6 +62,25 @@ class DellNOS9(Switch, SwitchSession):
     def session(self):
         return self
 
+    def ensure_legal_operation(self, nic, op_type, channel):
+        # get the network attachments for <nic> from the database
+        table = model.NetworkAttachment
+        query = db.session.query(table).filter(table.nic_id == nic.id)
+
+        if channel != 'vlan/native' and op_type == 'connect' and \
+           query.filter(table.channel == 'vlan/native').count() == 0:
+            # checks if it is trying to attach a trunked network, and then in
+            # in the db see if nic does not have any networks attached natively
+            raise BlockedError("Please attach a native network first")
+        elif channel == 'vlan/native' and op_type == 'detach' and \
+                query.filter(table.channel != 'vlan/native').count() > 0:
+            # if it is detaching a network, then check in the database if there
+            # are any trunked vlans.
+            raise BlockedError("Please remove all trunked Vlans"
+                               " before removing the native vlan")
+        else:
+            return
+
     @staticmethod
     def validate_port_name(port):
         """Valid port names for this switch are of the form 1/0/1 or 1/2"""
@@ -81,6 +101,7 @@ class DellNOS9(Switch, SwitchSession):
         if channel == 'vlan/native':
             if new_network is None:
                 self._remove_native_vlan(interface)
+                self._port_shutdown(interface)
             else:
                 self._set_native_vlan(interface, new_network)
         else:
@@ -99,6 +120,7 @@ class DellNOS9(Switch, SwitchSession):
         self._remove_all_vlans_from_trunk(port)
         if self._get_native_vlan(port) is not None:
             self._remove_native_vlan(port)
+        self._port_shutdown(port)
 
     def get_port_networks(self, ports):
         response = {}
@@ -128,6 +150,8 @@ class DellNOS9(Switch, SwitchSession):
         # worked reliably in the first place) and then find our interface there
         # which is not feasible.
 
+        if not self._is_port_on(interface):
+            return []
         response = self._get_port_info(interface)
         # finds a comma separated list of integers starting with "T"
         match = re.search(r'T(\d+)((,\d+)?)*', response)
@@ -146,6 +170,8 @@ class DellNOS9(Switch, SwitchSession):
 
         Similar to _get_vlans()
         """
+        if not self._is_port_on(interface):
+            return None
         response = self._get_port_info(interface)
         match = re.search(r'NativeVlanId:(\d+)\.', response)
         if match is not None:
@@ -179,7 +205,6 @@ class DellNOS9(Switch, SwitchSession):
         \r\n\r\n Native Vlan Id: 1512.\r\n\r\n\r\n\r\n
         MOC-Dell-S3048-ON#</command>\n</output>\n"
         """
-
         command = 'interfaces switchport %s %s' % \
             (self.interface_type, interface)
         response = self._execute(interface, SHOW, command)

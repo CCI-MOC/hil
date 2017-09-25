@@ -419,6 +419,9 @@ def node_connect_network(node, nic, network, channel=None):
         raise errors.BadArgumentError(
             "Channel %r, is not legal for this network." % channel)
 
+    switch = nic.port.owner
+    switch.ensure_legal_operation(nic, 'connect', channel)
+
     db.session.add(model.NetworkingAction(type='modify_port',
                                           nic=nic,
                                           new_network=network,
@@ -457,6 +460,10 @@ def node_detach_network(node, nic, network):
     if attachment is None:
         raise errors.BadArgumentError(
             "The network is not attached to the nic.")
+
+    switch = nic.port.owner
+    switch.ensure_legal_operation(nic, 'detach', attachment.channel)
+
     db.session.add(model.NetworkingAction(type='modify_port',
                                           nic=nic,
                                           channel=attachment.channel,
