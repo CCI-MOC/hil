@@ -229,6 +229,9 @@ more valid interface types.
 The switch's API server either runs on port 8008 (HTTP) or 8888 (HTTPS), so be
 sure to specify that in the ``hostname``.
 
+This switch must have a native VLAN connected first before having any trunked
+VLANs. The switchport is turned on only when a native VLAN is connected.
+
 If you have multiple types of ports on the same switch, register the switch
 multiple times with different parameters for ``interface_type``.
 
@@ -246,6 +249,10 @@ The body of the api call request will look like:
 
 It accepts interface names the same way they would be accepted in the console
 of the switch, ex. ``1/3``.
+
+When a port is registered, ensure that it is turned off (otherwise it might be
+sitting on a default native vlan). HIL will then take care of turning on/off
+the port.
 
 ### Using multiple switches
 
