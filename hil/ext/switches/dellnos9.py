@@ -150,6 +150,8 @@ class DellNOS9(Switch, SwitchSession):
         # worked reliably in the first place) and then find our interface there
         # which is not feasible.
 
+        if not self._is_port_on(interface):
+            return []
         response = self._get_port_info(interface)
         # finds a comma separated list of integers starting with "T"
         match = re.search(r'T(\d+)((,\d+)?)*', response)
@@ -168,6 +170,8 @@ class DellNOS9(Switch, SwitchSession):
 
         Similar to _get_vlans()
         """
+        if not self._is_port_on(interface):
+            return None
         response = self._get_port_info(interface)
         match = re.search(r'NativeVlanId:(\d+)\.', response)
         if match is not None:
@@ -201,8 +205,6 @@ class DellNOS9(Switch, SwitchSession):
         \r\n\r\n Native Vlan Id: 1512.\r\n\r\n\r\n\r\n
         MOC-Dell-S3048-ON#</command>\n</output>\n"
         """
-        if not self._is_port_on(interface):
-            self._port_on(interface)
         command = 'interfaces switchport %s %s' % \
             (self.interface_type, interface)
         response = self._execute(interface, SHOW, command)
