@@ -415,10 +415,15 @@ see the documentation of the OBM driver in question (read `docs/obm-drivers.md`)
 `PUT /node/<node>`
 
 Request Body:
-	{"obm": { "type": <obm-subtype>,
-		<additional sub-type specific values>}
-	 "metadata": {"label_1": "value_1",
-	 	     "label_2": "value_2"} (Optional)
+
+	{
+        "obm": {
+             "type": <obm-subtype>, <additional sub-type specific values>
+            }
+	    "metadata": {
+            "label_1": "value_1",
+	 	    "label_2": "value_2"
+            } (Optional)
 	}
 
 example provided in USING.rst
@@ -479,29 +484,41 @@ Authorization requirements:
 
 `POST /node/<node>/power_cycle`
 
+Request Body:
+
+    {
+        "force": <boolean> (Optional, defaults to False)
+    }
+
 Power cycle the node named `<node>`, and set it's next boot device to
 PXE. If the node is powered off, this turns it on.
 
 Accepts one optional boolean argument that determines whether to soft (default)
 or hard reboot the system.
 
-Request body:
-    {
-    	"force": <boolean> (Optional, defaults to False)
-    }
+Authorization requirements:
+
+* If the owner is a project, access to that project is required.
+* Otherwise, administrative access is required.
 
 #### node_set_bootdev
 
 `PUT /node/<node>/boot_device`
 
-Sets the node's next boot device persistently
-
-The request body consists of JSON with a `bootdev` argument:
-
 Request body:
+
     {
     	"bootdev": <boot device>
     }
+
+The request body consists of JSON with a `bootdev` argument:
+
+Sets the node's next boot device persistently
+
+Authorization requirements:
+
+* If the owner is a project, access to that project is required.
+* Otherwise, administrative access is required.
 
 ##### For IPMI devices
 
