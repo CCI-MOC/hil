@@ -1248,7 +1248,9 @@ def show_headnode(nodename):
     Example:  '{"name": "headnode1",
                 "project": "project1",
                 "hnics": ["hnic1", "hnic2"],
-                "vncport": 5900
+                "vncport": 5900,
+                "uuid": <headnode uuid>, 
+                "base_img": <headnode base_img>
                }'
     """
     headnode = _must_find(model.Headnode, nodename)

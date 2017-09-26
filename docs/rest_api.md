@@ -421,8 +421,8 @@ Request Body:
              "type": <obm-subtype>, <additional sub-type specific values>
             }
 	    "metadata": {
-            "label_1": "value_1",
-	 	    "label_2": "value_2"
+            "label_1": "value_1", 
+            "label_2": "value_2"
             } (Optional)
 	}
 
@@ -984,7 +984,9 @@ Response body:
         "name": <headnode>,
         "project": <projectname>,
         "nics": [<nic1>, <nic2>, ...],
-        "vncport": <port number>
+        "vncport": <port number>,
+        "uuid": <headnode uuid>,
+        "base_img": <headnode base_img>
     }
 
 Authorization requirements:
