@@ -975,6 +975,8 @@ Get information about a headnode. Includes the following fields:
 * "vncport", the vnc port that the headnode VM is listening on; this
     value can be `null` if the VM is powered off or has not been
     created yet.
+* "uuid", UUID for the headnode.
+* "base_img", the os image that the headnode is running.
 
 Response body:
 
@@ -1189,6 +1191,24 @@ Possible errors:
 
 * 404, if the switch and/or port do not exist.
 
+#### list_active_extensions
+
+`GET /active_extensions`
+
+Response Body:
+
+[
+    "hil.ext.switches.mock",
+    "hil.ext.network_allocators.null",
+    ...
+]
+
+List all active extensions.
+
+Authorization requirements:
+
+* Administrative access.
+
 ## API Extensions
 
 API calls provided by specific extensions. They may not exist in all
@@ -1276,24 +1296,6 @@ Request Body:
 }
 
 Remove a user from a project.
-
-Authorization requirements:
-
-* Administrative access.
-
-#### list_active_extensions
-
-`GET /active_extensions`
-
-Response Body:
-
-[
-    "hil.ext.switches.mock",
-    "hil.ext.network_allocators.null",
-    ...
-]
-
-List all active extensions.
 
 Authorization requirements:
 
