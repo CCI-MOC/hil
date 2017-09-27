@@ -100,3 +100,16 @@ class Node(ClientBase):
         """Stop logging console output from <node> and delete the log"""
         url = self.object_url('node', node, 'console')
         return self.check_response(self.httpClient.request('DELETE', url))
+    
+    def metdata_set(self, node_name, label, value):
+        """Set metadata. This is used for saving PCR values based on node's UUID label"""
+        url = self.object_url('node', node_name, 'label', label, 'metadata_set')
+        payload = json.dumps({'value': value})
+        return self.check_response(self.httpClient.request('PUT', url, data=payload))
+
+    def metdata_delete(self, node_name, label):
+        """Delete metadata. Using UUID label, PCRs' value is deleted """
+        url = self.object_url('node', node_name, 'label', label, 'metadata_delete')
+        return self.check_response(self.httpClient.request('DELETE', url))
+
+
