@@ -418,10 +418,10 @@ Request Body:
 
 	{
         "obm": {
-             "type": <obm-subtype>, <additional sub-type specific values>
-            }
-	    "metadata": {
-            "label_1": "value_1", 
+            "type": <obm-subtype>, <additional sub-type specific values>
+            },
+        "metadata": {
+            "label_1": "value_1",
             "label_2": "value_2"
             } (Optional)
 	}
@@ -498,8 +498,7 @@ or hard reboot the system.
 
 Authorization requirements:
 
-* If the owner is a project, access to that project is required.
-* Otherwise, administrative access is required.
+* Access to the project to which `<node>` is assigned (if any) or administrative access.
 
 #### node_set_bootdev
 
@@ -517,8 +516,7 @@ Sets the node's next boot device persistently
 
 Authorization requirements:
 
-* If the owner is a project, access to that project is required.
-* Otherwise, administrative access is required.
+* Access to the project to which `<node>` is assigned (if any) or administrative access.
 
 ##### For IPMI devices
 
