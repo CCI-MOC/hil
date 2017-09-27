@@ -121,9 +121,8 @@ class _Session(_console.Session):
     @staticmethod
     def connect(switch):
         """Connect to the switch."""
-        console = pexpect.spawn('telnet ' + switch.hostname)
-        console.expect('login: ')
-        console.sendline(switch.username)
+        console = pexpect.spawn(
+            'ssh ' +  switch.username + '@' + switch.hostname)
         console.expect('Password: ')
         console.sendline(switch.password)
 
