@@ -257,10 +257,11 @@ Example Response:
         "netA": {
             "network_id": "101",
             "projects": ["qproj-01", qproj-02"]
-            },
+        },
         "netB": {
             "network_id": "102",
-            "projects": None}
+            "projects": None
+        }
     }
 
 Authorization requirements:
@@ -284,17 +285,18 @@ of the attached node and second level keys being:
 * "project", the name of the project which owns the attached node
 
 Example Response:
+
     {
         "node1": {
              "nic": "nic1",
              "channel" "vlan/native",
              "project": "projectA"
-             },
+        },
         "node2": {
              "nic": "nic2",
              "channel": "vlan/235",
              "project": "projectB"
-             }
+        }
     }
 
 Authorization requirements:
@@ -419,11 +421,11 @@ Request Body:
     {
         "obm": {
             "type": <obm-subtype>, <additional sub-type specific values>
-            },
-        "metadata": {
+        },
+        "metadata": { (Optional)
             "label_1": "value_1",
             "label_2": "value_2"
-            } (Optional)
+        }
     }
 
 example provided in USING.rst
