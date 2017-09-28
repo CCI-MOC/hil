@@ -253,6 +253,7 @@ The response must contain the following fields:
 * "projects", a list of projects with access to the network or 'None' if network is public
 
 Example Response:
+
     {
         "netA": {
             "network_id": "101",
