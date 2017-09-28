@@ -415,10 +415,15 @@ see the documentation of the OBM driver in question (read `docs/obm-drivers.md`)
 `PUT /node/<node>`
 
 Request Body:
-	{"obm": { "type": <obm-subtype>,
-		<additional sub-type specific values>}
-	 "metadata": {"label_1": "value_1",
-	 	     "label_2": "value_2"} (Optional)
+
+	{
+        "obm": {
+            "type": <obm-subtype>, <additional sub-type specific values>
+            },
+        "metadata": {
+            "label_1": "value_1",
+            "label_2": "value_2"
+            } (Optional)
 	}
 
 example provided in USING.rst
@@ -479,29 +484,39 @@ Authorization requirements:
 
 `POST /node/<node>/power_cycle`
 
+Request Body:
+
+    {
+        "force": <boolean> (Optional, defaults to False)
+    }
+
 Power cycle the node named `<node>`, and set it's next boot device to
 PXE. If the node is powered off, this turns it on.
 
 Accepts one optional boolean argument that determines whether to soft (default)
 or hard reboot the system.
 
-Request body:
-    {
-    	"force": <boolean> (Optional, defaults to False)
-    }
+Authorization requirements:
+
+* Access to the project to which `<node>` is assigned (if any) or administrative access.
 
 #### node_set_bootdev
 
 `PUT /node/<node>/boot_device`
 
-Sets the node's next boot device persistently
-
-The request body consists of JSON with a `bootdev` argument:
-
 Request body:
+
     {
     	"bootdev": <boot device>
     }
+
+The request body consists of JSON with a `bootdev` argument:
+
+Sets the node's next boot device persistently
+
+Authorization requirements:
+
+* Access to the project to which `<node>` is assigned (if any) or administrative access.
 
 ##### For IPMI devices
 
@@ -960,6 +975,8 @@ Get information about a headnode. Includes the following fields:
 * "vncport", the vnc port that the headnode VM is listening on; this
     value can be `null` if the VM is powered off or has not been
     created yet.
+* "uuid", UUID for the headnode.
+* "base_img", the os image that the headnode is running.
 
 Response body:
 
@@ -967,7 +984,9 @@ Response body:
         "name": <headnode>,
         "project": <projectname>,
         "nics": [<nic1>, <nic2>, ...],
-        "vncport": <port number>
+        "vncport": <port number>,
+        "uuid": <headnode uuid>,
+        "base_img": <headnode base_img>
     }
 
 Authorization requirements:
@@ -1172,6 +1191,24 @@ Possible errors:
 
 * 404, if the switch and/or port do not exist.
 
+#### list_active_extensions
+
+`GET /active_extensions`
+
+Response Body:
+
+[
+    "hil.ext.switches.mock",
+    "hil.ext.network_allocators.null",
+    ...
+]
+
+List all active extensions.
+
+Authorization requirements:
+
+* Administrative access.
+
 ## API Extensions
 
 API calls provided by specific extensions. They may not exist in all
@@ -1259,24 +1296,6 @@ Request Body:
 }
 
 Remove a user from a project.
-
-Authorization requirements:
-
-* Administrative access.
-
-#### list_active_extensions
-
-`GET /active_extensions`
-
-Response Body:
-
-[
-    "hil.ext.switches.mock",
-    "hil.ext.network_allocators.null",
-    ...
-]
-
-List all active extensions.
 
 Authorization requirements:
 
