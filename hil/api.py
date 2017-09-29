@@ -121,7 +121,8 @@ def project_detach_node(project, node):
     """
     project = _must_find(model.Project, project)
     get_auth_backend().require_project_access(project)
-    node_label = node
+    node_json = node
+    print(node_json)
     node = _must_find(model.Node, node)
     maintaining = False
     if node not in project.nodes:
@@ -151,8 +152,15 @@ def project_detach_node(project, node):
     node.obm.stop_console()
     node.obm.delete_console()
     project.nodes.remove(node)
-    if (maintaining):
-        _maintain(maintenance_proj, node, node_label)
+    maintenance_proj = _must_find(
+            model.Project,
+            cfg.get('maintenance', 'maintenance_project')
+            )
+    if (cfg.get('maintenance', 'enable') and project != maintenance_proj):
+        maintenance_proj.nodes.append(node)
+        url = cfg.get('maintenance', 'url')
+        payload = json.dumps({'node': node_json})
+        request_status = requests.post(url, data=payload)
     db.session.commit()
 
 
