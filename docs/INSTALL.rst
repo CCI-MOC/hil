@@ -52,24 +52,24 @@ User need to choose appropriate values for their environment:
 -------------------------------------------------------------
 
 For simplicity we have provided default values:
-Copy the following lines in file ``hil_env`` 
+Copy the following lines in file ``hil_env``
 
         HIL_USER=hil
 
         HIL_DB_ROLE=hil
-        
+
         HIL_DB_PASSWORD=secret
-        
+
         HIL_ADMIN=hil
-        
+
         HIL_ADMIN_PASSWORD=secret
-        
+
         HIL_HOME_DIR=/var/lib/hil
 
 
 
 Before starting this procedure do::
-        
+
         source hil_env
 
 
@@ -82,7 +82,7 @@ First create a system user ``${HIL_USER}`` with::
 
 
 The HIL software itself can then be installed as root by running::
-    
+
     sudo su -
     cd /root
     git clone https://github.com/CCI-MOC/hil
@@ -109,8 +109,8 @@ Logging level and directory can be set in the ``[general]`` section. For more
 information view `logging <logging.html>`_.
 
 
-``hil.cfg`` file contains sensitive administrative information and should not be exposed to clients or 
-end users. Therefore, after placing the file at ``/etc/hil.cfg`` its 
+``hil.cfg`` file contains sensitive administrative information and should not be exposed to clients or
+end users. Therefore, after placing the file at ``/etc/hil.cfg`` its
 permissions should be set to read-only and ownership set to ``${HIL_USER}``
 From source directory of hil as user root do the following::
 
@@ -133,8 +133,8 @@ useful for testing and experimentation but *should not* be used in production.
 You must enable exactly one auth backend.
 
 In productions system where non-null backend is active, end users will have to include
-a username and password as additional parameters in ``client_env`` file to be able to 
-communicate with the hil server. This is user/password should be registered with the 
+a username and password as additional parameters in ``client_env`` file to be able to
+communicate with the hil server. This is user/password should be registered with the
 hil auth backend using hil.
 
 
@@ -166,11 +166,11 @@ To enable the null backend, make sure **[extensions]** contains::
 Setting Up HIL Database
 ------------------------
 
-The only DBMS currently supported for production use is PostgreSQL. 
+The only DBMS currently supported for production use is PostgreSQL.
 (SQLite is supported for development purposes *only*).
-There are many ways of setting up PostgreSQL server. 
+There are many ways of setting up PostgreSQL server.
 `Install configure PostgreSQL CENTOS7 <Install_configure_PostgreSQL_CENTOS7.html>`_.
-provides one way to accomplish this. 
+provides one way to accomplish this.
 
 To create the database tables, first make sure ``hil.cfg`` is set up the way
 you need, including any extensions you plan to use, then::
@@ -178,8 +178,8 @@ you need, including any extensions you plan to use, then::
     sudo -i -u ${HIL_USER}; hil-admin db create
 
 If the authorization backend activated in ``hil.cfg`` is  ``hil.ext.auth.database =``
-then you will need to add an initial user with administrative privileges to the 
-database in order to bootstrap the system. 
+then you will need to add an initial user with administrative privileges to the
+database in order to bootstrap the system.
 You can do this by running the following command (as user ``hil``)::
 
   sudo -i -u ${HIL_USER}; hil create_admin_user ${HIL_ADMIN_USER} ${HIL_ADMIN_PASSWORD}
@@ -188,7 +188,7 @@ You can then create additional users via the HTTP API. You may want to
 subsequently delete the initial user; this can also be done via the API.
 
 
-    
+
 All HIL commands in these instructions should be run in this directory::
 
   cd /var/lib/hil
@@ -210,8 +210,8 @@ contains ``hil.cfg``. This pre-allocation is easier to reason about
 than on-demand creation, and allows HIL to be run as an unprivileged user,
 but it also causes some limitations.  For instance, because of this, headnodes
 can only be connected to networks with allocated VLANs.  The bridges must also
-be pre-allocated again on each boot. For now, the recommened method is to use 
-``systemd``.  A ``systemd`` service for running the ``create_bridges`` script is available 
+be pre-allocated again on each boot. For now, the recommened method is to use
+``systemd``.  A ``systemd`` service for running the ``create_bridges`` script is available
 in the 'scripts' directory.
 
 Name of the service is: ``create_bridges.service``
@@ -231,7 +231,7 @@ Ubuntu:
 Systemd is available from Ubuntu 15.04 onwards and LTS version 16.04 will ship with systemd by default.
 
 Edit the ``create_bridges.service`` file and change the ExecStart
-to 
+to
 ``/usr/local/bin/create_bridges``
 
 Place the file ``create_bridges.service`` under:
@@ -414,7 +414,7 @@ allow <https://stackoverflow.com/questions/4390436/need-to-allow-encoded-slashes
 this due to security concerns. ``AllowEncodedSlashes On`` enables the passing
 of these arguments.
 
-**Note:** For apache to be able to pass the authentication headers to HIL 
+**Note:** For apache to be able to pass the authentication headers to HIL
 following directive will have to be turned on
 
 ``WSGIPassAuthorization On``
@@ -493,10 +493,10 @@ HIL Client:
 ------------
 
 If your authentication backend is null, you only need to have the ``HIL_ENDPOINT`` defined
-in the ``client_env``. In productions system where non-null backend is active, 
-end users will have to include a username and password as additional parameters in ``client_env`` 
-file to be able to communicate with the hil server. 
-If you created a admin user for hil as a part of `Setting Up HIL Database` step, 
+in the ``client_env``. In productions system where non-null backend is active,
+end users will have to include a username and password as additional parameters in ``client_env``
+file to be able to communicate with the hil server.
+If you created a admin user for hil as a part of `Setting Up HIL Database` step,
 you will have to pass those credentials to HIL to be able to access, change state of HIL.
 Create a file ``client_env`` with following entries::
 
@@ -509,7 +509,7 @@ To get started with HIL from your home dir do the following::
     source client_env
     hil list_nodes all
 
-If you get an empty list ``[]`` as output then congratulations !! 
+If you get an empty list ``[]`` as output then congratulations !!
 At this point, you should have a functional HIL service running!
 
 Describe datacenter resources
