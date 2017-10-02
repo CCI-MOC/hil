@@ -25,8 +25,8 @@ pip install .[tests]
 sudo chown -R travis:travis /var/www
 mkdir /var/www/hil
 
-sed -e "s|%VIRTUAL_ENV%|$VIRTUAL_ENV|g" -i ci/wsgi.conf
 sudo cp ci/wsgi.conf /etc/apache2/sites-available/hil.conf
+sed -e "s|%VIRTUAL_ENV%|$VIRTUAL_ENV|g" -i /etc/apache2/sites-available/hil.conf
 cp hil.wsgi /var/www/hil/hil.wsgi
 
 sudo a2dissite 000-default && sudo a2ensite hil
