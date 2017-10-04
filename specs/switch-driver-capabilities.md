@@ -15,16 +15,15 @@ We want to expose switch driver capabilities. Capabilities could include:
 # Solution
 -----------
 
-* All switch drivers would have a method called get_capabilities.
+* All switch drivers would have a method called `get_capabilities()`.
 
 * This method would return a list with all capabilities supported by the switch.
 Its implementation could be flexible; it could simply return a hardcoded list, or generate it from some database.
 
-* The superclass will have a method `has_capbility(self, name)` that would return
-`name in self.get_capabilities()`. Drivers can overwrite if need be.
 
-* an API that needs to check for capabilities will call `has_capability()` and
-proceed based on the response.
+* method `ensure_legal_operations()` will be updated to check for capabilities.
+Currently, this method is called by the API before anything is queued for the networking
+daemon.
 
 * `show_switch()` will be updated to show switch capabilities.
 
