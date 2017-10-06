@@ -36,15 +36,19 @@ a new switch capability.
 
 # Alternative Solutions
 -----------------------
-
+We discussed having another method called `has_capability()` that would return if a
+capability exists in the list returned by `get_capabilities()`. But at this point
+it seems redundant, because `ensure_legal_operations()` can just do the check by itself,
+instead of requiring a new method.
 
 # Arch Impact
 -----------------
 
-None
+Doesn't affect the current architecture, but opens up the debate how network topologies might
+look like if a network spans across switches with different capabilities.
 
 # Security
 ----------
 
-Doesn't look like it.
+This doesn't seem to have any impact on security.
 ```
