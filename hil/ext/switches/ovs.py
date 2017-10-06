@@ -34,7 +34,7 @@ from hil.model import db, Switch, BigIntegerType
 from hil.migrations import paths
 from os.path import dirname, join
 logger = logging.getLogger(__name__)
-paths[__name__] = join(dirname(__file__), 'migrations', 'juniper')
+paths[__name__] = join(dirname(__file__), 'migrations', 'ovs')
 
 
 class VlanAddError(Exception):
@@ -53,6 +53,7 @@ class Ovs(Switch):
     __mapper_args__ = {
         'polymorphic_identity': api_name,
     }
+#    import pdb; pdb.set_trace()
 
     id = db.Column(
             BigIntegerType, db.ForeignKey('switch.id'), primary_key=True
@@ -60,14 +61,6 @@ class Ovs(Switch):
     hostname = db.Column(db.String, nullable=False)
     username = db.Column(db.String, nullable=False)
     password = db.Column(db.String, nullable=False)
-
-    enable_interface = None
-    add_vlan = None
-    remove_vlan = None
-    set_native_vlan = None
-    remove_native_vlan = None
-    remove_default_vlan = None
-    set_trunk_mode = None
 
     @staticmethod
     def validate(kwargs):
@@ -118,13 +111,16 @@ class Ovs(Switch):
             return None
 
     def _create_session(self):
-        ovsSwitch = "echo {x} |sudo -S ovs-vsctl"
+        ovsSwitch = "echo {x} |sudo -S ovs-vsctl".format(x=self.password)
         return ovsSwitch
 
     def _interface_info(self, port):
         """Fetches latest committed configuration information about `port`"""
+#        import pdb; pdb.set_trace()
         ovs = self._create_session()
         a = getoutput(ovs + " list port {port}".format(port=port)).split('\n')
+        rem_info = "[sudo] password for " + self.username + ": "
+        a[0] = a[0].replace(rem_info, '') 
         i_info = dict(s.split(':') for s in a)
         i_info =  {k.strip():v.strip() for k, v in i_info.iteritems()}
         for x in i_info.keys():
@@ -137,15 +133,19 @@ class Ovs(Switch):
     def revert_port(self, port):
         """Resets the port to the factory default.
         """
+#        import pdb; pdb.set_trace()
         ovs = self._create_session()
-        revert = getstatusoutput(
-                ovs + ' del-port {port}; '.format(port=port)+ 
-                ovs + ' add-port {switch} {port}'.format(
+        payload = ( ovs + ' del-port {port}; '.format(port=port) + ovs + 
+                ' add-port {switch} {port} vlan_mode=native-untagged'.format(
                     switch = self.hostname, port=port
                     )
                 )
-        if revert[0] == 0:
+        result = getstatusoutput(payload)
+        if result[0] == 0:
             return None
+        else:
+            return result
+
 
     def modify_port(self, port, channel, network_id):
         """ Changes vlan assignment to the port.
@@ -231,67 +231,83 @@ class Ovs(Switch):
         """Sets native vlan for a trunked port.
         It enables the port, if it is the first vlan for the port.
         """
+#        import pdb; pdb.set_trace()
+        ovs = self._create_session()
         port_info = self._interface_info(port)
-        self._set_commands(port, network_id)
-        set_native_vlan = self.set_native_vlan
-        if not port_info[port]['trunk_mode']:
-            set_native_vlan = self.set_trunk_mode + set_native_vlan
-
-        if port_info[port]['disabled']:
-            set_native_vlan = self.enable_interface + set_native_vlan
-
-        if 'default' in port_info[port]['vlans']:
-            set_native_vlan = set_native_vlan + self.remove_default_vlan
-
-        self._set_commit_config(set_native_vlan)
-        self._clear_set_commands()
+        result = getstatusoutput(
+                    ovs 
+                    + " set port {port} tag={netid}".format(
+                        port=port, netid=network_id
+                        )
+                    + " vlan_mode=native-untagged"
+                    )
+        if result[0] == 0:
+            return None
+        else:
+            return result
 
     def _remove_native_vlan(self, port):
         """Removes native vlan from a trunked port.
         If it is the last vlan to be removed, it disables the port and
         reverts its state to default configuration
         """
+        ovs = self._create_session()
         port_info = self._interface_info(port)
-        vlan_id = str(port_info[port]['native_vlan'])
-        self._set_commands(port, vlan_id)
-        remove_native_vlan = self.remove_native_vlan
-        if isinstance(port_info[port]['vlans'], (str, unicode)):
-            self.revert_port(port)
+        vlan_id = port_info['tag']
+        result = getstatusoutput(
+                ovs + " remove port {port} tag {vlan_id}".format(
+                    port=port, vlan_id=vlan_id
+                    )
+                )
+        if result[0] == 0:
+            return None
         else:
-            self._set_commit_config(remove_native_vlan)
-        self._clear_set_commands()
+            return result
 
     def _get_mode(self, port):
         """Returns True if the port is in trunk mode else returns False. """
-        port_info = self._interface_info(port)
-        return port_info[port]['trunk_mode']
+        return None
 
     def _add_vlan_to_trunk(self, port, vlan_id):
         """ Adds vlans to a trunk port. """
-
-        self._set_commands(port, vlan_id)
+        ovs = self._create_session()
         port_info = self._interface_info(port)
-        add_vlan = self.add_vlan
+#        import pdb; pdb.set_trace()
+        
 
-        if not port_info[port]['trunk_mode']:
-            add_vlan = self.set_trunk_mode + add_vlan
+        if port_info['trunks'] is None:
+            result = getstatusoutput(
+                ovs + " set port {port} trunks={vlan_id}".format(
+                    port=port, vlan_id=vlan_id
+                    )
+                )
+#        elif vlan_id is in port_info['trunks']:
+#           raise VlanAddError
+        else:
+            all_trunks = ','.join(port_info['trunks'])+','+vlan_id
+            result = getstatusoutput(
+                    ovs + " set port {port} trunks={vlan_id}".format(
+                        port=port, vlan_id=all_trunks
+                        )
+                    )
 
-        if port_info[port]['disabled']:
-            add_vlan = self.enable_interface + add_vlan
+        if result[0] == 0:
+            return None
+        else:
+            return result
 
-        if 'default' in port_info[port]['vlans']:
-            add_vlan = add_vlan + self.remove_default_vlan
-        self._set_commit_config(add_vlan)
-        self._clear_set_commands()
 
     def _remove_vlan_from_port(self, port, vlan_id):
         """ removes a single vlan specified by `vlan_id` """
-
-        self._set_commands(port, vlan_id)
+        ovs = self._create_session()
         port_info = self._interface_info(port)
-        remove_vlan = self.remove_vlan
-        if isinstance(port_info[port]['vlans'], (str, unicode)):
-            self.revert_port(port)
-        else:
-            self._set_commit_config(remove_vlan)
-        self._clear_set_commands()
+
+        if port_info['trunks'] is not None:
+            result = getstatusoutput(
+                    ovs + " remove port {port} trunks {vlan_id}".format(
+                        port=port, vlan_id=vlan_id
+                        )
+                    )
+
+        if result[0] == 0:
+            return None
