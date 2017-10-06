@@ -21,9 +21,8 @@ We want to expose switch driver capabilities. Capabilities could include:
 Its implementation could be flexible; it could simply return a hardcoded list, or generate it from some database.
 
 
-* method `ensure_legal_operations()` will be updated to check for capabilities.
-Currently, this method is called by the API before anything is queued for the networking
-daemon.
+* any API that exposes a switch capablity would do
+`assert capability in switch.get_capabilities()` and then proceed.
 
 * `show_switch()` will be updated to show switch capabilities.
 
