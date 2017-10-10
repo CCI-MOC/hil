@@ -130,12 +130,12 @@ An early short paper on HIL (then called "Hardware as a Service/HaaS"):
 
     Jason Hennessey, Chris Hill, Ian Denhardt, Viggnesh Venugopal, George Silvis, Orran Krieger, and Peter Desnoyers, `Hardware as a service - enabling dynamic, user-level bare metal provisioning of pools of data center resources. <https://open.bu.edu/handle/2144/11221>`_ in 2014 IEEE High Performance Extreme Computing Conference, Waltham, MA, USA, 2014.
 
-Other work that has involved HIL can be found on the Mass Open Cloud `papers page <https://info.massopencloud.org/publicationsandtalks/>`_.
+Other work that has involved HIL can be found on the Mass Open Cloud `papers page <https://massopen.cloud/publicationsandtalks/>`_.
 
 Mass Open Cloud
 ===============
 
 This project is part of the larger `Massachusetts Open Cloud
-<https://info.massopencloud.org>`_. For a description of the team and other
+<https://massopen.cloud/>`_. For a description of the team and other
 information, see
 `<https://github.com/CCI-MOC/moc-public/blob/master/README.md>`_.
