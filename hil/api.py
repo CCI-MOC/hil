@@ -28,6 +28,7 @@ from hil.config import cfg
 from hil.rest import rest_call
 from hil.class_resolver import concrete_class_for
 from hil.network_allocator import get_network_allocator
+import logging
 
 
 # Project Code #
@@ -117,13 +118,11 @@ def project_detach_node(project, node):
 
     If the node has network attachments or pending network actions, a
     BlockedError will be raised.
-
-    If using a maintenance pool, please update the hil config accordingly.
     """
+    logger = logging.getLogger(__name__)
     project = _must_find(model.Project, project)
     get_auth_backend().require_project_access(project)
-    node_json = node
-    print(node_json)
+    node_label = node
     node = _must_find(model.Node, node)
     maintaining = False
     if node not in project.nodes:
@@ -136,27 +135,34 @@ def project_detach_node(project, node):
     for nic in node.nics:
         if nic.current_action is not None:
             raise errors.BlockedError("Node has pending network actions")
-    if (cfg.has_option('maintenance', 'enable') and
-            cfg.get('maintenance', 'enable')):
-        if (not cfg.has_option('maintenance', 'maintenance_project')):
-            raise errors.NotFoundError("Maintenance project not in hil.cfg.")
+
+    if (cfg.has_option('maintenance', 'maintenance_project') and
+            cfg.has_option('maintenance', 'url')):
         maintenance_proj = _must_find(
                 model.Project,
                 cfg.get('maintenance', 'maintenance_project')
                 )
         if (project != maintenance_proj):
             maintaining = True
-            if (not cfg.has_option('maintenance', 'url')):
-                raise errors.NotFoundError("Maintenance URL not in hil.cfg.")
-            else:
-                url = cfg.get('maintenance', 'url')
-            payload = json.dumps({'node': node_json})
+            url = cfg.get('maintenance', 'url')
+            payload = json.dumps({'node': node_label})
+    elif (cfg.has_option('maintenance', 'maintenance_project')):
+        raise errors.NotFoundError("Maintenance URL not in hil.cfg.")
+    elif (cfg.has_option('maintenance', 'url')):
+        raise errors.NotFoundError("Maintenance project not in hil.cfg.")
+
     node.obm.stop_console()
     node.obm.delete_console()
     project.nodes.remove(node)
     if (maintaining):
+        if (cfg.has_option('maintenance', 'shutdown')):
+            node.obm.power_off()
         maintenance_proj.nodes.append(node)
-        requests.post(url, data=payload)
+        response = requests.post(url, data=payload)
+        # Give warning if response > 400
+        if (response > 400):
+            logger.warn('POST to maintenance service' \
+                    ' failed with response: %s' % response)
     db.session.commit()
 
 
