@@ -21,7 +21,6 @@ from hil.test_common import config_testsuite, config_merge, fresh_database, \
     fail_on_log_warnings, with_request_context, server_init, \
     network_create_simple
 from hil.errors import BlockedError
-from hil.ext.switches.dellnos9 import DellNOS9
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 fresh_database = pytest.fixture(fresh_database)
@@ -148,13 +147,14 @@ def test_ensure_legal_operations():
 
 def test_get_vlans():
     """Check that _get_vlans correctly parses the response to grab all VLANs"""
+    from hil.ext.switches.dellnos9 import DellNOS9
 
     class MockDellNOS9(DellNOS9):
         """This class inherits from the DellNOS9 switch and then overrides
         some of the methods to return mock outputs. Makes it easier to write
         unit tests"""
 
-        def _get_port_info(self, vlans):
+        def _get_port_info(self, interface):
             """Returns mock port info"""
             ret = u"<outputxmlns='http://www.dell.com/ns/dell:0.1/root'>\n  \
             <command>show interfaces switchport GigabitEthernet1/3\r\n\r\n \
@@ -162,7 +162,7 @@ def test_get_vlans():
             G-GVRP tagged,M-Trunk\r\n i-Internal untagged, I-Internaltagged, \
             v-VLTuntagged, V-VLTtagged\r\n\r\n Name:GigabitEthernet1/3\r\n \
              802.1QTagged:Hybrid\r\n Vlan membership:\r\n Q Vlans\r\n U 1512 \
-             \r\n T " + vlans + "\r\n\r\n Native Vlan Id: 1512.\r\n\r\n \
+             \r\n T " + interface + "\r\n\r\n Native Vlan Id: 1512.\r\n\r\n \
             \r\n\r\nMOC-Dell-S3048-ON#</command>\n</output>\n"
             return ret.replace(' ', '')
 
