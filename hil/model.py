@@ -258,6 +258,14 @@ class Switch(db.Model):
 
         return
 
+    def get_capabilities(self):
+        """Returns the list of capabilities supported by a switch
+
+        default behaviour is to return a list with capabilities supported by
+        most switches"""
+
+        return ['nativeless-trunk-mode']
+
 
 class SwitchSession(object):
     """A session object for a switch.
