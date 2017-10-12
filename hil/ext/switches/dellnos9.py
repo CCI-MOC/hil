@@ -166,7 +166,7 @@ class DellNOS9(Switch, SwitchSession):
             if '-' in num_str:
                 num_str = num_str.split('-')
                 for x in range(int(num_str[0]), int(num_str[1])+1):
-                    vlan_list.append(x)
+                    vlan_list.append(str(x))
             else:
                 vlan_list.append(num_str)
 
