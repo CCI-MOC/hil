@@ -119,7 +119,6 @@ def project_detach_node(project, node):
     If the node has network attachments or pending network actions, a
     BlockedError will be raised.
     """
-    logger = logging.getLogger(__name__)
     project = _must_find(model.Project, project)
     get_auth_backend().require_project_access(project)
     node_label = node
@@ -144,8 +143,6 @@ def project_detach_node(project, node):
                 )
         if (project != maintenance_proj):
             maintaining = True
-            url = cfg.get('maintenance', 'url')
-            payload = json.dumps({'node': node_label})
     elif (cfg.has_option('maintenance', 'maintenance_project')):
         raise errors.NotFoundError("Maintenance URL not in hil.cfg.")
     elif (cfg.has_option('maintenance', 'url')):
@@ -155,15 +152,7 @@ def project_detach_node(project, node):
     node.obm.delete_console()
     project.nodes.remove(node)
     if (maintaining):
-        if (cfg.has_option('maintenance', 'shutdown')):
-            node.obm.power_off()
-        maintenance_proj.nodes.append(node)
-        response = requests.post(url,
-                                 headers={'Content-Type': 'application/json'},
-                                 data=payload)
-        if (response.status_code > 400):
-            logger.warn('POST to maintenance service'
-                        ' failed with response: %s' % response)
+        _maintain(maintenance_proj, node, node_label)
     db.session.commit()
 
 
@@ -1400,3 +1389,19 @@ def _must_find_n(obj_outer, cls_inner, name_inner):
                                     obj_outer.__class__.__name__,
                                     obj_outer.label))
     return obj_inner
+
+
+def _maintain(project, node, node_label):
+    """Perform maintenance tasks."""
+    logger = logging.getLogger(__name__)
+    if (cfg.has_option('maintenance', 'shutdown')):
+        node.obm.power_off()
+    project.nodes.append(node)
+    url = cfg.get('maintenance', 'url')
+    payload = json.dumps({'node': node_label})
+    response = requests.post(url,
+                             headers={'Content-Type': 'application/json'},
+                             data=payload)
+    if (response.status_code > 400):
+        logger.warn('POST to maintenance service'
+                    ' failed with response: %s', response.text)
