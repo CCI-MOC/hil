@@ -1,0 +1,170 @@
+import hil
+from hil import model, deferred, errors, config, api
+from hil.test_common import config_testsuite, config_merge, fresh_database, \
+    fail_on_log_warnings, additional_db, with_request_context, \
+    network_create_simple, server_init
+from hil.network_allocator import get_network_allocator
+from hil.auth import get_auth_backend
+import pytest
+import json
+import uuid
+
+MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/v0/switches/mock'
+OBM_TYPE_MOCK = 'http://schema.massopencloud.org/haas/v0/obm/mock'
+OBM_TYPE_IPMI = 'http://schema.massopencloud.org/haas/v0/obm/ipmi'
+PORTS = ['gi1/0/1', 'gi1/0/2', 'gi1/0/3', 'gi1/0/4', 'gi1/0/5']
+
+
+@pytest.fixture
+def configure():
+    """Configure HIL"""
+    config_testsuite()
+    config_merge({
+        'auth': {
+            'require_authentication': 'False',
+        },
+        'extensions': {
+            'hil.ext.auth.null': None,
+            'hil.ext.auth.mock': '',
+            'hil.ext.switches.mock': '',
+            'hil.ext.obm.ipmi': '',
+            'hil.ext.obm.mock': '',
+            'hil.ext.network_allocators.null': None,
+            'hil.ext.network_allocators.vlan_pool': '',
+        },
+        'hil.ext.network_allocators.vlan_pool': {
+            'vlans': '40-80',
+        },
+        'maintenance': {
+            'maintenance_project': 'maintenance',
+            'url': 'http://posttestserver.com/post.php'
+        }
+    })
+    config.load_extensions()
+
+
+fresh_database = pytest.fixture(fresh_database)
+additional_database = pytest.fixture(additional_db)
+fail_on_log_warnings = pytest.fixture(fail_on_log_warnings)
+server_init = pytest.fixture(server_init)
+
+
+with_request_context = pytest.yield_fixture(with_request_context)
+
+
+@pytest.fixture
+def set_admin_auth():
+    """Set admin auth for all calls"""
+    get_auth_backend().set_admin(True)
+
+
+@pytest.fixture
+def switchinit():
+    """Create a switch with one port"""
+    api.switch_register('sw0',
+                        type=MOCK_SWITCH_TYPE,
+                        username="switch_user",
+                        password="switch_pass",
+                        hostname="switchname")
+    api.switch_register_port('sw0', PORTS[2])
+
+
+@pytest.fixture
+def maintenance_proj_init():
+    """Create maintenance project."""
+    api.project_create('maintenance')
+
+
+def new_node(name):
+    """Create a mock node named ``name``"""
+    api.node_register(name, obm={
+              "type": OBM_TYPE_MOCK,
+              "host": "ipmihost",
+              "user": "root",
+              "password": "tapeworm"})
+
+
+default_fixtures = ['fail_on_log_warnings',
+                    'configure',
+                    'fresh_database',
+                    'server_init',
+                    'with_request_context',
+                    'set_admin_auth']
+
+pytestmark = pytest.mark.usefixtures(*default_fixtures)
+
+
+class TestProjectDetachNodeMaintenance:
+    """Test project_detach_node."""
+
+    def test_project_detach_node(self, maintenance_proj_init):
+        """Test that project_detach_node removes the node from the project."""
+        api.project_create('anvil-nextgen')
+        new_node('node-99')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        api.project_detach_node('anvil-nextgen', 'node-99')
+        project = api._must_find(model.Project, 'anvil-nextgen')
+        node = api._must_find(model.Node, 'node-99')
+        assert node not in project.nodes
+        assert node.project is not project
+
+    def test_project_detach_node_notattached(self):
+        """Tests that removing a node from a project it's not in fails."""
+        api.project_create('anvil-nextgen')
+        new_node('node-99')
+        with pytest.raises(errors.NotFoundError):
+            api.project_detach_node('anvil-nextgen', 'node-99')
+
+    def test_project_detach_node_project_nexist(self):
+        """Tests that removing a node from a nonexistent project fails."""
+        new_node('node-99')
+        with pytest.raises(errors.NotFoundError):
+            api.project_detach_node('anvil-nextgen', 'node-99')
+
+    def test_project_detach_node_node_nexist(self):
+        """Tests that removing a nonexistent node from a project fails."""
+        api.project_create('anvil-nextgen')
+        with pytest.raises(errors.NotFoundError):
+            api.project_detach_node('anvil-nextgen', 'node-99')
+
+    def test_project_detach_node_on_network(self, switchinit):
+        """Tests that project_detach_node fails if the node is on a network."""
+        api.project_create('anvil-nextgen')
+        new_node('node-99')
+        api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:13')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        network_create_simple('hammernet', 'anvil-nextgen')
+        api.port_connect_nic('sw0', PORTS[2], 'node-99', 'eth0')
+        api.node_connect_network('node-99', 'eth0', 'hammernet')
+        with pytest.raises(errors.BlockedError):
+            api.project_detach_node('anvil-nextgen', 'node-99')
+
+    def test_project_detach_node_nic_not_on_network(self,
+                                                            maintenance_proj_init):
+        """...but succeeds if not, all else being equal."""
+        api.project_create('anvil-nextgen')
+        new_node('node-99')
+        api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:13')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        network_create_simple('hammernet', 'anvil-nextgen')
+        api.project_detach_node('anvil-nextgen', 'node-99')
+
+    def test_project_detach_node_removed_from_network(self,
+                                                      switchinit,
+                                                      maintenance_proj_init):
+        """Same as above, but we connect/disconnect from the network.
+
+        ...rather than just having the node disconnected to begin with.
+        """
+        api.project_create('anvil-nextgen')
+        new_node('node-99')
+        api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:13')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        network_create_simple('hammernet', 'anvil-nextgen')
+        api.port_connect_nic('sw0', PORTS[2], 'node-99', 'eth0')
+        api.node_connect_network('node-99', 'eth0', 'hammernet')
+        deferred.apply_networking()
+        api.node_detach_network('node-99', 'eth0', 'hammernet')
+        deferred.apply_networking()
+
+        api.project_detach_node('anvil-nextgen', 'node-99')
