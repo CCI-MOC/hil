@@ -183,3 +183,5 @@ def test_get_vlans():
     assert switch._get_vlans('10-13') == [
         ('vlan/10', '10'), ('vlan/11', '11'),
         ('vlan/12', '12'), ('vlan/13', '13')]
+    # just in case if the switch returns a 2 vlan range.
+    assert switch._get_vlans('10-11') == [('vlan/10', '10'), ('vlan/11', '11')]
