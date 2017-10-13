@@ -1402,6 +1402,6 @@ def _maintain(project, node, node_label):
     response = requests.post(url,
                              headers={'Content-Type': 'application/json'},
                              data=payload)
-    if (response.status_code > 400):
+    if (response.status_code >= 300):
         logger.warn('POST to maintenance service'
                     ' failed with response: %s', response.text)

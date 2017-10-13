@@ -1,13 +1,11 @@
-import hil
-from hil import model, deferred, errors, config, api
+"""Tests related to the maintenance pool."""
+
+from hil import model, config, api
 from hil.test_common import config_testsuite, config_merge, fresh_database, \
     fail_on_log_warnings, additional_db, with_request_context, \
-    network_create_simple, server_init
-from hil.network_allocator import get_network_allocator
+    server_init
 from hil.auth import get_auth_backend
 import pytest
-import json
-import uuid
 
 MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/v0/switches/mock'
 OBM_TYPE_MOCK = 'http://schema.massopencloud.org/haas/v0/obm/mock'
@@ -97,74 +95,15 @@ pytestmark = pytest.mark.usefixtures(*default_fixtures)
 class TestProjectDetachNodeMaintenance:
     """Test project_detach_node."""
 
-    def test_project_detach_node(self, maintenance_proj_init):
+    def test_project_detach_node_maintenance(self, maintenance_proj_init):
         """Test that project_detach_node removes the node from the project."""
         api.project_create('anvil-nextgen')
         new_node('node-99')
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.project_detach_node('anvil-nextgen', 'node-99')
         project = api._must_find(model.Project, 'anvil-nextgen')
+        maintenance_proj = api._must_find(model.Project, 'maintenance')
         node = api._must_find(model.Node, 'node-99')
         assert node not in project.nodes
         assert node.project is not project
-
-    def test_project_detach_node_notattached(self):
-        """Tests that removing a node from a project it's not in fails."""
-        api.project_create('anvil-nextgen')
-        new_node('node-99')
-        with pytest.raises(errors.NotFoundError):
-            api.project_detach_node('anvil-nextgen', 'node-99')
-
-    def test_project_detach_node_project_nexist(self):
-        """Tests that removing a node from a nonexistent project fails."""
-        new_node('node-99')
-        with pytest.raises(errors.NotFoundError):
-            api.project_detach_node('anvil-nextgen', 'node-99')
-
-    def test_project_detach_node_node_nexist(self):
-        """Tests that removing a nonexistent node from a project fails."""
-        api.project_create('anvil-nextgen')
-        with pytest.raises(errors.NotFoundError):
-            api.project_detach_node('anvil-nextgen', 'node-99')
-
-    def test_project_detach_node_on_network(self, switchinit):
-        """Tests that project_detach_node fails if the node is on a network."""
-        api.project_create('anvil-nextgen')
-        new_node('node-99')
-        api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:13')
-        api.project_connect_node('anvil-nextgen', 'node-99')
-        network_create_simple('hammernet', 'anvil-nextgen')
-        api.port_connect_nic('sw0', PORTS[2], 'node-99', 'eth0')
-        api.node_connect_network('node-99', 'eth0', 'hammernet')
-        with pytest.raises(errors.BlockedError):
-            api.project_detach_node('anvil-nextgen', 'node-99')
-
-    def test_project_detach_node_nic_not_on_network(self,
-                                                            maintenance_proj_init):
-        """...but succeeds if not, all else being equal."""
-        api.project_create('anvil-nextgen')
-        new_node('node-99')
-        api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:13')
-        api.project_connect_node('anvil-nextgen', 'node-99')
-        network_create_simple('hammernet', 'anvil-nextgen')
-        api.project_detach_node('anvil-nextgen', 'node-99')
-
-    def test_project_detach_node_removed_from_network(self,
-                                                      switchinit,
-                                                      maintenance_proj_init):
-        """Same as above, but we connect/disconnect from the network.
-
-        ...rather than just having the node disconnected to begin with.
-        """
-        api.project_create('anvil-nextgen')
-        new_node('node-99')
-        api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:13')
-        api.project_connect_node('anvil-nextgen', 'node-99')
-        network_create_simple('hammernet', 'anvil-nextgen')
-        api.port_connect_nic('sw0', PORTS[2], 'node-99', 'eth0')
-        api.node_connect_network('node-99', 'eth0', 'hammernet')
-        deferred.apply_networking()
-        api.node_detach_network('node-99', 'eth0', 'hammernet')
-        deferred.apply_networking()
-
-        api.project_detach_node('anvil-nextgen', 'node-99')
+        assert node.project is maintenance_proj
