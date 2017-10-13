@@ -158,11 +158,12 @@ def project_detach_node(project, node):
         if (cfg.has_option('maintenance', 'shutdown')):
             node.obm.power_off()
         maintenance_proj.nodes.append(node)
-        response = requests.post(url, data=payload)
-        # Give warning if response > 400
-        if (response > 400):
-            logger.warn('POST to maintenance service' \
-                    ' failed with response: %s' % response)
+        response = requests.post(url,
+                                 headers={'Content-Type': 'application/json'},
+                                 data=payload)
+        if (response.status_code > 400):
+            logger.warn('POST to maintenance service'
+                        ' failed with response: %s' % response)
     db.session.commit()
 
 
