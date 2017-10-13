@@ -20,7 +20,7 @@ tests in docs/testing.md
 
 import json
 
-from hil import api, model, deferred, config
+from hil import api, model, deferred, config, errors
 from hil.test_common import config_testsuite, fail_on_log_warnings, \
     fresh_database, with_request_context, site_layout, NetworkTest, \
     network_create_simple, server_init
@@ -78,8 +78,12 @@ class TestNetworkVlan(NetworkTest):
             # Create two networks
             network_create_simple('net-0', 'anvil-nextgen')
             network_create_simple('net-1', 'anvil-nextgen')
+            network_create_simple('net-2', 'anvil-nextgen')
+            network_create_simple('net-3', 'anvil-nextgen')
 
             ports = self.get_all_ports(nodes)
+            # get the switch name from any of the nics
+            switch = nodes[0].nics[0].port.owner
 
             # Assert that n0 and n1 are not on any network
             port_networks = self.get_port_networks(ports)
@@ -93,11 +97,29 @@ class TestNetworkVlan(NetworkTest):
             net_tag = {}
             net_tag[0] = get_legal_channels('net-0')[1]
             net_tag[1] = get_legal_channels('net-1')[1]
+            net_tag[2] = get_legal_channels('net-2')[1]
 
             # Connect node 0 to net-0 (native mode)
             api.node_connect_network(nodes[0].label,
                                      nodes[0].nics[0].label,
                                      'net-0')
+
+            # before connecting node 1 to net-1 in tagged mode, we must check
+            # if the switch supports nativeless trunk mode; if not, then we
+            # add some native network and perform additional checks before
+            # proceeding.
+            if 'nativeless-trunk-mode' not in switch.get_capabilities():
+                # connecting the first network as tagged should raise an error
+                with pytest.raises(errors.BlockedError):
+                    api.node_connect_network(nodes[1].label,
+                                             nodes[1].nics[0].label,
+                                             'net-2',
+                                             channel=net_tag[2])
+                api.node_connect_network(nodes[1].label,
+                                         nodes[1].nics[0].label,
+                                         'net-2')
+                deferred.apply_networking()
+
             # Connect node 1 to net-1 (tagged mode)
             api.node_connect_network(nodes[1].label,
                                      nodes[1].nics[0].label,
@@ -114,10 +136,16 @@ class TestNetworkVlan(NetworkTest):
 
             # Add n2 and n3 to the same networks as n0 and n1 respectively, but
             # with different channels (native vs. tagged)
+            if 'nativeless-trunk-mode' not in switch.get_capabilities():
+                api.node_connect_network(nodes[2].label,
+                                         nodes[2].nics[0].label,
+                                         'net-3')
+                deferred.apply_networking()
             api.node_connect_network(nodes[2].label,
                                      nodes[2].nics[0].label,
                                      'net-0',
                                      channel=net_tag[0])
+
             api.node_connect_network(nodes[3].label,
                                      nodes[3].nics[0].label,
                                      'net-1')
@@ -133,9 +161,24 @@ class TestNetworkVlan(NetworkTest):
 
             # Verify that we can put nodes on more than one network, with
             # different channels:
+
+            # this is a little clumsy. `get_networks` only returns the node
+            # if it's attached natively. So I must reconnect node[2] to net-1
+            # natively; and to do that I must undo the changes I did in the
+            # previous steps where I connect node[2] to net-3.
+            # we wouldn't have to do this if we do what I suggest in #893
+            api.port_revert(switch.label, nodes[2].nics[0].port.label)
+            deferred.apply_networking()
+
+            # connect net-2 to node[2] natively and also a net-0 as tagged.
             api.node_connect_network(nodes[2].label,
                                      nodes[2].nics[0].label,
                                      'net-1')
+            deferred.apply_networking()
+            api.node_connect_network(nodes[2].label,
+                                     nodes[2].nics[0].label,
+                                     'net-0',
+                                     channel=net_tag[0])
             deferred.apply_networking()
             port_networks = self.get_port_networks(ports)
             assert self.get_network(nodes[1].nics[0].port, port_networks) == \
@@ -173,6 +216,15 @@ class TestNetworkVlan(NetworkTest):
                     all_attachments.append((node.label,
                                             node.nics[0].label,
                                             attachment.network.label))
+
+            switch = nodes[0].nics[0].port.owner
+            # in some switches, the native network can only be disconnected
+            # after we remove all tagged networks first. The following checks
+            # for that and rearranges the networks (all_attachments) such that
+            # tagged networks are removed first.
+            if 'nativeless-trunk-mode' not in switch.get_capabilities():
+                all_attachments = sorted(all_attachments)
+
             for attachment in all_attachments:
                 api.node_detach_network(*attachment)
                 deferred.apply_networking()
