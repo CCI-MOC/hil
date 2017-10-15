@@ -278,7 +278,3 @@ them with HIL.
 Use-cases that involve configurations requiring access to multiple switches 
 can be achieved by adding bridges of different names to openvswitch and 
 registering them as separate switches.
-
-
-
-
