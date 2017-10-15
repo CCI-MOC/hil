@@ -226,10 +226,28 @@ This driver is made available so that developers can have real switch
 like functionality without having access to any real switch hardware.
 To get started you will need to:
 1.  install openvswitch in your development machine (or VM).
-2.  create a bridge and name it <<switch_name>> 
-3.  Add some ports to this bridge.
 
-To register the driver with HIL, you will need the openvswitch bride name,
+	yum install openvswitch #For fedora or Centos
+	for i in enable start status
+	do service openvswitch $i; done
+	ovs-vsctl show	
+
+2.  create a bridge and name it <switch_name>
+
+	ovs-vsctl add-br <switch_name>	
+ 
+3.  Add some ports to this bridge.
+	
+	ovs-vsctl add-port <switch_name> <port_name>
+
+These are just illustrative examples. You may have to do more to setup
+your switch before using it with HIL. 
+
+Alternatively you can run a script available at 
+
+	https://github.com/SahilTikale/HIL_contrib/blob/master/hilInYourLap/create_datacenter.sh
+
+To register the driver with HIL, you will need the openvswitch bridge name,
   username of your machine; sudo password of this user.
 
 #### switch_register
