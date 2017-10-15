@@ -24,10 +24,9 @@ appropriately to recieve NETCONF connections. Its default port is 830.
 import re
 import logging
 import schema
-import sys
 import os
 import ast
-from commands import getoutput, getstatusoutput
+from commands import getstatusoutput
 
 from hil.model import db, Switch, BigIntegerType
 from hil.migrations import paths
@@ -38,31 +37,28 @@ paths[__name__] = join(dirname(__file__), 'migrations', 'ovs')
 
 class VlanError(Exception):
     """ Raise this exception when vlan cannot be added to the port."""
-    pass
 
 
 class NotImplementedYet(Exception):
     """ Raise this exception for functions that require
     more information to implement.
     """
-    pass
 
 
 class PortInfoNotFound(Exception):
     """ Raise this exception when this driver is unable to fetch
     information for a given port.
     """
-    pass
 
 
 class OVS_RequestFailed(Exception):
     """ Raise this exception when a requestOVS failure
     cannot does not follow into any of the above exceptions.
     """
-    pass
 
 
 class Ovs(Switch):
+    """ Driver for openvswitch. """
     api_name = 'http://schema.massopencloud.org/haas/v0/switches/ovs'
     dir_name = os.path.dirname(__file__)
     __mapper_args__ = {
@@ -85,15 +81,15 @@ class Ovs(Switch):
         }).validate(kwargs)
 
     def session(self):
+        """ required from superclass. """
         return self
 
     def disconnect(self):
-        pass
+        """ required from superclass. """
 
     @staticmethod
     def validate_port_name(port):
         """ This driver accepts any string as port name."""
-        pass
 
     def str2list(self, a_string):
         """ Converts a string representation of list to list.
@@ -124,10 +120,6 @@ class Ovs(Switch):
             return a_dict
         else:
             return None
-
-    def _create_session(self):
-        ovsSwitch = "echo {x} |sudo -S ovs-vsctl".format(x=self.password)
-        return ovsSwitch
 
     def _requestOVS(self, ovs_statements, error):
         """ send ``payload`` to switch.
@@ -200,7 +192,7 @@ class Ovs(Switch):
                 assert network_id == vlan_id
                 try:
                     self._add_vlan_to_trunk(interface, vlan_id)
-                except VlanAddError as e:
+                except VlanError as e:
                     return e
 
     def get_port_networks(self, ports):
