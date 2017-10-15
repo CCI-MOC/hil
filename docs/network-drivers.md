@@ -219,3 +219,48 @@ Networks managed by HIL may span multiple switches. No special configuration
 of HIL itself is required; just register each switch as normal and ensure that
 all VLANs in the allocator's ``vlans`` option are trunked to every managed
 switch.
+
+### Openvswitch Driver
+
+This driver is made available so that developers can have real switch 
+like functionality without having access to any real switch hardware.
+To get started you will need to:
+1.  install openvswitch in your development machine (or VM).
+2.  create a bridge and name it <<switch_name>> 
+3.  Add some ports to this bridge.
+
+To register the driver with HIL, you will need the openvswitch bride name,
+  username of your machine; sudo password of this user.
+
+#### switch_register
+
+To register a openvswitch, the ``"type"`` field of the request body
+must have a value of::
+
+        http://schema.massopencloud.org/haas/v0/switches/ovs
+
+In addition, it requires three extra fields:
+``"username"``, ``"hostname"``, and ``"pasword"``, which provide the necessary
+information to connect to the openvswitch.
+``"hostname"`` has to be the name of the bridge created in step 2.
+``"username"`` is the username for your development machine (or VM)
+``"password"`` is the sudo password of your machine (or VM).
+
+#### switch_register_port
+
+Any string can be accepted as a openvswitch port name.
+Once you add a port to the openvswitch, you can register the same with HIL.
+
+
+WARNING: Bridge and Ports should exist in the openvswitch before registering
+them with HIL.
+
+### Using multiple switches
+
+Use-cases that involve configurations requiring access to multiple switches 
+can be achieved by adding bridges of different names to openvswitch and 
+registering them as separate switches.
+
+
+
+

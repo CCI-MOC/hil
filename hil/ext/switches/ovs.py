@@ -40,23 +40,27 @@ class VlanError(Exception):
     """ Raise this exception when vlan cannot be added to the port."""
     pass
 
+
 class NotImplementedYet(Exception):
-    """ Raise this exception for functions that require 
+    """ Raise this exception for functions that require
     more information to implement.
     """
     pass
 
+
 class PortInfoNotFound(Exception):
-    """ Raise this exception when this driver is unable to fetch 
+    """ Raise this exception when this driver is unable to fetch
     information for a given port.
     """
     pass
+
 
 class OVS_RequestFailed(Exception):
     """ Raise this exception when a requestOVS failure
     cannot does not follow into any of the above exceptions.
     """
     pass
+
 
 class Ovs(Switch):
     api_name = 'http://schema.massopencloud.org/haas/v0/switches/ovs'
@@ -102,7 +106,7 @@ class Ovs(Switch):
             a_string = a_string.replace("[", "['").replace("]", "']")
             a_string = a_string.replace(",", "','")
             a_list = ast.literal_eval(a_string)
-            a_list = [ ele.strip() for ele in a_list]
+            a_list = [ele.strip() for ele in a_list]
             return a_list
         else:
             return None
@@ -116,7 +120,7 @@ class Ovs(Switch):
             a_string = a_string.replace("{", "{'").replace("}", "'}")
             a_string = a_string.replace(":", "':'").replace(",", "','")
             a_dict = ast.literal_eval(a_string)
-            a_dict = {k.strip():v.strip() for k, v in a_dict.iteritems()}
+            a_dict = {k.strip(): v.strip() for k, v in a_dict.iteritems()}
             return a_dict
         else:
             return None
@@ -126,12 +130,12 @@ class Ovs(Switch):
         return ovsSwitch
 
     def _requestOVS(self, ovs_statements, error):
-        """ send ``payload`` to switch. 
+        """ send ``payload`` to switch.
         If successful do nothing else raise exception as ``error``.
         """
-        payload = ( 
-                'echo {x} |sudo -S bash -c "'.format(x=self.password) + 
-                ovs_statements +'"'
+        payload = (
+                'echo {x} |sudo -S bash -c "'.format(x=self.password) +
+                ovs_statements + '"'
                 )
         result = getstatusoutput(payload)
         if (result[0] != 0):
@@ -149,23 +153,24 @@ class Ovs(Switch):
             a = a[1].split('\n')
 
         rem_info = "[sudo] password for " + self.username + ": "
-        a[0] = a[0].replace(rem_info, '') 
+        a[0] = a[0].replace(rem_info, '')
         i_info = dict(s.split(':') for s in a)
-        i_info =  {k.strip():v.strip() for k, v in i_info.iteritems()}
+        i_info = {k.strip(): v.strip() for k, v in i_info.iteritems()}
         for x in i_info.keys():
-            if i_info[x][0] in [ "{", "[" ]:
+            if i_info[x][0] in ["{", "["]:
                 i_info[x] = \
-                self.str2list(i_info[x]) or self.str2dict(i_info[x])
+                        self.str2list(i_info[x]) or self.str2dict(i_info[x])
 
         return i_info
 
     def revert_port(self, port):
         """Resets the port to the factory default.
         """
-        payload = ( 
-                'ovs-vsctl del-port {port}; ovs-vsctl add-port {switch} {port}'.format(
-            switch = self.hostname, port=port
-            ) + ' vlan_mode=native-untagged'
+        payload = (
+                'ovs-vsctl del-port {port}; \
+                        ovs-vsctl add-port {switch} {port}'.format(
+                    switch=self.hostname, port=port
+                    ) + ' vlan_mode=native-untagged'
                 )
         return self._requestOVS(payload, OVS_RequestFailed)
 
@@ -225,8 +230,7 @@ class Ovs(Switch):
         payload = (
                 " ovs-vsctl set port {port} tag={netid}".format(
                         port=port, netid=network_id
-                        ) 
-                + " vlan_mode=native-untagged"
+                        ) + " vlan_mode=native-untagged"
                     )
 
         return self._requestOVS(payload, VlanError)
@@ -238,7 +242,7 @@ class Ovs(Switch):
         """
         port_info = self._interface_info(port)
         vlan_id = port_info['tag']
-        payload =  " ovs-vsctl remove port {port} tag {vlan_id}".format(
+        payload = " ovs-vsctl remove port {port} tag {vlan_id}".format(
                     port=port, vlan_id=vlan_id
                     )
         return self._requestOVS(payload, VlanError)
@@ -258,7 +262,6 @@ class Ovs(Switch):
                         )
 
         return self._requestOVS(payload, VlanError)
-
 
     def _remove_vlan_from_port(self, port, vlan_id):
         """ removes a single vlan specified by `vlan_id` """
