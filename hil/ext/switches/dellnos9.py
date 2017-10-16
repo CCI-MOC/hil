@@ -153,11 +153,23 @@ class DellNOS9(Switch, SwitchSession):
         if not self._is_port_on(interface):
             return []
         response = self._get_port_info(interface)
-        # finds a comma separated list of integers starting with "T"
-        match = re.search(r'T(\d+)((,\d+)?)*', response)
+
+        # finds a comma separated list of integers and/or ranges starting with
+        # T. Sample T12,14-18,23,28,80-90 or T20 or T20,22 or T20-22
+        match = re.search(r'T(\d+(-\d+)?)(,\d+(-\d+)?)*', response)
         if match is None:
             return []
-        vlan_list = match.group().replace('T', '').split(',')
+        range_str = match.group().replace('T', '').split(',')
+        vlan_list = []
+        # need to interpret the ranges to numbers. e.g. 14-18 as 14,15,16,17,18
+        for num_str in range_str:
+            if '-' in num_str:
+                num_str = num_str.split('-')
+                for x in range(int(num_str[0]), int(num_str[1])+1):
+                    vlan_list.append(str(x))
+            else:
+                vlan_list.append(num_str)
+
         return [('vlan/%s' % x, x) for x in vlan_list]
 
     def _get_native_vlan(self, interface):
@@ -202,7 +214,7 @@ class DellNOS9(Switch, SwitchSession):
         G-GVRP tagged,M-Trunk\r\n i-Internal untagged, I-Internaltagged,
         v-VLTuntagged, V-VLTtagged\r\n\r\n Name:GigabitEthernet1/3\r\n 802.1Q
         Tagged:Hybrid\r\n Vlan membership:\r\n Q Vlans\r\n U 1512 \r\n T 1511
-        \r\n\r\n Native Vlan Id: 1512.\r\n\r\n\r\n\r\n
+        1612-1614,1700\r\n\r\n Native Vlan Id: 1512.\r\n\r\n\r\n\r\n
         MOC-Dell-S3048-ON#</command>\n</output>\n"
         """
         command = 'interfaces switchport %s %s' % \
