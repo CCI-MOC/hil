@@ -195,14 +195,6 @@ class DellNOS9(Switch, SwitchSession):
             logger.error('Unexpected: No native vlan found')
             return
 
-        # FIXME: At this point, we are unable to remove the default native vlan
-        # The switchport defaults to native vlan 1. Our deployment tests make
-        # assertions that a switchport has no default vlan at start.
-        # To get the tests to pass, we return None if we see the switchport has
-        # a default native vlan (=1). This needs to be fixed ASAP.
-        if vlan == '1':
-            return None
-
         return ('vlan/native', vlan)
 
     def _get_port_info(self, interface):
