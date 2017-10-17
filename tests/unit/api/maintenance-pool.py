@@ -1,9 +1,8 @@
 """Tests related to the maintenance pool."""
-
 from hil import model, config, api
 from hil.test_common import config_testsuite, config_merge, fresh_database, \
     fail_on_log_warnings, additional_db, with_request_context, \
-    server_init
+    server_init, LoggedWarningError
 from hil.auth import get_auth_backend
 import pytest
 
@@ -35,7 +34,7 @@ def configure():
         },
         'maintenance': {
             'maintenance_project': 'maintenance',
-            'url': 'http://posttestserver.com/post.php'
+            'url': 'http://localhost/foo/bar'
         }
     })
     config.load_extensions()
@@ -96,11 +95,14 @@ class TestProjectDetachNodeMaintenance:
     """Test project_detach_node."""
 
     def test_project_detach_node_maintenance(self, maintenance_proj_init):
-        """Test that project_detach_node removes the node from the project."""
+        """Test that project_detach_node removes the node from the project.
+        Note that the maintenance server has a fake url.  We expect it to
+        fail during the connection."""
         api.project_create('anvil-nextgen')
         new_node('node-99')
         api.project_connect_node('anvil-nextgen', 'node-99')
-        api.project_detach_node('anvil-nextgen', 'node-99')
+        with pytest.raises(LoggedWarningError):
+            api.project_detach_node('anvil-nextgen', 'node-99')
         project = api._must_find(model.Project, 'anvil-nextgen')
         maintenance_proj = api._must_find(model.Project, 'maintenance')
         node = api._must_find(model.Node, 'node-99')

@@ -1399,9 +1399,13 @@ def _maintain(project, node, node_label):
     project.nodes.append(node)
     url = cfg.get('maintenance', 'url')
     payload = json.dumps({'node': node_label})
-    response = requests.post(url,
-                             headers={'Content-Type': 'application/json'},
-                             data=payload)
+    try:
+        response = requests.post(url,
+                                 headers={'Content-Type': 'application/json'},
+                                 data=payload)
+    except requests.ConnectionError:
+        logger.warn('POST to maintenance service'
+                    ' failed: connection failed')
     if (response.status_code >= 300):
         logger.warn('POST to maintenance service'
                     ' failed with response: %s', response.text)
