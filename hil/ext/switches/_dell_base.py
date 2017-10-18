@@ -49,15 +49,6 @@ class _BaseSession(_console.Session):
         self.disable_vlan(vlan_id)
         self._sendline('sw trunk native vlan none')
 
-    def disconnect(self):
-        if self._should_save('dell'):
-            self._save_running_config()
-        self._sendline('exit')
-        alternatives = [pexpect.EOF, '>']
-        if self.console.expect(alternatives):
-            self._sendline('exit')
-        logger.debug('Logged out of switch %r', self.switch)
-
     def get_port_networks(self, ports):
         num_re = re.compile(r'(\d+)')
         port_configs = self._port_configs(ports)

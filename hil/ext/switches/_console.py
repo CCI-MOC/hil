@@ -14,6 +14,8 @@
 """Common functionality for switches with a cisco-like console."""
 
 import logging
+import pexpect
+
 from abc import ABCMeta, abstractmethod
 from hil.model import Port, NetworkAttachment, SwitchSession
 import re
@@ -143,6 +145,15 @@ class Session(SwitchSession):
         logger.debug('Sending to switch %r: %r',
                      self.switch, line)
         self.console.sendline(line)
+
+    def _disconnect(self):
+        """Disconnect a session from switch. Handles the scenario where the
+        switch only exits out of enable mode and doesn't actually log out"""
+        self._sendline('exit')
+        alternatives = [pexpect.EOF, '>']
+        if self.console.expect(alternatives):
+            self._sendline('exit')
+        logger.debug('Logged out of switch %r', self.switch)
 
 
 def get_prompts(console):

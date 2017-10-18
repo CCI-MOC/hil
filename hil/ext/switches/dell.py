@@ -107,3 +107,8 @@ class _PowerConnect55xxSession(_BaseSession):
             self._sendline('terminal datadump')
         elif lines == 'default':
             self._sendline('no terminal datadump')
+
+    def disconnect(self):
+        if self._should_save('dell'):
+            self._save_running_config()
+        self._disconnect()

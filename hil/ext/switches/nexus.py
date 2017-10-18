@@ -121,7 +121,7 @@ class _Session(_console.Session):
     def disconnect(self):
         if self._should_save('nexus'):
             self._save_running_config()
-        self._sendline('exit')
+        self._disconnect()
 
     @staticmethod
     def connect(switch):

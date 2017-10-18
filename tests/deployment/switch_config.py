@@ -42,6 +42,9 @@ def configure():
          },
         'hil.ext.switches.nexus': {
             'save': 'True'
+        },
+        'hil.ext.switches.n3000': {
+            'save': 'True'
         }
     })
     config.load_extensions()

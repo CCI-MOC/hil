@@ -195,3 +195,8 @@ class _DellN3000Session(_BaseSession):
                 networks.append(('vlan/native', native))
             result[k] = networks
         return result
+
+    def disconnect(self):
+        if self._should_save('n3000'):
+            self._save_running_config()
+        self._disconnect()
