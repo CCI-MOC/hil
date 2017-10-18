@@ -30,6 +30,7 @@ from hil.ext.switches._dell_base import _BaseSession
 from os.path import dirname, join
 from hil.errors import BadArgumentError
 from hil.model import BigIntegerType
+from hil.ext.switches.switch_common import _should_save
 
 logger = logging.getLogger(__name__)
 paths[__name__] = join(dirname(__file__), 'migrations', 'n3000')
@@ -197,6 +198,6 @@ class _DellN3000Session(_BaseSession):
         return result
 
     def disconnect(self):
-        if self._should_save('n3000'):
+        if _should_save('n3000'):
             self._save_running_config()
         self._disconnect()

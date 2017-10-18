@@ -29,6 +29,7 @@ from hil.errors import BadArgumentError
 from os.path import join, dirname
 from hil.migrations import paths
 from hil.model import BigIntegerType
+from hil.ext.switches.switch_common import _should_save
 
 logger = logging.getLogger(__name__)
 
@@ -119,7 +120,7 @@ class _Session(_console.Session):
         self._sendline('sw trunk native vlan ' + self.dummy_vlan)
 
     def disconnect(self):
-        if self._should_save('nexus'):
+        if _should_save('nexus'):
             self._save_running_config()
         self._disconnect()
 

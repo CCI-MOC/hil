@@ -124,15 +124,6 @@ class Session(SwitchSession):
         self.exit_if_prompt()
         self.console.expect(self.config_prompt)
 
-    def _should_save(self, switch_type):
-        """checks the config file to see if switch should save or not"""
-
-        switch_ext = 'hil.ext.switches.' + switch_type
-        if cfg.has_option(switch_ext, 'save'):
-            if not cfg.getboolean(switch_ext, 'save'):
-                return False
-        return True
-
     def _set_terminal_lines(self, lines):
         """set the terminal lines to unlimited or default"""
 

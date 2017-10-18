@@ -29,6 +29,7 @@ from hil.ext.switches._dell_base import _BaseSession
 from os.path import dirname, join
 from hil.errors import BadArgumentError
 from hil.model import BigIntegerType
+from hil.ext.switches.switch_common import _should_save
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'dell')
 logger = logging.getLogger(__name__)
@@ -109,6 +110,6 @@ class _PowerConnect55xxSession(_BaseSession):
             self._sendline('no terminal datadump')
 
     def disconnect(self):
-        if self._should_save('dell'):
+        if _should_save('dell'):
             self._save_running_config()
         self._disconnect()
