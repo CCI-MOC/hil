@@ -133,12 +133,13 @@ class Session(SwitchSession):
             self.console.sendline('terminal length 40')
 
     def _sendline(self, line):
+        """logs switch command and then sends it"""
         logger.debug('Sending to switch %r: %r',
                      self.switch, line)
         self.console.sendline(line)
 
     def _disconnect(self):
-        """Disconnect a session from switch. Handles the scenario where the
+        """Disconnect from the switch. Handles the scenario where the
         switch only exits out of enable mode and doesn't actually log out"""
         self._sendline('exit')
         alternatives = [pexpect.EOF, '>']
