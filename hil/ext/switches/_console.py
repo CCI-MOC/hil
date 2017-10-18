@@ -19,7 +19,6 @@ import pexpect
 from abc import ABCMeta, abstractmethod
 from hil.model import Port, NetworkAttachment, SwitchSession
 import re
-from hil.config import cfg
 
 _CHANNEL_RE = re.compile(r'vlan/(\d+)')
 logger = logging.getLogger(__name__)

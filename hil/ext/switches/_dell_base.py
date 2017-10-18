@@ -13,7 +13,6 @@
 # governing permissions and limitations under the License.
 """Super Class for Dell like drivers. """
 
-import pexpect
 import re
 import logging
 
