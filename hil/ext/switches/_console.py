@@ -13,12 +13,14 @@
 # governing permissions and limitations under the License.
 """Common functionality for switches with a cisco-like console."""
 
+import logging
 from abc import ABCMeta, abstractmethod
 from hil.model import Port, NetworkAttachment, SwitchSession
 import re
 from hil.config import cfg
 
 _CHANNEL_RE = re.compile(r'vlan/(\d+)')
+logger = logging.getLogger(__name__)
 
 
 class Session(SwitchSession):
@@ -136,6 +138,11 @@ class Session(SwitchSession):
             self.console.sendline('terminal length 0')
         elif lines == 'default':
             self.console.sendline('terminal length 40')
+
+    def _sendline(self, line):
+        logger.debug('Sending to switch %r: %r',
+                     self.switch, line)
+        self.console.sendline(line)
 
 
 def get_prompts(console):
