@@ -75,7 +75,7 @@ class TestNetworkVlan(NetworkTest):
             """
             nodes = self.collect_nodes()
 
-            # Create two networks
+            # Create four networks
             network_create_simple('net-0', 'anvil-nextgen')
             network_create_simple('net-1', 'anvil-nextgen')
             network_create_simple('net-2', 'anvil-nextgen')
@@ -245,6 +245,8 @@ class TestNetworkVlan(NetworkTest):
             # Delete the networks
             api.network_delete('net-0')
             api.network_delete('net-1')
+            api.network_delete('net-2')
+            api.network_delete('net-3')
 
         # Create a project
         api.project_create('anvil-nextgen')
