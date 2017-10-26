@@ -148,13 +148,9 @@ def network_grant_project_access(project, network):
     """
     network = _must_find(model.Network, network)
     project = _must_find(model.Project, project)
-    auth_backend = get_auth_backend()
 
     # Must be admin or the owner of the network to add projects
-    if network.owner is None:
-        auth_backend.require_admin()
-    else:
-        auth_backend.require_project_access(network.owner)
+    get_auth_backend().require_project_access(network.owner)
 
     if project in network.access:
         raise errors.DuplicateError(
@@ -259,24 +255,16 @@ def node_power_cycle(node, force=False):
     Force indicates whether the node should be forced off, or allowed
     to respond to the shutdown signal.
     """
-    auth_backend = get_auth_backend()
     node = _must_find(model.Node, node)
-    if node.project is None:
-        auth_backend.require_admin()
-    else:
-        auth_backend.require_project_access(node.project)
+    get_auth_backend().require_project_access(node.project)
     node.obm.power_cycle(force)
 
 
 @rest_call('POST', '/node/<node>/power_off', Schema({'node': basestring}))
 def node_power_off(node):
     """Power off the node."""
-    auth_backend = get_auth_backend()
     node = _must_find(model.Node, node)
-    if node.project is None:
-        auth_backend.require_admin()
-    else:
-        auth_backend.require_project_access(node.project)
+    get_auth_backend().require_project_access(node.project)
     node.obm.power_off()
 
 
@@ -285,12 +273,8 @@ def node_power_off(node):
 }))
 def node_set_bootdev(node, bootdev):
     """Set the node's boot device."""
-    auth_backend = get_auth_backend()
     node = _must_find(model.Node, node)
-    if node.project is None:
-        auth_backend.require_admin()
-    else:
-        auth_backend.require_project_access(node.project)
+    get_auth_backend().require_project_access(node.project)
 
     node.obm.require_legal_bootdev(bootdev)
 
@@ -730,10 +714,7 @@ def list_network_attachments(network, project=None):
     network = _must_find(model.Network, network)
 
     # Determine if caller has access to owning project
-    if network.owner is None:
-        owner_access = auth_backend.have_admin()
-    else:
-        owner_access = auth_backend.have_project_access(network.owner)
+    owner_access = auth_backend.have_project_access(network.owner)
 
     if project is None:
         # No project means list all connected nodes
@@ -844,14 +825,8 @@ def network_delete(network):
     If the network is connected to nodes or headnodes, or there are pending
     network actions involving it, a BlockedError will be raised.
     """
-    auth_backend = get_auth_backend()
-
     network = _must_find(model.Network, network)
-
-    if network.owner is None:
-        auth_backend.require_admin()
-    else:
-        auth_backend.require_project_access(network.owner)
+    get_auth_backend().require_project_access(network.owner)
 
     if len(network.attachments) != 0:
         raise errors.BlockedError("Network still connected to nodes")
