@@ -55,7 +55,12 @@ case "$1" in
 
     cp etc/keystone.conf.sample etc/keystone.conf
 
+    sudo mkdir /etc/keystone
+    sudo chown $USER:$USER /etc/keystone
+
     keystone-manage db_sync
+    keystone-manage fernet_setup
+    keystone-manage credential_setup
 
     # Populate the database with some sample data. First, make sure keystone is
     # running:
