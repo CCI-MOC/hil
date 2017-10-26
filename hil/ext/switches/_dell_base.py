@@ -123,9 +123,7 @@ class _BaseSession(_console.Session):
         self.console.expect(self.main_prompt)
         return result
 
-    def _save_running_config(self):
-        """saves the running config to startup config"""
-
+    def save_running_config(self):
         self._sendline('copy running-config startup-config')
         self.console.expect(['Overwrite file ', re.escape('(y/n) ')])
         self._sendline('y')
