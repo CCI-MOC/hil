@@ -80,6 +80,9 @@ class Nexus(Switch):
                                    " ethernet1/0/10")
         return
 
+    def get_capabilities(self):
+        return ['nativeless-trunk-mode']
+
 
 class _Session(_console.Session):
 

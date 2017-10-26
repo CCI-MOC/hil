@@ -264,7 +264,7 @@ class Switch(db.Model):
         default behaviour is to return a list with capabilities supported by
         most switches"""
 
-        return ['nativeless-trunk-mode']
+        assert False, "Subclasses MUST override the validate method"
 
 
 class SwitchSession(object):
