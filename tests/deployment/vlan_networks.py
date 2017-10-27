@@ -215,7 +215,8 @@ class TestNetworkVlan(NetworkTest):
                 for attachment in attachments:
                     all_attachments.append((node.label,
                                             node.nics[0].label,
-                                            attachment.network.label))
+                                            attachment.network.label,
+                                            attachment.channel))
 
             switch = nodes[0].nics[0].port.owner
             # in some switches, the native network can only be disconnected
@@ -223,9 +224,12 @@ class TestNetworkVlan(NetworkTest):
             # for that and rearranges the networks (all_attachments) such that
             # tagged networks are removed first.
             if 'nativeless-trunk-mode' not in switch.get_capabilities():
-                all_attachments = sorted(all_attachments)
+                # sort by channel; so vlan/<integer> comes before vlan/native
+                all_attachments = sorted(all_attachments,
+                                         key=lambda channel: channel[3])
 
             for attachment in all_attachments:
+                attachment = (attachment[0], attachment[1], attachment[2])
                 api.node_detach_network(*attachment)
                 deferred.apply_networking()
 
