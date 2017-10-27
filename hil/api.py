@@ -123,7 +123,6 @@ def project_detach_node(project, node):
     get_auth_backend().require_project_access(project)
     node_label = node
     node = _must_find(model.Node, node)
-    maintaining = False
     if node not in project.nodes:
         raise errors.NotFoundError("Node not in project")
     num_attachments = model.NetworkAttachment.query \
@@ -135,24 +134,10 @@ def project_detach_node(project, node):
         if nic.current_action is not None:
             raise errors.BlockedError("Node has pending network actions")
 
-    if (cfg.has_option('maintenance', 'maintenance_project') and
-            cfg.has_option('maintenance', 'url')):
-        maintenance_proj = _must_find(
-                model.Project,
-                cfg.get('maintenance', 'maintenance_project')
-                )
-        if (project != maintenance_proj):
-            maintaining = True
-    elif (cfg.has_option('maintenance', 'maintenance_project')):
-        raise errors.NotFoundError("Maintenance URL not in hil.cfg.")
-    elif (cfg.has_option('maintenance', 'url')):
-        raise errors.NotFoundError("Maintenance project not in hil.cfg.")
-
     node.obm.stop_console()
     node.obm.delete_console()
     project.nodes.remove(node)
-    if (maintaining):
-        _maintain(maintenance_proj, node, node_label)
+    _maintain(project, node, node_label)
     db.session.commit()
 
 
@@ -1392,11 +1377,28 @@ def _must_find_n(obj_outer, cls_inner, name_inner):
 
 
 def _maintain(project, node, node_label):
-    """Perform maintenance tasks."""
+    """Helper function to execute maintenance tasks.
+    Powers off the node, checks for the existence of maintenance pool
+    config options, and posts to the maintenance URL if
+    they exist."""
     logger = logging.getLogger(__name__)
+    if (cfg.has_option('maintenance', 'maintenance_project') and
+            cfg.has_option('maintenance', 'url')):
+        maintenance_proj = _must_find(
+                model.Project,
+                cfg.get('maintenance', 'maintenance_project')
+                )
+        if (project == maintenance_proj):
+            # Already in maintenance pool
+            return
+    elif (cfg.has_option('maintenance', 'maintenance_project')):
+        raise errors.NotFoundError("Maintenance URL not in hil.cfg.")
+    elif (cfg.has_option('maintenance', 'url')):
+        raise errors.NotFoundError("Maintenance project not in hil.cfg.")
+
     if (cfg.has_option('maintenance', 'shutdown')):
         node.obm.power_off()
-    project.nodes.append(node)
+    maintenance_proj.nodes.append(node)
     url = cfg.get('maintenance', 'url')
     payload = json.dumps({'node': node_label})
     try:
@@ -1406,6 +1408,6 @@ def _maintain(project, node, node_label):
     except requests.ConnectionError:
         logger.warn('POST to maintenance service'
                     ' failed: connection failed')
-    if (response.status_code >= 300):
+    if (not 200 <= response < 300):
         logger.warn('POST to maintenance service'
                     ' failed with response: %s', response.text)
