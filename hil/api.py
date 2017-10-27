@@ -1395,6 +1395,8 @@ def _maintain(project, node, node_label):
         raise errors.NotFoundError("Maintenance URL not in hil.cfg.")
     elif (cfg.has_option('maintenance', 'url')):
         raise errors.NotFoundError("Maintenance project not in hil.cfg.")
+    else:
+        return
 
     if (cfg.has_option('maintenance', 'shutdown')):
         node.obm.power_off()
