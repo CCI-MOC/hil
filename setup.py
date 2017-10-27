@@ -24,7 +24,6 @@ def _get_readme():
         return f.read()
 
 setup(name='hil',
-      version='0.2rc2',
       maintainer='Developers of the HIL Project at MOC',
       maintainer_email='hil@lists.massopen.cloud',
       url='https://github.com/CCI-MOC/hil',
@@ -46,7 +45,8 @@ setup(name='hil',
                    'Programming Language :: Python',
                   ],
       keywords='cloud bare-metal setuptools data-center isolation',
-
+      setup_requires=['setuptools_scm'],
+      use_scm_version=True,
       packages=find_packages(),
       # TODO: we should merge scripts into entry_points, below.
       scripts=['scripts/hil', 'scripts/create_bridges'],
