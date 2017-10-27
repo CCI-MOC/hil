@@ -86,11 +86,6 @@ class _PowerConnect55xxSession(_BaseSession):
         self.switch = switch
         self.console = console
 
-    def _sendline(self, line):
-        logger.debug('Sending to switch %r: %r',
-                     self.switch, line)
-        self.console.sendline(line)
-
     @staticmethod
     def connect(switch):
         """connect to the switch, and log in."""
