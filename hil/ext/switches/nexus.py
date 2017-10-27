@@ -121,7 +121,6 @@ class _Session(_console.Session):
     @staticmethod
     def connect(switch):
         """Connect to the switch."""
-
         console = pexpect.spawn(
             'ssh ' + switch.username + '@' + switch.hostname)
 
