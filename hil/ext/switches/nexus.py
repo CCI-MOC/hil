@@ -29,7 +29,6 @@ from hil.errors import BadArgumentError
 from os.path import join, dirname
 from hil.migrations import paths
 from hil.model import BigIntegerType
-from hil.ext.switches.switch_common import _should_save
 
 logger = logging.getLogger(__name__)
 
@@ -118,11 +117,6 @@ class _Session(_console.Session):
     def disable_native(self, vlan_id):
         self.disable_vlan(vlan_id)
         self._sendline('sw trunk native vlan ' + self.dummy_vlan)
-
-    def disconnect(self):
-        if _should_save('nexus'):
-            self._save_running_config()
-        self._disconnect()
 
     @staticmethod
     def connect(switch):
@@ -231,9 +225,7 @@ class _Session(_console.Session):
             result[k] = networks
         return result
 
-    def _save_running_config(self):
-        """saves the running config to startup config"""
-
+    def save_running_config(self):
         self._sendline('copy running-config startup-config')
         self.console.expect('Copy complete')
         logger.debug('Copy succeeded')
