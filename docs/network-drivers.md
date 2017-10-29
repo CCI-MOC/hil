@@ -269,7 +269,6 @@ information to connect to the openvswitch.
 Any string can be accepted as a openvswitch port name.
 Once you add a port to the openvswitch, you can register the same with HIL.
 
-
 WARNING: Bridge and Ports should exist in the openvswitch before registering
 them with HIL.
 

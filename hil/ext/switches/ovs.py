@@ -12,13 +12,7 @@
 # IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
-"""A switch driver for the juniper QFX series.
-
-But in theory can work for any Juniper switch that supports NETCONF.
-Driver uses the python library PyEZ made available by Juniper.
-By default it sets NETCONF session over ssh, i.e. make RPC calls over ssh.
-For this to work, make sure that the Juniper switch is configured
-appropriately to recieve NETCONF connections. Its default port is 830.
+"""A switch driver for OpenVswitch.
 """
 
 import re
@@ -28,21 +22,14 @@ import os
 import ast
 from commands import getstatusoutput
 
-from hil.model import db, Switch, BigIntegerType
+from hil.model import db, Switch, BigIntegerType, SwitchSession
 from hil.migrations import paths
 from os.path import dirname, join
 logger = logging.getLogger(__name__)
-paths[__name__] = join(dirname(__file__), 'migrations', 'ovs')
 
 
 class VlanError(Exception):
     """ Raise this exception when vlan cannot be added to the port."""
-
-
-class NotImplementedYet(Exception):
-    """ Raise this exception for functions that require
-    more information to implement.
-    """
 
 
 class PortInfoNotFound(Exception):
@@ -53,11 +40,11 @@ class PortInfoNotFound(Exception):
 
 class OVS_RequestFailed(Exception):
     """ Raise this exception when a requestOVS failure
-    cannot does not follow into any of the above exceptions.
+    does not follow into any of the above exceptions.
     """
 
 
-class Ovs(Switch):
+class Ovs(Switch, SwitchSession):
     """ Driver for openvswitch. """
     api_name = 'http://schema.massopencloud.org/haas/v0/switches/ovs'
     dir_name = os.path.dirname(__file__)
@@ -96,16 +83,13 @@ class Ovs(Switch):
         Empty list is put as None.
         """
         if a_string[0] == '[' and a_string[1] == ']':
-            a_list = ast.literal_eval(a_string)
-            return a_list
-        elif a_string[0] == '[' and len(a_string) > 2:
+            return None
+        else:
             a_string = a_string.replace("[", "['").replace("]", "']")
             a_string = a_string.replace(",", "','")
             a_list = ast.literal_eval(a_string)
             a_list = [ele.strip() for ele in a_list]
             return a_list
-        else:
-            return None
 
     def str2dict(self, a_string):
         """Converts a string representation of dictionary to a dictionary."""
