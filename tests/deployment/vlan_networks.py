@@ -127,7 +127,6 @@ class TestNetworkVlan(NetworkTest):
                                      'net-1',
                                      channel=net_tag[1])
             deferred.apply_networking()
-
             # Assert that n0 and n1 are on isolated networks
             port_networks = self.get_port_networks(ports)
             assert self.get_network(nodes[0].nics[0].port, port_networks) == \
@@ -163,25 +162,16 @@ class TestNetworkVlan(NetworkTest):
             # Verify that we can put nodes on more than one network, with
             # different channels:
 
-            # this is a little clumsy. `get_networks` only returns the node
-            # if it's attached natively. So I must reconnect node[2] to net-1
-            # natively; and to do that I must undo the changes I did in the
-            # previous steps where I connect node[2] to net-3.
-            # we wouldn't have to do this if we do what I suggest in #893
-            api.port_revert(switch.label, nodes[2].nics[0].port.label)
-            deferred.apply_networking()
-
-            # connect net-2 to node[2] natively and also a net-0 as tagged.
+            # at this point, node-2 is connected to net-0 (tagged)
+            # and depending on the switch, to net-3 (native). Let's connect it
+            # to net-1 (tagged) (which node-1 is connected to)
             api.node_connect_network(nodes[2].label,
                                      nodes[2].nics[0].label,
-                                     'net-1')
-            deferred.apply_networking()
-            api.node_connect_network(nodes[2].label,
-                                     nodes[2].nics[0].label,
-                                     'net-0',
-                                     channel=net_tag[0])
+                                     'net-1',
+                                     channel=net_tag[1])
             deferred.apply_networking()
             port_networks = self.get_port_networks(ports)
+            # assert that node-2 was added to node-1's network correctly.
             assert self.get_network(nodes[1].nics[0].port, port_networks) == \
                 set([nodes[1].nics[0].port,
                      nodes[2].nics[0].port,
