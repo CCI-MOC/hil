@@ -20,6 +20,7 @@ tests in docs/testing.md
 
 import json
 
+from collections import namedtuple
 from hil import api, model, deferred, config, errors
 from hil.test_common import config_testsuite, fail_on_log_warnings, \
     fresh_database, with_request_context, site_layout, NetworkTest, \
@@ -209,27 +210,31 @@ class TestNetworkVlan(NetworkTest):
             # interference. If we were to hang on to references to database
             # objects across such calls however, things could get harry.
             all_attachments = []
+            net = namedtuple('net', 'node nic network channel')
             for node in nodes[:2]:
                 attachments = model.NetworkAttachment.query \
                     .filter_by(nic=node.nics[0]).all()
                 for attachment in attachments:
-                    all_attachments.append((node.label,
-                                            node.nics[0].label,
-                                            attachment.network.label,
-                                            attachment.channel))
+                    all_attachments.append(
+                                        net(node=node.label,
+                                            nic=node.nics[0].label,
+                                            network=attachment.network.label,
+                                            channel=attachment.channel))
 
             switch = nodes[0].nics[0].port.owner
             # in some switches, the native network can only be disconnected
             # after we remove all tagged networks first. The following checks
             # for that and rearranges the networks (all_attachments) such that
             # tagged networks are removed first.
+
             if 'nativeless-trunk-mode' not in switch.get_capabilities():
                 # sort by channel; so vlan/<integer> comes before vlan/native
                 all_attachments = sorted(all_attachments,
-                                         key=lambda channel: channel[3])
+                                         key=lambda net: net.channel)
 
             for attachment in all_attachments:
-                attachment = (attachment[0], attachment[1], attachment[2])
+                attachment = (attachment.node, attachment.nic,
+                              attachment.network)
                 api.node_detach_network(*attachment)
                 deferred.apply_networking()
 
