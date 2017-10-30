@@ -222,7 +222,7 @@ switch.
 
 ### Openvswitch Driver
 
-This driver is made available so that developers can have real switch 
+This driver is made available so that developers can have real switch
 like functionality without having access to any real switch hardware.
 To get started you will need to:
 1.  install openvswitch in your development machine (or VM).
@@ -241,9 +241,9 @@ To get started you will need to:
 	ovs-vsctl add-port <switch_name> <port_name>
 
 These are just illustrative examples. You may have to do more to setup
-your switch before using it with HIL. 
+your switch before using it with HIL.
 
-Alternatively you can run a script available at 
+Alternatively you can run a script available at
 
 	https://github.com/SahilTikale/HIL_contrib/blob/master/hilInYourLap/create_datacenter.sh
 
@@ -274,6 +274,6 @@ them with HIL.
 
 ### Using multiple switches
 
-Use-cases that involve configurations requiring access to multiple switches 
-can be achieved by adding bridges of different names to openvswitch and 
+Use-cases that involve configurations requiring access to multiple switches
+can be achieved by adding bridges of different names to openvswitch and
 registering them as separate switches.

@@ -23,8 +23,6 @@ import ast
 from commands import getstatusoutput
 
 from hil.model import db, Switch, BigIntegerType, SwitchSession
-from hil.migrations import paths
-from os.path import dirname, join
 logger = logging.getLogger(__name__)
 
 
@@ -150,7 +148,7 @@ class Ovs(Switch, SwitchSession):
                 )
         return self._requestOVS(payload, OVS_RequestFailed)
 
-    def modify_port(self, port, channel, network_id):
+    def modify_port(self, port, channel, new_network):
         """ Changes vlan assignment to the port.
         `node_connect_network` with 'vlan/native' flag:
         enable port; set port to trunk mode; assign native_vlan;
@@ -160,20 +158,20 @@ class Ovs(Switch, SwitchSession):
         interface = port.label
 
         if channel == 'vlan/native':
-            if network_id is None:
+            if new_network is None:
                 self._remove_native_vlan(interface)
             else:
-                self._set_native_vlan(interface, network_id)
+                self._set_native_vlan(interface, new_network)
         else:
             match = re.match(re.compile(r'vlan/(\d+)'), channel)
             assert match is not None, "HIL passed an invalid channel to the" \
                 " switch!"
             vlan_id = match.groups()[0]
 
-            if network_id is None:
+            if new_network is None:
                 self._remove_vlan_from_port(interface, vlan_id)
             else:
-                assert network_id == vlan_id
+                assert new_network == vlan_id
                 try:
                     self._add_vlan_to_trunk(interface, vlan_id)
                 except VlanError as e:
@@ -199,13 +197,13 @@ class Ovs(Switch, SwitchSession):
         """
         raise NotImplemented
 
-    def _set_native_vlan(self, port, network_id):
+    def _set_native_vlan(self, port, new_network):
         """Sets native vlan for a trunked port.
         It enables the port, if it is the first vlan for the port.
         """
         payload = (
                 " ovs-vsctl set port {port} tag={netid}".format(
-                        port=port, netid=network_id
+                        port=port, netid=new_network
                         ) + " vlan_mode=native-untagged"
                     )
 
