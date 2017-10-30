@@ -259,12 +259,9 @@ class Switch(db.Model):
         return
 
     def get_capabilities(self):
-        """Returns the list of capabilities supported by a switch
+        """Returns the list of capabilities supported by a switch"""
 
-        default behaviour is to return a list with capabilities supported by
-        most switches"""
-
-        assert False, "Subclasses MUST override the validate method"
+        assert False, "Subclasses MUST override get_capabilities"
 
 
 class SwitchSession(object):
