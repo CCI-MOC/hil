@@ -122,7 +122,7 @@ class _Session(_console.Session):
     def connect(switch):
         """Connect to the switch."""
         console = pexpect.spawn(
-            'ssh ' +  switch.username + '@' + switch.hostname)
+            'ssh ' + switch.username + '@' + switch.hostname)
         console.expect('Password: ')
         console.sendline(switch.password)
 

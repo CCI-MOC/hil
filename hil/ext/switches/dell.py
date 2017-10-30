@@ -91,7 +91,7 @@ class _PowerConnect55xxSession(_BaseSession):
         """connect to the switch, and log in."""
         console = pexpect.spawn(
             'ssh ' + switch.username + '@' + switch.hostname)
-        #dell switch gets user name for the second time
+        # dell switch gets user name for the second time
         console.expect('User Name:')
         console.sendline(switch.username)
         console.expect('Password:')
