@@ -96,7 +96,7 @@ A few commands are necessary to run on the switch before it can be used with HIL
 
    configure
    vlan 2-4094
-   
+
 2. This switch uses ssh for connection. Be sure that ssh is enabled on the switch.
 
 #### switch_register
