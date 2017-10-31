@@ -495,7 +495,9 @@ class Test_switch:
 
     def test_show_switch(self):
         """(successful) call to show_switch"""
-        assert C.switch.show('dell-01') == {u'name': u'dell-01', u'ports': []}
+        assert C.switch.show('dell-01') == {
+            u'name': u'dell-01', u'ports': [],
+            u'capabilities': ['nativeless-trunk-mode']}
 
     def test_delete_switch(self):
         """(successful) call to switch_delete"""
