@@ -84,7 +84,7 @@ HIL:
 * ``hil.ext.switches.n3000``, for Dell N3000 series switches.
 * ``hil.ext.switches.dellnos9``, for Dell switches running Dell Networking OS 9.
 
-All switches may or may not have certain capabilities. The `show_switch` call
+Different switches may or may not have certain capabilities. The `show_switch` call
 can be used to see what a switch is capable of. Currently, HIL exposes the
 following switch capabilities:
 

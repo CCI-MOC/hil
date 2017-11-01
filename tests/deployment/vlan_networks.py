@@ -218,14 +218,14 @@ class TestNetworkVlan(NetworkTest):
             # tagged networks are removed first.
 
             if 'nativeless-trunk-mode' not in switch.get_capabilities():
-                # sort by channel; so vlan/<integer> comes before vlan/native
+                # sort by channel; vlan/<integer> comes before vlan/native
+                # because the ASCII for numbers comes before ASCII for letters.
                 all_attachments = sorted(all_attachments,
                                          key=lambda net: net.channel)
 
             for attachment in all_attachments:
-                attachment = (attachment.node, attachment.nic,
-                              attachment.network)
-                api.node_detach_network(*attachment)
+                api.node_detach_network(attachment.node, attachment.nic,
+                                        attachment.network)
                 deferred.apply_networking()
 
             # For the second two nodes, we just call port_revert on the nic's
