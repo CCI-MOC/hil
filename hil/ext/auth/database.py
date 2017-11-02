@@ -140,6 +140,7 @@ def user_remove_project(user, project):
     'is_admin': bool,
 }))
 def user_set_admin(user, is_admin):
+    """Set whether the user is an admin."""
     get_auth_backend().require_admin()
     user = api._must_find(User, user)
     if user.label == local.auth.label:
@@ -149,8 +150,12 @@ def user_set_admin(user, is_admin):
 
 
 class DatabaseAuthBackend(auth.AuthBackend):
+    """
+    Auth backend using basic auth, with usernames & passwords stored in the DB.
+    """
 
     def authenticate(self):
+        # pylint: disable=missing-docstring
         local.auth = None
         if flask.request.authorization is None:
             return False
@@ -177,4 +182,5 @@ class DatabaseAuthBackend(auth.AuthBackend):
 
 
 def setup(*args, **kwargs):
+    """Set a DatabaseAuthBackend as the auth backend."""
     auth.set_auth_backend(DatabaseAuthBackend())

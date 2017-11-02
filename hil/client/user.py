@@ -1,3 +1,8 @@
+"""Client library for user-oriented api calls.
+
+These are only meaningful if the server is configured to use
+username & password auth.
+"""
 import json
 from hil.client.base import ClientBase
 

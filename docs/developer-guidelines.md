@@ -21,6 +21,8 @@ If you're looking to code, there are a few ways to help:
 * Taking a github issue marked with the [easy label](https://github.com/CCI-MOC/hil/labels/easy). (Talk to one of the core team members to have it assigned to you officially!)
 * Taking on a github issue that is part of one of the next [milestones in github](https://github.com/CCI-MOC/hil/milestones?state=open)
 
+Please fill and sign the [Individual Contributor License Agreement](https://massopen.cloud/blog/individual-contributor-license-agreement/) prior to commiting any code.
+
 ## Communicating
 
 * IRC: The MOC team hangs out on #moc on [freenode](https://www.freenode.net/)

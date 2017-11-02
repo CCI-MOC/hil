@@ -57,14 +57,14 @@ This is, as the filepath states, merely an example of how you might deploy to
 physical nodes.  Existing deployment systems such as Canonical's MAAS have also
 been run succesfully.
 
-Usage examples 
+Usage examples
 ---------------
 
 Included herewith are some examples about
 
  * Interacting with HIL API directly using the curl utility.
 
- * And using equivalent cli calls are also included. 
+ * And using equivalent cli calls are also included.
 
 ::
 
@@ -126,4 +126,4 @@ Corresponding cli calls will be as follows:
         hil node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01
 
 
- 
+

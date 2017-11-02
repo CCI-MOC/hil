@@ -74,7 +74,7 @@ For headnode functionality:
 Documentation
 --------------
 
-* The full documentation is availalbe at `ReadTheDocs <http://hil.readthedocs.io/en/latest/>`_ in a beautiful and easy to navigate web interface. 
+* The full documentation is availalbe at `ReadTheDocs <http://hil.readthedocs.io/en/latest/>`_ in a beautiful and easy to navigate web interface.
 * `The docs directory <https://github.com/CCI-MOC/hil/tree/master/docs>`_ contains all the documentation in .rst and .md format
 * `Examples <https://github.com/CCI-MOC/hil/tree/master/examples>`_ contains examples of config files, templates for creating headnode VM images and a script to register nodes with HIL.
 

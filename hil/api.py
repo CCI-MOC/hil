@@ -148,13 +148,9 @@ def network_grant_project_access(project, network):
     """
     network = _must_find(model.Network, network)
     project = _must_find(model.Project, project)
-    auth_backend = get_auth_backend()
 
     # Must be admin or the owner of the network to add projects
-    if network.owner is None:
-        auth_backend.require_admin()
-    else:
-        auth_backend.require_project_access(network.owner)
+    get_auth_backend().require_project_access(network.owner)
 
     if project in network.access:
         raise errors.DuplicateError(
@@ -254,23 +250,21 @@ def node_register(node, **kwargs):
     Optional('force'): bool
 }))
 def node_power_cycle(node, force=False):
-    auth_backend = get_auth_backend()
+    """Reboot the node.
+
+    Force indicates whether the node should be forced off, or allowed
+    to respond to the shutdown signal.
+    """
     node = _must_find(model.Node, node)
-    if node.project is None:
-        auth_backend.require_admin()
-    else:
-        auth_backend.require_project_access(node.project)
+    get_auth_backend().require_project_access(node.project)
     node.obm.power_cycle(force)
 
 
 @rest_call('POST', '/node/<node>/power_off', Schema({'node': basestring}))
 def node_power_off(node):
-    auth_backend = get_auth_backend()
+    """Power off the node."""
     node = _must_find(model.Node, node)
-    if node.project is None:
-        auth_backend.require_admin()
-    else:
-        auth_backend.require_project_access(node.project)
+    get_auth_backend().require_project_access(node.project)
     node.obm.power_off()
 
 
@@ -278,12 +272,9 @@ def node_power_off(node):
     'node': basestring, 'bootdev': basestring,
 }))
 def node_set_bootdev(node, bootdev):
-    auth_backend = get_auth_backend()
+    """Set the node's boot device."""
     node = _must_find(model.Node, node)
-    if node.project is None:
-        auth_backend.require_admin()
-    else:
-        auth_backend.require_project_access(node.project)
+    get_auth_backend().require_project_access(node.project)
 
     node.obm.require_legal_bootdev(bootdev)
 
@@ -372,8 +363,7 @@ def node_connect_network(node, nic, network, channel=None):
         return model.NetworkAttachment.query.filter(
             model.NetworkAttachment.nic == nic,
             query,
-        ).count() != 0
-
+        ).first() is not None
     auth_backend = get_auth_backend()
 
     node = _must_find(model.Node, node)
@@ -413,6 +403,9 @@ def node_connect_network(node, nic, network, channel=None):
         raise errors.BadArgumentError(
             "Channel %r, is not legal for this network." % channel)
 
+    switch = nic.port.owner
+    switch.ensure_legal_operation(nic, 'connect', channel)
+
     db.session.add(model.NetworkingAction(type='modify_port',
                                           nic=nic,
                                           new_network=network,
@@ -447,10 +440,14 @@ def node_detach_network(node, nic, network):
         raise errors.BlockedError(
             "A networking operation is already active on the nic.")
     attachment = model.NetworkAttachment.query \
-        .filter_by(nic=nic, network=network).first()
+        .filter_by(nic=nic, network=network).one_or_none()
     if attachment is None:
         raise errors.BadArgumentError(
             "The network is not attached to the nic.")
+
+    switch = nic.port.owner
+    switch.ensure_legal_operation(nic, 'detach', attachment.channel)
+
     db.session.add(model.NetworkingAction(type='modify_port',
                                           nic=nic,
                                           channel=attachment.channel,
@@ -717,10 +714,7 @@ def list_network_attachments(network, project=None):
     network = _must_find(model.Network, network)
 
     # Determine if caller has access to owning project
-    if network.owner is None:
-        owner_access = auth_backend.have_admin()
-    else:
-        owner_access = auth_backend.have_project_access(network.owner)
+    owner_access = auth_backend.have_project_access(network.owner)
 
     if project is None:
         # No project means list all connected nodes
@@ -831,14 +825,8 @@ def network_delete(network):
     If the network is connected to nodes or headnodes, or there are pending
     network actions involving it, a BlockedError will be raised.
     """
-    auth_backend = get_auth_backend()
-
     network = _must_find(model.Network, network)
-
-    if network.owner is None:
-        auth_backend.require_admin()
-    else:
-        auth_backend.require_project_access(network.owner)
+    get_auth_backend().require_project_access(network.owner)
 
     if len(network.attachments) != 0:
         raise errors.BlockedError("Network still connected to nodes")
@@ -888,6 +876,18 @@ def show_network(network):
     else:
         result['access'] = None
 
+    connected_nodes = {}
+    for n in network.attachments:
+        if auth_backend.have_project_access(network.owner) or \
+                auth_backend.have_project_access(n.nic.owner.project):
+            node, nic = n.nic.owner.label, n.nic.label
+            # build a dictonary mapping a node to list of nics
+            if node not in connected_nodes:
+                connected_nodes[node] = [nic]
+            else:
+                connected_nodes[node].append(nic)
+    result['connected-nodes'] = connected_nodes
+
     return json.dumps(result, sort_keys=True)
 
 
@@ -897,6 +897,7 @@ def show_network(network):
     Optional(object): object,
 }))
 def switch_register(switch, type, **kwargs):
+    """Register a new switch"""
     get_auth_backend().require_admin()
     _assert_absent(model.Switch, switch)
 
@@ -914,6 +915,7 @@ def switch_register(switch, type, **kwargs):
 
 @rest_call('DELETE', '/switch/<switch>', Schema({'switch': basestring}))
 def switch_delete(switch):
+    """Delete a switch"""
     get_auth_backend().require_admin()
     switch = _must_find(model.Switch, switch)
 
@@ -1084,6 +1086,7 @@ def port_detach_nic(switch, port):
     'switch': basestring, 'port': basestring,
 }))
 def port_revert(switch, port):
+    """Detach the port from all networks."""
     get_auth_backend().require_admin()
     switch = _must_find(model.Switch, switch)
     port = _must_find_n(switch, model.Port, port)
@@ -1208,20 +1211,6 @@ def show_headnode(nodename):
     """Show details of a headnode.
 
     Returns a JSON object representing a headnode.
-    The obect will have at least the following fields:
-        * "name", the name/label of the headnode (string).
-        * "project", the project to which the headnode belongs.
-        * "hnics", a JSON array of hnic labels that are attached to this
-            headnode.
-        * "vncport", the vnc port that the headnode VM is listening on; this
-            value can be None if the VM is powered off or has not been
-            created yet.
-
-    Example:  '{"name": "headnode1",
-                "project": "project1",
-                "hnics": ["hnic1", "hnic2"],
-                "vncport": 5900
-               }'
     """
     headnode = _must_find(model.Headnode, nodename)
     get_auth_backend().require_project_access(headnode.project)

@@ -3,13 +3,13 @@ The following steps will let you install, configure PostgreSQL server and
 create a `hil` database for development or production version of HIL on a
 Centos - 7 server.
 
-For simplicity of configuration and ease of maintenance we will use 
+For simplicity of configuration and ease of maintenance we will use
 single name `hil` for creating a system user, database role and database name.
 This is merely a guideline for users new to database setup and administration.
 Experienced users are free to choose any other method that suits their need.
 The end goal is to have a way to have a working PostgreSQL backend for `hil`
 
-## Part 1: Install PostgreSQL server. 
+## Part 1: Install PostgreSQL server.
 
 Initialize the system. Configure PostgreSQL to allow password authentication.
 
@@ -62,7 +62,7 @@ Create database named `hil` owned by user also named as `hil`.
 **5. Create a system user hil:**
 
 If you are setting up this database for a [production setup](INSTALL.html)
-then you might have already created a system user for managing `HIL`. In that case skip this 
+then you might have already created a system user for managing `HIL`. In that case skip this
 step.
 
 If you are setting up database for [development purpose](INSTALL-devel.html)
@@ -78,8 +78,8 @@ useradd hil --system -d /var/lib/hil -m -r
 
 **6. Create a database role named `hil` with privileges to:**
  `-r` create roles
- `-d` create databases and 
- `-P` will prompt for the password of the new user. 
+ `-d` create databases and
+ `-P` will prompt for the password of the new user.
 This is necessary since we have configured PostgreSQL to use password authentication.
 
 ```
@@ -93,13 +93,13 @@ Confirm that the role with requisite privileges is created **as postgres user**:
 ```
 $ psql -c '\dg'
                              List of roles
- Role name |                   Attributes                   | Member of 
+ Role name |                   Attributes                   | Member of
 -----------+------------------------------------------------+-----------
  hil      | Create role, Create DB                         | {}
  postgres  | Superuser, Create role, Create DB, Replication | {}
 ```
 
-**Note**: It is recommended that the PostgreSQL role and database you create correspond to an existing system user. 
+**Note**: It is recommended that the PostgreSQL role and database you create correspond to an existing system user.
 eg. There should be a system user `hil` to access database named `hil` as database role named `hil`.
 Advanced user/role/database configurations may not need to follow this rule.  More information is available in the [Database Roles and Privileges](https://www.postgresql.org/docs/9.0/static/user-manag.html) reference guide.
 
@@ -115,10 +115,10 @@ confirm it created a database named `hil` and it is owned by `hil`.
 ```
 $ psql -c '\l'
                                   List of databases
-   Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges   
+   Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges
 -----------+----------+----------+-------------+-------------+-----------------------
- hil      | hil     | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
- postgres  | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
+ hil      | hil     | UTF8     | en_US.UTF-8 | en_US.UTF-8 |
+ postgres  | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |
  template0 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
            |          |          |             |             | postgres=CTc/postgres
  template1 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
@@ -127,7 +127,7 @@ $ psql -c '\l'
 
 ##Finally:
 
-If you have followed all steps so far. 
+If you have followed all steps so far.
 Put following string in `hil.cfg` under section `[database]`
 
 ```
@@ -143,5 +143,5 @@ typical default postgres setup, the right value is ``localhost``).
 Continue with installation steps:
 
 [continue with production install](INSTALL.html)
-or 
+or
 [continue with development install](INSTALL-devel.html)

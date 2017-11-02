@@ -12,6 +12,8 @@
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
 
+# pylint: disable=missing-docstring
+
 from setuptools import setup, find_packages
 from os.path import dirname, join
 readme_file = 'README.rst'
@@ -22,9 +24,8 @@ def _get_readme():
         return f.read()
 
 setup(name='hil',
-      version='0.2rc2',
       maintainer='Developers of the HIL Project at MOC',
-      maintainer_email='hil-dev-list@bu.edu',
+      maintainer_email='hil@lists.massopen.cloud',
       url='https://github.com/CCI-MOC/hil',
       description='A bare-metal isolation service that automates allocation '
                   'and management of non-virtualized compute resources across '
@@ -44,7 +45,8 @@ setup(name='hil',
                    'Programming Language :: Python',
                   ],
       keywords='cloud bare-metal setuptools data-center isolation',
-
+      setup_requires=['setuptools_scm'],
+      use_scm_version=True,
       packages=find_packages(),
       # TODO: we should merge scripts into entry_points, below.
       scripts=['scripts/hil', 'scripts/create_bridges'],

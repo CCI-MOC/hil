@@ -28,7 +28,6 @@ from hil.migrations import paths
 from hil.ext.switches import _console
 from hil.ext.switches._dell_base import _BaseSession
 from os.path import dirname, join
-from hil.migrations import paths
 from hil.errors import BadArgumentError
 from hil.model import BigIntegerType
 
@@ -37,6 +36,8 @@ paths[__name__] = join(dirname(__file__), 'migrations', 'n3000')
 
 
 class DellN3000(Switch):
+    """Dell N3000 switch."""
+
     api_name = 'http://schema.massopencloud.org/haas/v0/switches/' \
         'delln3000'
 
@@ -99,7 +100,7 @@ class _DellN3000Session(_BaseSession):
 
     @staticmethod
     def connect(switch):
-        # connect to the switch, and log in:
+        """connect to the switch, and log in"""
         console = pexpect.spawn('telnet ' + switch.hostname)
         console.expect('User:')
         console.sendline(switch.username)

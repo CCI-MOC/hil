@@ -45,6 +45,7 @@ pytest_plugins = 'pytest_catchlog'
 
 @pytest.fixture(autouse=True)
 def configure():
+    """Set up the HIL config."""
     config_testsuite()
     config.configure_logging()
     config.load_extensions()
@@ -155,6 +156,7 @@ class TestUrlArgs(HttpEquivalenceTest, HttpTest):
         }))
         # pylint: disable=unused-variable
         def func(foo, bar):
+            """Return URL arguments as a JSON list."""
             return json.dumps([foo, bar])
 
     def api_call(self):
@@ -176,6 +178,7 @@ class TestBodyArgs(HttpEquivalenceTest, HttpTest):
         }))
         # pylint: disable=unused-variable
         def foo(bar, baz):
+            """Return body arguments as a JSON list."""
             return json.dumps([bar, baz])
 
     def api_call(self):
@@ -200,6 +203,7 @@ class TestRestCallSchema(HttpEquivalenceTest, HttpTest):
         }))
         # pylint: disable=unused-variable
         def product(x, y, z=1):
+            """Multiply arguments from the body."""
             return json.dumps(x * y * z)
 
     def api_call(self):
@@ -219,6 +223,7 @@ class TestEquiv_basic_APIError(HttpEquivalenceTest, HttpTest):
         @rest.rest_call('GET', '/some_error', Schema({}))
         # pylint: disable=unused-variable
         def some_error():
+            """Raise an APIError."""
             self.api_call()
 
     def api_call(self):
@@ -241,9 +246,11 @@ class TestNoneReturnValue(HttpTest):
         @rest.rest_call('GET', '/nothing', Schema({}))
         # pylint: disable=unused-variable
         def api_call():
+            """Return None"""
             return None
 
     def test_none_return(self):
+        """Returning None should return 200 OK with an empty body."""
         resp = self.client.get('/nothing')
         assert resp.status_code == 200
         assert resp.get_data() == ''
@@ -251,52 +258,54 @@ class TestNoneReturnValue(HttpTest):
 
 @pytest.fixture()
 def validation_setup():
+    """Fixture registering of api calls with a variety of arguments/results."""
     # There's a mix of GET, PUT and POST in these; mixing it up may give us
     # better coverage. The particulars of which PUT and POST calls get which
     # methods are arbitrary, though GET calls have some specificity.
 
     # We have several kinds of calls we want to validate here:
 
-    # 1. No arguments in the URL or body (no_args)
     @rest.rest_call(['GET', 'POST'], '/no/args', Schema({}))
     # pylint: disable=unused-variable
     def no_args():
-        pass
+        """Call with no arguments in the URL or body"""
 
-    # 2. Argument in the URL and not in the body (url_args)
     @rest.rest_call(['GET', 'POST'], '/url/args/<arg1>/<arg2>', Schema({
         'arg1': basestring,
         'arg2': basestring,
     }))
     # pylint: disable=unused-variable
     def url_args(arg1, arg2):
+        """Call with arguments in the URL and not in the body"""
         return json.dumps([arg1, arg2])
 
-    # 3. Arguments in both the URL and body (mixed_args)
     @rest.rest_call(['GET', 'PUT'], '/mixed/args/<arg1>', Schema({
         'arg1': basestring,
         'arg2': basestring,
     }))
     # pylint: disable=unused-variable
     def mixed_args(arg1, arg2):
+        """Call with arguments in both the URL and body"""
         return json.dumps([arg1, arg2])
 
-    # 4. Arguments in body (query parameters for GET) and not in the URL.
     @rest.rest_call(['GET', 'POST'], '/just/bodyargs', Schema({
         'arg1': basestring,
         'arg2': basestring,
     }))
     # pylint: disable=unused-variable
     def just_bodyargs(arg1, arg2):
+        """
+        Call with arguments in body (query params for GET) and not in the URL.
+        """
         return json.dumps([arg1, arg2])
 
-    # 5. One optional argument.
     @rest.rest_call(['GET', 'POST'], '/just/bodyargs/optional_arg2_int',
                     Schema({'arg1': basestring,
                             Optional('arg2'): Use(int),
                             }))
     # pylint: disable=unused-variable
     def bodyargs_optional_arg2_int(arg1, arg2=-42):
+        """One optional argument"""
         return json.dumps([arg1, arg2])
 
     # Let's also make sure we're testing something with a schema that isn't
@@ -305,12 +314,18 @@ def validation_setup():
                     schema=Schema({"the_value": int}))
     # pylint: disable=unused-variable
     def put_int_body_arg(the_value):
+        """Call with an argument that's not a basestring (int)"""
         return json.dumps(the_value)
 
     @rest.rest_call('GET', '/get-int-body-arg-with-use',
                     schema=Schema({"the_value": Use(int)}))
     # pylint: disable=unused-variable
     def get_int_body_arg_with_use(the_value):
+        """Call with Use in the schema
+
+        This makes sure that rest_call is correctly passing us the result of
+        validation, rather than the original input.
+        """
         return json.dumps(the_value)
 
 
@@ -568,6 +583,7 @@ class TestCallOnce(HttpTest):
         self.num_calls = 0
 
     def test_call_once(self):
+        """Verify that we only call an API function once per request."""
         # We define an API call that increments a counter each time the
         # function is called, then invoke it via HTTP. Finally, we verify that
         # the counter is equal to 1, indicating that the function was called
@@ -584,6 +600,8 @@ class TestCallOnce(HttpTest):
 
 
 def test_dont_log(client, caplog):
+    """Test the ``dont_log`` argument to rest_call."""
+
     @rest.rest_call('POST', '/some-path', Schema({
         'public': basestring,
         'private': basestring,
@@ -591,12 +609,20 @@ def test_dont_log(client, caplog):
     }), dont_log=('private',))
     # pylint: disable=unused-variable
     def some_call(public, private, stuff):
-        pass
+        """API Call that doesn't do anything.
+
+        This is here just so we have an API call to test with, but all of
+        the logic we're testing is in the common hil.rest machinery, so it
+        doesn't actually need to do anything.
+        """
 
     with caplog.at_level(logging.DEBUG):
-        client.post('/some-path', data=json.dumps({
+        resp = client.post('/some-path', data=json.dumps({
             'public': 'common knowledge',
             'private': 'sensitive info',
+            'stuff': 'Other stuff',
         }))
+        assert resp.status_code == 200, \
+            "An error occured handling the request!"
         for record in caplog.records():
             assert 'sensitive info' not in record.getMessage()

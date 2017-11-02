@@ -91,8 +91,8 @@ with:
 At present, when a network consisting of nodes 0, 1 and 2, and headnode H,
 using vlan tag N is deployed,
 
-* The ports to which 0, 1 and 2 are attached are configured for trunked 
-  mode, and given access to VLAN N. Depending on the user's preferences, 
+* The ports to which 0, 1 and 2 are attached are configured for trunked
+  mode, and given access to VLAN N. Depending on the user's preferences,
   the VLAN may either be tagged or native, on a per-port basis.
 * An interface `ethM.N` is created on the HIL master, where `ethM` is a network
   interface connected to the switch. `ethM` must be connected to a port that is

@@ -15,6 +15,8 @@ revision = '357bcff65fb3'
 down_revision = 'b96d46bbfb12'
 branch_labels = ('hil.ext.switches.n3000',)
 
+# pylint: disable=missing-docstring
+
 
 def upgrade():
     op.alter_column('dell_n3000', 'id',

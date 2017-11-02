@@ -14,13 +14,14 @@
 
 """Unit tests for ipmi.py"""
 import pytest
-from hil import server, api, errors
+from hil import api, errors
 from hil.test_common import config, config_testsuite, fresh_database, \
-    fail_on_log_warnings, with_request_context, config_merge
+    fail_on_log_warnings, with_request_context, config_merge, server_init
 
 
 @pytest.fixture
 def configure():
+    """Configure HIL."""
     config_testsuite()
     config_merge({
         'extensions': {
@@ -36,12 +37,8 @@ def configure():
 fresh_database = pytest.fixture(fresh_database)
 fail_on_log_warnings = pytest.fixture(fail_on_log_warnings)
 with_request_context = pytest.yield_fixture(with_request_context)
+server_init = pytest.fixture(server_init)
 
-
-@pytest.fixture
-def server_init():
-    server.register_drivers()
-    server.validate_state()
 
 default_fixtures = ['fail_on_log_warnings',
                     'configure',
@@ -69,6 +66,11 @@ class TestIpmi:
             api.node_set_bootdev('node-99', 'invalid-device')
 
     def test_require_legal_bootdev(self):
+        """Test the require_legal_bootdev method.
+
+        Try a valid and an invalid bootdev, and make sure it does the right
+        thing.
+        """
         from hil.ext.obm import ipmi
         instance = ipmi.Ipmi(
                   host="ipmihost",

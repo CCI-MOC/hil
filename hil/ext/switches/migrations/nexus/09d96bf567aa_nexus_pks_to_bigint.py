@@ -9,11 +9,12 @@ Create Date: 2017-07-21 15:43:24.005782
 from alembic import op
 import sqlalchemy as sa
 
-
 # revision identifiers, used by Alembic.
 revision = '09d96bf567aa'
 down_revision = None
 branch_labels = ('hil.ext.switches.nexus',)
+
+# pylint: disable=missing-docstring
 
 
 def upgrade():

@@ -15,6 +15,8 @@ revision = 'b5b31d19257d'
 down_revision = None
 branch_labels = None
 
+# pylint: disable=missing-docstring
+
 
 def upgrade():
     metadata = db.inspect(db.engine).get_table_names()

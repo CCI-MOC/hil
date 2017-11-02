@@ -11,8 +11,13 @@ logger = ContextLogger(logging.getLogger(__name__), {})
 
 
 class NullAuthBackend(auth.AuthBackend):
+    """A null authentication backend.
+
+    Authentication always succeeds, giving admin access.
+    """
 
     def authenticate(self):
+        # pylint: disable=missing-docstring
         logger.info("successful authentication with null backend.")
         return True
 
@@ -24,4 +29,5 @@ class NullAuthBackend(auth.AuthBackend):
 
 
 def setup(*args, **kwargs):
+    """Set a NullAuthBackend as the auth backend."""
     auth.set_auth_backend(NullAuthBackend())

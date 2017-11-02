@@ -15,8 +15,11 @@ logger = rest.ContextLogger(logging.getLogger(__name__), {})
 
 
 class KeystoneAuthBackend(auth.AuthBackend):
+    """Authenticate with keystone."""
 
     def authenticate(self):
+        # pylint: disable=missing-docstring
+
         # keystonemiddleware makes auth info available from two places:
         #
         # 1. Variables in the wsgi environment
@@ -35,7 +38,7 @@ class KeystoneAuthBackend(auth.AuthBackend):
             return True
 
         project_id = request.environ['HTTP_X_PROJECT_ID']
-        if Project.query.filter_by(label=project_id).count() == 0:
+        if Project.query.filter_by(label=project_id).first() is None:
             logger.info("Successful authentication by Openstack project %r, "
                         "but this project is not registered with HIL",
                         project_id)
@@ -51,6 +54,10 @@ class KeystoneAuthBackend(auth.AuthBackend):
 
 
 def setup(*args, **kwargs):
+    """Set a KeystoneAuthBackend as the auth backend.
+
+    Loads keystone settings from hil.cfg.
+    """
     if not cfg.has_section(__name__):
         logger.error('No section for [%s] in hil.cfg; authentication will '
                      'not work without this. Please add this section and try '

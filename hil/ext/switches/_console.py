@@ -13,15 +13,20 @@
 # governing permissions and limitations under the License.
 """Common functionality for switches with a cisco-like console."""
 
+import logging
+import pexpect
+
 from abc import ABCMeta, abstractmethod
-from hil.model import Port, NetworkAttachment
+from hil.model import Port, NetworkAttachment, SwitchSession
+from hil.ext.switches.common import should_save
 import re
-from hil.config import cfg
 
 _CHANNEL_RE = re.compile(r'vlan/(\d+)')
+logger = logging.getLogger(__name__)
 
 
-class Session(object):
+class Session(SwitchSession):
+    """Common base class for sessions in console-based drivers."""
 
     __metaclass__ = ABCMeta
 
@@ -70,10 +75,23 @@ class Session(object):
         """Disable all vlans on the current port."""
 
     @abstractmethod
-    def disconnect(self):
-        """End the session. Must be at the main prompt."""
+    def save_running_config(self):
+        """saves the running config to startup config"""
 
-    def modify_port(self, port, channel, network_id):
+    def disconnect(self):
+        """End the session. Must be at the main prompt. Handles the scenario
+        where the switch only exits out of enable mode and doesn't actually
+        log out"""
+
+        if should_save(self):
+            self.save_running_config()
+        self._sendline('exit')
+        alternatives = [pexpect.EOF, '>']
+        if self.console.expect(alternatives):
+            self._sendline('exit')
+        logger.debug('Logged out of switch %r', self.switch)
+
+    def modify_port(self, port, channel, new_network):
         interface = port
         port = Port.query.filter_by(label=port,
                                     owner_id=self.switch.id).one()
@@ -84,12 +102,12 @@ class Session(object):
         if channel == 'vlan/native':
             old_native = NetworkAttachment.query.filter_by(
                 channel='vlan/native',
-                nic_id=port.nic.id).first()
+                nic_id=port.nic.id).one_or_none()
             if old_native is not None:
                 old_native = old_native.network.network_id
 
-            if network_id is not None:
-                self.set_native(old_native, network_id)
+            if new_network is not None:
+                self.set_native(old_native, new_network)
             elif old_native is not None:
                 self.disable_native(old_native)
         else:
@@ -101,10 +119,10 @@ class Session(object):
             assert match is not None, "HIL passed an invalid channel to the" \
                 "switch!"
             vlan_id = match.groups()[0]
-            if network_id is None:
+            if new_network is None:
                 self.disable_vlan(vlan_id)
             else:
-                assert network_id == vlan_id
+                assert new_network == vlan_id
                 self.enable_vlan(vlan_id)
 
         self.exit_if_prompt()
@@ -119,15 +137,6 @@ class Session(object):
         self.exit_if_prompt()
         self.console.expect(self.config_prompt)
 
-    def _should_save(self, switch_type):
-        """checks the config file to see if switch should save or not"""
-
-        switch_ext = 'hil.ext.switches.' + switch_type
-        if cfg.has_option(switch_ext, 'save'):
-            if not cfg.getboolean(switch_ext, 'save'):
-                return False
-        return True
-
     def _set_terminal_lines(self, lines):
         """set the terminal lines to unlimited or default"""
 
@@ -136,8 +145,25 @@ class Session(object):
         elif lines == 'default':
             self.console.sendline('terminal length 40')
 
+    def _sendline(self, line):
+        """logs switch command and then sends it"""
+        logger.debug('Sending to switch %r: %r',
+                     self.switch, line)
+        self.console.sendline(line)
+
 
 def get_prompts(console):
+        """Determine the prompts used by the console.
+
+        console should be a pexpect connection.
+
+        The return value is a dictionary mapping prompt names to regexes
+        matching them. The keys are:
+
+            * config_prompt
+            * if_prompt
+            * main_prompt
+        """
         # Regex to handle different prompt at switch
         # [\r\n]+ will handle any newline
         # .+ will handle any character after newline

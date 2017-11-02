@@ -1,26 +1,23 @@
+"""Test the vlan_pool network allocator."""
 from hil.config import load_extensions
 from hil.flaskapp import app
 from hil.model import db
 from hil.migrations import create_db
-from hil import api, server, errors
+from hil import api, errors
 from hil.test_common import fail_on_log_warnings, with_request_context, \
-    fresh_database, config_testsuite, config_merge
+    fresh_database, config_testsuite, config_merge, server_init
 from hil import model
 import pytest
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 with_request_context = pytest.yield_fixture(with_request_context)
 fresh_database = pytest.fixture(fresh_database)
-
-
-@pytest.fixture
-def server_init():
-    server.register_drivers()
-    server.validate_state()
+server_init = pytest.fixture(server_init)
 
 
 @pytest.fixture
 def configure():
+    """Configure HIL"""
     config_testsuite()
     config_merge({
         'extensions': {
@@ -56,7 +53,7 @@ def test_populate_dirty_db():
     from hil.ext.network_allocators.vlan_pool import Vlan
     with app.app_context():
         # flag vlan 100 as in-use, just so the db isn't quite pristine.
-        vlan100 = Vlan.query.filter_by(vlan_no=100)
+        vlan100 = Vlan.query.filter_by(vlan_no=100).one()
         vlan100.available = False
         db.session.commit()
     # Okay, now try re-initializing:
@@ -86,6 +83,7 @@ class TestAdminCreatedNetworks():
     """
 
     def test_create_network_with_id_from_pool(self):
+        """Test creation of networks with IDs from the pool."""
 
         api.project_create('nuggets')
 
@@ -123,6 +121,7 @@ class TestAdminCreatedNetworks():
         assert int(network.network_id) == net_id
 
     def test_create_network_with_id_outside_pool(self):
+        """Test creation of networks whose ID is not in the pool."""
 
         # create an admin owned network
         api.network_create('hammernet', 'admin', '', 1511)

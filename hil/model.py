@@ -237,59 +237,83 @@ class Switch(db.Model):
     def session(self):
         """Return a session object for the switch.
 
-        Conceptually, a session is an active connection to the switch; it lets
-        HIL avoid connecting and disconnecting for each change. the session
-        object must have the methods:
-
-            def modify_port(self, port, channel, new_network):
-                '''Move the specified (port, channel) pair to new_network.
-
-                `port` is the name of a port (`Port.label`) on the switch.
-
-                `channel` is a channel identifier
-
-                `new_network` is the network ID for the network to move to.
-                If `new_network` is `None`, The (port, channel) pair should be
-                removed from it's existing network (if any).
-
-            def revert_port(self, port):
-                '''Detach the port from all networks.
-
-                `port` is the name of a port (`Port.label`) on the switch.
-                '''
-
-            def disconnect(self):
-                '''Disconnect from the switch.
-
-                This will be called when HIL is done with the session.
-                '''
-
-            def get_port_networks(self, ports):
-                '''Return a mapping from port objects to (channel, network ID)
-                   pairs.
-
-                ``ports`` is a list of port objects to collect information on.
-
-                The return value will be a dictionary of the form:
-
-                    {
-                        Port<"port-3">: [("vlan/native", "23"),
-                                         ("vlan/52", "52")],
-                        Port<"port-7">: [("vlan/23", "23")],
-                        Port<"port-8">: [("vlan/native", "52")],
-                        ...
-                    }
-
-                With one key for each element in the ``ports`` argument.
-
-                This method is only for use by the test suite.
-                '''
+        The returned object should satisfy the interface specified by
+        SwitchSession, though it needn't actually subclass it.
 
         Some drivers may do things that are not connection-oriented; If so,
         they can just return a dummy object here. The recommended way to
         handle this is to define the methods above on the switch object,
         and have ``session`` just return ``self``.
         """
+
+    def ensure_legal_operation(self, nic, op_type, channel):
+        """Checks with the switch if the operation is legal before queueing it.
+
+        channel is network channel
+        nic is Nic object
+        op_type is type of operation (connect, detach)
+
+        Some drivers don't need this check at all. So the default behaviour is
+        to just return"""
+
+        return
+
+
+class SwitchSession(object):
+    """A session object for a switch.
+
+    Conceptually, a session is an active connection to the switch; it lets
+    HIL avoid connecting and disconnecting for each change.
+    """
+
+    def modify_port(self, port, channel, new_network):
+        """Move the specified (port, channel) pair to new_network.
+
+        `port` is the name of a port (`Port.label`) on the switch.
+
+        `channel` is a channel identifier
+
+        `new_network` is the network ID for the network to move to.
+        If `new_network` is `None`, The (port, channel) pair should be
+        removed from it's existing network (if any).
+        """
+        assert False, "Subclasses MUST override modify_port"
+
+    def revert_port(self, port):
+        """Detach the port from all networks.
+
+        `port` is the name of a port (`Port.label`) on the switch.
+        """
+        assert False, "Subclasses MUST override revert_port"
+
+    def disconnect(self):
+        """Disconnect from the switch.
+
+        This will be called when HIL is done with the session.
+        """
+        assert False, "Subclasses MUST override disconnect"
+
+    def get_port_networks(self, ports):
+        """Return a mapping from port objects to (channel, network ID)
+            pairs.
+
+        ``ports`` is a list of port objects to collect information on.
+
+        The return value will be a dictionary of the form:
+
+            {
+                Port<"port-3">: [("vlan/native", "23"),
+                                    ("vlan/52", "52")],
+                Port<"port-7">: [("vlan/23", "23")],
+                Port<"port-8">: [("vlan/native", "52")],
+                ...
+            }
+
+        With one key for each element in the ``ports`` argument.
+
+        This method is only for use by the test suite.
+        """
+        assert False, "Subclasses MUST override get_port_networks"
 
 
 class Obm(db.Model):
@@ -355,12 +379,15 @@ class Obm(db.Model):
         assert False, "Subclasses MUST override the stop_console method"
 
     def delete_console(self):
+        """Delete the console log."""
         assert False, "Subclasses MUST override the delete_console method"
 
     def get_console(self):
+        """Return the contents of the console log."""
         assert False, "Subclasses MUST override the get_console method"
 
     def get_console_log_filename(self):
+        """Return the name of the file containing the console log."""
         assert False, "Subclasses MUST override the get_console_log_filename" \
             "method"
 

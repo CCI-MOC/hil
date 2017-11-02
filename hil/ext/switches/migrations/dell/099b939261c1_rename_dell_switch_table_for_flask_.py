@@ -15,6 +15,8 @@ revision = '099b939261c1'
 down_revision = None
 branch_labels = None
 
+# pylint: disable=missing-docstring
+
 
 def upgrade():
     db.session.close()

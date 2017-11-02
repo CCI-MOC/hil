@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""WSGI app that helps manage pxe booting a node."""
 
 import re
 import os
@@ -14,6 +15,11 @@ mac_regex = re.compile(r'^('+H+H+r':){5}'+H+H+r'$')
 
 @app.route('/<mac_addr>', methods=['DELETE'])
 def boot_disk(mac_addr):
+    """Remove the temporary pxelinux.cfg.
+
+    This is invoked from within ks.cfg, to avoid booting back into the
+    installer on reboot.
+    """
     if re.match(mac_regex, mac_addr) is None:
         return 'Bad mac address', 400
 
@@ -25,6 +31,7 @@ def boot_disk(mac_addr):
 
 @app.route('/ks.cfg')
 def kickstart():
+    """Serve ks.cfg"""
     with open(KS_CFG) as f:
         return f.read()
 

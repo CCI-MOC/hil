@@ -12,16 +12,17 @@
 # express or implied.  See the License for the specific language
 # governing permissions and limitations under the License.
 
-"""Deployment Tests - These tests are intended for our
-internal setup only and will most likely not work on
-other HIL configurations. This test is for the dell
-and the cisco nexus switches only"""
+"""Deployment tests re: switch configuration.
+
+For guidance on running these tests, see the section on deployment tests
+in docs/testing.md.
+"""
 
 
-from hil import api, model, deferred, server
+from hil import api, model, deferred
 from hil.test_common import config, config_testsuite, fresh_database, \
     fail_on_log_warnings, with_request_context, site_layout, config_merge, \
-    NetworkTest, network_create_simple
+    NetworkTest, network_create_simple, server_init
 
 import pytest
 import json
@@ -33,12 +34,16 @@ DELLN3000 = 'http://schema.massopencloud.org/haas/v0/switches/delln3000'
 
 @pytest.fixture
 def configure():
+    """Confgure HIL."""
     config_testsuite()
     config_merge({
         'hil.ext.switches.dell': {
             'save': 'True'
          },
         'hil.ext.switches.nexus': {
+            'save': 'True'
+        },
+        'hil.ext.switches.n3000': {
             'save': 'True'
         }
     })
@@ -47,12 +52,7 @@ def configure():
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 fresh_database = pytest.fixture(fresh_database)
-
-
-@pytest.fixture
-def server_init():
-    server.register_drivers()
-    server.validate_state()
+server_init = pytest.fixture(server_init)
 
 
 with_request_context = pytest.yield_fixture(with_request_context)
@@ -94,7 +94,7 @@ class TestSwitchSavingToFlash(NetworkTest):
         return config
 
     def test_saving_config_file(self):
-
+        """Test saving the switch config to flash."""
         api.project_create('anvil-nextgen')
         nodes = self.collect_nodes()
 

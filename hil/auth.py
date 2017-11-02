@@ -41,6 +41,11 @@ class AuthBackend(object):
         This method must return a boolean indicating whether or not
         authentication was successful -- True if so, False if not.
         """
+        # FIXME: for some reason I(zenhack) don't understand, pylint doesn't
+        # pick up on this being an abstract method, and still gives warnings
+        # about missing docstrings on implementations. For now, we just
+        # locally disable the warnings in those places, but we ought to figure
+        # out what's going on.
 
     @abstractmethod
     def _have_admin(self):
@@ -73,14 +78,17 @@ class AuthBackend(object):
         Return True if so, False if not. This will be caled sometime after
         ``authenticate()``.
 
-        ``project`` will be a ``Project`` object, *not* the name of the
-        project.
-
         Note that have_admin implies have_project_acccess.
+
+        ``project`` will be a ``Project`` object, *not* the name of the
+        project. It may also be ``None``, in which case this is equivalent
+        to ``have_admin``.
         """
 
-        assert isinstance(project, model.Project)
+        if project is None:
+            return self._have_admin()
 
+        assert isinstance(project, model.Project)
         return self._have_admin() or self._have_project_access(project)
 
     def require_admin(self):

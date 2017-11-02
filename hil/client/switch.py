@@ -1,3 +1,4 @@
+"""Client support for switch related api calls."""
 import json
 from hil.client.base import ClientBase
 
@@ -24,6 +25,7 @@ class Switch(ClientBase):
         raise NotImplementedError
 
     def delete(self, switch):
+        """Deletes the switch named <switch>."""
         url = self.object_url('switch', switch)
         return self.check_response(self.httpClient.request("DELETE", url))
 
@@ -63,3 +65,8 @@ class Port(ClientBase):
         """Show what's connected to <port>"""
         url = self.object_url('switch', switch, 'port', port)
         return self.check_response(self.httpClient.request("GET", url))
+
+    def port_revert(self, switch, port):
+        """removes all vlans from a switch port"""
+        url = self.object_url('switch', switch, 'port', port, 'revert')
+        return self.check_response(self.httpClient.request("POST", url))

@@ -5,7 +5,7 @@ import json
 
 
 class FailedAPICallException(Exception):
-    pass
+    """An exception indicating that the server returned an error."""
 
 
 class ClientBase(object):
@@ -37,6 +37,12 @@ class ClientBase(object):
         return url
 
     def check_response(self, response):
+        """
+        Check the response from an API call, and do any needed error handling
+
+        Returns the body of the response as (parsed) JSON, or None if there
+        was no body. Raises a FailedAPICallException on any non 2xx status.
+        """
         if 200 <= response.status_code < 300:
             try:
                 return json.loads(response.content)
@@ -45,6 +51,9 @@ class ClientBase(object):
                 return
         else:
             e = json.loads(response.content)
+            # TODO: I(zenhack) pretty sure only the first case should happen;
+            # this was probably an oversight during review. We should check
+            # this and fix either the server or the client.
             if e.keys()[0] == 'error':
                 raise FailedAPICallException(e['error']['message'])
             else:

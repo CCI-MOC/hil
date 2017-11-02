@@ -54,4 +54,5 @@ class NullNetworkAllocator(NetworkAllocator):
 
 
 def setup(*args, **kwargs):
+    """Register a NullNetworkAllocator as the network allocator."""
     set_network_allocator(NullNetworkAllocator())

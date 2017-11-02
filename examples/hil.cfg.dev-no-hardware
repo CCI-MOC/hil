@@ -4,6 +4,7 @@
 # below).
 [general]
 log_level = debug
+# log_dir = .
 
 [auth]
 require_authentication = False
@@ -26,21 +27,10 @@ dry_run=True
 [extensions]
 hil.ext.switches.mock =
 hil.ext.obm.mock =
-
 hil.ext.network_allocators.null =
-
-# Depending on what you're trying to do, you may want to use the vlan_pool
-# network allocator instead of the null allocator. To do this, comment out the
-# null allocator extension above, and uncomment the following:
-#
-# hil.ext.network_allocators.vlan_pool =
-#
-# [hil.ext.network_allocators.vlan_pool]
-# vlans = 100-200, 300-500
-
 hil.ext.auth.null =
-# Again, depending on what you're doing, you may want to change this to a
-# diffefrent authentication backend:
+# Depending on what you're doing, you may want to change this to a
+# different authentication backend:
 # hil.ext.auth.database =
 # hil.ext.auth.keystone =
 #
@@ -59,3 +49,12 @@ hil.ext.auth.null =
 # project_name = admin
 # admin_user = admin
 # admin_password = s3cr3t
+
+# Depending on what you're trying to do, you may want to use the vlan_pool
+# network allocator instead of the null allocator. To do this, comment out the
+# null allocator extension above, and uncomment the following:
+#
+# hil.ext.network_allocators.vlan_pool =
+#
+#[hil.ext.network_allocators.vlan_pool]
+#vlans = 100-200, 300-500

@@ -1,3 +1,4 @@
+"""Implement the hil-admin command."""
 from hil import config, model
 from hil.commands import db
 from hil.commands.util import ensure_not_root

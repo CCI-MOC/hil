@@ -35,6 +35,8 @@ BigIntegerType = BigInteger().with_variant(
 
 
 class Ipmi(Obm):
+    """IPMI obm driver"""
+
     valid_bootdevices = ['disk', 'pxe', 'none']
 
     id = db.Column(BigIntegerType, db.ForeignKey('obm.id'), primary_key=True)
