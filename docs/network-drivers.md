@@ -230,11 +230,11 @@ To get started you will need to:
 	yum install openvswitch #For fedora or Centos
 	for i in enable start status
 	do service openvswitch $i; done
-	ovs-vsctl show	
+	ovs-vsctl show
 
 2.  create a bridge and name it <switch_name>
 
-	ovs-vsctl add-br <switch_name>	
+	ovs-vsctl add-br <switch_name>
  
 3.  Add some ports to this bridge.
 	
