@@ -393,10 +393,11 @@ class DellNOS9(Switch, SwitchSession):
         return self.username, self.password
 
     @staticmethod
-    def _make_payload(command, command_type):
+    def _make_payload(command_type, command):
         """Makes payload for passing CLI commands using the REST API"""
 
-        return '<input><%s>%s</%s></input>' % (command, command_type, command)
+        return '<input><%s>%s</%s></input>' % (command_type, command,
+                                               command_type)
 
     @staticmethod
     def _construct_tag(name):
