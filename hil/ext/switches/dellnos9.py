@@ -28,11 +28,13 @@ from hil.model import db, Switch, SwitchSession
 from hil.errors import BadArgumentError, BlockedError
 from hil.model import BigIntegerType
 from hil.network_allocator import get_network_allocator
+from hil.ext.switches.common import should_save
 
 logger = logging.getLogger(__name__)
 
 CONFIG = 'config-commands'
 SHOW = 'show-command'
+EXEC = 'exec-command'
 
 
 class DellNOS9(Switch, SwitchSession):
@@ -118,12 +120,16 @@ class DellNOS9(Switch, SwitchSession):
             else:
                 assert new_network == vlan_id
                 self._add_vlan_to_trunk(interface, vlan_id)
+        if should_save(self):
+            self.save_running_config()
 
     def revert_port(self, port):
         self._remove_all_vlans_from_trunk(port)
         if self._get_native_vlan(port) is not None:
             self._remove_native_vlan(port)
         self._port_shutdown(port)
+        if should_save(self):
+            self.save_running_config()
 
     def get_port_networks(self, ports):
         response = {}
@@ -332,6 +338,46 @@ class DellNOS9(Switch, SwitchSession):
 
         assert shutdown in ('false', 'true'), "unexpected state of switchport"
         return shutdown == 'false'
+
+    def save_running_config(self):
+        command = 'write'
+        self._execute(EXEC, command)
+
+    def _get_config(self, config_type):
+        """returns the requested configuration file from the switch"""
+        command = config_type + '-config'
+        config = self._execute(SHOW, command).text
+
+        # The config files always have some lines in the beginning that we
+        # need to remove otherwise the comparison would fail. Here's a sample:
+        # Current Configuration ...
+        # ! Version 9.11(0.0P6)
+        # ! Last configuration change at Fri Nov  3 23:51:01 2017 by smartuser
+        # ! Startup-config last updated at Sat Nov  4 02:04:57 2017 by admin
+        # !
+        # boot system stack-unit 1 primary system://A
+        # boot system stack-unit 1 secondary system://B
+        # !
+        # hostname MOC-Dell-S3048-ON
+        # !
+        # protocol lldp
+        # !
+        # redundancy auto-synchronize full
+        # !
+        # username xxxxx password 7 XXXXXXXx privilege 15
+        # !
+        # stack-unit 1 provision S3048-ON
+
+        lines_to_remove = 0
+        for line in config.splitlines():
+            if 'username' in line:
+                break
+            lines_to_remove += 1
+
+        config = config.split("\n", lines_to_remove)[lines_to_remove]
+        # there were some extra spaces in one of the config file types that
+        # would cause the tests to fail.
+        return config.replace(" ", "")
 
     # HELPER METHODS *********************************************
 
