@@ -6,10 +6,7 @@ from hil.test_common import config_testsuite, config_merge, fresh_database, \
 from hil.auth import get_auth_backend
 import pytest
 
-MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/v0/switches/mock'
 OBM_TYPE_MOCK = 'http://schema.massopencloud.org/haas/v0/obm/mock'
-OBM_TYPE_IPMI = 'http://schema.massopencloud.org/haas/v0/obm/ipmi'
-PORTS = ['gi1/0/1', 'gi1/0/2', 'gi1/0/3', 'gi1/0/4', 'gi1/0/5']
 
 
 @pytest.fixture
@@ -53,17 +50,6 @@ with_request_context = pytest.yield_fixture(with_request_context)
 def set_admin_auth():
     """Set admin auth for all calls"""
     get_auth_backend().set_admin(True)
-
-
-@pytest.fixture
-def switchinit():
-    """Create a switch with one port"""
-    api.switch_register('sw0',
-                        type=MOCK_SWITCH_TYPE,
-                        username="switch_user",
-                        password="switch_pass",
-                        hostname="switchname")
-    api.switch_register_port('sw0', PORTS[2])
 
 
 @pytest.fixture
