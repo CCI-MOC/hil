@@ -214,7 +214,7 @@ class DellNOS9(Switch, SwitchSession):
         """
         command = 'interfaces switchport %s %s' % \
             (self.interface_type, interface)
-        response = self._execute(interface, SHOW, command)
+        response = self._execute(SHOW, command)
         return response.text.replace(' ', '')
 
     def _add_vlan_to_trunk(self, interface, vlan):
@@ -230,7 +230,7 @@ class DellNOS9(Switch, SwitchSession):
             self._port_on(interface)
         command = 'interface vlan ' + vlan + '\r\n tagged ' + \
             self.interface_type + ' ' + interface
-        self._execute(interface, CONFIG, command)
+        self._execute(CONFIG, command)
 
     def _remove_vlan_from_trunk(self, interface, vlan):
         """ Remove a vlan from a trunk port.
@@ -240,7 +240,7 @@ class DellNOS9(Switch, SwitchSession):
             vlan: vlan to remove
         """
         command = self._remove_vlan_command(interface, vlan)
-        self._execute(interface, CONFIG, command)
+        self._execute(CONFIG, command)
 
     def _remove_all_vlans_from_trunk(self, interface):
         """ Remove all vlan from a trunk port.
@@ -254,7 +254,7 @@ class DellNOS9(Switch, SwitchSession):
         # execute command only if there are some vlans to remove, otherwise
         # the switch complains
         if command is not '':
-            self._execute(interface, CONFIG, command)
+            self._execute(CONFIG, command)
 
     def _remove_vlan_command(self, interface, vlan):
         """Returns command to remove <vlan> from <interface>"""
@@ -274,7 +274,7 @@ class DellNOS9(Switch, SwitchSession):
             self._port_on(interface)
         command = 'interface vlan ' + vlan + '\r\n untagged ' + \
             self.interface_type + ' ' + interface
-        self._execute(interface, CONFIG, command)
+        self._execute(CONFIG, command)
 
     def _remove_native_vlan(self, interface):
         """ Remove the native vlan from an interface.
@@ -286,7 +286,7 @@ class DellNOS9(Switch, SwitchSession):
             vlan = self._get_native_vlan(interface)[1]
             command = 'interface vlan ' + vlan + '\r\n no untagged ' + \
                 self.interface_type + ' ' + interface
-            self._execute(interface, CONFIG, command)
+            self._execute(CONFIG, command)
         except TypeError:
             logger.error('No native vlan to remove')
 
@@ -335,7 +335,7 @@ class DellNOS9(Switch, SwitchSession):
 
     # HELPER METHODS *********************************************
 
-    def _execute(self, interface, command_type, command):
+    def _execute(self, command_type, command):
         """This method gets the url & the payload and executes <command>"""
         url = self._construct_url()
         payload = self._make_payload(command_type, command)
