@@ -343,8 +343,7 @@ class DellNOS9(Switch, SwitchSession):
         command = 'write'
         self._execute(EXEC, command)
 
-    def _get_config(self, config_type):
-        """returns the requested configuration file from the switch"""
+    def get_config(self, config_type):
         command = config_type + '-config'
         config = self._execute(SHOW, command).text
 
@@ -369,12 +368,13 @@ class DellNOS9(Switch, SwitchSession):
         # stack-unit 1 provision S3048-ON
 
         lines_to_remove = 0
-        for line in config.splitlines():
+        lines = config.splitlines()
+        for line in lines:
             if 'username' in line:
                 break
             lines_to_remove += 1
 
-        config = config.split("\n", lines_to_remove)[lines_to_remove]
+        config = '\n'.join(lines[lines_to_remove:])
         # there were some extra spaces in one of the config file types that
         # would cause the tests to fail.
         return config.replace(" ", "")

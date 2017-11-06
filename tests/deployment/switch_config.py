@@ -83,11 +83,13 @@ class TestSwitchSavingToFlash(NetworkTest):
     by comparing the running and startup config files"""
 
     def get_config(self, config_type):
-        """returns the switch configuration file"""
+        """helper method to get the switch config file by calling
+        the switch's get_config method
+        """
 
         switch = model.Switch.query.one()
         session = switch.session()
-        config = session._get_config(config_type)
+        config = session.get_config(config_type)
         session.disconnect()
         return config
 

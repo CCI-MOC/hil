@@ -233,9 +233,7 @@ class _Session(_console.Session):
         self.console.expect('Copy complete')
         logger.debug('Copy succeeded')
 
-    def _get_config(self, config_type):
-        """returns the requested configuration file from the switch"""
-
+    def get_config(self, config_type):
         self._set_terminal_lines('unlimited')
         self.console.expect(r'[\r\n]+.+# ')
         self._sendline('show ' + config_type + '-config')
