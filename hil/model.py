@@ -320,6 +320,21 @@ class SwitchSession(object):
         """
         assert False, "Subclasses MUST override get_port_networks"
 
+    def save_running_config(self):
+        """saves the running config to startup config"""
+        assert False, "Subclasses MUST override save_running_config"
+
+    def get_config(self, config_type):
+        """Returns the requested configuration file from the switch.
+
+        `config_type` is the configuration type. It can be `running` or
+        'startup'.
+
+        This method is only for use by the test suite.
+        """
+
+        assert False, "Subclasses MUST override save_running_config"
+
 
 class Obm(db.Model):
     """Obm superclass supporting various drivers
