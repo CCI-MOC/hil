@@ -84,7 +84,7 @@ class TestSwitchSavingToFlash(NetworkTest):
 
     def get_config(self, config_type):
         """helper method to get the switch config file by calling
-        the switch's get_config method
+        SwitchSession's get_config()
         """
 
         switch = model.Switch.query.one()
