@@ -31,7 +31,8 @@ def configure():
         },
         'maintenance': {
             'maintenance_project': 'maintenance',
-            'url': 'http://localhost/foo/bar'
+            # Keystone url acts as dummy for posting
+            'url': 'http://127.0.0.1:35357/v3/'
         }
     })
     config.load_extensions()
