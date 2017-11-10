@@ -80,6 +80,9 @@ class DellN3000(Switch):
                                    "te1/0/12, gi1/12, or te1/3")
         return
 
+    def get_capabilities(self):
+        return ['nativeless-trunk-mode']
+
 
 class _DellN3000Session(_BaseSession):
     """session object for the N3000 series"""

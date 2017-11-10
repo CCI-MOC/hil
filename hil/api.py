@@ -985,6 +985,7 @@ def show_switch(switch):
         'name': switch.label,
         'ports': [{'label': port.label}
                   for port in switch.ports],
+        'capabilities': switch.get_capabilities(),
     }, sort_keys=True)
 
 

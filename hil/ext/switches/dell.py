@@ -75,6 +75,9 @@ class PowerConnect55xx(Switch):
                                    "te1/0/12, gi1/12, or te1/3")
         return
 
+    def get_capabilities(self):
+        return ['nativeless-trunk-mode']
+
 
 class _PowerConnect55xxSession(_BaseSession):
     """session object for the power connect 5500 series"""

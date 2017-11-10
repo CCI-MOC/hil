@@ -258,6 +258,11 @@ class Switch(db.Model):
 
         return
 
+    def get_capabilities(self):
+        """Returns the list of capabilities supported by a switch"""
+
+        assert False, "Subclasses MUST override get_capabilities"
+
 
 class SwitchSession(object):
     """A session object for a switch.
