@@ -14,7 +14,7 @@ frees the node from the maintenance pool with `hil project_detach_node`.
 
 ## Configuration
 
-The maintenance pool will be active if the `maintenance` section exists in hil.cfg
-and `enable` is set to True.  If so, `maintenance_project` must be set equal to the
+The maintenance pool will be active if the `maintenance` section exists in hil.cfg.
+If so, `maintenance_project` must be set equal to the
 name of the maintenance project registered in HIL and `url` must point at the maintenance
 service.
