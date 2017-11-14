@@ -121,7 +121,6 @@ def project_detach_node(project, node):
     """
     project = _must_find(model.Project, project)
     get_auth_backend().require_project_access(project)
-    node_label = node
     node = _must_find(model.Node, node)
     if node not in project.nodes:
         raise errors.NotFoundError("Node not in project")
@@ -137,7 +136,7 @@ def project_detach_node(project, node):
     node.obm.stop_console()
     node.obm.delete_console()
     project.nodes.remove(node)
-    _maintain(project, node, node_label)
+    _maintain(project, node, node.label)
     db.session.commit()
 
 
