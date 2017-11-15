@@ -91,6 +91,10 @@ This currently includes:
 ``null`` and ``mock`` drivers are also included for testing and
 experimentation.
 
+HIL uses SSH protocol to connect to the switches. 
+The admins need to take care of the first time connection to the switchs because 
+SSH askes "Are you sure you want to continue connecting (yes/no)?" question for the first time.
+
 ### VLANs
 
 The network administrator will need to pre-allocate a set of VLANs to
