@@ -32,7 +32,7 @@ def configure():
         'maintenance': {
             'maintenance_project': 'maintenance',
             # Keystone url acts as dummy for posting
-            'url': 'http://127.0.0.1:35357/v3/'
+            'url': 'http://127.0.0.1:9999/test/'
         }
     })
     config.load_extensions()
@@ -79,7 +79,10 @@ pytestmark = pytest.mark.usefixtures(*default_fixtures)
 
 
 class TestProjectDetachNodeMaintenance:
-    """Test project_detach_node."""
+    """Test project_detach_node with maintenance pool enabled.
+    The main point of this test is to ensure that the node goes
+    into the maintenance pool if it is not already, and that the
+    POST request is successfully detected with an intentional error."""
 
     def test_project_detach_node_maintenance(self, maintenance_proj_init):
         """Test that project_detach_node removes the node from the project.
@@ -88,11 +91,9 @@ class TestProjectDetachNodeMaintenance:
         api.project_create('anvil-nextgen')
         new_node('node-99')
         api.project_connect_node('anvil-nextgen', 'node-99')
+        # Should raise error due to arbitrary POST url:
         with pytest.raises(LoggedWarningError):
             api.project_detach_node('anvil-nextgen', 'node-99')
-        project = api._must_find(model.Project, 'anvil-nextgen')
         maintenance_proj = api._must_find(model.Project, 'maintenance')
         node = api._must_find(model.Node, 'node-99')
-        assert node not in project.nodes
-        assert node.project is not project
-        assert node.project is maintenance_proj
+        assert node.project == maintenance_proj
