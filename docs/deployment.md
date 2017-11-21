@@ -79,6 +79,7 @@ even the root user is untrusted.
 ## Networks
 
 ### Switch configuration
+
 In order to deploy HIL, at least one switch supported by one of HIL's
 drivers is required.
 
@@ -91,9 +92,14 @@ This currently includes:
 ``null`` and ``mock`` drivers are also included for testing and
 experimentation.
 
-HIL uses SSH protocol to connect to the switches.
-The admins need to take care of the first time connection to the switches because
-SSH asks "Are you sure you want to continue connecting (yes/no)?" question for the first time.
+HIL uses the `ssh` command to connect to the switches. As a consequence,
+administrators will need to connect to the switch once via ssh, as the
+user HIL will run as. This is because otherwise ssh will display the
+usual confirmation dialog for new hosts:
+
+    Are you sure you want to continue connecting (yes/no)?
+
+...which the HIL drivers do not handle.
 
 ### VLANs
 
