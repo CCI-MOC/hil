@@ -98,7 +98,7 @@ driver-dependant, below are the details for each of these switches.
 
 ### Powerconnect 5500 driver
 
-#### Switch preperation
+#### Switch preparation
 
 A few commands are necessary to run on the switch before it can be used with HIL.
 
@@ -106,6 +106,8 @@ A few commands are necessary to run on the switch before it can be used with HIL
 
    configure
    vlan 2-4094
+
+2. This switch uses ssh for connection. Be sure that ssh is enabled on the switch.
 
 #### switch_register
 
@@ -129,7 +131,7 @@ they are not validated by HIL (this will be fixed in future versions).
 
 ### Dell N3000 driver
 
-#### Switch preperation
+#### Switch preparation
 
 1. Just like the Powerconnect 5500, every VLAN that could be used on the switch
 must first be enabled on the switch. To enable all VLANs to work with the switch, run this command:
@@ -157,6 +159,10 @@ vlan, but this vlan should not be used for any networks.
 Register ports just like the powerconnect driver. e.g. ``gi1/0/5``.
 
 ### Nexus driver
+
+#### Switch preparation
+
+This switch uses ssh for connection. Be sure that ssh is enabled on the switch.
 
 #### switch_register
 
