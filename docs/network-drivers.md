@@ -141,6 +141,8 @@ must first be enabled on the switch. To enable all VLANs to work with the switch
    # vlan 2-4093
 ```
 
+2. HIL uses ssh to connect to these switches. Configure the switch to accept ssh connections.
+
 #### switch_register
 
 To register a Dell N3000 switch, the ``"type"`` field of the

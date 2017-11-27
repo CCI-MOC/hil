@@ -103,17 +103,16 @@ class _DellN3000Session(_BaseSession):
 
     @staticmethod
     def connect(switch):
-        """connect to the switch, and log in"""
-        console = pexpect.spawn('telnet ' + switch.hostname)
-        console.expect('User:')
-        console.sendline(switch.username)
-        console.expect('Password:')
+        """connect to the switch and log in"""
+        console = pexpect.spawn(
+            'ssh ' + switch.username + '@' + switch.hostname)
+
+        console.expect('password: ')
         console.sendline(switch.password)
         console.expect('>')
         console.sendline('en')
 
         logger.debug('Logged in to switch %r', switch)
-
         prompts = _console.get_prompts(console)
         # create the dummy vlan for port_revert
         # this is a one time thing though; maybe we could remove this and let
