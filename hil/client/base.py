@@ -60,9 +60,11 @@ class ClientBase(object):
             except ValueError:  # No JSON request body; typical
                                 # For methods PUT, POST, DELETE
                 return
-        else:
+        try:
             e = json.loads(response.content)
             raise FailedAPICallException(
                 error_type=e['type'],
                 message=e['msg'],
             )
+        except ValueError:
+            return response.content
