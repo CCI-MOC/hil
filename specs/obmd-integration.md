@@ -113,6 +113,16 @@ Possible variations:
   restricts us to only one obmd server, while specifying the URL and
   token per node allows different nodes to be managed by different obmd
   instances.
+* Instead of passing both obmd's full url to the node and admin token to
+  `node_register`, we could have a separate call `obmd_register`, taking
+  the base URL for an obmd server and an admin token. Then,
+  `node_register` would take a node label and a label for an obmd
+  server. This allows us to de-duplicate the obmd config information,
+  while still allowing for multiple obmd servers. It is analogous to
+  what we do with switches, which is an advantage. It does mean that HIL
+  now knows about which obmd servers exist, whereas with the current
+  scheme HIL is entirely agnostic to this, so coupling is a bit looser.
+  It's not clear that there is a pragmatic disadvantage, however.
 
 # Arch Impact
 
