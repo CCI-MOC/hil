@@ -107,7 +107,7 @@ Possible variations:
   raises all of same the problems with doing streaming in HIL directly.
 * We could try to keep OBMs drivertized within HIL. The trade-offs have
   been discussed above. It's not clear there are significant benefits.
-* Instead of passing both obmd's the full url to the node and the admin
+* Instead of passing both obmd's full url to the node and the admin
   token to `node_register`, we could just pass the node label, and add
   `base_url` and `admin_token` options to `hil.cfg`. However, this
   restricts us to only one obmd server, while specifying the URL and
