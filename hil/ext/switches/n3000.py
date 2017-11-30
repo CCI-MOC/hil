@@ -110,7 +110,7 @@ class _DellN3000Session(_BaseSession):
         console.expect('password: ')
         console.sendline(switch.password)
         console.expect('>')
-        console.sendline('en')
+        console.sendline('enable')
 
         logger.debug('Logged in to switch %r', switch)
         prompts = _console.get_prompts(console)
