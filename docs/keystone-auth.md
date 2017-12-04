@@ -63,4 +63,4 @@ If a text token is returned, then authentication to OpenStack is working.
 Testing authentication directly to the HIL API is also helpful.
 Using the token from the tip above, run:
 ``curl -H 'x-auth-token: <token>' <HIL address>/nodes/free``.
-If the response lists the nodes in the current HIL setup, then the Keystone middleware has been setup correctly. 
+If the response lists the nodes in the current HIL setup, then the Keystone middleware has been setup correctly.

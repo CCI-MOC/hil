@@ -4,6 +4,7 @@
 # below).
 [general]
 log_level = debug
+# log_dir = .
 
 [auth]
 require_authentication = False

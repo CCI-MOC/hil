@@ -78,14 +78,17 @@ class AuthBackend(object):
         Return True if so, False if not. This will be caled sometime after
         ``authenticate()``.
 
-        ``project`` will be a ``Project`` object, *not* the name of the
-        project.
-
         Note that have_admin implies have_project_acccess.
+
+        ``project`` will be a ``Project`` object, *not* the name of the
+        project. It may also be ``None``, in which case this is equivalent
+        to ``have_admin``.
         """
 
-        assert isinstance(project, model.Project)
+        if project is None:
+            return self._have_admin()
 
+        assert isinstance(project, model.Project)
         return self._have_admin() or self._have_project_access(project)
 
     def require_admin(self):

@@ -253,15 +253,17 @@ The response must contain the following fields:
 * "projects", a list of projects with access to the network or 'None' if network is public
 
 Example Response:
-	{
-		"netA": {
-			"network_id": "101",
-			"projects": ["qproj-01", qproj-02"]
-			},
-		"netB": {
-			"network_id": "102",
-			"projects": None}
-	}
+
+    {
+        "netA": {
+            "network_id": "101",
+            "projects": ["qproj-01", qproj-02"]
+        },
+        "netB": {
+            "network_id": "102",
+            "projects": None
+        }
+    }
 
 Authorization requirements:
 
@@ -284,18 +286,19 @@ of the attached node and second level keys being:
 * "project", the name of the project which owns the attached node
 
 Example Response:
-	{
-		"node1": {
-			 "nic": "nic1",
-			 "channel" "vlan/native",
-			 "project": "projectA"
-			 },
-		"node2": {
-			 "nic": "nic2",
-			 "channel": "vlan/235",
-			 "project": "projectB"
-			 }
-	}
+
+    {
+        "node1": {
+             "nic": "nic1",
+             "channel" "vlan/native",
+             "project": "projectA"
+        },
+        "node2": {
+             "nic": "nic2",
+             "channel": "vlan/235",
+             "project": "projectB"
+        }
+    }
 
 Authorization requirements:
 
@@ -391,6 +394,11 @@ operation to be preformed. Each nic may have no more than one pending
 network operation; an attempt to queue a second action will result in an
 error.
 
+If a maintenance pool is configured, the maintenance service will be
+notified and the node will be moved into the maintenance project.
+Otherwise, the node will go directly to the free pool.
+Read `docs/maintenance-pool.md` for more information.
+
 Authorization requirements:
 
 * Access to the project to which `<node>` is assigned.
@@ -415,11 +423,16 @@ see the documentation of the OBM driver in question (read `docs/obm-drivers.md`)
 `PUT /node/<node>`
 
 Request Body:
-	{"obm": { "type": <obm-subtype>,
-		<additional sub-type specific values>}
-	 "metadata": {"label_1": "value_1",
-	 	     "label_2": "value_2"} (Optional)
-	}
+
+    {
+        "obm": {
+            "type": <obm-subtype>, <additional sub-type specific values>
+        },
+        "metadata": { (Optional)
+            "label_1": "value_1",
+            "label_2": "value_2"
+        }
+    }
 
 example provided in USING.rst
 
@@ -479,29 +492,39 @@ Authorization requirements:
 
 `POST /node/<node>/power_cycle`
 
+Request Body:
+
+    {
+        "force": <boolean> (Optional, defaults to False)
+    }
+
 Power cycle the node named `<node>`, and set it's next boot device to
 PXE. If the node is powered off, this turns it on.
 
 Accepts one optional boolean argument that determines whether to soft (default)
 or hard reboot the system.
 
-Request body:
-    {
-    	"force": <boolean> (Optional, defaults to False)
-    }
+Authorization requirements:
+
+* Access to the project to which `<node>` is assigned (if any) or administrative access.
 
 #### node_set_bootdev
 
 `PUT /node/<node>/boot_device`
 
-Sets the node's next boot device persistently
+Request body:
+
+    {
+        "bootdev": <boot device>
+    }
 
 The request body consists of JSON with a `bootdev` argument:
 
-Request body:
-    {
-    	"bootdev": <boot device>
-    }
+Sets the node's next boot device persistently
+
+Authorization requirements:
+
+* Access to the project to which `<node>` is assigned (if any) or administrative access.
 
 ##### For IPMI devices
 
@@ -586,21 +609,22 @@ Show details of a node.
 Returns a JSON object representing a node.
 The object will have at least the following fields:
 
-        * "name", the name/label of the node (string).
-        * "project", the name of the project a node belongs to or null if the node does not belong to a project
-        * "nics", a list of nics, each represented by a JSON object having
-            at least the following fields:
+* "name", the name/label of the node (string).
+* "project", the name of the project a node belongs to or null if the node does not belong to a project
+* "nics", a list of nics, each represented by a JSON object having
+  at least the following fields:
 
-                - "label", the nic's label.
-                - "macaddr", the nic's mac address.
-		- "networks", a JSON object describing what networks are attached to the nic. The keys are channels and the values are the names of networks attached to those channels.
-        - "port", the port to which the nic is connected to or null if the nic
-          is not connected to any port. This field is only visibile if the
-          caller is an admin.
-        - "switch", the switch that has the port to which the nic is connected
-          to or null if the nic is not connected to any port. Just like port,
-          this is only visible if the caller is an admin.
-	* "metadata", a dictionary of metadata objects
+    - "label", the nic's label.
+    - "macaddr", the nic's mac address.
+    - "networks", a JSON object describing what networks are attached to the nic. The keys are channels and the values are the names of networks attached to those channels.
+    - "port", the port to which the nic is connected to or
+      null if the nic
+      is not connected to any port. This field is only visibile if the
+      caller is an admin.
+    - "switch", the switch that has the port to which the nic is connected
+      to or null if the nic is not connected to any port. Just like port,
+      this is only visible if the caller is an admin.
+* "metadata", a dictionary of metadata objects
 
 Response body when run by a non-admin user:
 
@@ -764,9 +788,9 @@ Authorization requirements:
 
 Request Body:
 
-	{
-		"value": <value>
-	}
+    {
+        "value": <value>
+    }
 
 Set metadata with `<label>` and `<value>` on `<node>`.
 
@@ -960,6 +984,8 @@ Get information about a headnode. Includes the following fields:
 * "vncport", the vnc port that the headnode VM is listening on; this
     value can be `null` if the VM is powered off or has not been
     created yet.
+* "uuid", UUID for the headnode.
+* "base_img", the os image that the headnode is running.
 
 Response body:
 
@@ -967,7 +993,9 @@ Response body:
         "name": <headnode>,
         "project": <projectname>,
         "nics": [<nic1>, <nic2>, ...],
-        "vncport": <port number>
+        "vncport": <port number>,
+        "uuid": <headnode uuid>,
+        "base_img": <headnode base_img>
     }
 
 Authorization requirements:
@@ -1172,6 +1200,24 @@ Possible errors:
 
 * 404, if the switch and/or port do not exist.
 
+#### list_active_extensions
+
+`GET /active_extensions`
+
+Response Body:
+
+[
+    "hil.ext.switches.mock",
+    "hil.ext.network_allocators.null",
+    ...
+]
+
+List all active extensions.
+
+Authorization requirements:
+
+* Administrative access.
+
 ## API Extensions
 
 API calls provided by specific extensions. They may not exist in all
@@ -1259,24 +1305,6 @@ Request Body:
 }
 
 Remove a user from a project.
-
-Authorization requirements:
-
-* Administrative access.
-
-#### list_active_extensions
-
-`GET /active_extensions`
-
-Response Body:
-
-[
-    "hil.ext.switches.mock",
-    "hil.ext.network_allocators.null",
-    ...
-]
-
-List all active extensions.
 
 Authorization requirements:
 

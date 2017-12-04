@@ -13,7 +13,6 @@
 # governing permissions and limitations under the License.
 """Super Class for Dell like drivers. """
 
-import pexpect
 import re
 import logging
 
@@ -48,15 +47,6 @@ class _BaseSession(_console.Session):
     def disable_native(self, vlan_id):
         self.disable_vlan(vlan_id)
         self._sendline('sw trunk native vlan none')
-
-    def disconnect(self):
-        if self._should_save('dell'):
-            self._save_running_config()
-        self._sendline('exit')
-        alternatives = [pexpect.EOF, '>']
-        if self.console.expect(alternatives):
-            self._sendline('exit')
-        logger.debug('Logged out of switch %r', self.switch)
 
     def get_port_networks(self, ports):
         num_re = re.compile(r'(\d+)')
@@ -133,18 +123,14 @@ class _BaseSession(_console.Session):
         self.console.expect(self.main_prompt)
         return result
 
-    def _save_running_config(self):
-        """saves the running config to startup config"""
-
+    def save_running_config(self):
         self._sendline('copy running-config startup-config')
         self.console.expect(['Overwrite file ', re.escape('(y/n) ')])
         self._sendline('y')
         self.console.expect(['Copy succeeded', 'Configuration Saved'])
         logger.debug('Copy succeeded')
 
-    def _get_config(self, config_type):
-        """returns the requested configuration file from the switch"""
-
+    def get_config(self, config_type):
         self._set_terminal_lines('unlimited')
         self.console.expect(self.main_prompt)
         self._sendline('show ' + config_type + '-config')

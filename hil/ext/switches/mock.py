@@ -86,7 +86,8 @@ class MockSwitch(Switch, SwitchSession):
             state[port][channel] = new_network
 
     def revert_port(self, port):
-        del LOCAL_STATE[self.label][port]
+        if LOCAL_STATE[self.label][port]:
+            del LOCAL_STATE[self.label][port]
 
     def disconnect(self):
         pass
@@ -100,3 +101,6 @@ class MockSwitch(Switch, SwitchSession):
                 if net is not None:
                     ret[port].append((chan, net))
         return ret
+
+    def get_capabilities(self):
+        return ['nativeless-trunk-mode']

@@ -143,3 +143,45 @@ def test_ensure_legal_operations():
     api.node_detach_network('compute-01', 'eth0', 'hammernet')
     mock_networking_action()
     db.session.close()
+
+
+def test_get_vlans():
+    """Check that _get_vlans correctly parses the response to grab all VLANs"""
+    from hil.ext.switches.dellnos9 import DellNOS9
+
+    class MockDellNOS9(DellNOS9):
+        """This class inherits from the DellNOS9 switch and then overrides
+        some of the methods to return mock outputs. Makes it easier to write
+        unit tests"""
+
+        def _get_port_info(self, interface):
+            """Returns mock port info"""
+            ret = u"<outputxmlns='http://www.dell.com/ns/dell:0.1/root'>\n  \
+            <command>show interfaces switchport GigabitEthernet1/3\r\n\r\n \
+            Codes: U-Untagged T-Tagged\r\n x-Dot1x untagged,X-Dot1xtagged\r\n \
+            G-GVRP tagged,M-Trunk\r\n i-Internal untagged, I-Internaltagged, \
+            v-VLTuntagged, V-VLTtagged\r\n\r\n Name:GigabitEthernet1/3\r\n \
+             802.1QTagged:Hybrid\r\n Vlan membership:\r\n Q Vlans\r\n U 1512 \
+             \r\n T " + interface + "\r\n\r\n Native Vlan Id: 1512.\r\n\r\n \
+            \r\n\r\nMOC-Dell-S3048-ON#</command>\n</output>\n"
+            return ret.replace(' ', '')
+
+        def _is_port_on(self, port):
+            return True
+
+    # get a switch object
+    switch = MockDellNOS9()
+    # check that various combinations of tagged and untagged vlans are
+    # correctly parsed.
+    assert switch._get_native_vlan('mock-interface') == ('vlan/native', '1512')
+
+    assert switch._get_vlans('10') == [('vlan/10', '10')]
+    assert switch._get_vlans('10,20') == [('vlan/10', '10'), ('vlan/20', '20')]
+    assert switch._get_vlans('10, 20-23, 25') == [
+        ('vlan/10', '10'), ('vlan/20', '20'), ('vlan/21', '21'),
+        ('vlan/22', '22'), ('vlan/23', '23'), ('vlan/25', '25')]
+    assert switch._get_vlans('10-13') == [
+        ('vlan/10', '10'), ('vlan/11', '11'),
+        ('vlan/12', '12'), ('vlan/13', '13')]
+    # just in case if the switch returns a 2 vlan range.
+    assert switch._get_vlans('10-11') == [('vlan/10', '10'), ('vlan/11', '11')]

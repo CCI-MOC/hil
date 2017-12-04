@@ -17,6 +17,7 @@
 TODO: Spec out and document what sanitization is required.
 """
 import json
+import requests
 
 from schema import Schema, Optional
 
@@ -27,6 +28,7 @@ from hil.config import cfg
 from hil.rest import rest_call
 from hil.class_resolver import concrete_class_for
 from hil.network_allocator import get_network_allocator
+import logging
 
 
 # Project Code #
@@ -130,9 +132,11 @@ def project_detach_node(project, node):
     for nic in node.nics:
         if nic.current_action is not None:
             raise errors.BlockedError("Node has pending network actions")
+
     node.obm.stop_console()
     node.obm.delete_console()
     project.nodes.remove(node)
+    _maintain(project, node, node.label)
     db.session.commit()
 
 
@@ -148,13 +152,9 @@ def network_grant_project_access(project, network):
     """
     network = _must_find(model.Network, network)
     project = _must_find(model.Project, project)
-    auth_backend = get_auth_backend()
 
     # Must be admin or the owner of the network to add projects
-    if network.owner is None:
-        auth_backend.require_admin()
-    else:
-        auth_backend.require_project_access(network.owner)
+    get_auth_backend().require_project_access(network.owner)
 
     if project in network.access:
         raise errors.DuplicateError(
@@ -259,24 +259,16 @@ def node_power_cycle(node, force=False):
     Force indicates whether the node should be forced off, or allowed
     to respond to the shutdown signal.
     """
-    auth_backend = get_auth_backend()
     node = _must_find(model.Node, node)
-    if node.project is None:
-        auth_backend.require_admin()
-    else:
-        auth_backend.require_project_access(node.project)
+    get_auth_backend().require_project_access(node.project)
     node.obm.power_cycle(force)
 
 
 @rest_call('POST', '/node/<node>/power_off', Schema({'node': basestring}))
 def node_power_off(node):
     """Power off the node."""
-    auth_backend = get_auth_backend()
     node = _must_find(model.Node, node)
-    if node.project is None:
-        auth_backend.require_admin()
-    else:
-        auth_backend.require_project_access(node.project)
+    get_auth_backend().require_project_access(node.project)
     node.obm.power_off()
 
 
@@ -285,12 +277,8 @@ def node_power_off(node):
 }))
 def node_set_bootdev(node, bootdev):
     """Set the node's boot device."""
-    auth_backend = get_auth_backend()
     node = _must_find(model.Node, node)
-    if node.project is None:
-        auth_backend.require_admin()
-    else:
-        auth_backend.require_project_access(node.project)
+    get_auth_backend().require_project_access(node.project)
 
     node.obm.require_legal_bootdev(bootdev)
 
@@ -730,10 +718,7 @@ def list_network_attachments(network, project=None):
     network = _must_find(model.Network, network)
 
     # Determine if caller has access to owning project
-    if network.owner is None:
-        owner_access = auth_backend.have_admin()
-    else:
-        owner_access = auth_backend.have_project_access(network.owner)
+    owner_access = auth_backend.have_project_access(network.owner)
 
     if project is None:
         # No project means list all connected nodes
@@ -844,14 +829,8 @@ def network_delete(network):
     If the network is connected to nodes or headnodes, or there are pending
     network actions involving it, a BlockedError will be raised.
     """
-    auth_backend = get_auth_backend()
-
     network = _must_find(model.Network, network)
-
-    if network.owner is None:
-        auth_backend.require_admin()
-    else:
-        auth_backend.require_project_access(network.owner)
+    get_auth_backend().require_project_access(network.owner)
 
     if len(network.attachments) != 0:
         raise errors.BlockedError("Network still connected to nodes")
@@ -1010,6 +989,7 @@ def show_switch(switch):
         'name': switch.label,
         'ports': [{'label': port.label}
                   for port in switch.ports],
+        'capabilities': switch.get_capabilities(),
     }, sort_keys=True)
 
 
@@ -1236,20 +1216,6 @@ def show_headnode(nodename):
     """Show details of a headnode.
 
     Returns a JSON object representing a headnode.
-    The obect will have at least the following fields:
-        * "name", the name/label of the headnode (string).
-        * "project", the project to which the headnode belongs.
-        * "hnics", a JSON array of hnic labels that are attached to this
-            headnode.
-        * "vncport", the vnc port that the headnode VM is listening on; this
-            value can be None if the VM is powered off or has not been
-            created yet.
-
-    Example:  '{"name": "headnode1",
-                "project": "project1",
-                "hnics": ["hnic1", "hnic2"],
-                "vncport": 5900
-               }'
     """
     headnode = _must_find(model.Headnode, nodename)
     get_auth_backend().require_project_access(headnode.project)
@@ -1407,3 +1373,42 @@ def _must_find_n(obj_outer, cls_inner, name_inner):
                                     obj_outer.__class__.__name__,
                                     obj_outer.label))
     return obj_inner
+
+
+def _maintain(project, node, node_label):
+    """Helper function to execute maintenance tasks.
+    Powers off the node, checks for the existence of maintenance pool
+    config options, and posts to the maintenance URL if
+    they exist."""
+    logger = logging.getLogger(__name__)
+    if (cfg.has_option('maintenance', 'maintenance_project') and
+            cfg.has_option('maintenance', 'url')):
+        maintenance_proj = _must_find(
+                model.Project,
+                cfg.get('maintenance', 'maintenance_project')
+                )
+        if (project == maintenance_proj):
+            # Already in maintenance pool
+            return
+    elif (cfg.has_option('maintenance', 'maintenance_project')):
+        raise errors.NotFoundError("Maintenance URL not in hil.cfg.")
+    elif (cfg.has_option('maintenance', 'url')):
+        raise errors.NotFoundError("Maintenance project not in hil.cfg.")
+    else:
+        return
+
+    if (cfg.has_option('maintenance', 'shutdown')):
+        node.obm.power_off()
+    maintenance_proj.nodes.append(node)
+    url = cfg.get('maintenance', 'url')
+    payload = json.dumps({'node': node_label})
+    try:
+        response = requests.post(url,
+                                 headers={'Content-Type': 'application/json'},
+                                 data=payload)
+    except requests.ConnectionError:
+        logger.warn('POST to maintenance service'
+                    ' failed: connection failed')
+    if (not 200 <= response < 300):
+        logger.warn('POST to maintenance service'
+                    ' failed with response: %s', response.text)

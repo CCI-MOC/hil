@@ -75,6 +75,9 @@ class PowerConnect55xx(Switch):
                                    "te1/0/12, gi1/12, or te1/3")
         return
 
+    def get_capabilities(self):
+        return ['nativeless-trunk-mode']
+
 
 class _PowerConnect55xxSession(_BaseSession):
     """session object for the power connect 5500 series"""
@@ -86,15 +89,14 @@ class _PowerConnect55xxSession(_BaseSession):
         self.switch = switch
         self.console = console
 
-    def _sendline(self, line):
-        logger.debug('Sending to switch %r: %r',
-                     self.switch, line)
-        self.console.sendline(line)
-
     @staticmethod
     def connect(switch):
         """connect to the switch, and log in."""
-        console = pexpect.spawn('telnet ' + switch.hostname)
+
+        console = pexpect.spawn(
+            'ssh ' + switch.username + '@' + switch.hostname)
+        # dell switch gets user name for the second time
+
         console.expect('User Name:')
         console.sendline(switch.username)
         console.expect('Password:')

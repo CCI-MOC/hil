@@ -20,7 +20,7 @@ Once `load` has been called, it will be ready to use.
 """
 
 import ConfigParser
-import logging
+import logging.handlers
 import importlib
 import os
 import sys
