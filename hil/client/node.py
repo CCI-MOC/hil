@@ -18,7 +18,7 @@ class Node(ClientBase):
 
     def show(self, node_name):
         """Shows attributes of a given node """
-        bad_chars = _find_reserved(self, node_name)
+        bad_chars = _find_reserved(node_name)
         if bool(bad_chars):
             raise BadArgumentError("Nodes may not contain: %s"
                                 % bad_chars)
@@ -42,11 +42,19 @@ class Node(ClientBase):
 
     def delete(self, node_name):
         """Deletes the node from database. """
+        bad_chars = _find_reserved(node_name)
+        if bool(bad_chars):
+            raise BadArgumentError("Nodes may not contain: %s"
+                                % bad_chars)
         url = self.object_url('node', node_name)
         return self.check_response(self.httpClient.request('DELETE', url))
 
     def power_cycle(self, node_name, force=False):
         """Power cycles the <node> """
+        bad_chars = _find_reserved(node_name)
+        if bool(bad_chars):
+            raise BadArgumentError("Nodes may not contain: %s"
+                                % bad_chars)
         url = self.object_url('node', node_name, 'power_cycle')
         payload = json.dumps({'force': force})
         return self.check_response(
@@ -54,11 +62,23 @@ class Node(ClientBase):
                 )
 
     def power_off(self, node_name):
+        bad_chars = _find_reserved(node_name)
+        if bool(bad_chars):
+            raise BadArgumentError("Nodes may not contain: %s"
+                                % bad_chars)
         """Power offs the <node> """
         url = self.object_url('node', node_name, 'power_off')
         return self.check_response(self.httpClient.request('POST', url))
 
     def add_nic(self, node_name, nic_name, macaddr):
+        bad_chars = _find_reserved(node_name)
+        if bool(bad_chars):
+            raise BadArgumentError("Nodes may not contain: %s"
+                                % bad_chars)
+        bad_chars = _find_reserved(nic_name)
+        if bool(bad_chars):
+            raise BadArgumentError("Nics may not contain: %s"
+                                % bad_chars)
         """Add a <nic> to <node>"""
         url = self.object_url('node', node_name, 'nic', nic_name)
         payload = json.dumps({'macaddr': macaddr})
@@ -108,9 +128,13 @@ class Node(ClientBase):
         return self.check_response(self.httpClient.request('DELETE', url))
 
 
-def _find_reserved(obj, string):
+def _find_reserved(string):
+    """Returns a list of illegal characters in a string"""
+    p = '[^A-Za-z0-9 \$\-\_\.\+\!\*\'\(\)\,]+'
+    return set(x for l in re.findall(p, string) for x in l)
+
+def _find_reserved_w_slash(string):
     """Returns a list of illegal characters in a string
-    based on the related object type"""
-    if type(obj) is Node:
-        p = '[^A-Za-z0-9 \$\-\_\.\+\!\*\'\(\)\,]+'
-        return set(x for l in re.findall(p, string) for x in l)
+    including `/` for channels and ports"""
+    p = '[^A-Za-z0-9 \/\$\-\_\.\+\!\*\'\(\)\,]+'
+    return set(x for l in re.findall(p, string) for x in l)
