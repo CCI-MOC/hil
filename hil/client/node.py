@@ -1,6 +1,9 @@
 """Client support for node related api calls."""
 import json
 from hil.client.base import ClientBase
+import re
+from hil.errors import NotFoundError
+
 
 
 class Node(ClientBase):
@@ -14,8 +17,11 @@ class Node(ClientBase):
         url = self.object_url('nodes', is_free)
         return self.check_response(self.httpClient.request('GET', url))
 
+
     def show(self, node_name):
         """Shows attributes of a given node """
+        #if _has_reserved(node_name):
+        #   raise NotFoundError("Node %s does not exist." % node_name)
         url = self.object_url('node', node_name)
         return self.check_response(self.httpClient.request('GET', url))
 
@@ -100,3 +106,8 @@ class Node(ClientBase):
         """Stop logging console output from <node> and delete the log"""
         url = self.object_url('node', node, 'console')
         return self.check_response(self.httpClient.request('DELETE', url))
+
+
+def _has_reserved(string, search=re.compile('[^A-Za-z0-9 \$\-\_\.\+\!\*\'\(\)\,]+').search):
+    """Returns true if <string> contains URL-reserved characters"""
+    return bool(search(string))
