@@ -62,15 +62,16 @@ class Node(ClientBase):
                 )
 
     def power_off(self, node_name):
+        """Power offs the <node> """
         bad_chars = _find_reserved(node_name)
         if bool(bad_chars):
             raise BadArgumentError("Nodes may not contain: %s"
                                 % bad_chars)
-        """Power offs the <node> """
         url = self.object_url('node', node_name, 'power_off')
         return self.check_response(self.httpClient.request('POST', url))
 
     def add_nic(self, node_name, nic_name, macaddr):
+        """Add a <nic> to <node>"""
         bad_chars = _find_reserved(node_name)
         if bool(bad_chars):
             raise BadArgumentError("Nodes may not contain: %s"
@@ -79,7 +80,6 @@ class Node(ClientBase):
         if bool(bad_chars):
             raise BadArgumentError("Nics may not contain: %s"
                                 % bad_chars)
-        """Add a <nic> to <node>"""
         url = self.object_url('node', node_name, 'nic', nic_name)
         payload = json.dumps({'macaddr': macaddr})
         return self.check_response(
@@ -88,11 +88,27 @@ class Node(ClientBase):
 
     def remove_nic(self, node_name, nic_name):
         """Remove a <nic> from <node>"""
+        bad_chars = _find_reserved(node_name)
+        if bool(bad_chars):
+            raise BadArgumentError("Nodes may not contain: %s"
+                                % bad_chars)
+        bad_chars = _find_reserved(nic_name)
+        if bool(bad_chars):
+            raise BadArgumentError("Nics may not contain: %s"
+                                % bad_chars)
         url = self.object_url('node', node_name, 'nic', nic_name)
         return self.check_response(self.httpClient.request('DELETE', url))
 
     def connect_network(self, node, nic, network, channel):
         """Connect <node> to <network> on given <nic> and <channel>"""
+        bad_chars = _find_reserved(node)
+        if bool(bad_chars):
+            raise BadArgumentError("Nodes may not contain: %s"
+                                % bad_chars)
+        bad_chars = _find_reserved(nic)
+        if bool(bad_chars):
+            raise BadArgumentError("Nics may not contain: %s"
+                                % bad_chars)
         url = self.object_url(
                 'node', node, 'nic', nic, 'connect_network'
                 )
@@ -105,6 +121,14 @@ class Node(ClientBase):
 
     def detach_network(self, node, nic, network):
         """Disconnect <node> from <network> on the given <nic>. """
+        bad_chars = _find_reserved(node)
+        if bool(bad_chars):
+            raise BadArgumentError("Nodes may not contain: %s"
+                                % bad_chars)
+        bad_chars = _find_reserved(nic)
+        if bool(bad_chars):
+            raise BadArgumentError("Nics may not contain: %s"
+                                % bad_chars)
         url = self.object_url(
                 'node', node, 'nic', nic, 'detach_network'
                 )
@@ -119,11 +143,19 @@ class Node(ClientBase):
 
     def start_console(self, node):
         """Start logging console output from <node> """
+        bad_chars = _find_reserved(node)
+        if bool(bad_chars):
+            raise BadArgumentError("Nodes may not contain: %s"
+                                % bad_chars)
         url = self.object_url('node', node, 'console')
         return self.check_response(self.httpClient.request('PUT', url))
 
     def stop_console(self, node):
         """Stop logging console output from <node> and delete the log"""
+        bad_chars = _find_reserved(node)
+        if bool(bad_chars):
+            raise BadArgumentError("Nodes may not contain: %s"
+                                % bad_chars)
         url = self.object_url('node', node, 'console')
         return self.check_response(self.httpClient.request('DELETE', url))
 
