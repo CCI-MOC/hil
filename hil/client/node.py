@@ -18,7 +18,7 @@ class Node(ClientBase):
 
     def show(self, node_name):
         """Shows attributes of a given node """
-        bad_chars = _find_reserved(node_name)
+        bad_chars = self.find_reserved(node_name)
         if bool(bad_chars):
             raise BadArgumentError("Nodes may not contain: %s"
                                 % bad_chars)
@@ -42,7 +42,7 @@ class Node(ClientBase):
 
     def delete(self, node_name):
         """Deletes the node from database. """
-        bad_chars = _find_reserved(node_name)
+        bad_chars = self.find_reserved(node_name)
         if bool(bad_chars):
             raise BadArgumentError("Nodes may not contain: %s"
                                 % bad_chars)
@@ -51,7 +51,7 @@ class Node(ClientBase):
 
     def power_cycle(self, node_name, force=False):
         """Power cycles the <node> """
-        bad_chars = _find_reserved(node_name)
+        bad_chars = self.find_reserved(node_name)
         if bool(bad_chars):
             raise BadArgumentError("Nodes may not contain: %s"
                                 % bad_chars)
@@ -63,7 +63,7 @@ class Node(ClientBase):
 
     def power_off(self, node_name):
         """Power offs the <node> """
-        bad_chars = _find_reserved(node_name)
+        bad_chars = self.find_reserved(node_name)
         if bool(bad_chars):
             raise BadArgumentError("Nodes may not contain: %s"
                                 % bad_chars)
@@ -72,11 +72,11 @@ class Node(ClientBase):
 
     def add_nic(self, node_name, nic_name, macaddr):
         """Add a <nic> to <node>"""
-        bad_chars = _find_reserved(node_name)
+        bad_chars = self.find_reserved(node_name)
         if bool(bad_chars):
             raise BadArgumentError("Nodes may not contain: %s"
                                 % bad_chars)
-        bad_chars = _find_reserved(nic_name)
+        bad_chars = self.find_reserved(nic_name)
         if bool(bad_chars):
             raise BadArgumentError("Nics may not contain: %s"
                                 % bad_chars)
@@ -88,11 +88,11 @@ class Node(ClientBase):
 
     def remove_nic(self, node_name, nic_name):
         """Remove a <nic> from <node>"""
-        bad_chars = _find_reserved(node_name)
+        bad_chars = self.find_reserved(node_name)
         if bool(bad_chars):
             raise BadArgumentError("Nodes may not contain: %s"
                                 % bad_chars)
-        bad_chars = _find_reserved(nic_name)
+        bad_chars = self.find_reserved(nic_name)
         if bool(bad_chars):
             raise BadArgumentError("Nics may not contain: %s"
                                 % bad_chars)
@@ -101,11 +101,11 @@ class Node(ClientBase):
 
     def connect_network(self, node, nic, network, channel):
         """Connect <node> to <network> on given <nic> and <channel>"""
-        bad_chars = _find_reserved(node)
+        bad_chars = self.find_reserved(node)
         if bool(bad_chars):
             raise BadArgumentError("Nodes may not contain: %s"
                                 % bad_chars)
-        bad_chars = _find_reserved(nic)
+        bad_chars = self.find_reserved(nic)
         if bool(bad_chars):
             raise BadArgumentError("Nics may not contain: %s"
                                 % bad_chars)
@@ -121,11 +121,11 @@ class Node(ClientBase):
 
     def detach_network(self, node, nic, network):
         """Disconnect <node> from <network> on the given <nic>. """
-        bad_chars = _find_reserved(node)
+        bad_chars = self.find_reserved(node)
         if bool(bad_chars):
             raise BadArgumentError("Nodes may not contain: %s"
                                 % bad_chars)
-        bad_chars = _find_reserved(nic)
+        bad_chars = self.find_reserved(nic)
         if bool(bad_chars):
             raise BadArgumentError("Nics may not contain: %s"
                                 % bad_chars)
@@ -143,7 +143,7 @@ class Node(ClientBase):
 
     def start_console(self, node):
         """Start logging console output from <node> """
-        bad_chars = _find_reserved(node)
+        bad_chars = self.find_reserved(node)
         if bool(bad_chars):
             raise BadArgumentError("Nodes may not contain: %s"
                                 % bad_chars)
@@ -152,7 +152,7 @@ class Node(ClientBase):
 
     def stop_console(self, node):
         """Stop logging console output from <node> and delete the log"""
-        bad_chars = _find_reserved(node)
+        bad_chars = self.find_reserved(node)
         if bool(bad_chars):
             raise BadArgumentError("Nodes may not contain: %s"
                                 % bad_chars)
@@ -160,13 +160,13 @@ class Node(ClientBase):
         return self.check_response(self.httpClient.request('DELETE', url))
 
 
-def _find_reserved(string):
-    """Returns a list of illegal characters in a string"""
-    p = '[^A-Za-z0-9 \$\-\_\.\+\!\*\'\(\)\,]+'
-    return set(x for l in re.findall(p, string) for x in l)
+#def _find_reserved(string):
+#    """Returns a list of illegal characters in a string"""
+#    p = '[^A-Za-z0-9 \$\-\_\.\+\!\*\'\(\)\,]+'
+#    return set(x for l in re.findall(p, string) for x in l)
 
-def _find_reserved_w_slash(string):
-    """Returns a list of illegal characters in a string
-    including `/` for channels and ports"""
-    p = '[^A-Za-z0-9 \/\$\-\_\.\+\!\*\'\(\)\,]+'
-    return set(x for l in re.findall(p, string) for x in l)
+#def _find_reserved_w_slash(string):
+#    """Returns a list of illegal characters in a string
+#    including `/` for channels and ports"""
+#    p = '[^A-Za-z0-9 \/\$\-\_\.\+\!\*\'\(\)\,]+'
+#    return set(x for l in re.findall(p, string) for x in l)

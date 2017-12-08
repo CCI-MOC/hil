@@ -2,6 +2,7 @@
 
 from urlparse import urljoin
 import json
+import re
 
 
 class FailedAPICallException(Exception):
@@ -69,3 +70,14 @@ class ClientBase(object):
         # Catching 404's that do not return JSON
         except ValueError:
             return response.content
+
+    def find_reserved(self, string):
+        """Returns a list of illegal characters in a string"""
+        p = '[^A-Za-z0-9 \$\-\_\.\+\!\*\'\(\)\,]+'
+        return set(x for l in re.findall(p, string) for x in l)
+
+    def find_reserved_w_slash(self, string):
+        """Returns a list of illegal characters in a string
+        including `/` for channels and ports"""
+        p = '[^A-Za-z0-9 \/\$\-\_\.\+\!\*\'\(\)\,]+'
+        return set(x for l in re.findall(p, string) for x in l)
