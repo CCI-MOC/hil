@@ -1,6 +1,7 @@
 """Client support for project related api calls."""
 import json
 from hil.client.base import ClientBase
+from hil.errors import BadArgumentError
 
 
 class Project(ClientBase):
@@ -17,11 +18,19 @@ class Project(ClientBase):
 
         def nodes_in(self, project_name):
             """Lists nodes allocated to project <project_name> """
+            bad_chars = self.find_reserved(project_name)
+            if bool(bad_chars):
+                raise BadArgumentError("Projects may not contain: %s"
+                                       % bad_chars)
             url = self.object_url('project', project_name, 'nodes')
             return self.check_response(self.httpClient.request("GET", url))
 
         def networks_in(self, project_name):
             """Lists nodes allocated to project <project_name> """
+            bad_chars = self.find_reserved(project_name)
+            if bool(bad_chars):
+                raise BadArgumentError("Projects may not contain: %s"
+                                       % bad_chars)
             url = self.object_url(
                     'project', project_name, 'networks'
                     )
@@ -29,16 +38,28 @@ class Project(ClientBase):
 
         def create(self, project_name):
             """Creates a project named <project_name> """
+            bad_chars = self.find_reserved(project_name)
+            if bool(bad_chars):
+                raise BadArgumentError("Projects may not contain: %s"
+                                       % bad_chars)
             url = self.object_url('project', project_name)
             return self.check_response(self.httpClient.request("PUT", url))
 
         def delete(self, project_name):
             """Deletes a project named <project_name> """
+            bad_chars = self.find_reserved(project_name)
+            if bool(bad_chars):
+                raise BadArgumentError("Projects may not contain: %s"
+                                       % bad_chars)
             url = self.object_url('project', project_name)
             return self.check_response(self.httpClient.request("DELETE", url))
 
         def connect(self, project_name, node_name):
             """Adds a node to a project. """
+            bad_chars = self.find_reserved(project_name)
+            if bool(bad_chars):
+                raise BadArgumentError("Projects may not contain: %s"
+                                       % bad_chars)
             url = self.object_url(
                     'project', project_name, 'connect_node'
                     )
@@ -49,6 +70,10 @@ class Project(ClientBase):
 
         def detach(self, project_name, node_name):
             """Detaches a node from a project. """
+            bad_chars = self.find_reserved(project_name)
+            if bool(bad_chars):
+                raise BadArgumentError("Projects may not contain: %s"
+                                       % bad_chars)
             url = self.object_url('project', project_name, 'detach_node')
             self.payload = json.dumps({'node': node_name})
             return self.check_response(
