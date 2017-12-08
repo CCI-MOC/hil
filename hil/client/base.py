@@ -66,5 +66,6 @@ class ClientBase(object):
                 error_type=e['type'],
                 message=e['msg'],
             )
+        # Catching 404's that do not return JSON
         except ValueError:
             return response.content
