@@ -195,6 +195,13 @@ The body of the api call request can then look like:
         "dummy_vlan": 2222
     }
 
+* There should be no "enable" password.
+
+* If you choose to login using the public key, then provide any string as the
+password. Also, the user running the HIL network daemon should have access to the
+private key.
+
+
 #### switch_register_port
 
 Like the powerconnect driver, the Nexus driver accepts port names of the
