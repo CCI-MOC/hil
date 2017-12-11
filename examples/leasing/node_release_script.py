@@ -16,9 +16,9 @@ Config file format (/etc/leasing.cfg):
 node_list: names of the nodes
 threshold: number of times that cron job is called before
             releasing the node
-user_name: 
-password: 
-endpoint: the ip address and the port number 
+user_name:
+password:
+endpoint: the ip address and the port number
             which hil is running on
 status_file: it should be /var/lib/leasing
 
@@ -28,7 +28,7 @@ Status file format (var/lib/leasing):
 node_name project_name current_time
 
 current time is the number of times that cron jon
-has been called. 
+has been called.
 """
 
 # from sets import Set
@@ -44,8 +44,10 @@ from hil.client.base import FailedAPICallException
 class HILClientFailure(Exception):
     pass
 
+
 class StatusFileError(Exception):
     pass
+
 
 def hil_client_connect(endpoint_ip, name, pw):
 
@@ -67,9 +69,8 @@ def load_node_info(statusfile):
         for line in status_file:
             node_status = line.split()
             nodes[node_status[0]] = {}
-            nodes[node_status[0]].update({'project':node_status[1],\
-                                            'time':node_status[2]})
-    
+            nodes[node_status[0]].update({'project': node_status[1],
+                                          'time': node_status[2]})
     return nodes
 
 
@@ -119,11 +120,13 @@ def release_from_project(
                 `%s` from project `%s`' % (node, project))
         raise HILClientFailure()
 
+
 def update_file(statusfile, nodes):
     with open(statusfile, 'w') as status_file:
         for node in sorted(nodes):
-            status_file.write(str(node) + ' ' +  str(nodes[node]['project']) \
-                                + ' ' + str(nodes[node]['time']) + '\n')
+            status_file.write(str(node) + ' ' + str(nodes[node]['project']) +
+                              ' ' + str(nodes[node]['time']) + '\n')
+
 
 def release_nodes(
         statusfile, non_persistent_list,
@@ -149,9 +152,8 @@ def release_nodes(
     # All nodes should have information in status file
     nodes = load_node_info(statusfile)
 
-
     for node in nodes_to_update:
-        if nodes[node] is None: 
+        if nodes[node] is None:
             print('Information of node %s \
                     is missing in the status file' % (node))
             raise StatusFileError()
@@ -166,7 +168,7 @@ def release_nodes(
         if (project == project_in_hil and
                 new_time < threshold_time):
             nodes[node]['time'] = new_time
-        # If the time of the node is passed the threshold, 
+        # If the time of the node is passed the threshold,
         # release it from the project
         elif (project == project_in_hil and
                 new_time >= threshold_time):
@@ -174,7 +176,7 @@ def release_nodes(
             nodes[node]['project'] = 'free_pool'
             nodes[node]['time'] = '0'
 
-        # There is a mistmatch in the status file and actual status. 
+        # There is a mistmatch in the status file and actual status.
         # The file should be updated.
         elif (project != project_in_hil and
                 project_in_hil is not None):
