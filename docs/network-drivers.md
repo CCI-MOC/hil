@@ -109,6 +109,10 @@ A few commands are necessary to run on the switch before it can be used with HIL
 
 2. This switch uses ssh for connection. Be sure that ssh is enabled on the switch.
 
+3. If you choose to login using the public key, then provide any string as the
+password. The user running the HIL network daemon should have access to the
+private key.
+
 #### switch_register
 
 To register a Dell Powerconnect switch, the ``"type"`` field of the

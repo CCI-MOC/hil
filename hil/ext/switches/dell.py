@@ -95,15 +95,27 @@ class _PowerConnect55xxSession(_BaseSession):
 
         console = pexpect.spawn(
             'ssh ' + switch.username + '@' + switch.hostname)
-        # dell switch gets user name for the second time
 
+        # dell switch gets user name for the second time
         console.expect('User Name:')
         console.sendline(switch.username)
-        console.expect('Password:')
-        console.sendline(switch.password)
+
+        alternatives = ['[Pp]assword:', '>', '#']
+        outcome = console.expect(alternatives)
+        if outcome == 0:
+            console.sendline(switch.password)
+            outcome = console.expect(alternatives)
+        if outcome == 1:
+            console.sendline('enable')
 
         logger.debug('Logged in to switch %r', switch)
 
+        # FIXME: There ought to be a better solution to get the prompts.
+        # Send some string, so we expect the prompt again. Sending only new a
+        # line doesn't work. Otherwise, we have some weird characters:
+        # Eg; if_prompt looks like '\\\x1b\\[Kconsole\\(config\\-if[^)]*\\)#'
+        # Don't know where "\\\x1b\\[K" comes from.
+        console.sendline('some-unrecognized-command')
         prompts = _console.get_prompts(console)
         return _PowerConnect55xxSession(switch=switch,
                                         console=console,
