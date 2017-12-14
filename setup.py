@@ -87,6 +87,10 @@ setup(name='hil',
       #
       # For Flask-SQLAlchemy, we are using non-standard semver bounds as
       # release 2.2 is backwards-incompatible.
+      #
+      # We are blacklisting keystonemiddleware version 4.19 due to a bug[3].
+      # [3]: https://bugs.launchpad.net/keystonemiddleware/+bug/1737115
+      # See #923 for details.
       install_requires=['Flask-SQLAlchemy>=2.1,<2.2',
                         'Flask-Migrate>=1.8,<2.0',
                         'Flask-Script>=2.0.5,<3.0',
@@ -110,6 +114,6 @@ setup(name='hil',
                 'requests_mock>=1.0.0,<2.0',
           ],
           'postgres': ['psycopg2>=2.7,<3.0'],
-          'keystone-auth-backend': ['keystonemiddleware>=4.17,<5.0'],
+          'keystone-auth-backend': ['keystonemiddleware>=4.17,!=4.19,<5.0'],
           'keystone-client': ['python-keystoneclient>=3.13,<4.0'],
       })
