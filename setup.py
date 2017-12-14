@@ -110,6 +110,6 @@ setup(name='hil',
                 'requests_mock>=1.0.0,<2.0',
           ],
           'postgres': ['psycopg2>=2.7,<3.0'],
-          'keystone-auth-backend': ['keystonemiddleware>=4.17,<5.0'],
+          'keystone-auth-backend': ['keystonemiddleware>=4.17,!=4.19,<5.0'],
           'keystone-client': ['python-keystoneclient>=3.13,<4.0'],
       })
