@@ -83,6 +83,14 @@ class Port(ClientBase):
         if bool(bad_chars):
             raise BadArgumentError("Ports may not contain: %s"
                                    % bad_chars)
+        bad_chars = self.find_reserved(node)
+        if bool(bad_chars):
+            raise BadArgumentError("Nodes may not contain: %s"
+                                   % bad_chars)
+        bad_chars = self.find_reserved(nic)
+        if bool(bad_chars):
+            raise BadArgumentError("Nics may not contain: %s"
+                                   % bad_chars)
         url = self.object_url('switch', switch, 'port', port, 'connect_nic')
         payload = json.dumps({'node': node, 'nic': nic})
         return self.check_response(

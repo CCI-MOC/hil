@@ -33,6 +33,18 @@ class Network(ClientBase):
             if bool(bad_chars):
                 raise BadArgumentError("Networks may not contain: %s"
                                        % bad_chars)
+            bad_chars = self.find_reserved(owner)
+            if bool(bad_chars):
+                raise BadArgumentError("Owner may not contain: %s"
+                                       % bad_chars)
+            bad_chars = self.find_reserved(access)
+            if bool(bad_chars):
+                raise BadArgumentError("Access may not contain: %s"
+                                       % bad_chars)
+            bad_chars = self.find_reserved_w_slash(net_id)
+            if bool(bad_chars):
+                raise BadArgumentError("Network ID may not contain: %s"
+                                       % bad_chars)
             url = self.object_url('network', network)
             payload = json.dumps({
                 'owner': owner, 'access': access,

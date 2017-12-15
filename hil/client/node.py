@@ -108,6 +108,14 @@ class Node(ClientBase):
         if bool(bad_chars):
             raise BadArgumentError("Nics may not contain: %s"
                                    % bad_chars)
+        bad_chars = self.find_reserved(network)
+        if bool(bad_chars):
+            raise BadArgumentError("Networks may not contain: %s"
+                                   % bad_chars)
+        bad_chars = self.find_reserved_w_slash(channel)
+        if bool(bad_chars):
+            raise BadArgumentError("Channels may not contain: %s"
+                                   % bad_chars)
         url = self.object_url(
                 'node', node, 'nic', nic, 'connect_network'
                 )
@@ -127,6 +135,10 @@ class Node(ClientBase):
         bad_chars = self.find_reserved(nic)
         if bool(bad_chars):
             raise BadArgumentError("Nics may not contain: %s"
+                                   % bad_chars)
+        bad_chars = self.find_reserved(network)
+        if bool(bad_chars):
+            raise BadArgumentError("Networks may not contain: %s"
                                    % bad_chars)
         url = self.object_url(
                 'node', node, 'nic', nic, 'detach_network'

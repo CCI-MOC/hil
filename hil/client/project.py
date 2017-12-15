@@ -60,6 +60,10 @@ class Project(ClientBase):
             if bool(bad_chars):
                 raise BadArgumentError("Projects may not contain: %s"
                                        % bad_chars)
+            bad_chars = self.find_reserved(node_name)
+            if bool(bad_chars):
+                raise BadArgumentError("Nodes may not contain: %s"
+                                       % bad_chars)
             url = self.object_url(
                     'project', project_name, 'connect_node'
                     )
@@ -73,6 +77,10 @@ class Project(ClientBase):
             bad_chars = self.find_reserved(project_name)
             if bool(bad_chars):
                 raise BadArgumentError("Projects may not contain: %s"
+                                       % bad_chars)
+            bad_chars = self.find_reserved(node_name)
+            if bool(bad_chars):
+                raise BadArgumentError("Nodes may not contain: %s"
                                        % bad_chars)
             url = self.object_url('project', project_name, 'detach_node')
             self.payload = json.dumps({'node': node_name})
