@@ -27,43 +27,46 @@ status_file: it should be /var/lib/leasing
 Status file format (var/lib/leasing):
 node_name project_name current_time
 
-current time is the number of times that cron jon
+Threshold is the number of times that cron jon
 has been called.
 """
 
 # from sets import Set
 import time
 import ConfigParser
-from os import remove
-from shutil import move
 
 from hil.client.client import Client, RequestsHTTPClient
 from hil.client.base import FailedAPICallException
 
 
 class HILClientFailure(Exception):
+    """Exception indicating that the HIL client failed"""
     pass
 
 
 class StatusFileError(Exception):
+    """Exception regarding Status File Format"""
     pass
 
 
 def hil_client_connect(endpoint_ip, name, pw):
+    """
+    We need a client object
+    """
 
     hil_http_client = RequestsHTTPClient()
-    """
-    if not hil_http_client:
-        print('Unable to create HIL HTTP Client')
-        return None
-    """
-
     hil_http_client.auth = (name, pw)
 
     return Client(endpoint_ip, hil_http_client)
 
 
 def load_node_info(statusfile):
+    """
+    Creating an structure containing all information from the
+    file. We will change and update this data structure and then
+    write it back to the file. In this way, the file will be read
+    and written once.
+    """
     nodes = {}
     with open(statusfile, 'r') as status_file:
         for line in status_file:
@@ -122,6 +125,10 @@ def release_from_project(
 
 
 def update_file(statusfile, nodes):
+    """
+    Writing the updated data structure's info back to the file.
+    """
+
     with open(statusfile, 'w') as status_file:
         for node in sorted(nodes):
             status_file.write(str(node) + ' ' + str(nodes[node]['project']) +
