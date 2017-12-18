@@ -76,6 +76,7 @@ class _RequestInfo(object):
                 ctx.request_info_uuid = uuid4()
             return ctx.request_info_uuid
 
+
 request_info = _RequestInfo(app)
 
 

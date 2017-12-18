@@ -23,6 +23,7 @@ def _get_readme():
     with open(join(dirname(__file__), readme_file)) as f:
         return f.read()
 
+
 setup(name='hil',
       maintainer='Developers of the HIL Project at MOC',
       maintainer_email='hil@lists.massopen.cloud',
@@ -109,7 +110,7 @@ setup(name='hil',
                 'pytest-catchlog>=1.2.2,<2.0',
                 'pytest-cov>2.0,<3.0',
                 'pytest-xdist>=1.14,<2.0',
-                'pep8>=1.7.0',
+                'pycodestyle>=2.3.1',
                 'pylint>=1.6.0,<2.0',
                 'requests_mock>=1.0.0,<2.0',
           ],

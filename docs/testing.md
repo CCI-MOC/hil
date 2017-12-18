@@ -42,9 +42,9 @@ To run just a subset of them, specify a particular file or directory:
     py.test tests/unit
     py.test tests/unit/api.py
 
-To run just a pep8 test:
+To run just a pep8/pycodestyle test:
 
-    pep8 *.py tests/ hil/
+    pycodestyle *.py tests/ hil/
 
 As stated above, running at least `tests/unit` is mandatory before each
 commit.

@@ -34,6 +34,7 @@ def hil(*args):
     print args
     check_call(['hil'] + args)
 
+
 hil('switch_register', switch, 'mock', 'ip', 'user', 'pass')
 
 for node in range(N_NODES):
