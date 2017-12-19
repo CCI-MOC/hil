@@ -8,7 +8,7 @@ are placed in the "tests" subdirectory, which is subdivided into:
 * `unit` - for basic unit tests. These are safe to run without a full HIL enviornment (i.e. you don't need libvirt etc).
 * `deployment` - for tests that need to run against an actual setup, with libvirtd and at least one real switch.
 
-Developers should run at least the unit and pep8 tests before making a commit.
+Developers should run at least the unit and pycodestyle tests before making a commit.
 Ideally, the deployment tests should also be run, though we're less
 strict about this. Developers should also introduce tests for any new
 functions/methods they write, or any new or fixed functionality. Ideally,
@@ -42,9 +42,9 @@ To run just a subset of them, specify a particular file or directory:
     py.test tests/unit
     py.test tests/unit/api.py
 
-To run just a pep8 test:
+To run just a pycodestyle test:
 
-    pep8 *.py tests/ hil/
+    pycodestyle *.py tests/ hil/
 
 As stated above, running at least `tests/unit` is mandatory before each
 commit.

@@ -58,6 +58,7 @@ class FlaskHTTPClient(HTTPClient):
                             headers=resp.headers,
                             content=resp.get_data())
 
+
 http_client = FlaskHTTPClient()
 C = Client(ep, http_client)  # Initializing client library
 
@@ -263,6 +264,7 @@ def populate_server():
                     {"owner": "proj-02", "access": "proj-02", "net_id": ""}
                     )
                 )
+
 
 pytestmark = pytest.mark.usefixtures('dummy_verify',
                                      'fail_on_log_warnings',
