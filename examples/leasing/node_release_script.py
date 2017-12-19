@@ -157,9 +157,12 @@ def release_nodes(
 
         # There is a mistmatch in the status file and actual status.
         # The file should be updated.
+        # This covers the edge case when someone releases the node
+        # and the node is assigned to another project.
         elif (project != project_in_hil and
                 project_in_hil is not None):
             nodes[node]['project'] = project_in_hil
+            nodes[node]['time'] = '1'
 
     update_file(statusfile, nodes)
 
