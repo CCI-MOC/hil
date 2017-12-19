@@ -624,5 +624,5 @@ def test_dont_log(client, caplog):
         }))
         assert resp.status_code == 200, \
             "An error occured handling the request!"
-        for record in caplog.records():
+        for record in caplog.records:
             assert 'sensitive info' not in record.getMessage()
