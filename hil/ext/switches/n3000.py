@@ -18,7 +18,6 @@ Currently the driver uses telnet to connect to the switch's console; in
 the long term we want to be using SNMP.
 """
 
-import pexpect
 import re
 import logging
 import schema
