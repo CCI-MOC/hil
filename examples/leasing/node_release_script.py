@@ -2,36 +2,12 @@
 """
 This script will free nodes from a project after
 a specific amount of time.
-Script reads a config file from /etc/leasing.cfg
-which defines which nodes are in the project, time threshold
-admin user name and password and status file.
 
-status file includes each node's status, which node is in
-the project, which one is free and for how long the node
-has been in the project.
-
-*******************
-
-Config file format (/etc/leasing.cfg):
-node_list: names of the nodes
-threshold: number of times that cron job is called before
-            releasing the node
-user_name:
-password:
-endpoint: the ip address and the port number
-            which hil is running on
-status_file: it should be /var/lib/leasing
-
-******************
-
-Status file format (var/lib/leasing):
-node_name project_name current_time
-
-Threshold is the number of times that cron jon
-has been called.
+You can find more information including
+config file and status file format in 
+README file.
 """
 
-# from sets import Set
 import time
 import ConfigParser
 
@@ -50,9 +26,7 @@ class StatusFileError(Exception):
 
 
 def hil_client_connect(endpoint_ip, name, pw):
-    """
-    We need a client object
-    """
+    """Returns a HIL client object"""
 
     hil_http_client = RequestsHTTPClient()
     hil_http_client.auth = (name, pw)
@@ -62,7 +36,7 @@ def hil_client_connect(endpoint_ip, name, pw):
 
 def load_node_info(statusfile):
     """
-    Creating an structure containing all information from the
+    Creates a structure containing all information from the
     file. We will change and update this data structure and then
     write it back to the file. In this way, the file will be read
     and written once.
