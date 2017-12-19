@@ -104,6 +104,10 @@ class _DellN3000Session(_BaseSession):
     def connect(switch):
         """connect to the switch and log in"""
         console = _console.login(switch)
+
+        # send a new line so that we can "expect" a prompt again if we already
+        # matched when logged in using pubkey
+        console.sendline('')
         prompts = _console.get_prompts(console)
 
         # create the dummy vlan for port_revert

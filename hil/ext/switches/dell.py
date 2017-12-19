@@ -94,11 +94,12 @@ class _PowerConnect55xxSession(_BaseSession):
 
         console = _console.login(switch)
 
-        # FIXME: There ought to be a better solution to get the prompts.
         # Send some string, so we expect the prompt again. Sending only new a
-        # line doesn't work. Otherwise, we have some weird characters:
-        # Eg; if_prompt looks like '\\\x1b\\[Kconsole\\(config\\-if[^)]*\\)#'
-        # Don't know where "\\\x1b\\[K" comes from.
+        # line doesn't work, it returns some unwanted ANSI sequences in
+        # console.after
+        # Eg; main_prompts looks like '\r\n\r\r\x1b[Kconsole#'
+        # Here \x1b[K is unwanted and causes trouble parsing it.
+        # Sending some other random string doesn't have this issue.
         console.sendline('some-unrecognized-command')
         prompts = _console.get_prompts(console)
         return _PowerConnect55xxSession(switch=switch,
