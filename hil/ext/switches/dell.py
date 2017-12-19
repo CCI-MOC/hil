@@ -93,22 +93,7 @@ class _PowerConnect55xxSession(_BaseSession):
     def connect(switch):
         """connect to the switch, and log in."""
 
-        console = pexpect.spawn(
-            'ssh ' + switch.username + '@' + switch.hostname)
-
-        # dell switch gets user name for the second time
-        console.expect('User Name:')
-        console.sendline(switch.username)
-
-        alternatives = ['[Pp]assword:', '>', '#']
-        outcome = console.expect(alternatives)
-        if outcome == 0:
-            console.sendline(switch.password)
-            outcome = console.expect(alternatives)
-        if outcome == 1:
-            console.sendline('enable')
-
-        logger.debug('Logged in to switch %r', switch)
+        console = _console.login(switch)
 
         # FIXME: There ought to be a better solution to get the prompts.
         # Send some string, so we expect the prompt again. Sending only new a

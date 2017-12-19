@@ -124,18 +124,8 @@ class _Session(_console.Session):
     @staticmethod
     def connect(switch):
         """Connect to the switch."""
-        alternatives = ['[Pp]assword: ', '>', '#']
-        console = pexpect.spawn(
-            'ssh ' + switch.username + '@' + switch.hostname)
 
-        outcome = console.expect(alternatives)
-        if outcome == 0:
-            console.sendline(switch.password)
-            outcome = console.expect(alternatives)
-        if outcome == 1:
-            console.sendline('en')
-
-        logger.debug('Logged in to switch %r', switch)
+        console = _console.login(switch)
 
         # send a new line so that we can "expect" a prompt again if we already
         # matched when outcome was 2 (pub key auth)
