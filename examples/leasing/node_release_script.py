@@ -17,12 +17,10 @@ from hil.client.base import FailedAPICallException
 
 class HILClientFailure(Exception):
     """Exception indicating that the HIL client failed"""
-    pass
 
 
 class StatusFileError(Exception):
     """Exception regarding Status File Format"""
-    pass
 
 
 def hil_client_connect(endpoint_ip, name, pw):
