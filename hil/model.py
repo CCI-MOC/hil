@@ -582,6 +582,13 @@ class NetworkingAction(db.Model):
 
     id = db.Column(BigIntegerType, primary_key=True)
 
+    # UUID of a networking action. Useful for querying the status of a
+    # networking action.
+    uuid = db.Column(db.String, nullable=False)
+
+    # status of the operation
+    status = db.Column(db.String, nullable=False)
+
     # The type of action.
     #
     # * 'modify_port' attaches the (nic, channel) pair to a specified network,

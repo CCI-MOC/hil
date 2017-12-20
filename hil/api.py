@@ -4,6 +4,7 @@ TODO: Spec out and document what sanitization is required.
 """
 import json
 import requests
+import uuid
 
 from schema import Schema, Optional
 
@@ -1084,14 +1085,21 @@ def port_revert(switch, port):
 
     if port.nic is None:
         raise errors.NotFoundError(port.label + " not attached")
-    if port.nic.current_action:
+    if port.nic.current_action and port.nic.current_action.status != 'DONE':
         raise errors.BlockedError("Port already has a pending action.")
 
-    db.session.add(model.NetworkingAction(type='revert_port',
-                                          nic=port.nic,
-                                          channel='',
-                                          new_network=None))
+    unique_id = str(uuid.uuid4())
+
+    action = model.NetworkingAction(type='revert_port',
+                                    nic=port.nic,
+                                    channel='',
+                                    uuid=unique_id,
+                                    status='PENDING',
+                                    new_network=None)
+
+    db.session.add(action)
     db.session.commit()
+    # return unique_id
 
 
 @rest_call('GET', '/nodes/<is_free>', Schema({'is_free': basestring}))

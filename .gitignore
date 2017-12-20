@@ -14,3 +14,4 @@ dist
 /site-layout.json*
 /.cache
 hil.log
+.eggs/
