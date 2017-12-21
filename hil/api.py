@@ -372,7 +372,7 @@ def node_connect_network(node, nic, network, channel=None):
     if nic.port is None:
         raise errors.NotFoundError("No port is connected to given nic.")
 
-    if nic.current_action:
+    if nic.current_action and nic.current_action.status == 'PENDING':
         raise errors.BlockedError(
             "A networking operation is already active on the nic.")
 
@@ -397,12 +397,15 @@ def node_connect_network(node, nic, network, channel=None):
     switch = nic.port.owner
     switch.ensure_legal_operation(nic, 'connect', channel)
 
+    unique_id = str(uuid.uuid4())
     db.session.add(model.NetworkingAction(type='modify_port',
                                           nic=nic,
                                           new_network=network,
-                                          channel=channel))
+                                          channel=channel,
+                                          uuid=unique_id,
+                                          status='PENDING'))
     db.session.commit()
-    return '', 202
+    return json.dumps({'status_id': unique_id}), 202
 
 
 @rest_call('POST', '/node/<node>/nic/<nic>/detach_network', Schema({
@@ -427,7 +430,7 @@ def node_detach_network(node, nic, network):
         raise errors.ProjectMismatchError("Node not in project")
     auth_backend.require_project_access(node.project)
 
-    if nic.current_action:
+    if nic.current_action and nic.current_action.status == 'PENDING':
         raise errors.BlockedError(
             "A networking operation is already active on the nic.")
     attachment = model.NetworkAttachment.query \
@@ -439,12 +442,16 @@ def node_detach_network(node, nic, network):
     switch = nic.port.owner
     switch.ensure_legal_operation(nic, 'detach', attachment.channel)
 
+    unique_id = str(uuid.uuid4())
     db.session.add(model.NetworkingAction(type='modify_port',
                                           nic=nic,
                                           channel=attachment.channel,
+                                          uuid=unique_id,
+                                          status='PENDING',
                                           new_network=None))
+
     db.session.commit()
-    return '', 202
+    return json.dumps({'status_id': unique_id}), 202
 
 
 @rest_call('PUT', '/node/<node>/metadata/<label>', Schema({
@@ -1085,7 +1092,7 @@ def port_revert(switch, port):
 
     if port.nic is None:
         raise errors.NotFoundError(port.label + " not attached")
-    if port.nic.current_action and port.nic.current_action.status != 'DONE':
+    if port.nic.current_action and port.nic.current_action.status == "PENDING":
         raise errors.BlockedError("Port already has a pending action.")
 
     unique_id = str(uuid.uuid4())
