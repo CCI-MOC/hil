@@ -516,13 +516,13 @@ def headnode_delete_hnic(headnode, nic):
 @cmd
 def node_connect_network(node, nic, network, channel):
     """Connect <node> to <network> on given <nic> and <channel>"""
-    C.node.connect_network(node, nic, network, channel)
+    print C.node.connect_network(node, nic, network, channel)
 
 
 @cmd
 def node_detach_network(node, nic, network):
     """Detach <node> from the given <network> on the given <nic>"""
-    C.node.detach_network(node, nic, network)
+    print C.node.detach_network(node, nic, network)
 
 
 @cmd
@@ -825,6 +825,12 @@ def list_active_extensions():
     else:
         for ext in all_extensions:
             print ext
+
+
+@cmd
+def get_status(status_id):
+    """Returns the status of the networking action"""
+    print C.node.get_status(status_id)
 
 
 @cmd
