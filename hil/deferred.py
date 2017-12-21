@@ -39,18 +39,25 @@ class DaemonSession(object):
         else:
             network_id = action.new_network.network_id
 
-        session.modify_port(action.nic.port.label,
-                            action.channel,
-                            network_id)
-        if action.new_network is None:
-            model.NetworkAttachment.query \
-                .filter_by(nic=action.nic, channel=action.channel)\
-                .delete()
-        else:
-            db.session.add(model.NetworkAttachment(
-                nic=action.nic,
-                network=action.new_network,
-                channel=action.channel))
+        try:
+            session.modify_port(action.nic.port.label,
+                                action.channel,
+                                network_id)
+            if action.new_network is None:
+                model.NetworkAttachment.query \
+                    .filter_by(nic=action.nic, channel=action.channel)\
+                    .delete()
+            else:
+                db.session.add(model.NetworkAttachment(
+                    nic=action.nic,
+                    network=action.new_network,
+                    channel=action.channel))
+
+            model.NetworkingAction.query.filter_by(id=action.id). \
+                update({"status": "DONE"})
+        except ModifyPortError:
+            model.NetworkingAction.query.filter_by(id=action.id). \
+                update({"status": "ERROR"})
 
     def revert_port(self, action):
         """Apply a revert_port action."""
