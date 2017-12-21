@@ -1099,7 +1099,24 @@ def port_revert(switch, port):
 
     db.session.add(action)
     db.session.commit()
-    # return unique_id
+    return json.dumps({'status_id': unique_id})
+
+
+# is this only going to be for statuses of Networking actions? What about in
+# the future we have some other calls whose status we want to check?
+@rest_call('GET', '/status/<status_id>', Schema({'status_id': basestring}))
+def get_status(status_id):
+    """Returns the status of the networking action by findind the status_id
+    in the networking actions table
+    """
+    # is auth required here? UUID is obscure enough that nobody can guess
+    # and see someone else's status of their operations. Moreover, it doesn't
+    # divulge any secret information about the networking action.
+    action = model.NetworkingAction.query.filter_by(uuid=status_id).first()
+    if action is None:
+        raise errors.NotFoundError('status_id not found')
+
+    return json.dumps({'status': action.status})
 
 
 @rest_call('GET', '/nodes/<is_free>', Schema({'is_free': basestring}))

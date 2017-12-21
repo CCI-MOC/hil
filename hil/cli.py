@@ -658,7 +658,7 @@ def port_detach_nic(switch, port):
 @cmd
 def port_revert(switch, port):
     """Detach a <port> on a <switch> from all attached networks."""
-    C.port.port_revert(switch, port)
+    print C.port.port_revert(switch, port)
 
 
 @cmd
