@@ -92,6 +92,9 @@ following switch capabilities:
 no native networks in trunk mode. If not supported, then the switchport must be
 first connected to a native network before adding any tagged VLANs.
 
+* There should be **no "enable" password** for switch users which will be used
+by HIL.
+
 
 Per the information in `rest_api.md`, the details of certain API calls are
 driver-dependant, below are the details for each of these switches.
@@ -108,6 +111,10 @@ A few commands are necessary to run on the switch before it can be used with HIL
    vlan 2-4094
 
 2. This switch uses ssh for connection. Be sure that ssh is enabled on the switch.
+
+3. If you choose to login using the public key, then provide any string as the
+password. The user running the HIL network daemon should have access to the
+private key.
 
 #### switch_register
 
@@ -194,6 +201,12 @@ The body of the api call request can then look like:
         "hostname": "mynexus.example.com",
         "dummy_vlan": 2222
     }
+
+
+* If you choose to login using the public key, then provide any string as the
+password. Also, the user running the HIL network daemon should have access to the
+private key.
+
 
 #### switch_register_port
 

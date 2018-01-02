@@ -18,7 +18,6 @@ Currently the driver uses telnet to connect to the switch's console; in the
 long term we want to be using SNMP.
 """
 
-import pexpect
 import re
 import schema
 import logging
@@ -124,12 +123,12 @@ class _Session(_console.Session):
     @staticmethod
     def connect(switch):
         """Connect to the switch."""
-        console = pexpect.spawn(
-            'ssh ' + switch.username + '@' + switch.hostname)
 
-        console.expect('Password: ')
-        console.sendline(switch.password)
+        console = _console.login(switch)
 
+        # send a new line so that we can "expect" a prompt again if we already
+        # matched when logged in using pubkey
+        console.sendline('')
         prompts = _console.get_prompts(console)
 
         return _Session(console=console,

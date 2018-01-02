@@ -178,3 +178,28 @@ def get_prompts(console):
             'if_prompt': re.escape(cmd_prompt[:-1]) + '\(config\\-if[^)]*\)#',
             'main_prompt': re.escape(cmd_prompt),
         }
+
+
+def login(switch):
+    """Login to switch using either a password or key.
+
+    `switch` must have the attributes, `username` and `password`.
+    """
+
+    alternatives = ['User Name:', '[Pp]assword:*', '>', '#']
+    console = pexpect.spawn(
+            'ssh ' + switch.username + '@' + switch.hostname)
+
+    outcome = console.expect(alternatives)
+    if outcome == 0:
+        # some switches, like the dell powerconnect, ask for the username again
+        console.sendline(switch.username)
+        outcome = console.expect(alternatives)
+    if outcome == 1:
+        console.sendline(switch.password)
+        outcome = console.expect(alternatives)
+    if outcome == 2:
+        console.sendline('enable')
+
+    logger.debug('Logged in to switch %r', switch)
+    return console
