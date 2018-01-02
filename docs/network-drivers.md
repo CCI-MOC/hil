@@ -92,6 +92,9 @@ following switch capabilities:
 no native networks in trunk mode. If not supported, then the switchport must be
 first connected to a native network before adding any tagged VLANs.
 
+* There should be **no "enable" password** for switch users which will be used
+by HIL.
+
 
 Per the information in `rest_api.md`, the details of certain API calls are
 driver-dependant, below are the details for each of these switches.
@@ -199,7 +202,6 @@ The body of the api call request can then look like:
         "dummy_vlan": 2222
     }
 
-* There should be no "enable" password.
 
 * If you choose to login using the public key, then provide any string as the
 password. Also, the user running the HIL network daemon should have access to the
