@@ -181,7 +181,10 @@ def get_prompts(console):
 
 
 def login(switch):
-    """login to switch using either a password or key."""
+    """Login to switch using either a password or key.
+
+    `switch` must have the attributes, `username` and `password`.
+    """
 
     alternatives = ['User Name:', '[Pp]assword:*', '>', '#']
     console = pexpect.spawn(

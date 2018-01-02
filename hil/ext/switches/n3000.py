@@ -102,7 +102,10 @@ class _DellN3000Session(_BaseSession):
 
     @staticmethod
     def connect(switch):
-        """connect to the switch and log in"""
+        """Connect to the switch and log in.
+
+        Login using public key is untested on this switch.
+        """
         console = _console.login(switch)
 
         # send a new line so that we can "expect" a prompt again if we already
