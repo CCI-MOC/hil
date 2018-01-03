@@ -584,7 +584,7 @@ class NetworkingAction(db.Model):
 
     # UUID of a networking action. Useful for querying the status of a
     # networking action.
-    uuid = db.Column(db.String, nullable=False)
+    uuid = db.Column(db.String, nullable=False, index=True)
 
     # status of the operation
     status = db.Column(db.String, nullable=False)
@@ -607,7 +607,7 @@ class NetworkingAction(db.Model):
     # The nic affected by the action. for 'revert_port', this is the nic
     # attached to the specified port.
     nic = db.relationship("Nic",
-                          backref=db.backref('current_action', uselist=False))
+                          backref=db.backref('current_action', uselist=True))
 
     # For 'modify_port', this is the new network that the (nic, channel) pair
     # should be moved to, or None if the (nic, channel) should just be detached
