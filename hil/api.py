@@ -372,9 +372,12 @@ def node_connect_network(node, nic, network, channel=None):
     if nic.port is None:
         raise errors.NotFoundError("No port is connected to given nic.")
 
-    if nic.current_action and nic.current_action.status == 'PENDING':
-        raise errors.BlockedError(
-            "A networking operation is already active on the nic.")
+    if nic.current_action:
+        if nic.current_action.status == 'PENDING':
+            raise errors.BlockedError(
+                "A networking operation is already active on the nic.")
+        else:
+            db.session.delete(nic.current_action)
 
     if (network.access) and (project not in network.access):
         raise errors.ProjectMismatchError(
@@ -430,9 +433,13 @@ def node_detach_network(node, nic, network):
         raise errors.ProjectMismatchError("Node not in project")
     auth_backend.require_project_access(node.project)
 
-    if nic.current_action and nic.current_action.status == 'PENDING':
-        raise errors.BlockedError(
-            "A networking operation is already active on the nic.")
+    if nic.current_action:
+        if nic.current_action.status == 'PENDING':
+            raise errors.BlockedError(
+                "A networking operation is already active on the nic.")
+        else:
+            db.session.delete(nic.current_action)
+
     attachment = model.NetworkAttachment.query \
         .filter_by(nic=nic, network=network).one_or_none()
     if attachment is None:
@@ -1092,8 +1099,11 @@ def port_revert(switch, port):
 
     if port.nic is None:
         raise errors.NotFoundError(port.label + " not attached")
-    if port.nic.current_action and port.nic.current_action.status == "PENDING":
-        raise errors.BlockedError("Port already has a pending action.")
+    if port.nic.current_action:
+        if port.nic.current_action.status == "PENDING":
+            raise errors.BlockedError("Port already has a pending action.")
+        else:
+            db.session.delete(port.nic.current_action)
 
     unique_id = str(uuid.uuid4())
 

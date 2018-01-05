@@ -607,7 +607,7 @@ class NetworkingAction(db.Model):
     # The nic affected by the action. for 'revert_port', this is the nic
     # attached to the specified port.
     nic = db.relationship("Nic",
-                          backref=db.backref('current_action', uselist=True))
+                          backref=db.backref('current_action', uselist=False))
 
     # For 'modify_port', this is the new network that the (nic, channel) pair
     # should be moved to, or None if the (nic, channel) should just be detached
