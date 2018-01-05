@@ -2,6 +2,7 @@
 
 from hil import model
 from hil.model import db
+from hil.errors import SwitchError
 import logging
 
 logger = logging.getLogger(__name__)
@@ -55,7 +56,7 @@ class DaemonSession(object):
 
             model.NetworkingAction.query.filter_by(id=action.id). \
                 update({"status": "DONE"})
-        except ModifyPortError:
+        except SwitchError:
             model.NetworkingAction.query.filter_by(id=action.id). \
                 update({"status": "ERROR"})
 
@@ -68,7 +69,7 @@ class DaemonSession(object):
                 update({"status": "DONE"})
             # model.NetworkingAction.query.filter_by(id=action.id).delete()
             model.NetworkAttachment.query.filter_by(nic=action.nic).delete()
-        except RevertPortError:
+        except SwitchError:
             model.NetworkingAction.query.filter_by(id=action.id). \
                 update({"status": "ERROR"})
 
