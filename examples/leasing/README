@@ -14,6 +14,7 @@ will be released after. For example, if threshold is 5 and intervals
 are set to 1 minutes, then after 5*1 = 5 minutes, the node will
 be released.
 
+Tenants who need more time should ask time extension.
 One can change the "assigned to a project" time for all nodes
 (by chanigng threshold in config file) or for one node
 (by changing the line in the status file related to the node.)
@@ -27,17 +28,12 @@ status file includes each node's status, which node is in
 which project, and which node is free or for how long the node
 has been assigned to a project.
 
+Note: this script does NOT support other auth backends
+such as keystone.
+
 *******************
 
-Config file format (/etc/leasing.cfg):
-node_list: names of the nodes
-threshold: number of times that cron job should call the leasing
-script before releasing the node
-user_name:
-password:
-endpoint: the ip address and the port number
-            which hil is running on
-status_file: the path to the status file (e.g., /var/lib/leasing)
+Config file format (/etc/leasing.cfg): Read the comments in the config file.
 
 ******************
 

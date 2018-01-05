@@ -34,18 +34,21 @@ def hil_client_connect(endpoint_ip, name, pw):
 
 def load_node_info(statusfile):
     """
-    Creates a structure containing all information from the
+    Returns a data structure containing all information from the
     file. We will change and update this data structure and then
-    write it back to the file. In this way, the file will be read
-    and written once.
+    write it back to the file.
+    each node has a name [0], a project name [1] and number of times [2]
+    which cron job has called the script while the node has been assigned
+    to the project.
     """
     nodes = {}
     with open(statusfile, 'r') as status_file:
         for line in status_file:
             node_status = line.split()
-            nodes[node_status[0]] = {}
-            nodes[node_status[0]].update({'project': node_status[1],
-                                          'time': node_status[2]})
+            nodes[node_status[0]] = {
+                'project': node_status[1],
+                'time': node_status[2],
+            }
     return nodes
 
 
@@ -75,16 +78,13 @@ def release_from_project(
     time.sleep(5)
     # tries 2 times to detach the project because there might be a pending
     # networking action setup (revert port in the previous step).
-    counter = 2
-    while counter:
-
+    for counter in range(2):
         try:
             hil_client.project.detach(project, node)
             print('Node `%s` removed from project `%s`' % (node, project))
-            break
+            return
         except FailedAPICallException as ex:
             if ex.message == 'Node has pending network actions':
-                counter -= 1
                 time.sleep(2)
             else:
                 print('HIL reservation failure: Unable to \
@@ -109,18 +109,16 @@ def update_file(statusfile, nodes):
 
 def release_nodes(
         statusfile, non_persistent_list,
-        threshold_time, hil_username, hil_password, hil_endpoint,
-        hil_client=None
+        threshold_time, hil_client
         ):
 
-    """Release nodes : After certain amount of time (threshold),
-    we should return the nodes back to the free pool.
-    Tenants who need more time should ask time extension.
     """
-
-    if not hil_client:
-        hil_client = hil_client_connect(
-                        hil_endpoint, hil_username, hil_password)
+    This fucntion gets a list of nodes which the script should check
+    (non_persistent_list), removes the free nodes (extracted from status file)
+    from this list and then checks the remaining nodes for threshold.
+    Based on the comparison results, the function updates the status file
+    or removes the node from the project.
+    """
 
     free_node_list = hil_client.node.list('free')
     # Only these nodes should be updated in
@@ -174,14 +172,20 @@ if __name__ == "__main__":
         node_list = [x.strip()
                      for x in config.get('hil', 'node_list').split(',')]
 
+        hil_client = hil_client_connect(
+                        config.get('hil', 'endpoint'),
+                        config.get('hil', 'user_name'),
+                        config.get('hil', 'password')
+                        )
         release_nodes(
             config.get('hil', 'status_file'),
             node_list,
             int(config.get('hil', 'threshold')),
-            config.get('hil', 'user_name'),
-            config.get('hil', 'password'),
-            config.get('hil', 'endpoint')
+            hil_client
             )
 
     except ConfigParser.NoOptionError, err:
         print err
+    except StatusFileError():
+        print('Status file is not complete, One or \
+                more nodes infomration is missing')
