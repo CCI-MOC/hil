@@ -2,9 +2,11 @@
 
 import pytest
 import tempfile
+import uuid
 
 from hil import config, deferred, model
 from hil.model import db, Switch
+from hil.errors import SwitchError
 from hil.test_common import config_testsuite, config_merge, \
                              fresh_database, fail_on_log_warnings
 from flask import Flask
@@ -16,7 +18,7 @@ fresh_database = pytest.fixture(fresh_database)
 DeferredTestSwitch = None
 
 
-class RevertPortError(Exception):
+class RevertPortError(SwitchError):
     """An exception thrown by the switch implementation's revert_port.
 
     This is used as part of the error handling tests.
@@ -130,7 +132,8 @@ def _deferred_test_switch_class():
             # not see uncommited changes by `apply_networking`
             local_db = new_db()
             current_count = local_db.session \
-                .query(model.NetworkingAction).count()
+                .query(model.NetworkingAction).filter_by(status='PENDING') \
+                .count()
 
             local_db.session.commit()
             local_db.session.close()
@@ -210,22 +213,25 @@ def test_apply_networking(switch, network, fresh_database):
         interface = 'gi1/0/%d' % (i)
         nic.append(new_nic(str(i)))
         nic[i].port = model.Port(label=interface, switch=switch)
+        unique_id = str(uuid.uuid4())
         actions.append(model.NetworkingAction(nic=nic[i], new_network=network,
                                               channel='vlan/native',
-                                              type='modify_port'))
+                                              type='modify_port',
+                                              uuid=unique_id,
+                                              status='PENDING'))
 
     # this makes the last action invalid for the test switch because the switch
     # raises an error when the networking action is of type revert port.
+    unique_id = str(uuid.uuid4())
     actions[2] = model.NetworkingAction(nic=nic[2],
-                                        new_network=None,
-                                        channel='',
+                                        new_network=None, uuid=unique_id,
+                                        channel='', status='PENDING',
                                         type='revert_port')
     for action in actions:
         db.session.add(action)
     db.session.commit()
 
-    with pytest.raises(RevertPortError):
-        deferred.apply_networking()
+    deferred.apply_networking()
 
     # close the session opened by `apply_networking` when `handle_actions`
     # fails; without this the tests would just stall (when using postgres)
@@ -233,17 +239,29 @@ def test_apply_networking(switch, network, fresh_database):
 
     local_db = new_db()
 
-    pending_action = local_db.session \
+    errored_action = local_db.session \
         .query(model.NetworkingAction) \
-        .order_by(model.NetworkingAction.id).one_or_none()
-    current_count = local_db.session \
-        .query(model.NetworkingAction).count()
+        .order_by(model.NetworkingAction.id).filter_by(status='ERROR') \
+        .one_or_none()
 
-    local_db.session.delete(pending_action)
+    # Count the number of actions with different statuses
+    error_count = local_db.session \
+        .query(model.NetworkingAction).filter_by(status='ERROR').count()
+
+    pending_count = local_db.session \
+        .query(model.NetworkingAction).filter_by(status='PENDING').count()
+
+    done_count = local_db.session \
+        .query(model.NetworkingAction).filter_by(status='DONE').count()
+
+    local_db.session.delete(errored_action)
     local_db.session.commit()
     local_db.session.close()
 
-    # test that there's only pending action in the queue and it is of type
-    # revert_port
-    assert current_count == 1
-    assert pending_action.type == 'revert_port'
+    # test that there's only action that errored out in the queue and that it
+    # is of type revert_port
+    assert error_count == 1
+    assert errored_action.type == 'revert_port'
+
+    assert pending_count == 0
+    assert done_count == 3
