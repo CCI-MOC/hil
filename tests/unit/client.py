@@ -584,7 +584,10 @@ class Test_port:
                 'node': 'node-01',
                 'nic': 'eth0',
                 'networks': {'vlan/native': 'net-01'}}
-        assert C.port.port_revert('mock-01', 'gi1/0/1') is None
+        response = C.port.port_revert('mock-01', 'gi1/0/1')
+        uuid_pattern = re.compile(
+            "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
+        assert uuid_pattern.match(response['status_id'])
         deferred.apply_networking()
         assert C.port.show('mock-01', 'gi1/0/1') == {
                 'node': 'node-01',
