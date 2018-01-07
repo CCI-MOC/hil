@@ -764,3 +764,25 @@ class Test_extensions:
                     "hil.ext.switches.mock",
                     "hil.ext.switches.nexus",
                 ]
+
+
+class TestGetStatus:
+    """Test calls to get_status method"""
+
+    def test_get_status(self):
+        """(successful) call to get_status"""
+        response = C.node.connect_network(
+                'node-01', 'eth0', 'net-01', 'vlan/native'
+                )
+        status_id = response['status_id']
+
+        response = C.node.get_status(status_id)
+        assert response['status'] == 'PENDING'
+        deferred.apply_networking()
+        response = C.node.get_status(status_id)
+        assert response['status'] == 'DONE'
+
+    def test_get_status_fail(self):
+        """(unsuccessful) call to get_status"""
+        with pytest.raises(FailedAPICallException):
+            C.node.get_status('non-existent-entry')

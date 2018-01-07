@@ -2375,3 +2375,39 @@ class TestDryRun:
         new_node('node-99')
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.node_power_cycle('node-99', True)
+
+
+class TestGetStatus:
+    """Test the get_status API"""
+
+    def test_get_status(self, switchinit):
+        """Call to get status (to query network calls)"""
+        new_node('node-99')
+        api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
+        api.project_create('anvil-nextgen')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        network_create_simple('hammernet', 'anvil-nextgen')
+        api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
+
+        # make a network call and get the status id from the response.
+        response = api.node_connect_network('node-99', '99-eth0', 'hammernet')
+        response = json.loads(response[0])
+        status_id = response['status_id']
+
+        response = json.loads(api.get_status(status_id))
+        assert response['status'] == 'PENDING'
+        deferred.apply_networking()
+        response = json.loads(api.get_status(status_id))
+        assert response['status'] == 'DONE'
+
+        # add another network operation on the same nic, the previous action
+        # should be deleted. And the new one should be successfully added.
+        response = api.node_detach_network('node-99', '99-eth0', 'hammernet')
+
+        with pytest.raises(errors.NotFoundError):
+            json.loads(api.get_status(status_id))
+
+        response = json.loads(response[0])
+        status_id = response['status_id']
+        response = json.loads(api.get_status(status_id))
+        assert response['status'] == 'PENDING'
