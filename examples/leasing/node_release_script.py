@@ -90,10 +90,10 @@ def release_from_project(
                 print('HIL reservation failure: Unable to \
                         detach node `%s` from project `%s`' % (node, project))
                 raise HILClientFailure(ex.message)
-    if counter == 0:
-        print('HIL reservation failure: Unable to detach node \
-                `%s` from project `%s`' % (node, project))
-        raise HILClientFailure()
+
+    print('HIL reservation failure: Unable to detach node \
+            `%s` from project `%s`' % (node, project))
+    raise HILClientFailure()
 
 
 def update_file(statusfile, nodes):
@@ -130,7 +130,7 @@ def release_nodes(
     nodes = load_node_info(statusfile)
 
     for node in nodes_to_update:
-        if nodes[node] is None:
+        if node not in nodes:
             print('Information of node %s \
                     is missing in the status file' % (node))
             raise StatusFileError()
@@ -188,4 +188,4 @@ if __name__ == "__main__":
         print err
     except StatusFileError():
         print('Status file is not complete, One or \
-                more nodes infomration is missing')
+                more nodes information is missing')
