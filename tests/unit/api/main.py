@@ -51,6 +51,7 @@ from hil.auth import get_auth_backend
 import pytest
 import json
 import uuid
+import re
 
 MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/v0/switches/mock'
 OBM_TYPE_MOCK = 'http://schema.massopencloud.org/haas/v0/obm/mock'
@@ -676,8 +677,14 @@ class TestNodeConnectDetachNetwork:
         # Check the actual HTTP response and status, not just the success;
         # we should do this at least once in the test suite, since this call
         # returns 202 instead of 200 like most things.
-        assert api.node_connect_network('node-99', '99-eth0', 'hammernet') == \
-            ('', 202)
+        response = api.node_connect_network('node-99', '99-eth0', 'hammernet')
+        assert response[1] == 202
+
+        response = json.loads(response[0])
+        uuid_pattern = re.compile(
+            "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
+        assert uuid_pattern.match(response['status_id'])
+
         deferred.apply_networking()
 
         network = api._must_find(model.Network, 'hammernet')
@@ -825,8 +832,14 @@ class TestNodeConnectDetachNetwork:
         deferred.apply_networking()  # added
 
         # Verify that the status is right, not just that it "succeeds."
-        assert api.node_detach_network('node-99', '99-eth0', 'hammernet') \
-            == ('', 202)
+        response = api.node_detach_network('node-99', '99-eth0', 'hammernet')
+        assert response[1] == 202
+
+        response = json.loads(response[0])
+        uuid_pattern = re.compile(
+            "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
+        assert uuid_pattern.match(response['status_id'])
+
         deferred.apply_networking()
         network = api._must_find(model.Network, 'hammernet')
         nic = api._must_find(model.Nic, '99-eth0')

@@ -117,7 +117,8 @@ def project_detach_node(project, node):
     if num_attachments != 0:
         raise errors.BlockedError("Node attached to a network")
     for nic in node.nics:
-        if nic.current_action is not None:
+        if nic.current_action is not None and \
+           nic.current_action.status == 'PENDING':
             raise errors.BlockedError("Node has pending network actions")
 
     node.obm.stop_console()
