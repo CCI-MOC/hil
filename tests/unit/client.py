@@ -9,6 +9,7 @@ from hil import config, deferred
 
 import json
 import pytest
+import re
 
 from urlparse import urlparse
 from base64 import urlsafe_b64encode
@@ -369,9 +370,14 @@ class Test_node:
 
     def test_node_connect_network(self):
         """(successful) call to node_connect_network"""
-        assert C.node.connect_network(
+        response = C.node.connect_network(
                 'node-01', 'eth0', 'net-01', 'vlan/native'
-                ) is None
+                )
+
+        # check that the reponse contains a valid UUID.
+        uuid_pattern = re.compile(
+            "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
+        assert uuid_pattern.match(response['status_id'])
         deferred.apply_networking()
 
     def test_node_connect_network_error(self):
@@ -386,7 +392,10 @@ class Test_node:
         """(successful) call to node_detach_network"""
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
         deferred.apply_networking()
-        assert C.node.detach_network('node-04', 'eth0', 'net-04') is None
+        response = C.node.detach_network('node-04', 'eth0', 'net-04')
+        uuid_pattern = re.compile(
+            "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
+        assert uuid_pattern.match(response['status_id'])
         deferred.apply_networking()
 
     def test_node_detach_network_error(self):
