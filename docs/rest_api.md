@@ -361,6 +361,13 @@ operation to be preformed. Each nic may have no more than one pending
 network operation; an attempt to queue a second action will result in an
 error.
 
+Response body:
+
+    {
+        "status_id": <unique_id>,
+    }
+
+
 Authorization requirements:
 
 * Access to the project to which `<node>` is assigned.
@@ -393,6 +400,13 @@ API call returns a status code of 202 Accepted, and queues the network
 operation to be preformed. Each nic may have no more than one pending
 network operation; an attempt to queue a second action will result in an
 error.
+
+
+Response body:
+
+    {
+        "status_id": <unique_id>,
+    }
 
 
 Authorization requirements:
@@ -1165,6 +1179,12 @@ Possible errors:
 
 Detach the port from all networks.
 
+Response body:
+
+    {
+        "status_id": <unique_id>,
+    }
+
 Authorization requirements:
 
 * Administrative access.
@@ -1310,3 +1330,26 @@ Remove a user from a project.
 Authorization requirements:
 
 * Administrative access.
+
+#### get_status
+
+`GET /status/<status_id>`
+
+Get the status of the networking call queued by node_connect_network,
+node_detach_network, or port_revert. where <status_id> is returned by any
+of the network calls.
+
+Response Body:
+
+{
+    "status": <status>
+}
+
+where status can either be "DONE", "PENDING", or "ERROR".
+
+The status of a networking call is kept until a new action on the same nic is
+added, after which the old entry is deleted.
+
+Possible errors:
+
+* 404, if the status_id is not found.
