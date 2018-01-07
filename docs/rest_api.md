@@ -394,10 +394,6 @@ operation to be preformed. Each nic may have no more than one pending
 network operation; an attempt to queue a second action will result in an
 error.
 
-If a maintenance pool is configured, the maintenance service will be
-notified and the node will be moved into the maintenance project.
-Otherwise, the node will go directly to the free pool.
-Read `docs/maintenance-pool.md` for more information.
 
 Authorization requirements:
 
@@ -756,6 +752,11 @@ Possible errors:
 Return `<node>` to the free pool. `<node>` must belong to the project
 `<project>`. It must not be attached to any networks, or have any
 pending network actions.
+
+If a maintenance pool is configured, the maintenance service will be
+notified and the node will be moved into the maintenance project.
+Otherwise, the node will go directly to the free pool.
+Read `docs/maintenance-pool.md` for more information.
 
 Authorization requirements:
 
