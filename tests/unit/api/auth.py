@@ -10,6 +10,7 @@ the mix. They are still tested here, since they are important for security.
 
 import pytest
 import unittest
+import json
 from hil import api, config, model, deferred
 from hil.auth import get_auth_backend
 from hil.errors import AuthorizationError, BadArgumentError, \
@@ -761,3 +762,45 @@ class Test_node_detach_network(unittest.TestCase):
             api.node_detach_network('manhattan_node_0',
                                     'boot-nic',
                                     'stock_int_pub')
+
+
+class Test_get_status(unittest.TestCase):
+    """Test authorization properties of get_status."""
+
+    def setUp(self):
+        """Common setup for the tests.
+
+        * node 'manhattan_node_0' is attached to network 'stock_int_pub', via
+          'boot-nic'.
+
+        This also sets some properties for easy access to the projects.
+        """
+        self.auth_backend = get_auth_backend()
+        self.runway = model.Project.query.filter_by(label='runway').one()
+        self.manhattan = model.Project.query.filter_by(label='manhattan').one()
+
+        self.auth_backend.set_project(self.manhattan)
+        response = api.node_connect_network('manhattan_node_0',
+                                            'boot-nic',
+                                            'stock_int_pub')
+        self.status_id = json.loads(response[0])
+        self.status_id = self.status_id['status_id']
+
+    def test_get_status_success(self):
+        """Test that project that has access to the node can run get_status"""
+
+        self.auth_backend.set_project(self.manhattan)
+        api.get_status(self.status_id)
+
+    def test_get_status_failure(self):
+        """Test that project with no access to node can't get the status"""
+        self.auth_backend.set_project(self.runway)
+
+        with pytest.raises(AuthorizationError):
+            api.get_status(self.status_id)
+
+    def test_get_status_admin(self):
+        """Test that admins can get status"""
+        self.auth_backend.set_project(self.runway)
+        self.auth_backend.set_admin(True)
+        api.get_status(self.status_id)

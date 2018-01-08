@@ -1350,6 +1350,11 @@ where status can either be "DONE", "PENDING", or "ERROR".
 The status of a networking call is kept until a new action on the same nic is
 added, after which the old entry is deleted.
 
+Authorization requirements:
+
+* Access to the project which owns the node that has the nic on which the
+ networking action is active, or administrative access.
+
 Possible errors:
 
 * 404, if the status_id is not found.

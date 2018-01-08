@@ -1134,6 +1134,9 @@ def get_status(status_id):
     if action is None:
         raise errors.NotFoundError('status_id not found')
 
+    project = action.nic.owner.project
+    get_auth_backend().require_project_access(project)
+
     return json.dumps({'status': action.status})
 
 
