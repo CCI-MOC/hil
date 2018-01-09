@@ -67,7 +67,6 @@ class DaemonSession(object):
             session.revert_port(action.nic.port.label)
             model.NetworkingAction.query.filter_by(id=action.id). \
                 update({"status": "DONE"})
-            # model.NetworkingAction.query.filter_by(id=action.id).delete()
             model.NetworkAttachment.query.filter_by(nic=action.nic).delete()
         except SwitchError:
             model.NetworkingAction.query.filter_by(id=action.id). \

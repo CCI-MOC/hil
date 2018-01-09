@@ -586,7 +586,7 @@ class NetworkingAction(db.Model):
     # networking action.
     uuid = db.Column(db.String, nullable=False, index=True)
 
-    # status of the operation
+    # status of the operation; it can either be 'PENDING', 'DONE' or 'ERROR'
     status = db.Column(db.String, nullable=False)
 
     # The type of action.
