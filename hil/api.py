@@ -1117,19 +1117,15 @@ def port_revert(switch, port):
 
     db.session.add(action)
     db.session.commit()
-    return json.dumps({'status_id': unique_id})
+    return json.dumps({'status_id': unique_id}), 202
 
 
-# is this only going to be for statuses of Networking actions? What about in
-# the future we have some other calls whose status we want to check?
-@rest_call('GET', '/status/<status_id>', Schema({'status_id': basestring}))
-def get_status(status_id):
+@rest_call('GET', '/networking_action/<status_id>', Schema({
+    'status_id': basestring}))
+def show_networking_action(status_id):
     """Returns the status of the networking action by findind the status_id
-    in the networking actions table
+    in the networking actions table.
     """
-    # is auth required here? UUID is obscure enough that nobody can guess
-    # and see someone else's status of their operations. Moreover, it doesn't
-    # divulge any secret information about the networking action.
     action = model.NetworkingAction.query.filter_by(uuid=status_id).first()
     if action is None:
         raise errors.NotFoundError('status_id not found')
@@ -1137,7 +1133,15 @@ def get_status(status_id):
     project = action.nic.owner.project
     get_auth_backend().require_project_access(project)
 
-    return json.dumps({'status': action.status})
+    action_info = {'status': action.status,
+                   'node': action.nic.owner.label,
+                   'nic': action.nic.label,
+                   'type': action.type,
+                   'channel': action.channel,
+                   'new_network': None if action.new_network is None
+                   else action.new_network.label}
+
+    return json.dumps(action_info)
 
 
 @rest_call('GET', '/nodes/<is_free>', Schema({'is_free': basestring}))

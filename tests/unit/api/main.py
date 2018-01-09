@@ -45,7 +45,7 @@ import hil
 from hil import model, deferred, errors, config, api
 from hil.test_common import config_testsuite, config_merge, fresh_database, \
     fail_on_log_warnings, additional_db, with_request_context, \
-    network_create_simple, server_init
+    network_create_simple, server_init, uuid_pattern
 from hil.network_allocator import get_network_allocator
 from hil.auth import get_auth_backend
 import pytest
@@ -681,8 +681,6 @@ class TestNodeConnectDetachNetwork:
         assert response[1] == 202
 
         response = json.loads(response[0])
-        uuid_pattern = re.compile(
-            "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
         assert uuid_pattern.match(response['status_id'])
 
         deferred.apply_networking()
@@ -836,8 +834,6 @@ class TestNodeConnectDetachNetwork:
         assert response[1] == 202
 
         response = json.loads(response[0])
-        uuid_pattern = re.compile(
-            "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
         assert uuid_pattern.match(response['status_id'])
 
         deferred.apply_networking()
@@ -2377,11 +2373,12 @@ class TestDryRun:
         api.node_power_cycle('node-99', True)
 
 
-class TestGetStatus:
-    """Test the get_status API"""
+class TestShowNetworkingAction:
+    """Various tests for the show networking action api"""
 
-    def test_get_status(self, switchinit):
-        """Call to get status (to query network calls)"""
+    def common(self):
+        """Sets up common stuff"""
+        switchinit()
         new_node('node-99')
         api.node_register_nic('node-99', '99-eth0', 'DE:AD:BE:EF:20:14')
         api.project_create('anvil-nextgen')
@@ -2389,25 +2386,65 @@ class TestGetStatus:
         network_create_simple('hammernet', 'anvil-nextgen')
         api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
 
+    def test_show_networking_action_attach(self,):
+        """Show networking action on an operation attaching a network"""
+        self.common()
         # make a network call and get the status id from the response.
         response = api.node_connect_network('node-99', '99-eth0', 'hammernet')
         response = json.loads(response[0])
         status_id = response['status_id']
 
-        response = json.loads(api.get_status(status_id))
+        response = json.loads(api.show_networking_action(status_id))
         assert response['status'] == 'PENDING'
+        assert response['node'] == 'node-99'
+        assert response['nic'] == '99-eth0'
+        assert response['type'] == 'modify_port'
+        assert response['channel'] == 'vlan/native'
+        assert response['new_network'] == 'hammernet'
+
         deferred.apply_networking()
-        response = json.loads(api.get_status(status_id))
+        response = json.loads(api.show_networking_action(status_id))
         assert response['status'] == 'DONE'
+
+    def test_show_networking_action_detach(self):
+        """Show networking action on an operation detaching a network"""
+        self.common()
+        api.node_connect_network('node-99', '99-eth0', 'hammernet')
+
+        # adding another action shouldn't work unless the last one is cleared
+        with pytest.raises(errors.BlockedError):
+            api.node_detach_network('node-99', '99-eth0', 'hammernet')
 
         # add another network operation on the same nic, the previous action
         # should be deleted. And the new one should be successfully added.
+        deferred.apply_networking()
         response = api.node_detach_network('node-99', '99-eth0', 'hammernet')
-
-        with pytest.raises(errors.NotFoundError):
-            json.loads(api.get_status(status_id))
 
         response = json.loads(response[0])
         status_id = response['status_id']
-        response = json.loads(api.get_status(status_id))
+
+        response = json.loads(api.show_networking_action(status_id))
         assert response['status'] == 'PENDING'
+        assert response['channel'] == 'vlan/native'
+        assert response['new_network'] is None
+
+    def test_show_networking_action_revert_port(self):
+        """Show networking action on a revert port type of operation"""
+        self.common()
+        response = api.port_revert('sw0', PORTS[2])
+        response = json.loads(response[0])
+        status_id = response['status_id']
+
+        response = json.loads(api.show_networking_action(status_id))
+        assert response['status'] == 'PENDING'
+        assert response['node'] == 'node-99'
+        assert response['nic'] == '99-eth0'
+        assert response['type'] == 'revert_port'
+        assert response['channel'] == ''
+        assert response['new_network'] is None
+
+    def test_show_networking_action_nonexistent(self):
+        """Show networking action on a a non existent status_id"""
+        status_id = '96c888a9-3257-491b-bca9-06be26b15525'
+        with pytest.raises(errors.NotFoundError):
+            api.show_networking_action(status_id)

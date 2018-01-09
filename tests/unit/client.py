@@ -3,7 +3,7 @@ from hil.flaskapp import app
 from hil.client.base import ClientBase, FailedAPICallException
 from hil.client.client import Client, HTTPClient, HTTPResponse
 from hil.test_common import config_testsuite, config_merge, \
-    fresh_database, fail_on_log_warnings, server_init
+    fresh_database, fail_on_log_warnings, server_init, uuid_pattern
 from hil.model import db
 from hil import config, deferred
 
@@ -375,8 +375,6 @@ class Test_node:
                 )
 
         # check that the reponse contains a valid UUID.
-        uuid_pattern = re.compile(
-            "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
         assert uuid_pattern.match(response['status_id'])
         deferred.apply_networking()
 
@@ -393,8 +391,6 @@ class Test_node:
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
         deferred.apply_networking()
         response = C.node.detach_network('node-04', 'eth0', 'net-04')
-        uuid_pattern = re.compile(
-            "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
         assert uuid_pattern.match(response['status_id'])
         deferred.apply_networking()
 
@@ -585,8 +581,6 @@ class Test_port:
                 'nic': 'eth0',
                 'networks': {'vlan/native': 'net-01'}}
         response = C.port.port_revert('mock-01', 'gi1/0/1')
-        uuid_pattern = re.compile(
-            "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
         assert uuid_pattern.match(response['status_id'])
         deferred.apply_networking()
         assert C.port.show('mock-01', 'gi1/0/1') == {
@@ -766,8 +760,8 @@ class Test_extensions:
                 ]
 
 
-class TestGetStatus:
-    """Test calls to get_status method"""
+class TestShowNetworkingAction:
+    """Test calls to show networking action method"""
 
     def test_get_status(self):
         """(successful) call to get_status"""
@@ -776,13 +770,19 @@ class TestGetStatus:
                 )
         status_id = response['status_id']
 
-        response = C.node.get_status(status_id)
+        response = C.node.show_networking_action(status_id)
         assert response['status'] == 'PENDING'
+        assert response['node'] == 'node-01'
+        assert response['nic'] == 'eth0'
+        assert response['new_network'] == 'net-01'
+        assert response['channel'] == 'vlan/native'
+        assert response['type'] == 'modify_port'
+
         deferred.apply_networking()
-        response = C.node.get_status(status_id)
+        response = C.node.show_networking_action(status_id)
         assert response['status'] == 'DONE'
 
     def test_get_status_fail(self):
         """(unsuccessful) call to get_status"""
         with pytest.raises(FailedAPICallException):
-            C.node.get_status('non-existent-entry')
+            C.node.show_networking_action('non-existent-entry')

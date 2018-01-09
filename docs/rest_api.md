@@ -1331,9 +1331,9 @@ Authorization requirements:
 
 * Administrative access.
 
-#### get_status
+#### show_networking_action
 
-`GET /status/<status_id>`
+`GET /networking_action/<status_id>`
 
 Get the status of the networking call queued by node_connect_network,
 node_detach_network, or port_revert. where <status_id> is returned by any
@@ -1342,10 +1342,19 @@ of the network calls.
 Response Body:
 
 {
-    "status": <status>
+    "status": <status>,
+    "node": <node-label>,
+    "nic": <nic-label>,
+    "new_network": <network-name>
+    "type": <type of networking action>
+    "channel": <network channel>
 }
 
-where status can either be "DONE", "PENDING", or "ERROR".
+where:
+* `status` can either be "DONE", "PENDING", or "ERROR".
+* `new_network` can be `null` in case of `node_detach_network` or `revert_port`
+* `type` can be `revert_port` or `modify_port`
+* `channel` could be '' in case of revert_port
 
 The status of a networking call is kept until a new action on the same nic is
 added, after which the old entry is deleted.

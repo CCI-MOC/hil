@@ -764,8 +764,8 @@ class Test_node_detach_network(unittest.TestCase):
                                     'stock_int_pub')
 
 
-class Test_get_status(unittest.TestCase):
-    """Test authorization properties of get_status."""
+class Test_show_networking_action(unittest.TestCase):
+    """Test authorization properties of show_networking_action."""
 
     def setUp(self):
         """Common setup for the tests.
@@ -786,21 +786,22 @@ class Test_get_status(unittest.TestCase):
         self.status_id = json.loads(response[0])
         self.status_id = self.status_id['status_id']
 
-    def test_get_status_success(self):
-        """Test that project that has access to the node can run get_status"""
+    def test_show_networking_action_success(self):
+        """Test that project that has access to the node can run
+        show_networking_action"""
 
         self.auth_backend.set_project(self.manhattan)
-        api.get_status(self.status_id)
+        api.show_networking_action(self.status_id)
 
-    def test_get_status_failure(self):
+    def test_show_networking_action_failure(self):
         """Test that project with no access to node can't get the status"""
         self.auth_backend.set_project(self.runway)
 
         with pytest.raises(AuthorizationError):
-            api.get_status(self.status_id)
+            api.show_networking_action(self.status_id)
 
-    def test_get_status_admin(self):
+    def test_show_networking_action_admin(self):
         """Test that admins can get status"""
         self.auth_backend.set_project(self.runway)
         self.auth_backend.set_admin(True)
-        api.get_status(self.status_id)
+        api.show_networking_action(self.status_id)
