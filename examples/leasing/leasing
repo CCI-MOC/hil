@@ -1,0 +1,4 @@
+dell0 lease_test 1
+nexus_12 lease_test 2
+cisco_5 free_pool 0
+IBM_3 free_pool 0
