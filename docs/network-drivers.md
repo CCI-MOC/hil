@@ -292,32 +292,42 @@ of HIL itself is required; just register each switch as normal and ensure that
 all VLANs in the allocator's ``vlans`` option are trunked to every managed
 switch.
 
-### Openvswitch Driver
+
+## Openvswitch Driver (For developement purpose only. Do not use in production.)
 
 This driver is made available so that developers can have real switch
 like functionality without having access to any real switch hardware.
 To get started you will need to:
-1.  install openvswitch in your development machine (or VM).
+1.  install openvswitch in your development machine (or VM):
 
+```
 	yum install openvswitch #For fedora or Centos
 	for i in enable start status
 	do service openvswitch $i; done
 	ovs-vsctl show
+```
 
-2.  create a bridge and name it <switch_name>
+2.  create a bridge and name it <switch_name>:
 
+```
 	ovs-vsctl add-br <switch_name>
+```
  
-3.  Add some ports to this bridge.
-	
+ 
+3.  Add some ports to this bridge:
+
+```
 	ovs-vsctl add-port <switch_name> <port_name>
+```
 
 These are just illustrative examples. You may have to do more to setup
 your switch before using it with HIL.
 
-Alternatively you can run a script available at
+Optionally, a script is made available for reference at::
+
 
 	https://github.com/SahilTikale/HIL_contrib/blob/master/hilInYourLap/create_datacenter.sh
+
 
 To register the driver with HIL, you will need the openvswitch bridge name,
   username of your machine; sudo password of this user.
@@ -330,7 +340,7 @@ must have a value of::
         http://schema.massopencloud.org/haas/v0/switches/ovs
 
 In addition, it requires three extra fields:
-``"username"``, ``"hostname"``, and ``"pasword"``, which provide the necessary
+``"username"``, ``"hostname"``, and ``"password"``, which provide the necessary
 information to connect to the openvswitch.
 ``"hostname"`` has to be the name of the bridge created in step 2.
 ``"username"`` is the username for your development machine (or VM)
@@ -338,14 +348,17 @@ information to connect to the openvswitch.
 
 #### switch_register_port
 
-Any string can be accepted as a openvswitch port name.
+Openvswitch accepts any string for port name.
 Once you add a port to the openvswitch, you can register the same with HIL.
 
-WARNING: Bridge and Ports should exist in the openvswitch before registering
+**WARNING**: Bridge and Ports must pre-exist in the openvswitch before registering
 them with HIL.
 
 ### Using multiple switches
 
 Use-cases that involve configurations requiring access to multiple switches
 can be achieved by adding bridges of different names to openvswitch and
-registering them as separate switches.
+registering them as separate switches and ensure that
+all VLANs in the allocator's ``vlans`` option are trunked to every managed
+switch.
+
