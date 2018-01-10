@@ -101,3 +101,6 @@ class MockSwitch(Switch, SwitchSession):
                 if net is not None:
                     ret[port].append((chan, net))
         return ret
+
+    def get_capabilities(self):
+        return ['nativeless-trunk-mode']

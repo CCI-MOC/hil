@@ -18,7 +18,6 @@ Currently the driver uses telnet to connect to the switch's console; in the
 long term we want to be using SNMP.
 """
 
-import pexpect
 import re
 import schema
 import logging
@@ -80,6 +79,9 @@ class Nexus(Switch):
                                    " ethernet1/0/10")
         return
 
+    def get_capabilities(self):
+        return ['nativeless-trunk-mode']
+
 
 class _Session(_console.Session):
 
@@ -121,12 +123,12 @@ class _Session(_console.Session):
     @staticmethod
     def connect(switch):
         """Connect to the switch."""
-        console = pexpect.spawn('telnet ' + switch.hostname)
-        console.expect('login: ')
-        console.sendline(switch.username)
-        console.expect('Password: ')
-        console.sendline(switch.password)
 
+        console = _console.login(switch)
+
+        # send a new line so that we can "expect" a prompt again if we already
+        # matched when logged in using pubkey
+        console.sendline('')
         prompts = _console.get_prompts(console)
 
         return _Session(console=console,
@@ -230,9 +232,7 @@ class _Session(_console.Session):
         self.console.expect('Copy complete')
         logger.debug('Copy succeeded')
 
-    def _get_config(self, config_type):
-        """returns the requested configuration file from the switch"""
-
+    def get_config(self, config_type):
         self._set_terminal_lines('unlimited')
         self.console.expect(r'[\r\n]+.+# ')
         self._sendline('show ' + config_type + '-config')

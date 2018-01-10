@@ -5,7 +5,18 @@ import json
 
 
 class FailedAPICallException(Exception):
-    """An exception indicating that the server returned an error."""
+    """An exception indicating that the server returned an error.
+
+    Attributes:
+
+        error_type (str): the type of the error. This will be the name of
+            one of the subclasses of APIError in hil.errors.
+        message (str): a human readble description of the error.
+    """
+
+    def __init__(self, error_type, message):
+        Exception.__init__(self, message)
+        self.error_type = error_type
 
 
 class ClientBase(object):
@@ -51,10 +62,7 @@ class ClientBase(object):
                 return
         else:
             e = json.loads(response.content)
-            # TODO: I(zenhack) pretty sure only the first case should happen;
-            # this was probably an oversight during review. We should check
-            # this and fix either the server or the client.
-            if e.keys()[0] == 'error':
-                raise FailedAPICallException(e['error']['message'])
-            else:
-                raise FailedAPICallException(e['msg'])
+            raise FailedAPICallException(
+                error_type=e['type'],
+                message=e['msg'],
+            )

@@ -17,7 +17,6 @@ Currently the driver uses telnet to connect to the switch's console; in
 the long term we want to be using SNMP.
 """
 
-import pexpect
 import logging
 import schema
 import re
@@ -75,6 +74,9 @@ class PowerConnect55xx(Switch):
                                    "te1/0/12, gi1/12, or te1/3")
         return
 
+    def get_capabilities(self):
+        return ['nativeless-trunk-mode']
+
 
 class _PowerConnect55xxSession(_BaseSession):
     """session object for the power connect 5500 series"""
@@ -89,14 +91,16 @@ class _PowerConnect55xxSession(_BaseSession):
     @staticmethod
     def connect(switch):
         """connect to the switch, and log in."""
-        console = pexpect.spawn('telnet ' + switch.hostname)
-        console.expect('User Name:')
-        console.sendline(switch.username)
-        console.expect('Password:')
-        console.sendline(switch.password)
 
-        logger.debug('Logged in to switch %r', switch)
+        console = _console.login(switch)
 
+        # Send some string, so we expect the prompt again. Sending only new a
+        # line doesn't work, it returns some unwanted ANSI sequences in
+        # console.after
+        # Eg; main_prompts looks like '\r\n\r\r\x1b[Kconsole#'
+        # Here \x1b[K is unwanted and causes trouble parsing it.
+        # Sending some other random string doesn't have this issue.
+        console.sendline('some-unrecognized-command')
         prompts = _console.get_prompts(console)
         return _PowerConnect55xxSession(switch=switch,
                                         console=console,

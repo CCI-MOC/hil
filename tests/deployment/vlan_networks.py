@@ -20,7 +20,8 @@ tests in docs/testing.md
 
 import json
 
-from hil import api, model, deferred, config
+from collections import namedtuple
+from hil import api, model, deferred, config, errors
 from hil.test_common import config_testsuite, fail_on_log_warnings, \
     fresh_database, with_request_context, site_layout, NetworkTest, \
     network_create_simple, server_init
@@ -75,11 +76,15 @@ class TestNetworkVlan(NetworkTest):
             """
             nodes = self.collect_nodes()
 
-            # Create two networks
+            # Create four networks
             network_create_simple('net-0', 'anvil-nextgen')
             network_create_simple('net-1', 'anvil-nextgen')
+            network_create_simple('net-2', 'anvil-nextgen')
+            network_create_simple('net-3', 'anvil-nextgen')
 
             ports = self.get_all_ports(nodes)
+            # get the switch name from any of the nics
+            switch = nodes[0].nics[0].port.owner
 
             # Assert that n0 and n1 are not on any network
             port_networks = self.get_port_networks(ports)
@@ -93,18 +98,35 @@ class TestNetworkVlan(NetworkTest):
             net_tag = {}
             net_tag[0] = get_legal_channels('net-0')[1]
             net_tag[1] = get_legal_channels('net-1')[1]
+            net_tag[2] = get_legal_channels('net-2')[1]
 
             # Connect node 0 to net-0 (native mode)
             api.node_connect_network(nodes[0].label,
                                      nodes[0].nics[0].label,
                                      'net-0')
+
+            # before connecting node 1 to net-1 in tagged mode, we must check
+            # if the switch supports nativeless trunk mode; if not, then we
+            # add some native network and perform additional checks before
+            # proceeding.
+            if 'nativeless-trunk-mode' not in switch.get_capabilities():
+                # connecting the first network as tagged should raise an error
+                with pytest.raises(errors.BlockedError):
+                    api.node_connect_network(nodes[1].label,
+                                             nodes[1].nics[0].label,
+                                             'net-2',
+                                             channel=net_tag[2])
+                api.node_connect_network(nodes[1].label,
+                                         nodes[1].nics[0].label,
+                                         'net-2')
+                deferred.apply_networking()
+
             # Connect node 1 to net-1 (tagged mode)
             api.node_connect_network(nodes[1].label,
                                      nodes[1].nics[0].label,
                                      'net-1',
                                      channel=net_tag[1])
             deferred.apply_networking()
-
             # Assert that n0 and n1 are on isolated networks
             port_networks = self.get_port_networks(ports)
             assert self.get_network(nodes[0].nics[0].port, port_networks) == \
@@ -114,10 +136,16 @@ class TestNetworkVlan(NetworkTest):
 
             # Add n2 and n3 to the same networks as n0 and n1 respectively, but
             # with different channels (native vs. tagged)
+            if 'nativeless-trunk-mode' not in switch.get_capabilities():
+                api.node_connect_network(nodes[2].label,
+                                         nodes[2].nics[0].label,
+                                         'net-3')
+                deferred.apply_networking()
             api.node_connect_network(nodes[2].label,
                                      nodes[2].nics[0].label,
                                      'net-0',
                                      channel=net_tag[0])
+
             api.node_connect_network(nodes[3].label,
                                      nodes[3].nics[0].label,
                                      'net-1')
@@ -133,11 +161,17 @@ class TestNetworkVlan(NetworkTest):
 
             # Verify that we can put nodes on more than one network, with
             # different channels:
+
+            # at this point, node-2 is connected to net-0 (tagged)
+            # and depending on the switch, to net-3 (native). Let's connect it
+            # to net-1 (tagged) (which node-1 is connected to)
             api.node_connect_network(nodes[2].label,
                                      nodes[2].nics[0].label,
-                                     'net-1')
+                                     'net-1',
+                                     channel=net_tag[1])
             deferred.apply_networking()
             port_networks = self.get_port_networks(ports)
+            # assert that node-2 was added to node-1's network correctly.
             assert self.get_network(nodes[1].nics[0].port, port_networks) == \
                 set([nodes[1].nics[0].port,
                      nodes[2].nics[0].port,
@@ -166,15 +200,32 @@ class TestNetworkVlan(NetworkTest):
             # interference. If we were to hang on to references to database
             # objects across such calls however, things could get harry.
             all_attachments = []
+            net = namedtuple('net', 'node nic network channel')
             for node in nodes[:2]:
                 attachments = model.NetworkAttachment.query \
                     .filter_by(nic=node.nics[0]).all()
                 for attachment in attachments:
-                    all_attachments.append((node.label,
-                                            node.nics[0].label,
-                                            attachment.network.label))
+                    all_attachments.append(
+                                        net(node=node.label,
+                                            nic=node.nics[0].label,
+                                            network=attachment.network.label,
+                                            channel=attachment.channel))
+
+            switch = nodes[0].nics[0].port.owner
+            # in some switches, the native network can only be disconnected
+            # after we remove all tagged networks first. The following checks
+            # for that and rearranges the networks (all_attachments) such that
+            # tagged networks are removed first.
+
+            if 'nativeless-trunk-mode' not in switch.get_capabilities():
+                # sort by channel; vlan/<integer> comes before vlan/native
+                # because the ASCII for numbers comes before ASCII for letters.
+                all_attachments = sorted(all_attachments,
+                                         key=lambda net: net.channel)
+
             for attachment in all_attachments:
-                api.node_detach_network(*attachment)
+                api.node_detach_network(attachment.node, attachment.nic,
+                                        attachment.network)
                 deferred.apply_networking()
 
             # For the second two nodes, we just call port_revert on the nic's
@@ -193,6 +244,8 @@ class TestNetworkVlan(NetworkTest):
             # Delete the networks
             api.network_delete('net-0')
             api.network_delete('net-1')
+            api.network_delete('net-2')
+            api.network_delete('net-3')
 
         # Create a project
         api.project_create('anvil-nextgen')

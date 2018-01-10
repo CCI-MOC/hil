@@ -170,6 +170,7 @@ def create_bigint_db():
              'XeisA47dJZW9GwU2q2CTIVrsbpxAVT64Pih2/')
         db.session.commit()
 
+
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
 

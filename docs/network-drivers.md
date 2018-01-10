@@ -70,7 +70,7 @@ Doing so is not difficult, and it is critical for security.
 ## Switch drivers
 
 At present, all switch drivers shipped with HIL require that the VLAN
-pool allocator is in use. There are three switch drivers shipped with
+pool allocator is in use. There are five switch drivers shipped with
 HIL:
 
 * ``hil.ext.switches.dell``, which provides a driver for the Dell
@@ -81,14 +81,27 @@ HIL:
   Nexus switches. Only the 3500 and 5500 have been tested, though it is
   possible that other models will work as well.
 * ``hil.ext.switches.brocade``, for the brocade VDX 6740.
+* ``hil.ext.switches.n3000``, for Dell N3000 series switches.
+* ``hil.ext.switches.dellnos9``, for Dell switches running Dell Networking OS 9.
 
-None of the drivers require any extension-specific config options. Per the
-information in `rest_api.md`, the details of certain API calls are
+Different switches may or may not have certain capabilities. The `show_switch` call
+can be used to see what a switch is capable of. Currently, HIL exposes the
+following switch capabilities:
+
+* `nativeless-trunk-mode` : If supported, a switchport can be configured to have
+no native networks in trunk mode. If not supported, then the switchport must be
+first connected to a native network before adding any tagged VLANs.
+
+* There should be **no "enable" password** for switch users which will be used
+by HIL.
+
+
+Per the information in `rest_api.md`, the details of certain API calls are
 driver-dependant, below are the details for each of these switches.
 
 ### Powerconnect 5500 driver
 
-#### Switch preperation
+#### Switch preparation
 
 A few commands are necessary to run on the switch before it can be used with HIL.
 
@@ -96,6 +109,12 @@ A few commands are necessary to run on the switch before it can be used with HIL
 
    configure
    vlan 2-4094
+
+2. This switch uses ssh for connection. Be sure that ssh is enabled on the switch.
+
+3. If you choose to login using the public key, then provide any string as the
+password. The user running the HIL network daemon should have access to the
+private key.
 
 #### switch_register
 
@@ -119,7 +138,7 @@ they are not validated by HIL (this will be fixed in future versions).
 
 ### Dell N3000 driver
 
-#### Switch preperation
+#### Switch preparation
 
 1. Just like the Powerconnect 5500, every VLAN that could be used on the switch
 must first be enabled on the switch. To enable all VLANs to work with the switch, run this command:
@@ -128,6 +147,8 @@ must first be enabled on the switch. To enable all VLANs to work with the switch
    # configure
    # vlan 2-4093
 ```
+
+2. HIL uses ssh to connect to these switches. Configure the switch to accept ssh connections.
 
 #### switch_register
 
@@ -147,6 +168,10 @@ vlan, but this vlan should not be used for any networks.
 Register ports just like the powerconnect driver. e.g. ``gi1/0/5``.
 
 ### Nexus driver
+
+#### Switch preparation
+
+This switch uses ssh for connection. Be sure that ssh is enabled on the switch.
 
 #### switch_register
 
@@ -176,6 +201,12 @@ The body of the api call request can then look like:
         "hostname": "mynexus.example.com",
         "dummy_vlan": 2222
     }
+
+
+* If you choose to login using the public key, then provide any string as the
+password. Also, the user running the HIL network daemon should have access to the
+private key.
+
 
 #### switch_register_port
 

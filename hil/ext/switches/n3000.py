@@ -18,7 +18,6 @@ Currently the driver uses telnet to connect to the switch's console; in
 the long term we want to be using SNMP.
 """
 
-import pexpect
 import re
 import logging
 import schema
@@ -80,6 +79,9 @@ class DellN3000(Switch):
                                    "te1/0/12, gi1/12, or te1/3")
         return
 
+    def get_capabilities(self):
+        return ['nativeless-trunk-mode']
+
 
 class _DellN3000Session(_BaseSession):
     """session object for the N3000 series"""
@@ -100,18 +102,17 @@ class _DellN3000Session(_BaseSession):
 
     @staticmethod
     def connect(switch):
-        """connect to the switch, and log in"""
-        console = pexpect.spawn('telnet ' + switch.hostname)
-        console.expect('User:')
-        console.sendline(switch.username)
-        console.expect('Password:')
-        console.sendline(switch.password)
-        console.expect('>')
-        console.sendline('en')
+        """Connect to the switch and log in.
 
-        logger.debug('Logged in to switch %r', switch)
+        Login using public key is untested on this switch.
+        """
+        console = _console.login(switch)
 
+        # send a new line so that we can "expect" a prompt again if we already
+        # matched when logged in using pubkey
+        console.sendline('')
         prompts = _console.get_prompts(console)
+
         # create the dummy vlan for port_revert
         # this is a one time thing though; maybe we could remove this and let
         # the admin create the dummy vlan on the switch

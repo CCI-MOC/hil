@@ -58,6 +58,7 @@ class FlaskHTTPClient(HTTPClient):
                             headers=resp.headers,
                             content=resp.get_data())
 
+
 http_client = FlaskHTTPClient()
 C = Client(ep, http_client)  # Initializing client library
 
@@ -263,6 +264,7 @@ def populate_server():
                     {"owner": "proj-02", "access": "proj-02", "net_id": ""}
                     )
                 )
+
 
 pytestmark = pytest.mark.usefixtures('dummy_verify',
                                      'fail_on_log_warnings',
@@ -495,7 +497,9 @@ class Test_switch:
 
     def test_show_switch(self):
         """(successful) call to show_switch"""
-        assert C.switch.show('dell-01') == {u'name': u'dell-01', u'ports': []}
+        assert C.switch.show('dell-01') == {
+            u'name': u'dell-01', u'ports': [],
+            u'capabilities': ['nativeless-trunk-mode']}
 
     def test_delete_switch(self):
         """(successful) call to switch_delete"""

@@ -200,6 +200,7 @@ def network():
     project = model.Project('anvil-nextgen')
     return model.Network(project, [project], True, '102', 'hammernet')
 
+
 pytestmark = pytest.mark.usefixtures('configure',
                                      'fail_on_log_warnings')
 

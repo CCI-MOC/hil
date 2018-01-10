@@ -28,11 +28,13 @@ from hil.model import db, Switch, SwitchSession
 from hil.errors import BadArgumentError, BlockedError
 from hil.model import BigIntegerType
 from hil.network_allocator import get_network_allocator
+from hil.ext.switches.common import should_save
 
 logger = logging.getLogger(__name__)
 
 CONFIG = 'config-commands'
 SHOW = 'show-command'
+EXEC = 'exec-command'
 
 
 class DellNOS9(Switch, SwitchSession):
@@ -81,6 +83,9 @@ class DellNOS9(Switch, SwitchSession):
         else:
             return
 
+    def get_capabilities(self):
+        return []
+
     @staticmethod
     def validate_port_name(port):
         """Valid port names for this switch are of the form 1/0/1 or 1/2"""
@@ -115,12 +120,16 @@ class DellNOS9(Switch, SwitchSession):
             else:
                 assert new_network == vlan_id
                 self._add_vlan_to_trunk(interface, vlan_id)
+        if should_save(self):
+            self.save_running_config()
 
     def revert_port(self, port):
         self._remove_all_vlans_from_trunk(port)
         if self._get_native_vlan(port) is not None:
             self._remove_native_vlan(port)
         self._port_shutdown(port)
+        if should_save(self):
+            self.save_running_config()
 
     def get_port_networks(self, ports):
         response = {}
@@ -192,14 +201,6 @@ class DellNOS9(Switch, SwitchSession):
             logger.error('Unexpected: No native vlan found')
             return
 
-        # FIXME: At this point, we are unable to remove the default native vlan
-        # The switchport defaults to native vlan 1. Our deployment tests make
-        # assertions that a switchport has no default vlan at start.
-        # To get the tests to pass, we return None if we see the switchport has
-        # a default native vlan (=1). This needs to be fixed ASAP.
-        if vlan == '1':
-            return None
-
         return ('vlan/native', vlan)
 
     def _get_port_info(self, interface):
@@ -219,7 +220,7 @@ class DellNOS9(Switch, SwitchSession):
         """
         command = 'interfaces switchport %s %s' % \
             (self.interface_type, interface)
-        response = self._execute(interface, SHOW, command)
+        response = self._execute(SHOW, command)
         return response.text.replace(' ', '')
 
     def _add_vlan_to_trunk(self, interface, vlan):
@@ -235,7 +236,7 @@ class DellNOS9(Switch, SwitchSession):
             self._port_on(interface)
         command = 'interface vlan ' + vlan + '\r\n tagged ' + \
             self.interface_type + ' ' + interface
-        self._execute(interface, CONFIG, command)
+        self._execute(CONFIG, command)
 
     def _remove_vlan_from_trunk(self, interface, vlan):
         """ Remove a vlan from a trunk port.
@@ -245,7 +246,7 @@ class DellNOS9(Switch, SwitchSession):
             vlan: vlan to remove
         """
         command = self._remove_vlan_command(interface, vlan)
-        self._execute(interface, CONFIG, command)
+        self._execute(CONFIG, command)
 
     def _remove_all_vlans_from_trunk(self, interface):
         """ Remove all vlan from a trunk port.
@@ -259,7 +260,7 @@ class DellNOS9(Switch, SwitchSession):
         # execute command only if there are some vlans to remove, otherwise
         # the switch complains
         if command is not '':
-            self._execute(interface, CONFIG, command)
+            self._execute(CONFIG, command)
 
     def _remove_vlan_command(self, interface, vlan):
         """Returns command to remove <vlan> from <interface>"""
@@ -279,7 +280,7 @@ class DellNOS9(Switch, SwitchSession):
             self._port_on(interface)
         command = 'interface vlan ' + vlan + '\r\n untagged ' + \
             self.interface_type + ' ' + interface
-        self._execute(interface, CONFIG, command)
+        self._execute(CONFIG, command)
 
     def _remove_native_vlan(self, interface):
         """ Remove the native vlan from an interface.
@@ -291,7 +292,7 @@ class DellNOS9(Switch, SwitchSession):
             vlan = self._get_native_vlan(interface)[1]
             command = 'interface vlan ' + vlan + '\r\n no untagged ' + \
                 self.interface_type + ' ' + interface
-            self._execute(interface, CONFIG, command)
+            self._execute(CONFIG, command)
         except TypeError:
             logger.error('No native vlan to remove')
 
@@ -338,9 +339,49 @@ class DellNOS9(Switch, SwitchSession):
         assert shutdown in ('false', 'true'), "unexpected state of switchport"
         return shutdown == 'false'
 
+    def save_running_config(self):
+        command = 'write'
+        self._execute(EXEC, command)
+
+    def get_config(self, config_type):
+        command = config_type + '-config'
+        config = self._execute(SHOW, command).text
+
+        # The config files always have some lines in the beginning that we
+        # need to remove otherwise the comparison would fail. Here's a sample:
+        # Current Configuration ...
+        # ! Version 9.11(0.0P6)
+        # ! Last configuration change at Fri Nov  3 23:51:01 2017 by smartuser
+        # ! Startup-config last updated at Sat Nov  4 02:04:57 2017 by admin
+        # !
+        # boot system stack-unit 1 primary system://A
+        # boot system stack-unit 1 secondary system://B
+        # !
+        # hostname MOC-Dell-S3048-ON
+        # !
+        # protocol lldp
+        # !
+        # redundancy auto-synchronize full
+        # !
+        # username xxxxx password 7 XXXXXXXx privilege 15
+        # !
+        # stack-unit 1 provision S3048-ON
+
+        lines_to_remove = 0
+        lines = config.splitlines()
+        for line in lines:
+            if 'username' in line:
+                break
+            lines_to_remove += 1
+
+        config = '\n'.join(lines[lines_to_remove:])
+        # there were some extra spaces in one of the config file types that
+        # would cause the tests to fail.
+        return config.replace(" ", "")
+
     # HELPER METHODS *********************************************
 
-    def _execute(self, interface, command_type, command):
+    def _execute(self, command_type, command):
         """This method gets the url & the payload and executes <command>"""
         url = self._construct_url()
         payload = self._make_payload(command_type, command)
@@ -398,10 +439,11 @@ class DellNOS9(Switch, SwitchSession):
         return self.username, self.password
 
     @staticmethod
-    def _make_payload(command, command_type):
+    def _make_payload(command_type, command):
         """Makes payload for passing CLI commands using the REST API"""
 
-        return '<input><%s>%s</%s></input>' % (command, command_type, command)
+        return '<input><%s>%s</%s></input>' % (command_type, command,
+                                               command_type)
 
     @staticmethod
     def _construct_tag(name):

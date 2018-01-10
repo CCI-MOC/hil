@@ -1561,7 +1561,8 @@ class Test_list_show_switch:
         """
         assert json.loads(api.show_switch('sw0')) == {
             'name': 'sw0',
-            'ports': [{'label': PORTS[2]}]
+            'ports': [{'label': PORTS[2]}],
+            'capabilities': ['nativeless-trunk-mode'],
         }
 
         api.switch_register_port('sw0', PORTS[1])
@@ -1570,7 +1571,8 @@ class Test_list_show_switch:
         assert json.loads(api.show_switch('sw0')) == {
             'name': 'sw0',
             'ports': [{'label': PORTS[2]},
-                      {'label': PORTS[1]}]
+                      {'label': PORTS[1]}],
+            'capabilities': ['nativeless-trunk-mode'],
         }
 
 
