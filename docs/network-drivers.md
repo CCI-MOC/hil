@@ -323,10 +323,13 @@ To get started you will need to:
 These are just illustrative examples. You may have to do more to setup
 your switch before using it with HIL.
 
+
 Optionally, a script is made available for reference at::
 
-
 	https://github.com/SahilTikale/HIL_contrib/blob/master/hilInYourLap/create_datacenter.sh
+
+**Warning**: Use the script at your own discreation.
+
 
 
 To register the driver with HIL, you will need the openvswitch bridge name,
@@ -351,7 +354,7 @@ information to connect to the openvswitch.
 Openvswitch accepts any string for port name.
 Once you add a port to the openvswitch, you can register the same with HIL.
 
-**WARNING**: Bridge and Ports must pre-exist in the openvswitch before registering
+**Notice**: Bridge and Ports must pre-exist in the openvswitch before registering
 them with HIL.
 
 ### Using multiple switches
