@@ -51,7 +51,6 @@ from hil.auth import get_auth_backend
 import pytest
 import json
 import uuid
-import re
 
 MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/v0/switches/mock'
 OBM_TYPE_MOCK = 'http://schema.massopencloud.org/haas/v0/obm/mock'
@@ -2395,12 +2394,10 @@ class TestShowNetworkingAction:
         status_id = response['status_id']
 
         response = json.loads(api.show_networking_action(status_id))
-        assert response['status'] == 'PENDING'
-        assert response['node'] == 'node-99'
-        assert response['nic'] == '99-eth0'
-        assert response['type'] == 'modify_port'
-        assert response['channel'] == 'vlan/native'
-        assert response['new_network'] == 'hammernet'
+        assert response == {'status': 'PENDING', 'node': 'node-99',
+                            'nic': '99-eth0', 'type': 'modify_port',
+                            'channel': 'vlan/native',
+                            'new_network': 'hammernet'}
 
         deferred.apply_networking()
         response = json.loads(api.show_networking_action(status_id))
@@ -2436,12 +2433,10 @@ class TestShowNetworkingAction:
         status_id = response['status_id']
 
         response = json.loads(api.show_networking_action(status_id))
-        assert response['status'] == 'PENDING'
-        assert response['node'] == 'node-99'
-        assert response['nic'] == '99-eth0'
-        assert response['type'] == 'revert_port'
-        assert response['channel'] == ''
-        assert response['new_network'] is None
+        assert response == {'status': 'PENDING', 'node': 'node-99',
+                            'nic': '99-eth0', 'type': 'revert_port',
+                            'channel': '',
+                            'new_network': None}
 
     def test_show_networking_action_nonexistent(self):
         """Show networking action on a a non existent status_id"""

@@ -9,7 +9,6 @@ from hil import config, deferred
 
 import json
 import pytest
-import re
 
 from urlparse import urlparse
 from base64 import urlsafe_b64encode
