@@ -1117,7 +1117,7 @@ def port_revert(switch, port):
 
     db.session.add(action)
     db.session.commit()
-    return json.dumps({'status_id': unique_id}), 202
+    return json.dumps({'status_id': unique_id})
 
 
 @rest_call('GET', '/networking_action/<status_id>', Schema({

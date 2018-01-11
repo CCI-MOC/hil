@@ -2429,12 +2429,14 @@ class TestShowNetworkingAction:
         """Show networking action on a revert port type of operation"""
         self.common()
         response = api.port_revert('sw0', PORTS[2])
-        response = json.loads(response[0])
+        response = json.loads(response)
         status_id = response['status_id']
 
         response = json.loads(api.show_networking_action(status_id))
-        assert response == {'status': 'PENDING', 'node': 'node-99',
-                            'nic': '99-eth0', 'type': 'revert_port',
+        assert response == {'status': 'PENDING',
+                            'node': 'node-99',
+                            'nic': '99-eth0',
+                            'type': 'revert_port',
                             'channel': '',
                             'new_network': None}
 
