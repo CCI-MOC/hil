@@ -7,8 +7,10 @@ Create Date: 2018-01-07 15:24:09.545021
 """
 
 from alembic import op
+from sqlalchemy.orm import Session
 import sqlalchemy as sa
-
+import uuid
+from hil import model
 
 # revision identifiers, used by Alembic.
 revision = '76529f0f9e50'
@@ -25,13 +27,22 @@ def upgrade():
                   nullable=True))
     op.create_index(op.f('ix_networking_action_uuid'), 'networking_action',
                     ['uuid'], unique=False)
-    op.execute("UPDATE networking_action SET status = 'PENDING', \
-        uuid ='no-uuid'")
+
+    conn = op.get_bind()
+    session = Session(bind=conn)
+    for item in session.query(model.NetworkingAction):
+        item.uuid = str(uuid.uuid4())
+        item.status = 'PENDING'
+    session.commit()
+    session.close()
+
     op.alter_column('networking_action', 'status', nullable=False)
     op.alter_column('networking_action', 'uuid', nullable=False)
 
 
 def downgrade():
+    op.execute("DELETE from networking_action WHERE status = 'DONE' or \
+               status = 'ERROR'")
     op.drop_index(op.f('ix_networking_action_uuid'),
                   table_name='networking_action')
     op.drop_column('networking_action', 'uuid')
