@@ -13,7 +13,7 @@ import sqlalchemy as sa
 # revision identifiers, used by Alembic.
 revision = '9089fa811a2b'
 down_revision = 'c45f6a96dbe7'
-branch_labels = ('hil',)
+branch_labels = None
 
 # pylint: disable=missing-docstring
 
