@@ -1,8 +1,8 @@
-"""add uuid and status to NetworkingAction
+"""add uuid and status to networkingaction
 
-Revision ID: 76529f0f9e50
-Revises: 9089fa811a2b
-Create Date: 2018-01-07 15:24:09.545021
+Revision ID: 89ff8a6d72b2
+Revises: 7acb050f783c
+Create Date: 2018-01-18 14:04:09.553012
 
 """
 
@@ -13,9 +13,9 @@ import uuid
 from hil import model
 
 # revision identifiers, used by Alembic.
-revision = '76529f0f9e50'
-down_revision = '9089fa811a2b'
-branch_labels = None
+revision = '89ff8a6d72b2'
+down_revision = '7acb050f783c'
+branch_labels = ('hil',)
 
 # pylint: disable=missing-docstring
 
