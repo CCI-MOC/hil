@@ -73,11 +73,11 @@ class ClientBase(object):
 
     def find_reserved(self, string):
         """Returns a list of illegal characters in a string"""
-        p = '[^A-Za-z0-9 \$\-\_\.\+\!\*\'\(\)\,]+'
+        p = r"[^A-Za-z0-9 $_.+!*'(),-]+"
         return list(x for l in re.findall(p, string) for x in l)
 
     def find_reserved_w_slash(self, string):
         """Returns a list of illegal characters in a string
         excluding `/` for channels and ports"""
-        p = '[^A-Za-z0-9 \/\$\-\_\.\+\!\*\'\(\)\,]+'
+        p = r"[^A-Za-z0-9 /$_.+!*'(),-]+"
         return list(x for l in re.findall(p, string) for x in l)
