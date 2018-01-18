@@ -704,7 +704,7 @@ def list_networks():
     # Regular User Operation
     else:
         networks = db.session.query(model.Network).all()
-        public_networks = db.session.query(model.Network).filter_by(owner=None).all()
+        pub_nets = db.session.query(model.Network).filter_by(owner=None).all()
         result = {}
 
         # nasty double for loooooop. Refactor?
@@ -716,7 +716,7 @@ def list_networks():
                                'projects': sorted([p.label for p in n.access])}
                         result[n.label] = net
             else:
-                if n in public_networks:
+                if n in pub_nets:
                     net = {'network_id': n.network_id, 'projects': None}
                 result[n.label] = net
 
