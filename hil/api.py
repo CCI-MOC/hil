@@ -690,10 +690,10 @@ def headnode_detach_network(headnode, hnic):
 @rest_call('GET', '/networks', Schema({}))
 def list_networks():
     """Lists all networks"""
+    networks = db.session.query(model.Network).all()
+    result = {}
     # Admin Operation
     if get_auth_backend().have_admin():
-        networks = db.session.query(model.Network).all()
-        result = {}
         for n in networks:
             if n.access:
                 net = {'network_id': n.network_id,
@@ -703,10 +703,7 @@ def list_networks():
             result[n.label] = net
     # Regular User Operation
     else:
-        networks = db.session.query(model.Network).all()
         pub_nets = db.session.query(model.Network).filter_by(owner=None).all()
-        result = {}
-
         # nasty double for loooooop. Refactor?
         for n in networks:
             if n.access:
