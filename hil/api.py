@@ -690,18 +690,35 @@ def headnode_detach_network(headnode, hnic):
 @rest_call('GET', '/networks', Schema({}))
 def list_networks():
     """Lists all networks"""
+    # Admin Operation
+    if get_auth_backend().have_admin():
+        networks = db.session.query(model.Network).all()
+        result = {}
+        for n in networks:
+            if n.access:
+                net = {'network_id': n.network_id,
+                       'projects': sorted([p.label for p in n.access])}
+            else:
+                net = {'network_id': n.network_id, 'projects': None}
+            result[n.label] = net
+    # Regular User Operation
+    else:
+        networks = db.session.query(model.Network).all()
+        public_networks = db.session.query(model.Network).filter_by(owner=None).all()
+        result = {}
 
-    get_auth_backend().require_admin()
-
-    networks = db.session.query(model.Network).all()
-    result = {}
-    for n in networks:
-        if n.access:
-            net = {'network_id': n.network_id,
-                   'projects': sorted([p.label for p in n.access])}
-        else:
-            net = {'network_id': n.network_id, 'projects': None}
-        result[n.label] = net
+        # nasty double for loooooop. Refactor?
+        for n in networks:
+            if n.access:
+                for proj in n.access:
+                    if get_auth_backend().have_project_access(proj):
+                        net = {'network_id': n.network_id,
+                               'projects': sorted([p.label for p in n.access])}
+                        result[n.label] = net
+            else:
+                if n in public_networks:
+                    net = {'network_id': n.network_id, 'projects': None}
+                result[n.label] = net
 
     return json.dumps(result, sort_keys=True)
 
