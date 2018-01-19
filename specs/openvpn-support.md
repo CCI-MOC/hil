@@ -28,7 +28,7 @@ To allow the daemon to invoke this tool, an administrator will add an
 entry to `/etc/sudoers` like:
 
 ```
-hil-vpnd ALL = (root) /usr/libexec/hil-vpn-privop
+hil-vpnd ALL = (root) NOPASSWD: /usr/libexec/hil-vpn-privop
 ```
 
 where `hil-vpnd` is the user which the daemon will run as. For extra
@@ -42,7 +42,7 @@ execution to other users entirely.
 The daemon will be called by HIL, and will provide a very simple
 authentication scheme (probably the same as the AdminToken used by
 obmd). It will not need to be accessible by users, though the openvpn
-process do for obvious reasons.
+processes do for obvious reasons.
 
 ## API
 
