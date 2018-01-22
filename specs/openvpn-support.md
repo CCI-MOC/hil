@@ -16,7 +16,7 @@ HIL will talk to the daemon to manage vpns
   configuration under the name `<name>`, which attaches to `<vlan-no>`
   and listens on `<port-no>`. It generates a static key and prints it
   to stdout.
-* `hil-vpn-privo start <name>` starts an openvpn process for the config
+* `hil-vpn-privop start <name>` starts an openvpn process for the config
   `<name>`.
 * `hil-vpn-privop stop <name>` stops the openvpn process for the config
   `<name>`.
