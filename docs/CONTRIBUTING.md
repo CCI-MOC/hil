@@ -1,4 +1,4 @@
-# Developer Guidelines
+# Developer Contributing Guidelines
 
 This document represents the developer policies and procedures for maintaining
 Hardware as a Service (HIL), including the accepted [coding style](#Coding-style).
@@ -195,17 +195,23 @@ After updating a PR, it is good to apply/unapply labels as appropriate so that
 it's easy for others to quickly scan the list of outstanding requests and
 figure out which are in need of help.
 
-## Core developers
+## Current Core developers
 
-Core developers are the trusted gatekeepers of the HIL codebase. They consist of:
+Current Core developers are the trusted gatekeepers of the HIL codebase. They consist of:
+
+* Naved Ansari (PTL)
+* Ian Ballou
+* Ian Denhardt
+* Kristi Nikolla
+* Jethro Sun
+* Sahil Tikale
+
+## Previous core developers
 
 * Jon Bell
-* Ian Denhardt
-* Jason Hennessey (PTL)
+* Jason Hennessey
 * Kyle Hogan
-* Kristi Nikolla
 * George Silvis
-* Sahil Tikale
 
 Anyone who has had a few successful commits is invited to speak to the PTL
 (Project Team Lead) about being added as one.
