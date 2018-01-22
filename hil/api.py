@@ -704,9 +704,9 @@ def list_networks():
     # Regular User Operation
     else:
         pub_nets = db.session.query(model.Network).filter_by(owner=None).all()
-            if n in pub_nets:
-                net = {'network_id': n.network_id, 'projects': None}
-            result[n.label] = net
+        if n in pub_nets:
+            net = {'network_id': n.network_id, 'projects': None}
+        result[n.label] = net
 
     return json.dumps(result, sort_keys=True)
 
