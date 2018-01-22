@@ -704,18 +704,9 @@ def list_networks():
     # Regular User Operation
     else:
         pub_nets = db.session.query(model.Network).filter_by(owner=None).all()
-        # nasty double for loooooop. Refactor?
-        for n in networks:
-            if n.access:
-                for proj in n.access:
-                    if get_auth_backend().have_project_access(proj):
-                        net = {'network_id': n.network_id,
-                               'projects': sorted([p.label for p in n.access])}
-                        result[n.label] = net
-            else:
-                if n in pub_nets:
-                    net = {'network_id': n.network_id, 'projects': None}
-                result[n.label] = net
+            if n in pub_nets:
+                net = {'network_id': n.network_id, 'projects': None}
+            result[n.label] = net
 
     return json.dumps(result, sort_keys=True)
 
