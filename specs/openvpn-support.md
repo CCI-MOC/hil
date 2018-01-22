@@ -80,7 +80,8 @@ a pem encoded key.
 
 `DELETE /vpns/<id>`
 
-where `<id>` is the id from the body of the call that created vpn.
+where `<id>` is the id from the body of the call that created vpn. This
+will also disconnect any clients connected to the vpn.
 
 # Openvpn details
 
@@ -105,3 +106,49 @@ Creating a vpn will consist of generating a key and configuration file
 in an appropriate location, which will refer to the key and specify a
 tap device corresponding to the appropriate vlan. We can manage the
 life cycle of the openvpn processes via systemd.
+
+# Changes to HIL
+
+* network_delete will require that no vpns are attached to the network
+* HIL will grow some new api calls:
+
+## create_vpn
+
+`PUT /vpns/<label>`
+
+Request body
+
+```
+{
+    "network": "<network-label>",
+    "project": "<project-label>"
+}
+```
+
+Response body:
+
+```json
+{
+    "key": "<pem-encoded key>",
+    "port": 9321,
+    "host": "openvpn-server.example.com"
+}
+```
+
+Creates a vpn owned by a given project and attached to the specified
+network. Returns information required to connect.
+
+### Authorization requirements
+
+* User must have access to the given project
+* Project must have access to the given network.
+
+## delete vpn
+
+`DELETE /vpns/<label>`
+
+Deletes the vpn, disconnecting any clients.
+
+### Authorization requirements
+
+* Project access to the project owning the vpn
