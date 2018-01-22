@@ -240,7 +240,7 @@ default channel, the VLAN drivers choose `vlan/native`.
 
 `GET /networks`
 
-List all networks.
+List all networks or List all public networks.
 
 Returns a JSON dictionary of dictionaries, where the exterior dictionary is indexed by
 the network name and the value of each key is another dictionary with keys corresponding
@@ -267,7 +267,10 @@ Example Response:
 
 Authorization requirements:
 
-* Administrative access is required
+* Administrative access is required to list all networks
+* No special access is required to list all public networks
+
+
 
 #### list_network_attachments
 
