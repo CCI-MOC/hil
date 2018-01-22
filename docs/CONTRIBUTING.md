@@ -1,4 +1,4 @@
-# Developer Guidelines
+# Developer Contributing Guidelines
 
 This document represents the developer policies and procedures for maintaining
 Hardware as a Service (HIL), including the accepted [coding style](#Coding-style).
