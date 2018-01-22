@@ -690,10 +690,10 @@ def headnode_detach_network(headnode, hnic):
 @rest_call('GET', '/networks', Schema({}))
 def list_networks():
     """Lists all networks"""
-    networks = db.session.query(model.Network).all()
     result = {}
     # Admin Operation
     if get_auth_backend().have_admin():
+        networks = db.session.query(model.Network).all()
         for n in networks:
             if n.access:
                 net = {'network_id': n.network_id,
@@ -703,11 +703,10 @@ def list_networks():
             result[n.label] = net
     # Regular User Operation
     else:
-        pub_nets = db.session.query(model.Network).filter_by(owner=None).all()
+        pub_nets = db.session.query(model.Network).filter_by(access=None).all()
         for n in pub_nets:
-            if not n.access:
-                net = {'network_id': n.network_id, 'projects': None}
-                result[n.label] = net
+            net = {'network_id': n.network_id, 'projects': None}
+            result[n.label] = net
 
     return json.dumps(result, sort_keys=True)
 
