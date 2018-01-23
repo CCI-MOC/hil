@@ -32,7 +32,27 @@ class Node(ClientBase):
         # and currently active drivers for HIL
         # obm_api = "http://schema.massopencloud.org/haas/v0/obm/"
         # obm_types = ["ipmi", "mock"]
-        raise NotImplementedError
+        obm_api = "http://schema.massopencloud.org/haas/v0/obm/"
+        obm_types = ["ipmi", "mock"]
+        if subtype in obm_types:
+            if len(args) == 3:
+                obminfo = {"type": obm_api + subtype, "host": args[0],
+                           "user": args[1], "password": args[2]
+                           }
+            else:
+                sys.stderr.write('ERROR: subtype ' + subtype +
+                                 ' requires exactly 3 arguments\n')
+                sys.stderr.write('<hostname> <ipmi-username> <ipmi-password>\n')
+                return
+        else:
+            sys.stderr.write('ERROR: Wrong OBM subtype supplied\n')
+            sys.stderr.write('Supported OBM sub-types: ipmi, mock\n')
+            return
+        url = self.object_url('node', node)
+        payload = json.dumps({"obm": obminfo})
+	return self.check_response(
+                self.httpClient.request('PUT', url, data=payload)
+                )
 
     def delete(self, node_name):
         """Deletes the node from database. """
