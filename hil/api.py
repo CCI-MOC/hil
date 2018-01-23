@@ -699,13 +699,13 @@ def list_networks():
                 result[n.label] = {'network_id': n.network_id,
                                    'projects': sorted([p.label for p in n.access])}
             else:
-                result[n.label] = {'network_id': n.network_id, 
+                result[n.label] = {'network_id': n.network_id,
                                    'projects': None}
     # Regular User Operation
     else:
         pub_nets = db.session.query(model.Network).filter_by(access=None).all()
         for n in pub_nets:
-            result[n.label] = {'network_id': n.network_id, 
+            result[n.label] = {'network_id': n.network_id,
                                'projects': None}
 
     return json.dumps(result, sort_keys=True)
