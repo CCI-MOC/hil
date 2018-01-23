@@ -240,7 +240,7 @@ default channel, the VLAN drivers choose `vlan/native`.
 
 `GET /networks`
 
-List all networks or List all public networks.
+List all networks. (Admin-level operation)
 
 Returns a JSON dictionary of dictionaries, where the exterior dictionary is indexed by
 the network name and the value of each key is another dictionary with keys corresponding
@@ -268,9 +268,37 @@ Example Response:
 Authorization requirements:
 
 * Administrative access is required to list all networks
+
+`GET /networks`
+
+List all public networks. (Regular user operation)
+
+Returns a JSON dictionary of dictionaries, where the exterior dictionary is indexed by
+the network name and the value of each key is another dictionary with keys corresponding
+to that network's id and projects
+
+The response must contain the following fields:
+
+* "network", the name of a network
+* "network_id", the id of the network
+* "projects", a list of projects with access to the network or 'None' if network is public
+
+Example Response:
+
+    {
+        "netA": {
+            "network_id": "101",
+            "projects": None
+        },
+        "netB": {
+            "network_id": "102",
+            "projects": None
+        }
+    }
+
+Authorization requirements:
+
 * No special access is required to list all public networks
-
-
 
 #### list_network_attachments
 

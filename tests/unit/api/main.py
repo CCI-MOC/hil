@@ -1750,7 +1750,7 @@ class TestQuery_populated_db:
             'stock_ext_pub': {'projects': None},
             'stock_int_pub': {'projects': None},
         }
-        #Test against the Admin user
+        # Test against the Admin user
         auth.set_admin(True)
         admin_result = json.loads(api.list_networks())
         for net in admin_result.keys():
