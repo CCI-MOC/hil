@@ -696,7 +696,7 @@ def list_networks():
         networks = db.session.query(model.Network).all()
         for n in networks:
             if n.access:
-                net = {'network_id': n.network_id,
+                result[n.label] = {'network_id': n.network_id,
                        'projects': sorted([p.label for p in n.access])}
             else:
                 result[n.label] = {'network_id': n.network_id, 'projects': None}
