@@ -357,9 +357,13 @@ a default, which should be some form of "untagged."
 
 Networks are connected and detached asynchronously. If successful, this
 API call returns a status code of 202 Accepted, and queues the network
-operation to be preformed. Each nic may have no more than one pending
+operation to be performed. Each nic may have no more than one pending
 network operation; an attempt to queue a second action will result in an
 error.
+
+It is important that users of this API check the status of their request using
+the `show_networking_action` API to ensure that their previous calls were
+successful before queuing any new actions on the same nic.
 
 Response body:
 
@@ -401,6 +405,9 @@ operation to be preformed. Each nic may have no more than one pending
 network operation; an attempt to queue a second action will result in an
 error.
 
+Just like the `node_attach_network` API, please check the status using the
+`show_networking_action` API to check the status of previous calls before
+queuing any new actions.
 
 Response body:
 
@@ -1177,7 +1184,9 @@ Possible errors:
 
 `POST /switch/<switch>/port/<port>/revert`
 
-Detach the port from all networks.
+Detach the port from all networks. This is an asynchronous call. It's a good
+idea to check the status using the `show_networking_action` API before queuing
+any new actions on the same port.
 
 Response body:
 
@@ -1336,7 +1345,7 @@ Authorization requirements:
 `GET /networking_action/<status_id>`
 
 Get the status of the networking call queued by node_connect_network,
-node_detach_network, or port_revert. where <status_id> is returned by any
+node_detach_network, or port_revert, where <status_id> is returned by any
 of the network calls.
 
 Response Body:
@@ -1352,9 +1361,9 @@ Response Body:
 
 where:
 * `status` can either be "DONE", "PENDING", or "ERROR".
-* `new_network` can be `null` in case of `node_detach_network` or `revert_port`
-* `type` can be `revert_port` or `modify_port`
-* `channel` could be '' in case of revert_port
+* `new_network` can be `null` in case of `node_detach_network` or `revert_port`.
+* `type` can be `revert_port` or `modify_port`.
+* `channel` could be '' in case of revert_port.
 
 The status of a networking call is kept until a new action on the same nic is
 added, after which the old entry is deleted.

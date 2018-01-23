@@ -829,7 +829,7 @@ def list_active_extensions():
 
 @cmd
 def show_networking_action(status_id):
-    """Returns the status of the networking action"""
+    """Displays the status of the networking action"""
     print C.node.show_networking_action(status_id)
 
 
