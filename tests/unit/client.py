@@ -770,12 +770,12 @@ class TestShowNetworkingAction:
         status_id = response['status_id']
 
         response = C.node.show_networking_action(status_id)
-        assert response['status'] == 'PENDING'
-        assert response['node'] == 'node-01'
-        assert response['nic'] == 'eth0'
-        assert response['new_network'] == 'net-01'
-        assert response['channel'] == 'vlan/native'
-        assert response['type'] == 'modify_port'
+        assert response == {'status': 'PENDING',
+                            'node': 'node-01',
+                            'nic': 'eth0',
+                            'type': 'modify_port',
+                            'channel': 'vlan/native',
+                            'new_network': 'net-01'}
 
         deferred.apply_networking()
         response = C.node.show_networking_action(status_id)

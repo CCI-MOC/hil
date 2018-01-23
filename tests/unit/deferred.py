@@ -8,11 +8,10 @@ from hil import config, deferred, model
 from hil.model import db, Switch
 from hil.errors import SwitchError
 from hil.test_common import config_testsuite, config_merge, \
-                             fresh_database, fail_on_log_warnings
+                             fresh_database
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
-fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 fresh_database = pytest.fixture(fresh_database)
 
 DeferredTestSwitch = None
@@ -190,8 +189,7 @@ def network():
     return model.Network(project, [project], True, '102', 'hammernet')
 
 
-pytestmark = pytest.mark.usefixtures('configure',
-                                     'fail_on_log_warnings')
+pytestmark = pytest.mark.usefixtures('configure')
 
 
 def test_apply_networking(switch, network, fresh_database):
@@ -214,7 +212,8 @@ def test_apply_networking(switch, network, fresh_database):
         nic.append(new_nic(str(i)))
         nic[i].port = model.Port(label=interface, switch=switch)
         unique_id = str(uuid.uuid4())
-        actions.append(model.NetworkingAction(nic=nic[i], new_network=network,
+        actions.append(model.NetworkingAction(nic=nic[i],
+                                              new_network=network,
                                               channel='vlan/native',
                                               type='modify_port',
                                               uuid=unique_id,
@@ -224,8 +223,10 @@ def test_apply_networking(switch, network, fresh_database):
     # raises an error when the networking action is of type revert port.
     unique_id = str(uuid.uuid4())
     actions[2] = model.NetworkingAction(nic=nic[2],
-                                        new_network=None, uuid=unique_id,
-                                        channel='', status='PENDING',
+                                        new_network=None,
+                                        uuid=unique_id,
+                                        channel='',
+                                        status='PENDING',
                                         type='revert_port')
     for action in actions:
         db.session.add(action)

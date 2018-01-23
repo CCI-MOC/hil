@@ -791,7 +791,13 @@ class Test_show_networking_action(unittest.TestCase):
         show_networking_action"""
 
         self.auth_backend.set_project(self.manhattan)
-        api.show_networking_action(self.status_id)
+        response = json.loads(api.show_networking_action(self.status_id))
+        assert response == {'status': 'PENDING',
+                            'node': 'manhattan_node_0',
+                            'nic': 'boot-nic',
+                            'type': 'modify_port',
+                            'channel': 'null',
+                            'new_network': 'stock_int_pub'}
 
     def test_show_networking_action_failure(self):
         """Test that project with no access to node can't get the status"""
@@ -804,4 +810,10 @@ class Test_show_networking_action(unittest.TestCase):
         """Test that admins can get status"""
         self.auth_backend.set_project(self.runway)
         self.auth_backend.set_admin(True)
-        api.show_networking_action(self.status_id)
+        response = json.loads(api.show_networking_action(self.status_id))
+        assert response == {'status': 'PENDING',
+                            'node': 'manhattan_node_0',
+                            'nic': 'boot-nic',
+                            'type': 'modify_port',
+                            'channel': 'null',
+                            'new_network': 'stock_int_pub'}

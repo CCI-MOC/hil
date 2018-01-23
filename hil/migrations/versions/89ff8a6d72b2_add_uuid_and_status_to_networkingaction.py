@@ -41,8 +41,8 @@ def upgrade():
 
 
 def downgrade():
-    op.execute("DELETE from networking_action WHERE status = 'DONE' or \
-               status = 'ERROR'")
+    op.execute("DELETE from networking_action "
+               "WHERE status = 'DONE' or status = 'ERROR'")
     op.drop_index(op.f('ix_networking_action_uuid'),
                   table_name='networking_action')
     op.drop_column('networking_action', 'uuid')

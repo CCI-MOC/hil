@@ -373,12 +373,7 @@ def node_connect_network(node, nic, network, channel=None):
     if nic.port is None:
         raise errors.NotFoundError("No port is connected to given nic.")
 
-    if nic.current_action:
-        if nic.current_action.status == 'PENDING':
-            raise errors.BlockedError(
-                "A networking operation is already active on the nic.")
-        else:
-            db.session.delete(nic.current_action)
+    check_pending_action(nic)
 
     if (network.access) and (project not in network.access):
         raise errors.ProjectMismatchError(
@@ -434,12 +429,7 @@ def node_detach_network(node, nic, network):
         raise errors.ProjectMismatchError("Node not in project")
     auth_backend.require_project_access(node.project)
 
-    if nic.current_action:
-        if nic.current_action.status == 'PENDING':
-            raise errors.BlockedError(
-                "A networking operation is already active on the nic.")
-        else:
-            db.session.delete(nic.current_action)
+    check_pending_action(nic)
 
     attachment = model.NetworkAttachment.query \
         .filter_by(nic=nic, network=network).one_or_none()
@@ -1100,12 +1090,7 @@ def port_revert(switch, port):
 
     if port.nic is None:
         raise errors.NotFoundError(port.label + " not attached")
-    if port.nic.current_action:
-        if port.nic.current_action.status == "PENDING":
-            raise errors.BlockedError("Port already has a pending action.")
-        else:
-            db.session.delete(port.nic.current_action)
-
+    check_pending_action(port.nic)
     unique_id = str(uuid.uuid4())
 
     action = model.NetworkingAction(type='revert_port',
@@ -1123,7 +1108,7 @@ def port_revert(switch, port):
 @rest_call('GET', '/networking_action/<status_id>', Schema({
     'status_id': basestring}))
 def show_networking_action(status_id):
-    """Returns the status of the networking action by findind the status_id
+    """Returns the status of the networking action by finding the status_id
     in the networking actions table.
     """
     action = model.NetworkingAction.query.filter_by(uuid=status_id).first()
@@ -1137,9 +1122,12 @@ def show_networking_action(status_id):
                    'node': action.nic.owner.label,
                    'nic': action.nic.label,
                    'type': action.type,
-                   'channel': action.channel,
-                   'new_network': None if action.new_network is None
-                   else action.new_network.label}
+                   'channel': action.channel}
+
+    if action.new_network is None:
+        action_info['new_network'] = None
+    else:
+        action_info['new_network'] = action.new_network.label
 
     return json.dumps(action_info)
 
@@ -1448,3 +1436,15 @@ def _maintain(project, node, node_label):
     if (not 200 <= response < 300):
         logger.warn('POST to maintenance service'
                     ' failed with response: %s', response.text)
+
+
+def check_pending_action(nic):
+    """Raises an error if the nic has a pending action
+    Otherwise deletes the completed action"""
+    if nic.current_action:
+        if nic.current_action.status == 'PENDING':
+            raise errors.BlockedError(
+                "A networking operation is already active on the nic.")
+        else:
+            db.session.delete(nic.current_action)
+    return

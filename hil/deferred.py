@@ -53,24 +53,23 @@ class DaemonSession(object):
                     nic=action.nic,
                     network=action.new_network,
                     channel=action.channel))
-
-            model.NetworkingAction.query.filter_by(id=action.id). \
-                update({"status": "DONE"})
+            action.status = 'DONE'
         except SwitchError:
-            model.NetworkingAction.query.filter_by(id=action.id). \
-                update({"status": "ERROR"})
+            action.status = 'ERROR'
+            logger.error('Modify port failed on port %s of switch %s',
+                         action.nic.port.label, action.nic.port.owner.label)
 
     def revert_port(self, action):
         """Apply a revert_port action."""
         session = self.get_session(action.nic.port.owner)
         try:
             session.revert_port(action.nic.port.label)
-            model.NetworkingAction.query.filter_by(id=action.id). \
-                update({"status": "DONE"})
             model.NetworkAttachment.query.filter_by(nic=action.nic).delete()
+            action.status = 'DONE'
         except SwitchError:
-            model.NetworkingAction.query.filter_by(id=action.id). \
-                update({"status": "ERROR"})
+            action.status = 'ERROR'
+            logger.error('Revert port failed on port %s of switch %s',
+                         action.nic.port.label, action.nic.port.owner.label)
 
     def get_session(self, switch):
         """Get a session for the switch.

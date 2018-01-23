@@ -2394,8 +2394,10 @@ class TestShowNetworkingAction:
         status_id = response['status_id']
 
         response = json.loads(api.show_networking_action(status_id))
-        assert response == {'status': 'PENDING', 'node': 'node-99',
-                            'nic': '99-eth0', 'type': 'modify_port',
+        assert response == {'status': 'PENDING',
+                            'node': 'node-99',
+                            'nic': '99-eth0',
+                            'type': 'modify_port',
                             'channel': 'vlan/native',
                             'new_network': 'hammernet'}
 
