@@ -47,7 +47,7 @@ class Node(ClientBase):
                            }
         url = self.object_url('node', node)
         payload = json.dumps({"obm": obminfo})
-	return self.check_response(
+        return self.check_response(
                 self.httpClient.request('PUT', url, data=payload)
                 )
 
