@@ -1,7 +1,6 @@
 """Client support for network related api calls."""
 import json
 from hil.client.base import ClientBase
-from hil.errors import BadArgumentError
 
 
 class Network(ClientBase):
@@ -17,10 +16,7 @@ class Network(ClientBase):
 
         def show(self, network):
             """Shows attributes of a network. """
-            bad_chars = self.find_reserved(network)
-            if bool(bad_chars):
-                raise BadArgumentError("Networks may not contain: %s"
-                                       % bad_chars)
+            self.check_reserved('network', network)
             url = self.object_url('network', network)
             return self.check_response(self.httpClient.request("GET", url))
 
@@ -29,22 +25,10 @@ class Network(ClientBase):
 
             See docs/networks.md for details.
             """
-            bad_chars = self.find_reserved(network)
-            if bool(bad_chars):
-                raise BadArgumentError("Networks may not contain: %s"
-                                       % bad_chars)
-            bad_chars = self.find_reserved(owner)
-            if bool(bad_chars):
-                raise BadArgumentError("Owner may not contain: %s"
-                                       % bad_chars)
-            bad_chars = self.find_reserved(access)
-            if bool(bad_chars):
-                raise BadArgumentError("Access may not contain: %s"
-                                       % bad_chars)
-            bad_chars = self.find_reserved_w_slash(net_id)
-            if bool(bad_chars):
-                raise BadArgumentError("Network ID may not contain: %s"
-                                       % bad_chars)
+            self.check_reserved('network', network)
+            self.check_reserved('owner', owner)
+            self.check_reserved('access', access)
+            self.check_reserved('Network ID', net_id, slashes_ok=True)
             url = self.object_url('network', network)
             payload = json.dumps({
                 'owner': owner, 'access': access,
@@ -56,23 +40,14 @@ class Network(ClientBase):
 
         def delete(self, network):
             """Delete a <network>. """
-            bad_chars = self.find_reserved(network)
-            if bool(bad_chars):
-                raise BadArgumentError("Networks may not contain: %s"
-                                       % bad_chars)
+            self.check_reserved('network', network)
             url = self.object_url('network', network)
             return self.check_response(self.httpClient.request("DELETE", url))
 
         def grant_access(self, project, network):
             """Grants <project> access to <network>. """
-            bad_chars = self.find_reserved(project)
-            if bool(bad_chars):
-                raise BadArgumentError("Projects may not contain: %s"
-                                       % bad_chars)
-            bad_chars = self.find_reserved(network)
-            if bool(bad_chars):
-                raise BadArgumentError("Networks may not contain: %s"
-                                       % bad_chars)
+            self.check_reserved('project', project)
+            self.check_reserved('network', network)
             url = self.object_url(
                     'network', network, 'access', project
                     )
@@ -80,14 +55,8 @@ class Network(ClientBase):
 
         def revoke_access(self, project, network):
             """Removes access of <network> from <project>. """
-            bad_chars = self.find_reserved(project)
-            if bool(bad_chars):
-                raise BadArgumentError("Projects may not contain: %s"
-                                       % bad_chars)
-            bad_chars = self.find_reserved(network)
-            if bool(bad_chars):
-                raise BadArgumentError("Networks may not contain: %s"
-                                       % bad_chars)
+            self.check_reserved('project', project)
+            self.check_reserved('network', network)
             url = self.object_url(
                     'network', network, 'access', project
                     )

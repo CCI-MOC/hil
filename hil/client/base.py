@@ -3,6 +3,7 @@
 from urlparse import urljoin
 import json
 import re
+from hil.errors import BadArgumentError
 
 
 class FailedAPICallException(Exception):
@@ -71,13 +72,17 @@ class ClientBase(object):
         except ValueError:
             return response.content
 
-    def find_reserved(self, string):
+    def _find_reserved(self, string, slashes_ok=False):
         """Returns a list of illegal characters in a string"""
-        p = r"[^A-Za-z0-9 $_.+!*'(),-]+"
+        if slashes_ok:
+            p = r"[^A-Za-z0-9 /$_.+!*'(),-]+"
+        else:
+            p = r"[^A-Za-z0-9 $_.+!*'(),-]+"
         return list(x for l in re.findall(p, string) for x in l)
 
-    def find_reserved_w_slash(self, string):
-        """Returns a list of illegal characters in a string
-        excluding `/` for channels and ports"""
-        p = r"[^A-Za-z0-9 /$_.+!*'(),-]+"
-        return list(x for l in re.findall(p, string) for x in l)
+    def check_reserved(self, obj_type, obj_string, slashes_ok=False):
+        """Check for illegal characters and report of their existence"""
+        bad_chars = self._find_reserved(obj_string, slashes_ok)
+        if bool(bad_chars):
+            error = obj_type + " may not contain: " + str(bad_chars)
+            raise BadArgumentError(error)
