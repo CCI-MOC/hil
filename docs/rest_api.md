@@ -240,7 +240,7 @@ default channel, the VLAN drivers choose `vlan/native`.
 
 `GET /networks`
 
-List all networks or list all public networks
+List all networks or list all public networks.
 
 Returns a JSON dictionary of dictionaries, where the exterior dictionary is indexed by
 the network name and the value of each key is another dictionary with keys corresponding
@@ -269,11 +269,11 @@ Example Response by a regular user:
 
     {
         "netA": {
-            "network_id": "101",
+            "network_id": "102",
             "projects": None
         },
         "netB": {
-            "network_id": "102",
+            "network_id": "103",
             "projects": None
         }
     }
