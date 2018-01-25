@@ -1,4 +1,4 @@
-# Copyright 2015-2016 Massachusetts Open Cloud Contributors
+# Copyright 2015-2018 Mass Open Cloud Contributors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the
