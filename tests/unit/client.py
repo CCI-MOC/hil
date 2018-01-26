@@ -633,15 +633,15 @@ class Test_user:
         """Test error condition while granting user access to a project."""
         C.project.create('test-proj01')
         C.user.create('sam01', 'pass1234', False)
-        C.user.add('sam01', 'test-proj01', False)
+        C.user.add('sam01', 'test-proj01')
         with pytest.raises(FailedAPICallException):
-            C.user.add('sam01', 'test-proj01', False)
+            C.user.add('sam01', 'test-proj01')
 
     def test_user_remove(self):
         """Test revoking user's access to a project. """
         C.project.create('test-proj02')
         C.user.create('sam02', 'pass1234', False)
-        C.user.add('sam02', 'test-proj02', False)
+        C.user.add('sam02', 'test-proj02')
         assert C.user.remove('sam02', 'test-proj02') is None
 
     def test_user_remove_error(self):
