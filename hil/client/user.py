@@ -16,7 +16,7 @@ class User(ClientBase):
     def create(self, username, password, is_admin):
         """Create a user <username> with password <password>.
 
-        <is_admin> may by either true or false,
+        <is_admin> is a boolean,
         and determines whether a user is authorized for
         administrative privileges.
         """
