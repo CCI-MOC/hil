@@ -63,9 +63,9 @@ user_projects = db.Table('user_projects',
 @rest_call('PUT', '/auth/basic/user/<user>', schema=Schema({
     'user': basestring,
     'password': basestring,
-    Optional('is_admin'): bool,
+    'is_admin': bool,
 }), dont_log=('password',))
-def user_create(user, password, is_admin=False):
+def user_create(user, password, is_admin):
     """Create user with given password.
 
     If the user already exists, a DuplicateError will be raised.
@@ -76,7 +76,7 @@ def user_create(user, password, is_admin=False):
     # hil.api:
     api._assert_absent(User, user)
 
-    user = User(user, password, is_admin=is_admin)
+    user = User(user, password, is_admin)
     db.session.add(user)
     db.session.commit()
 

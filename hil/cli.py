@@ -301,7 +301,11 @@ def user_create(username, password, is_admin):
     <is_admin> may be either "admin" or "regular", and determines whether
     the user has administrative priveledges.
     """
-    C.user.create(username, password, is_admin)
+    if is_admin not in ('admin', 'regular'):
+        raise ValueError(
+            "invalid privilege type: must be either 'admin' or 'regular'."
+            )
+    C.user.create(username, password, is_admin == 'admin')
 
 
 @cmd
