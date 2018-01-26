@@ -602,23 +602,23 @@ class Test_user:
 
     def test_user_create(self):
         """ Test user creation. """
-        assert C.user.create('billy', 'pass1234', 'admin') is None
-        assert C.user.create('bobby', 'pass1234', 'regular') is None
+        assert C.user.create('billy', 'pass1234', True) is None
+        assert C.user.create('bobby', 'pass1234', False) is None
 
     def test_user_create_duplicate(self):
         """ Test duplicate user creation. """
-        C.user.create('bill', 'pass1234', 'regular')
+        C.user.create('bill', 'pass1234', False)
         with pytest.raises(FailedAPICallException):
-            C.user.create('bill', 'pass1234', 'regular')
+            C.user.create('bill', 'pass1234', False)
 
     def test_user_delete(self):
         """ Test user deletion. """
-        C.user.create('jack', 'pass1234', 'admin')
+        C.user.create('jack', 'pass1234', True)
         assert C.user.delete('jack') is None
 
     def test_user_delete_error(self):
         """ Test error condition in user deletion. """
-        C.user.create('Ata', 'pass1234', 'admin')
+        C.user.create('Ata', 'pass1234', True)
         C.user.delete('Ata')
         with pytest.raises(FailedAPICallException):
             C.user.delete('Ata')
@@ -626,13 +626,13 @@ class Test_user:
     def test_user_add(self):
         """ test adding a user to a project. """
         C.project.create('proj-sample')
-        C.user.create('Sam', 'pass1234', 'regular')
+        C.user.create('Sam', 'pass1234', False)
         assert C.user.add('Sam', 'proj-sample') is None
 
     def test_user_add_error(self):
         """Test error condition while granting user access to a project."""
         C.project.create('test-proj01')
-        C.user.create('sam01', 'pass1234', 'regular')
+        C.user.create('sam01', 'pass1234', False)
         C.user.add('sam01', 'test-proj01')
         with pytest.raises(FailedAPICallException):
             C.user.add('sam01', 'test-proj01')
@@ -640,15 +640,15 @@ class Test_user:
     def test_user_remove(self):
         """Test revoking user's access to a project. """
         C.project.create('test-proj02')
-        C.user.create('sam02', 'pass1234', 'regular')
+        C.user.create('sam02', 'pass1234', False)
         C.user.add('sam02', 'test-proj02')
         assert C.user.remove('sam02', 'test-proj02') is None
 
     def test_user_remove_error(self):
         """Test error condition while revoking user access to a project. """
         C.project.create('test-proj03')
-        C.user.create('sam03', 'pass1234', 'regular')
-        C.user.create('xxxx', 'pass1234', 'regular')
+        C.user.create('sam03', 'pass1234', False)
+        C.user.create('xxxx', 'pass1234', False)
         C.user.add('sam03', 'test-proj03')
         C.user.remove('sam03', 'test-proj03')
         with pytest.raises(FailedAPICallException):
@@ -656,21 +656,21 @@ class Test_user:
 
     def test_user_set_admin(self):
         """Test changing a user's admin status """
-        C.user.create('jimmy', '12345', 'regular')
-        C.user.create('jimbo', '678910', 'admin')
+        C.user.create('jimmy', '12345', False)
+        C.user.create('jimbo', '678910', True)
         assert C.user.set_admin('jimmy', True) is None
         assert C.user.set_admin('jimbo', False) is None
 
     def test_user_set_admin_demote_error(self):
         """Tests error condition while editing a user who doesn't exist. """
-        C.user.create('gary', '12345', 'admin')
+        C.user.create('gary', '12345', True)
         C.user.delete('gary')
         with pytest.raises(FailedAPICallException):
             C.user.set_admin('gary', False)
 
     def test_user_set_admin_promote_error(self):
         """Tests error condition while editing a user who doesn't exist. """
-        C.user.create('hugo', '12345', 'regular')
+        C.user.create('hugo', '12345', False)
         C.user.delete('hugo')
         with pytest.raises(FailedAPICallException):
             C.user.set_admin('hugo', True)
