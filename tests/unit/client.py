@@ -762,8 +762,8 @@ class Test_extensions:
 class TestShowNetworkingAction:
     """Test calls to show networking action method"""
 
-    def test_get_status(self):
-        """(successful) call to get_status"""
+    def test_show_networking_action(self):
+        """(successful) call to show_networking_action"""
         response = C.node.connect_network(
                 'node-01', 'eth0', 'net-01', 'vlan/native'
                 )
@@ -781,7 +781,7 @@ class TestShowNetworkingAction:
         response = C.node.show_networking_action(status_id)
         assert response['status'] == 'DONE'
 
-    def test_get_status_fail(self):
-        """(unsuccessful) call to get_status"""
+    def test_show_networking_action_fail(self):
+        """(unsuccessful) call to show_networking_action"""
         with pytest.raises(FailedAPICallException):
             C.node.show_networking_action('non-existent-entry')

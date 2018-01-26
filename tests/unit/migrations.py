@@ -148,13 +148,14 @@ def create_bigint_db():
         db.session.add(model.NetworkAttachment(nic=nic1,
                                                network_id=1,
                                                channel='vlan/100'))
-        db.session.add(model.NetworkingAction(type='modify_port',
-                                              nic=nic1,
-                                              new_network=network1,
-                                              channel='vlan/100',
-                                              status='PENDING',
-                                              uuid='60bcb0f3-2ee0-4efa-b6ce-e8'
-                                              '1596c6386e'))
+        db.session.add(model.NetworkingAction(
+            type='modify_port',
+            nic=nic1,
+            new_network=network1,
+            channel='vlan/100',
+            status='PENDING',
+            uuid='60bcb0f3-2ee0-4efa-b6ce-e81596c6386e'))
+
         jim = User(label='jim',
                    password='heyimjim',
                    is_admin=True)

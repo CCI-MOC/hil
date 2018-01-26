@@ -49,6 +49,7 @@ from hil.test_common import config_testsuite, config_merge, fresh_database, \
 from hil.network_allocator import get_network_allocator
 from hil.auth import get_auth_backend
 import pytest
+import unittest
 import json
 import uuid
 
@@ -2372,10 +2373,10 @@ class TestDryRun:
         api.node_power_cycle('node-99', True)
 
 
-class TestShowNetworkingAction:
+class TestShowNetworkingAction(unittest.TestCase):
     """Various tests for the show networking action api"""
 
-    def common(self):
+    def setUp(self):
         """Sets up common stuff"""
         switchinit()
         new_node('node-99')
@@ -2385,9 +2386,9 @@ class TestShowNetworkingAction:
         network_create_simple('hammernet', 'anvil-nextgen')
         api.port_connect_nic('sw0', PORTS[2], 'node-99', '99-eth0')
 
-    def test_show_networking_action_attach(self,):
+    def test_show_networking_action_attach(self):
         """Show networking action on an operation attaching a network"""
-        self.common()
+
         # make a network call and get the status id from the response.
         response = api.node_connect_network('node-99', '99-eth0', 'hammernet')
         response = json.loads(response[0])
@@ -2407,7 +2408,6 @@ class TestShowNetworkingAction:
 
     def test_show_networking_action_detach(self):
         """Show networking action on an operation detaching a network"""
-        self.common()
         api.node_connect_network('node-99', '99-eth0', 'hammernet')
 
         # adding another action shouldn't work unless the last one is cleared
@@ -2429,7 +2429,6 @@ class TestShowNetworkingAction:
 
     def test_show_networking_action_revert_port(self):
         """Show networking action on a revert port type of operation"""
-        self.common()
         response = api.port_revert('sw0', PORTS[2])
         response = json.loads(response)
         status_id = response['status_id']
