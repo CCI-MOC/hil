@@ -165,20 +165,20 @@ class TestUserCreateDelete(DBAuthTestCase):
     def test_new_user(self):
         """Creating a (previously absent) user should succeed."""
         api._assert_absent(self.dbauth.User, 'charlie')
-        self.dbauth.user_create('charlie', 'foo')
+        self.dbauth.user_create('charlie', 'foo', False)
 
     def test_duplicate_user(self):
         """Creating a user that already exists should fail."""
-        self.dbauth.user_create('charlie', 'secret')
+        self.dbauth.user_create('charlie', 'secret', False)
         with pytest.raises(errors.DuplicateError):
-            self.dbauth.user_create('charlie', 'password')
+            self.dbauth.user_create('charlie', 'password', False)
 
     def test_delete_user(self):
         """Try creating and deleting a user.
 
         Requests should succeed.
         """
-        self.dbauth.user_create('charlie', 'foo')
+        self.dbauth.user_create('charlie', 'foo', False)
         self.dbauth.user_delete('charlie')
 
     def test_delete_missing_user(self):
@@ -188,7 +188,7 @@ class TestUserCreateDelete(DBAuthTestCase):
 
     def test_delete_user_twice(self):
         """Test that deleting a user twice raises not found."""
-        self.dbauth.user_create('charlie', 'foo')
+        self.dbauth.user_create('charlie', 'foo', False)
         self.dbauth.user_delete('charlie')
         with pytest.raises(errors.NotFoundError):
             self.dbauth.user_delete('charlie')
