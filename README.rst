@@ -135,7 +135,7 @@ Other work that has involved HIL can be found on the Mass Open Cloud `papers pag
 Mass Open Cloud
 ===============
 
-This project is part of the larger `Massachusetts Open Cloud
+This project is part of the larger `Mass Open Cloud
 <https://massopen.cloud/>`_. For a description of the team and other
 information, see
 `<https://github.com/CCI-MOC/moc-public/blob/master/README.md>`_.
