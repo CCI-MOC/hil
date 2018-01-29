@@ -236,6 +236,7 @@ def version():
     """Check hil version"""
     sys.stdout.write("HIL version: %s\n" % VERSION)
 
+
 @cmd
 def serve(port):
     """Run a development api server. Don't use this in production."""
