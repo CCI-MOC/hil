@@ -61,7 +61,7 @@ user_projects = db.Table('user_projects',
                          db.Column('project_id', db.ForeignKey('project.id')))
 
 
-@rest_call('GET', '/auth/basic/user', schema=Schema({})
+@rest_call('GET', '/auth/basic/user', schema=Schema({}))
 def list_users():
     get_auth_backend().require_admin()
     users = db.session.query.all()
