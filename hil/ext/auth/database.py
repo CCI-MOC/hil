@@ -13,6 +13,7 @@ import logging
 from os.path import join, dirname
 from hil.migrations import paths
 from hil.model import BigIntegerType
+import json
 
 logger = ContextLogger(logging.getLogger(__name__), {})
 
@@ -58,6 +59,17 @@ class User(db.Model):
 user_projects = db.Table('user_projects',
                          db.Column('user_id', db.ForeignKey('user.id')),
                          db.Column('project_id', db.ForeignKey('project.id')))
+
+
+@rest_call('GET', '/auth/basic/user', schema=Schema({})
+def list_users():
+    get_auth_backend().require_admin()
+    users = db.session.query.all()
+    result = {}
+    for u in users:
+        user = {'is_admin': u.is_admin, 'id', u.id}
+        result[u.label] = user
+    return json.dumps(result, sort_keys=True)
 
 
 @rest_call('PUT', '/auth/basic/user/<user>', schema=Schema({

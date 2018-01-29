@@ -295,6 +295,14 @@ def serve_networks():
 
 
 @cmd
+def list_create():
+    """List all users"""
+    q = C.users.list()
+    for item in q.items():
+        sys.stdout.write('%s \t : %s\n' % (item[0], item[1]))
+
+
+@cmd
 def user_create(username, password, is_admin):
     """Create a user <username> with password <password>.
 
