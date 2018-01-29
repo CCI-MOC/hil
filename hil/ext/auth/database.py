@@ -67,7 +67,7 @@ def list_users():
     users = db.session.query.all()
     result = {}
     for u in users:
-        user = {'is_admin': u.is_admin, 'id', u.id}
+        user = {'is_admin': u.is_admin, 'id': u.id}
         result[u.label] = user
     return json.dumps(result, sort_keys=True)
 
