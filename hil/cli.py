@@ -234,8 +234,7 @@ def do_delete(url):
 @cmd
 def version():
     """Check hil version"""
-    sys.stdout.write(VERSION)
-
+    sys.stdout.write("HIL version: %s\n" % VERSION)
 
 @cmd
 def serve(port):
