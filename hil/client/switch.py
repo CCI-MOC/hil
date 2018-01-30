@@ -1,6 +1,7 @@
 """Client support for switch related api calls."""
 import json
 from hil.client.base import ClientBase
+from hil.client.base import check_reserved_chars
 
 
 class Switch(ClientBase):
@@ -24,15 +25,15 @@ class Switch(ClientBase):
 #       it with HIL.
         raise NotImplementedError
 
+    @check_reserved_chars('switch')
     def delete(self, switch):
         """Deletes the switch named <switch>."""
-        self.check_reserved('switch', switch)
         url = self.object_url('switch', switch)
         return self.check_response(self.httpClient.request("DELETE", url))
 
+    @check_reserved_chars('switch')
     def show(self, switch):
         """Shows attributes of <switch>. """
-        self.check_reserved('switch', switch)
         url = self.object_url('switch', switch)
         return self.check_response(self.httpClient.request("GET", url))
 
@@ -40,49 +41,42 @@ class Switch(ClientBase):
 class Port(ClientBase):
     """Port related operations. """
 
+    @check_reserved_chars('switch', 'port', slashes_ok=['port'])
     def register(self, switch, port):
         """Register a <port> with <switch>. """
-        self.check_reserved('switch', switch)
-        self.check_reserved('port', port, slashes_ok=True)
         url = self.object_url('switch', switch, 'port', port)
         return self.check_response(self.httpClient.request("PUT", url))
 
+    @check_reserved_chars('switch', 'port', slashes_ok=['port'])
     def delete(self, switch, port):
         """Deletes information of the <port> for <switch> """
-        self.check_reserved('switch', switch)
-        self.check_reserved('port', port, slashes_ok=True)
         url = self.object_url('switch', switch, 'port', port)
         return self.check_response(self.httpClient.request("DELETE", url))
 
+    @check_reserved_chars('switch', 'port', 'node', 'nic',
+                          slashes_ok=['port'])
     def connect_nic(self, switch, port, node, nic):
         """Connects <port> of <switch> to <nic> of <node>. """
-        self.check_reserved('switch', switch)
-        self.check_reserved('port', port, slashes_ok=True)
-        self.check_reserved('node', node)
-        self.check_reserved('nic', nic)
         url = self.object_url('switch', switch, 'port', port, 'connect_nic')
         payload = json.dumps({'node': node, 'nic': nic})
         return self.check_response(
                 self.httpClient.request("POST", url, data=payload)
                 )
 
+    @check_reserved_chars('switch', 'port', slashes_ok=['port'])
     def detach_nic(self, switch, port):
         """"Detaches <port> of <switch>. """
-        self.check_reserved('switch', switch)
-        self.check_reserved('port', port, slashes_ok=True)
         url = self.object_url('switch', switch, 'port', port, 'detach_nic')
         return self.check_response(self.httpClient.request("POST", url))
 
+    @check_reserved_chars('switch', 'port', slashes_ok=['port'])
     def show(self, switch, port):
         """Show what's connected to <port>"""
-        self.check_reserved('switch', switch)
-        self.check_reserved('port', port, slashes_ok=True)
         url = self.object_url('switch', switch, 'port', port)
         return self.check_response(self.httpClient.request("GET", url))
 
+    @check_reserved_chars('switch', 'port', slashes_ok=['port'])
     def port_revert(self, switch, port):
         """removes all vlans from a switch port"""
-        self.check_reserved('switch', switch)
-        self.check_reserved('port', port, slashes_ok=True)
         url = self.object_url('switch', switch, 'port', port, 'revert')
         return self.check_response(self.httpClient.request("POST", url))

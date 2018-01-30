@@ -5,6 +5,7 @@ username & password auth.
 """
 import json
 from hil.client.base import ClientBase
+from hil.client.base import check_reserved_chars
 
 
 class User(ClientBase):
@@ -12,7 +13,7 @@ class User(ClientBase):
 
     manipulate users related objects and relations.
     """
-
+    @check_reserved_chars('username')
     def create(self, username, password, is_admin):
         """Create a user <username> with password <password>.
 
@@ -20,7 +21,6 @@ class User(ClientBase):
         and determines whether a user is authorized for
         administrative privileges.
         """
-        self.check_reserved('username', username)
         url = self.object_url('/auth/basic/user', username)
 
         payload = json.dumps({
@@ -30,33 +30,33 @@ class User(ClientBase):
                 self.httpClient.request("PUT", url, data=payload)
                 )
 
+    @check_reserved_chars('username')
     def delete(self, username):
         """Deletes the user <username>. """
-        self.check_reserved('username', username)
         url = self.object_url('/auth/basic/user', username)
         return self.check_response(
                 self.httpClient.request("DELETE", url)
                 )
 
+    @check_reserved_chars('user', 'project')
     def add(self, user, project):
         """Adds <user> to a <project>. """
-        self.check_reserved('user', user)
         url = self.object_url('/auth/basic/user', user, 'add_project')
         payload = json.dumps({'project': project})
         return self.check_response(
                 self.httpClient.request("POST", url, data=payload)
                 )
 
+    @check_reserved_chars('user', 'project')
     def remove(self, user, project):
         """Removes all access of <user> to <project>. """
-        self.check_reserved('user', user)
-        self.check_reserved('project', project)
         url = self.object_url('/auth/basic/user', user, 'remove_project')
         payload = json.dumps({'project': project})
         return self.check_response(
                 self.httpClient.request("POST", url, data=payload)
                 )
 
+    @check_reserved_chars('username')
     def set_admin(self, username, is_admin):
         """Changes the admin status of <username>.
 
@@ -65,7 +65,6 @@ class User(ClientBase):
         administrative privileges.
         """
 
-        self.check_reserved('username', username)
         url = self.object_url('/auth/basic/user', username)
         payload = json.dumps({'is_admin': is_admin})
         return self.check_response(

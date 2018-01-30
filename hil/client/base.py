@@ -4,6 +4,7 @@ from urlparse import urljoin
 import json
 import re
 from hil.errors import BadArgumentError
+import inspect
 
 
 class FailedAPICallException(Exception):
@@ -72,17 +73,42 @@ class ClientBase(object):
         except ValueError:
             return response.content
 
-    def _find_reserved(self, string, slashes_ok=False):
-        """Returns a list of illegal characters in a string"""
-        if slashes_ok:
-            p = r"[^A-Za-z0-9 /$_.+!*'(),-]+"
-        else:
-            p = r"[^A-Za-z0-9 $_.+!*'(),-]+"
-        return list(x for l in re.findall(p, string) for x in l)
 
-    def check_reserved(self, obj_type, obj_string, slashes_ok=False):
-        """Check for illegal characters and report of their existence"""
-        bad_chars = self._find_reserved(obj_string, slashes_ok)
-        if bool(bad_chars):
-            error = obj_type + " may not contain: " + str(bad_chars)
-            raise BadArgumentError(error)
+def _find_reserved(string, slashes_ok=False):
+    """Returns a list of illegal characters in a string"""
+    if slashes_ok:
+        p = r"[^A-Za-z0-9 /$_.+!*'(),-]+"
+    else:
+        p = r"[^A-Za-z0-9 $_.+!*'(),-]+"
+    return list(x for l in re.findall(p, string) for x in l)
+
+
+def check_reserved(obj_type, obj_string, slashes_ok=False):
+    """Check for illegal characters and report of their existence"""
+    bad_chars = _find_reserved(obj_string, slashes_ok)
+    if bool(bad_chars):
+        error = obj_type + " may not contain: " + str(bad_chars)
+        raise BadArgumentError(error)
+
+
+def check_reserved_chars(*outer_args, **outer_kwargs):
+    """Wraps Client lib functions to check for illegal characters
+    and dynamically report the error by the offending argument(s)"""
+    def wrapper(f):
+        """Auxiliary wrapper for check_reserved_chars"""
+        argspec = inspect.getargspec(f)
+
+        def reserved_wrap(*args, **kwargs):
+            """Wrapper that is passed the arguments of the wrapped function"""
+            if 'slashes_ok' in outer_kwargs:
+                slashes_ok = outer_kwargs.get('slashes_ok')
+            else:
+                slashes_ok = []
+            for argname, argval in zip(outer_args, args[1:]):
+                if argname not in slashes_ok:
+                    check_reserved(argname, argval)
+                else:
+                    check_reserved(argname, argval, slashes_ok=True)
+            return f(*args, **kwargs)
+        return reserved_wrap
+    return wrapper
