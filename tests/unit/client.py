@@ -6,6 +6,7 @@ from hil.test_common import config_testsuite, config_merge, \
     fresh_database, fail_on_log_warnings, server_init
 from hil.model import db
 from hil import config, deferred
+from hil.errors import BadArgumentError
 
 import json
 import pytest
@@ -311,6 +312,10 @@ class Test_node:
                 u'name': u'node-07'
                 }
 
+    def test_show_node_reserved_chars(self):
+        with pytest.raises(BadArgumentError):
+            C.node.show('node-/%]07')
+
     def test_power_cycle(self):
         """(successful) to node_power_cycle"""
         assert C.node.power_cycle('node-07') is None
@@ -328,9 +333,17 @@ class Test_node:
         with pytest.raises(FailedAPICallException):
             C.node.power_cycle('node-07', 'wrong')
 
+    def test_power_cycle_reserved_chars(self):
+        with pytest.raises(BadArgumentError):
+            C.node.power_cycle('node-/%]07', False)
+
     def test_power_off(self):
         """(successful) to node_power_off"""
         assert C.node.power_off('node-07') is None
+
+    def test_power_off_reserved_chars(self):
+        with pytest.raises(BadArgumentError):
+            C.node.power_off('node-/%]07')
 
     def test_node_add_nic(self):
         """Test removing and then adding a nic."""
@@ -349,6 +362,10 @@ class Test_node:
         with pytest.raises(FailedAPICallException):
             C.node.add_nic('abcd', 'eth0', 'aa:bb:cc:dd:ee:ff')
 
+    def test_add_nic_reserved_chars(self):
+        with pytest.raises(BadArgumentError):
+            C.node.add_nic('node-/%]08', 'eth0', 'aa:bb:cc:dd:ee:ff')
+
     def test_remove_nic(self):
         """(successful) call to node_remove_nic"""
         assert C.node.remove_nic('node-08', 'eth0') is None
@@ -359,13 +376,25 @@ class Test_node:
         with pytest.raises(FailedAPICallException):
             C.node.remove_nic('node-08', 'eth0')
 
+    def test_remove_nic_reserved_chars(self):
+        with pytest.raises(BadArgumentError):
+            C.node.remove_nic('node-/%]08', 'eth0')
+
     def test_node_start_console(self):
         """(successful) call to node_start_console"""
         assert C.node.start_console('node-01') is None
 
+    def test_node_start_console_reserved_chars(self):
+        with pytest.raises(BadArgumentError):
+            C.node.start_console('node-/%]01')
+
     def test_node_stop_console(self):
         """(successful) call to node_stop_console"""
         assert C.node.stop_console('node-01') is None
+
+    def test_node_stop_console_reserved_chars(self):
+        with pytest.raises(BadArgumentError):
+            C.node.stop_console('node-/%]01')
 
     def test_node_connect_network(self):
         """(successful) call to node_connect_network"""
@@ -382,6 +411,11 @@ class Test_node:
             C.node.connect_network('node-02', 'eth0', 'net-04', 'vlan/native')
         deferred.apply_networking()
 
+    def test_node_connect_network_reserved_chars(self):
+        with pytest.raises(BadArgumentError):
+            C.node.connect_network('node-/%]01', 'eth0', 'net-01',
+                                   'vlan/native')
+
     def test_node_detach_network(self):
         """(successful) call to node_detach_network"""
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
@@ -397,6 +431,10 @@ class Test_node:
         deferred.apply_networking()
         with pytest.raises(FailedAPICallException):
             C.node.detach_network('node-04', 'eth0', 'net-04')
+
+    def test_node_detach_network_reserved_chars(self):
+        with pytest.raises(BadArgumentError):
+            C.node.detach_network('node-/%]04', 'eth0', 'net-04')
 
 
 class Test_project:
