@@ -63,10 +63,11 @@ user_projects = db.Table('user_projects',
 
 @rest_call('GET', '/auth/basic/user', schema=Schema({}))
 def list_users():
-    """List all users"""
+    """List all users with database authentication"""
     get_auth_backend().require_admin()
-    users = db.session.query.all()
+    users = User.query.all()
     result = {}
+    # How to handle the projects here?
     for u in users:
         user = {'is_admin': u.is_admin, 'id': u.id}
         result[u.label] = user

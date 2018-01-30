@@ -289,9 +289,12 @@ def serve_networks():
 
 
 @cmd
-def list_create():
-    """List all users"""
-    q = C.users.list()
+def list_user():
+    """List all users when the database authentication is active.
+
+    Admin priveledge required.
+    """
+    q = C.user.list()
     for item in q.items():
         sys.stdout.write('%s \t : %s\n' % (item[0], item[1]))
 
