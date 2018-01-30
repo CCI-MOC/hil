@@ -20,6 +20,7 @@ import logging
 import schema
 import os
 import ast
+import subprocess
 from commands import getstatusoutput
 
 from hil.model import db, Switch, BigIntegerType, SwitchSession
@@ -75,6 +76,10 @@ class Ovs(Switch, SwitchSession):
     @staticmethod
     def validate_port_name(port):
         """ This driver accepts any string as port name."""
+
+    def get_capabilities(self):
+        """Provides the features of this switch that HIL supports. """
+        return['Virtual_switch_for_development_Purpose_only']
 
     def str2list(self, a_string):
         """ Converts a string representation of list to list.
@@ -139,7 +144,7 @@ class Ovs(Switch, SwitchSession):
 
     def revert_port(self, port):
         """Resets the port to the factory default.
-        """
+
         payload = (
                 'ovs-vsctl del-port {port}; \
                         ovs-vsctl add-port {switch} {port}'.format(
@@ -147,6 +152,19 @@ class Ovs(Switch, SwitchSession):
                     ) + ' vlan_mode=native-untagged'
                 )
         return self._requestOVS(payload, OVS_RequestFailed)
+        """
+        payload = (
+                'sudo ovs-vsctl del-port {port}; \
+                        ovs-vsctl add-port {switch} {port}'.format(
+                    switch=self.hostname, port=port
+                    ) + ' vlan_mode=native-untagged'
+                )
+        result = getstatusoutput(payload)
+        if (result[0] != 0):
+            raise OVS_RequestFailed(result[1])
+        else:
+            return None
+
 
     def modify_port(self, port, channel, new_network):
         """ Changes vlan assignment to the port.
