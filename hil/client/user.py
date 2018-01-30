@@ -12,27 +12,22 @@ class User(ClientBase):
 
     manipulate users related objects and relations.
     """
-
     def list(self):
         """List all users"""
         url = self.object_Url('/auth/basic/user')
         return self.check_response(self.httpClient.request("GET", url))
 
-    def create(self, username, password, privilege):
+    def create(self, username, password, is_admin):
         """Create a user <username> with password <password>.
 
-        <privilege> may by either "admin" or "regular",
+        <is_admin> is a boolean,
         and determines whether a user is authorized for
         administrative privileges.
         """
         url = self.object_url('/auth/basic/user', username)
 
-        if privilege not in('admin', 'regular'):
-            raise ValueError(
-                "invalid privilege type: must be either  'admin' or 'regular'."
-                )
         payload = json.dumps({
-                'password': password, 'is_admin': privilege == 'admin',
+                'password': password, 'is_admin': is_admin,
                 })
         return self.check_response(
                 self.httpClient.request("PUT", url, data=payload)
