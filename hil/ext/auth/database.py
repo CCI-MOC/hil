@@ -63,6 +63,7 @@ user_projects = db.Table('user_projects',
 
 @rest_call('GET', '/auth/basic/user', schema=Schema({}))
 def list_users():
+    """List all users"""
     get_auth_backend().require_admin()
     users = db.session.query.all()
     result = {}
