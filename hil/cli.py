@@ -12,6 +12,8 @@ import urllib
 import schema
 import logging
 
+import pkg_resources
+
 from functools import wraps
 
 from hil.client.client import Client, RequestsHTTPClient, KeystoneHTTPClient
@@ -23,7 +25,7 @@ command_dict = {}
 usage_dict = {}
 MIN_PORT_NUMBER = 1
 MAX_PORT_NUMBER = 2**16 - 1
-
+VERSION = pkg_resources.require('hil')[0].version
 
 # An instance of HTTPClient, which will be used to make the request.
 http_client = None
@@ -213,6 +215,12 @@ def do_delete(url):
     check_status_code(http_client.request('DELETE', url))
 
 # DELETE UPTIL HERE once all calls have client library support.
+
+
+@cmd
+def version():
+    """Check hil version"""
+    sys.stdout.write("HIL version: %s\n" % VERSION)
 
 
 @cmd
