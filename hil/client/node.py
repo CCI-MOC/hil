@@ -43,6 +43,10 @@ class Node(ClientBase):
                 obminfo = {"type": obm_api + subtype, "host": args[0],
                            "user": args[1], "password": args[2]
                            }
+        else:
+            raise Exception('ERROR: subtype ' + subtype +
+                            ' requires exactly 3 arguments\n')
+
         url = self.object_url('node', node)
         payload = json.dumps({"obm": obminfo})
         return self.check_response(
