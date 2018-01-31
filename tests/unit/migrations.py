@@ -18,7 +18,7 @@ The general approach is as follows:
 import pytest
 from hil import api, model, server
 from hil.test_common import config_testsuite, config_merge, initial_db, \
-    fail_on_log_warnings
+    fail_on_log_warnings, uuid_pattern
 from hil.config import cfg, load_extensions
 from hil.model import db, init_db
 from hil.flaskapp import app
@@ -148,10 +148,14 @@ def create_bigint_db():
         db.session.add(model.NetworkAttachment(nic=nic1,
                                                network_id=1,
                                                channel='vlan/100'))
-        db.session.add(model.NetworkingAction(type='modify_port',
-                                              nic=nic1,
-                                              new_network=network1,
-                                              channel='vlan/100'))
+        db.session.add(model.NetworkingAction(
+            type='modify_port',
+            nic=nic1,
+            new_network=network1,
+            channel='vlan/100',
+            status='PENDING',
+            uuid='60bcb0f3-2ee0-4efa-b6ce-e81596c6386e'))
+
         jim = User(label='jim',
                    password='heyimjim',
                    is_admin=True)
@@ -381,9 +385,7 @@ def test_db_eq(filename, make_objects, extra_config):
         even if everything is working. This function censors the relevant
         parts of `string`, so that they don't cause the tests to fail.
         """
-        hex_re = r'[0-9a-f]'
-        uuid_re = hex_re * 8 + ('-' + hex_re * 4) * 3 + '-' + hex_re * 12
-        return re.sub(uuid_re, '<<UUID>>', string)
+        return re.sub(uuid_pattern, '<<UUID>>', string)
 
     differ = difflib.Differ()
     upgraded = censor_nondeterminism(pformat(upgraded)).split('\n')

@@ -17,6 +17,10 @@ import subprocess
 import sys
 import os.path
 import logging
+import re
+
+uuid_pattern = re.compile(
+            "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
 
 
 def server_init():

@@ -96,3 +96,11 @@ class IllegalStateError(APIError):
 
 class OBMError(ServerError):
     """An error occured communicating with the OBM for a node."""
+
+
+class SwitchError(ServerError):
+    """Exception thrown by a switch driver indicating failure to perform the
+    requested operation.
+
+    Switch drviers can subclass this to be more specific about the error.
+    """
