@@ -550,60 +550,7 @@ def switch_register(switch, subtype, *args):
     backend. Ideally, this should be taken care of in the driver itself or
     client library (work-in-progress) should manage it.
     """
-    switch_api = "http://schema.massopencloud.org/haas/v0/switches/"
-    if subtype == "nexus" or subtype == "delln3000":
-        if len(args) == 4:
-            switchinfo = {
-                "type": switch_api + subtype,
-                "hostname": args[0],
-                "username": args[1],
-                "password": args[2],
-                "dummy_vlan": args[3]}
-        else:
-            sys.stderr.write('ERROR: subtype ' + subtype +
-                             ' requires exactly 4 arguments\n'
-                             '<hostname> <username> <password>'
-                             '<dummy_vlan_no>\n')
-            return
-    elif subtype == "mock":
-        if len(args) == 3:
-            switchinfo = {"type": switch_api + subtype, "hostname": args[0],
-                          "username": args[1], "password": args[2]}
-        else:
-            sys.stderr.write('ERROR: subtype ' + subtype +
-                             ' requires exactly 3 arguments\n')
-            sys.stderr.write('<hostname> <username> <password>\n')
-            return
-    elif subtype == "powerconnect55xx":
-        if len(args) == 3:
-            switchinfo = {"type": switch_api + subtype, "hostname": args[0],
-                          "username": args[1], "password": args[2]}
-        else:
-            sys.stderr.write('ERROR: subtype ' + subtype +
-                             ' requires exactly 3 arguments\n'
-                             '<hostname> <username> <password>\n')
-            return
-    elif subtype == "brocade" or "dellnos9":
-        if len(args) == 4:
-            switchinfo = {"type": switch_api + subtype, "hostname": args[0],
-                          "username": args[1], "password": args[2],
-                          "interface_type": args[3]}
-        else:
-            sys.stderr.write('ERROR: subtype ' + subtype +
-                             ' requires exactly 4 arguments\n'
-                             '<hostname> <username> <password> '
-                             '<interface_type>\n'
-                             'NOTE: interface_type refers '
-                             'to the speed of the switchports\n '
-                             'ex. TenGigabitEthernet, FortyGigabitEthernet, '
-                             'etc.\n')
-            return
-    else:
-        sys.stderr.write('ERROR: Invalid subtype supplied\n')
-        return
-    url = object_url('switch', switch)
-    do_put(url, data=switchinfo)
-
+    C.switch.register(switch, subtype, *args)
 
 @cmd
 def switch_delete(switch):

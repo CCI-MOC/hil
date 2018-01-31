@@ -23,7 +23,57 @@ class Switch(ClientBase):
 #       of the switches HIL will control and has read the
 #       HIL documentation to use appropriate flags to register
 #       it with HIL.
-        raise NotImplementedError
+        switch_api = "http://schema.massopencloud.org/haas/v0/switches/"
+        if subtype == "nexus" or subtype == "delln3000":
+            if len(args) == 4:
+                switchinfo = {
+                    "type": switch_api + subtype,
+                    "hostname": args[0],
+                    "username": args[1],
+                    "password": args[2],
+                    "dummy_vlan": args[3]}
+            else:
+                raise Exception('ERROR: subtype ' + subtype +
+                             ' requires exactly 4 arguments\n' +
+                             '<hostname> <username> <password>' +
+                             '<dummy_vlan_no>')
+        elif subtype == "mock":
+            if len(args) == 3:
+                switchinfo = {"type": switch_api + subtype, "hostname": args[0],
+                              "username": args[1], "password": args[2]}
+            else:
+                raise Exception('ERROR: subtype ' + subtype +
+                                 ' requires exactly 3 arguments\n' +
+                                 ' <hostname> <username> <password>')
+        elif subtype == "powerconnect55xx":
+            if len(args) == 3:
+                switchinfo = {"type": switch_api + subtype, "hostname": args[0],
+                              "username": args[1], "password": args[2]}
+            else:
+                raise Exception('ERROR: subtype ' + subtype +
+                             ' requires exactly 3 arguments\n' +
+                             ' <hostname> <username> <password>')
+        elif subtype == "brocade" or "dellnos9":
+            if len(args) == 4:
+                switchinfo = {"type": switch_api + subtype, "hostname": args[0],
+                              "username": args[1], "password": args[2],
+                              "interface_type": args[3]}
+            else:
+                raise Exception('ERROR: subtype ' + subtype +
+                             ' requires exactly 4 arguments\n' +
+                             '<hostname> <username> <password> ' +
+                             '<interface_type>' +
+                             'NOTE: interface_type refers ' +
+                             'to the speed of the switchports ' +
+                             'ex. TenGigabitEthernet, FortyGigabitEthernet, ' +
+                             'etc.')
+        else:
+            raise Exception('ERROR: Invalid subtype supplied')
+        url = self.object_url('switch', switch)
+        payload = json.dumps(switchinfo)
+        return self.check_response(
+                self.httpClient.request("PUT", url, data=payload)
+                )
 
     @check_reserved_chars()
     def delete(self, switch):
