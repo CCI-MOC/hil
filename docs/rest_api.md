@@ -240,7 +240,7 @@ default channel, the VLAN drivers choose `vlan/native`.
 
 `GET /networks`
 
-List all networks or list all public networks.
+List all networks.
 
 Returns a JSON dictionary of dictionaries, where the exterior dictionary is indexed by
 the network name and the value of each key is another dictionary with keys corresponding
