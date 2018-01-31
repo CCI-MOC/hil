@@ -34,12 +34,10 @@ class Node(ClientBase):
         # obm_types = ["ipmi", "mock"]
         obm_api = "http://schema.massopencloud.org/haas/v0/obm/"
         ext_url = self.object_url('active_extensions')
-        ext_resp = self.check_response(self.httpClient.request("GET", ext_url))
-        obm_types = []
-        for resp in ext_resp:
-            if "hil.ext.obm" in resp:
-                obm_types.append(resp.split(".")[-1])
-
+        # This is a temp fix. obmd will let node_register no longer
+        # need a type so a new design will be required.
+        obm_types = ["ipmi", "mock"]
+        
         if subtype in obm_types:
             if len(args) == 3:
                 obminfo = {"type": obm_api + subtype, "host": args[0],
