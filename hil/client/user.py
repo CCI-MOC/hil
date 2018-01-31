@@ -14,7 +14,7 @@ class User(ClientBase):
     """
     def list(self):
         """List all users"""
-        url = self.object_Url('/auth/basic/user')
+        url = self.object_url('/auth/basic/user')
         return self.check_response(self.httpClient.request("GET", url))
 
     def create(self, username, password, is_admin):

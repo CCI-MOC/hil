@@ -8,6 +8,7 @@ from hil.rest import init_auth, local
 import flask
 import pytest
 import unittest
+import json
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 server_init = pytest.fixture(server_init)
@@ -156,16 +157,17 @@ def use_fixtures(auth_fixture):
 
 @use_fixtures('admin_auth')
 class TestListUsers(DBAuthTestCase):
-
+    """ Test for list_users."""
     def setUp(self):
         from hil.ext.auth import database as dbauth
         self.dbauth = dbauth
 
     def test_list_users(self):
+        """Listing all users with database authentication"""
         result = json.loads(self.dbauth.list_users())
         assert result == {
             u'alice': {u'is_admin': True, u'projects': [u'runway']},
-            u'bob' : {u'is_admin': False, u'projects': []},
+            u'bob': {u'is_admin': False, u'projects': []},
             }
 
 
