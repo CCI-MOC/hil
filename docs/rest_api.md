@@ -246,13 +246,16 @@ Returns a JSON dictionary of dictionaries, where the exterior dictionary is inde
 the network name and the value of each key is another dictionary with keys corresponding
 to that network's id and projects
 
+Response contains all networks if having the administrative access. Otherwise, response
+only contains all public networks.
+
 The response must contain the following fields:
 
 * "network", the name of a network
 * "network_id", the id of the network
 * "projects", a list of projects with access to the network or 'None' if network is public
 
-Example Response by an admin user:
+Example Response for an admin user:
 
     {
         "netA": {
@@ -265,7 +268,7 @@ Example Response by an admin user:
         }
     }
 
-Example Response by a regular user:
+Example Response for a regular user:
 
     {
         "netA": {
