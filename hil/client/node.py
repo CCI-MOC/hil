@@ -33,17 +33,15 @@ class Node(ClientBase):
         # obm_api = "http://schema.massopencloud.org/haas/v0/obm/"
         # obm_types = ["ipmi", "mock"]
         obm_api = "http://schema.massopencloud.org/haas/v0/obm/"
-        ext_url = self.object_url('active_extensions')
         # This is a temp fix. obmd will let node_register no longer
         # need a type so a new design will be required.
         obm_types = ["ipmi", "mock"]
-        
         if subtype in obm_types:
             try:
                 obminfo = {"type": obm_api + subtype, "host": args[0],
                            "user": args[1], "password": args[2]
                            }
-            except:
+            except Exception:
                 raise Exception('ERROR: subtype ' + subtype +
                                 ' requires exactly 3 arguments')
 
