@@ -39,13 +39,13 @@ class Node(ClientBase):
         obm_types = ["ipmi", "mock"]
         
         if subtype in obm_types:
-            if len(args) == 3:
+            try:
                 obminfo = {"type": obm_api + subtype, "host": args[0],
                            "user": args[1], "password": args[2]
                            }
-        else:
-            raise Exception('ERROR: subtype ' + subtype +
-                            ' requires exactly 3 arguments\n')
+            except:
+                raise Exception('ERROR: subtype ' + subtype +
+                                ' requires exactly 3 arguments')
 
         url = self.object_url('node', node)
         payload = json.dumps({"obm": obminfo})
