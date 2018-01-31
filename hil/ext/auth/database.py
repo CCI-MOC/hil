@@ -67,10 +67,11 @@ def list_users():
     get_auth_backend().require_admin()
     users = User.query.all()
     result = {}
-    # How to handle the projects here?
     for u in users:
-        user = {'is_admin': u.is_admin, 'id': u.id}
+        user = {'is_admin': u.is_admin, 
+                'projects': sorted(p.label for p in user.projects)}
         result[u.label] = user
+    
     return json.dumps(result, sort_keys=True)
 
 
