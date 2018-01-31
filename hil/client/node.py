@@ -117,3 +117,8 @@ class Node(ClientBase):
         """Stop logging console output from <node> and delete the log"""
         url = self.object_url('node', node, 'console')
         return self.check_response(self.httpClient.request('DELETE', url))
+
+    def show_networking_action(self, status_id):
+        """Returns the status of the networking action"""
+        url = self.object_url('networking_action', status_id)
+        return self.check_response(self.httpClient.request('GET', url))

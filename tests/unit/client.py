@@ -3,7 +3,7 @@ from hil.flaskapp import app
 from hil.client.base import ClientBase, FailedAPICallException
 from hil.client.client import Client, HTTPClient, HTTPResponse
 from hil.test_common import config_testsuite, config_merge, \
-    fresh_database, fail_on_log_warnings, server_init
+    fresh_database, fail_on_log_warnings, server_init, uuid_pattern
 from hil.model import db
 from hil import config, deferred
 
@@ -369,9 +369,12 @@ class Test_node:
 
     def test_node_connect_network(self):
         """(successful) call to node_connect_network"""
-        assert C.node.connect_network(
+        response = C.node.connect_network(
                 'node-01', 'eth0', 'net-01', 'vlan/native'
-                ) is None
+                )
+
+        # check that the reponse contains a valid UUID.
+        assert uuid_pattern.match(response['status_id'])
         deferred.apply_networking()
 
     def test_node_connect_network_error(self):
@@ -386,7 +389,8 @@ class Test_node:
         """(successful) call to node_detach_network"""
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
         deferred.apply_networking()
-        assert C.node.detach_network('node-04', 'eth0', 'net-04') is None
+        response = C.node.detach_network('node-04', 'eth0', 'net-04')
+        assert uuid_pattern.match(response['status_id'])
         deferred.apply_networking()
 
     def test_node_detach_network_error(self):
@@ -575,7 +579,8 @@ class Test_port:
                 'node': 'node-01',
                 'nic': 'eth0',
                 'networks': {'vlan/native': 'net-01'}}
-        assert C.port.port_revert('mock-01', 'gi1/0/1') is None
+        response = C.port.port_revert('mock-01', 'gi1/0/1')
+        assert uuid_pattern.match(response['status_id'])
         deferred.apply_networking()
         assert C.port.show('mock-01', 'gi1/0/1') == {
                 'node': 'node-01',
@@ -752,3 +757,31 @@ class Test_extensions:
                     "hil.ext.switches.mock",
                     "hil.ext.switches.nexus",
                 ]
+
+
+class TestShowNetworkingAction:
+    """Test calls to show networking action method"""
+
+    def test_show_networking_action(self):
+        """(successful) call to show_networking_action"""
+        response = C.node.connect_network(
+                'node-01', 'eth0', 'net-01', 'vlan/native'
+                )
+        status_id = response['status_id']
+
+        response = C.node.show_networking_action(status_id)
+        assert response == {'status': 'PENDING',
+                            'node': 'node-01',
+                            'nic': 'eth0',
+                            'type': 'modify_port',
+                            'channel': 'vlan/native',
+                            'new_network': 'net-01'}
+
+        deferred.apply_networking()
+        response = C.node.show_networking_action(status_id)
+        assert response['status'] == 'DONE'
+
+    def test_show_networking_action_fail(self):
+        """(unsuccessful) call to show_networking_action"""
+        with pytest.raises(FailedAPICallException):
+            C.node.show_networking_action('non-existent-entry')
