@@ -297,7 +297,7 @@ class Test_node:
 
     def test_node_register(self):
         """(successful) to node_register"""
-        assert C.node.register("dummy-node-01", "mock", 
+        assert C.node.register("dummy-node-01", "mock",
                 "dummy", "dummy", "dummy") is None
 
     def test_show_node(self):
