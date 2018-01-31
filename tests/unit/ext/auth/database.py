@@ -155,6 +155,21 @@ def use_fixtures(auth_fixture):
 
 
 @use_fixtures('admin_auth')
+class TestListUsers(DBAuthTestCase):
+
+    def setUp(self):
+        from hil.ext.auth import database as dbauth
+        self.dbauth = dbauth
+
+    def test_list_users(self):
+        result = json.loads(self.dbauth.list_users())
+        assert result == {
+            u'alice': {u'is_admin': True, u'projects': [u'runway']},
+            u'bob' : {u'is_admin': False, u'projects': []},
+            }
+
+
+@use_fixtures('admin_auth')
 class TestUserCreateDelete(DBAuthTestCase):
     """Tests for user_create and user_delete."""
 
