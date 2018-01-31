@@ -295,6 +295,11 @@ class Test_node:
                 u'node-06', u'node-07', u'node-08', u'node-09'
                 ]
 
+    def test_node_register(self):
+        """(successful) to node_register"""
+        assert C.node.register("dummy-node-01", "mock", 
+                "dummy", "dummy", "dummy") is None
+
     def test_show_node(self):
         """(successful) to show_node"""
         assert C.node.show('node-07') == {
