@@ -1226,6 +1226,22 @@ configurations.
 
 ### The `hil.ext.auth.database` auth backend
 
+#### list_user
+
+`PUT /auth/basic/user`
+
+Return a list of all users in HIL
+
+Response body:
+
+    {
+        'hil_user': {'is_admin': True, 'projects': ["runway"]}
+    }
+
+Authorization requirements:
+
+Administrative access.
+
 #### user_create
 
 `PUT /auth/basic/user/<username>`
