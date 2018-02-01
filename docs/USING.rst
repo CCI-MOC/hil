@@ -94,7 +94,7 @@ cli call
 
 ::
 
-       hil switch_register mockswitch02 mock switchhost01 switchuser01 password1234
+    $ hil switch_register mockswitch02 mock switchhost01 switchuser01 password1234
 
 2) Registering a Node which uses IPMI for out of band management
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -111,19 +111,62 @@ For nodes using IPMI use the following api call:
 
 ::
 
-   curl -X PUT http://127.0.0.1:5001/node/dummyNode01 -d '
-   > {"obm": { "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-   > "host": "ipmiHost4node-01",
-   > "user": "ipmiUser4node-01",
-   > "password": "ipmiPass4node-01"
-   > }}'
+     curl -X PUT http://127.0.0.1:5001/node/dummyNode01 -d '
+     > {"obm": { "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+     > "host": "ipmiHost4node-01",
+     > "user": "ipmiUser4node-01",
+     > "password": "ipmiPass4node-01"
+     > }}'
 
 Corresponding cli calls will be as follows:
 
 
 ::
 
-        hil node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01
+     $ hil node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01
 
+3) Creating a Project in HIL
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+Eg> Project name mockproject01
+    
+api call
+
+:: 
+
+    curl -X put http://127.0.0.1:5000/project/mockproject01
+
+cli call
+
+::
+
+    $ hil project_create mockproject01
+
+4) Register a node in HIL
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+Eg> Node name mocknode01
+    Node type: mock
+    Host name: mockhost01 
+    User name: nodeuser01
+    Password: password1234
+
+api call
+
+::
+
+    curl -X put http://127.0.0.1:5000/node/mocknode01 -d '
+    > {"type": "http://schema.massopencloud.org/haas/v0/nodes/mock",
+    > "hostname": "mockhost01",
+    > "username": "nodeuser01",
+    > "password": "password1234"}' 
+
+cli call
+
+::
+
+    $ hil node_register mocknode01 mock mockhost01 nodeuser01 password1234 
 
 
