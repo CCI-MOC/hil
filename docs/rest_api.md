@@ -246,7 +246,7 @@ Returns a JSON dictionary of dictionaries, where the exterior dictionary is inde
 the network name and the value of each key is another dictionary with keys corresponding
 to that network's id and projects
 
-Response contains all networks if having the administrative access. Otherwise, response
+Response contains all networks if the user is an admin. Otherwise, response
 only contains all public networks.
 
 The response must contain the following fields:
