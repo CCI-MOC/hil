@@ -1,7 +1,11 @@
 ### HIL Python Client API
-#### How to get started?
+#### How to Install HIL Modules?
 ```
-import requests
+pip install git+https://github.com/cci-moc/hil
+```
+
+#### How to Get Started?
+```
 import os
 from hil.client.client import Client, RequestsHTTPClient
 
@@ -15,3 +19,6 @@ C = Client(ep, http_client)
 print C.project.create("test-project")
 
 ```
+
+#### More Examples.
+[leasing script](https://github.com/CCI-MOC/hil/blob/master/examples/leasing/node_release_script.py)
