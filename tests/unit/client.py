@@ -588,7 +588,8 @@ class Test_user:
 
     def test_list_users(self):
         """Test for getting list of user"""
-        assert C.user.list() == {}
+        assert C.user.list() == {u'hil_user':
+                                {u'is_admin': True, u'projects': []}}
 
     def test_user_create(self):
         """ Test user creation. """
