@@ -69,7 +69,7 @@ def list_users():
     result = {}
     for u in users:
         user = {'is_admin': u.is_admin,
-                'projects': sorted(p.label for p in user.projects)}
+                'projects': sorted(p.label for p in u.projects)}
         result[u.label] = user
     return json.dumps(result, sort_keys=True)
 
