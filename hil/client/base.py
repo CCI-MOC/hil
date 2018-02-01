@@ -4,7 +4,6 @@ from urlparse import urljoin
 import json
 import re
 from hil.errors import BadArgumentError
-import inspect
 
 
 class FailedAPICallException(Exception):
@@ -69,7 +68,7 @@ class ClientBase(object):
                 error_type=e['type'],
                 message=e['msg'],
             )
-        # Catching 404's that do not return JSON
+        # Catching responses that do not return JSON
         except ValueError:
             return response.content
 
@@ -96,7 +95,6 @@ def check_reserved_chars(*outer_args, **outer_kwargs):
     and dynamically report the error by the offending argument(s)"""
     def wrapper(f):
         """Auxiliary wrapper for check_reserved_chars"""
-        argspec = inspect.getargspec(f)
 
         def reserved_wrap(*args, **kwargs):
             """Wrapper that is passed the arguments of the wrapped function"""
