@@ -165,7 +165,7 @@ api call
     > {"type": "http://schema.massopencloud.org/haas/v0/nodes/mock",
     > "hostname": "mockhost01",
     > "username": "nodeuser01",
-    > "password": "password1234"}' 
+    > "password": "password1234"}'
 
 cli call
 
