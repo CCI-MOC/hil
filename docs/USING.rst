@@ -149,7 +149,7 @@ cli call
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-Eg> Node name mocknode01
+Eg> Node name: mocknode01
     Node type: mock
     Host name: mockhost01
     User name: nodeuser01
@@ -174,4 +174,31 @@ cli call
 
     $ hil node_register mocknode01 mock mockhost01 nodeuser01 password1234
 
+4) Creating a Network in HIL
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+Eg> Network name: mocknetwork01
+    owner: admin
+    access: mockproject
+    net_id: 101
+
+api call
+
+
+::
+
+
+    curl -X put http://127.0.0.1:5000/network/mocknetwork01 -d '
+        {"owner": "admin",
+        "access": "mockproject",
+        "net_id": "101"}'
+
+cli call
+
+
+::
+
+
+    $ hil network_create mocnetwork01 admin mockproject 101
 
