@@ -130,8 +130,9 @@ Corresponding cli calls will be as follows:
 
 
 Eg> Project name mockproject01
-    
+
 api call
+
 
 :: 
 
@@ -141,6 +142,7 @@ cli call
 
 ::
 
+
     $ hil project_create mockproject01
 
 4) Register a node in HIL
@@ -149,13 +151,15 @@ cli call
 
 Eg> Node name mocknode01
     Node type: mock
-    Host name: mockhost01 
+    Host name: mockhost01
     User name: nodeuser01
     Password: password1234
 
 api call
 
+
 ::
+
 
     curl -X put http://127.0.0.1:5000/node/mocknode01 -d '
     > {"type": "http://schema.massopencloud.org/haas/v0/nodes/mock",
@@ -165,8 +169,9 @@ api call
 
 cli call
 
+
 ::
 
-    $ hil node_register mocknode01 mock mockhost01 nodeuser01 password1234 
+    $ hil node_register mocknode01 mock mockhost01 nodeuser01 password1234
 
 
