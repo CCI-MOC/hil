@@ -1,6 +1,8 @@
 """Client support for node related api calls."""
 import json
 from hil.client.base import ClientBase
+from hil.errors import BadArgumentError
+from hil.errors import InactiveSubtypeError
 
 
 class Node(ClientBase):
@@ -32,18 +34,19 @@ class Node(ClientBase):
         # and currently active drivers for HIL
         # obm_api = "http://schema.massopencloud.org/haas/v0/obm/"
         # obm_types = ["ipmi", "mock"]
+        if (len(args) != 3):
+            raise BadArgumentError
+
         obm_api = "http://schema.massopencloud.org/haas/v0/obm/"
         # This is a temp fix. obmd will let node_register no longer
         # need a type so a new design will be required.
         obm_types = ["ipmi", "mock"]
         if subtype in obm_types:
-            try:
-                obminfo = {"type": obm_api + subtype, "host": args[0],
-                           "user": args[1], "password": args[2]
-                           }
-            except Exception:
-                raise Exception('ERROR: subtype ' + subtype +
-                                ' requires exactly 3 arguments')
+            obminfo = {"type": obm_api + subtype, "host": args[0],
+                       "user": args[1], "password": args[2]
+                       }
+        else:
+            raise InactiveSubtypeError
 
         url = self.object_url('node', node)
         payload = json.dumps({"obm": obminfo})
