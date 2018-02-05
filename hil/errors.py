@@ -64,7 +64,9 @@ class BadArgumentError(APIError):
 
 
 class InactiveSubtypeError(APIError):
-    """An exception indicating an invalid request of subtypes on the part of the user."""
+    """An exception indicating an invalid request of subtypes
+    on the part of the user.
+    """
 
 
 class ProjectMismatchError(APIError):
