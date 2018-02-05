@@ -1,21 +1,8 @@
-# Copyright 2013-2014 Massachusetts Open Cloud Contributors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the
-# License.  You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS
-# IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-# express or implied.  See the License for the specific language
-# governing permissions and limitations under the License.
-
 """Performs deferred networking actions."""
 
 from hil import model
 from hil.model import db
+from hil.errors import SwitchError
 import logging
 
 logger = logging.getLogger(__name__)
@@ -35,6 +22,7 @@ class DaemonSession(object):
 
     def handle_action(self, action):
         """apply the networking action ``action``."""
+
         if action.type not in model.NetworkingAction.legal_types:
             logger.warn('Illegal action type %r from server; ignoring.')
         elif not action.nic.port:
@@ -52,24 +40,36 @@ class DaemonSession(object):
         else:
             network_id = action.new_network.network_id
 
-        session.modify_port(action.nic.port.label,
-                            action.channel,
-                            network_id)
-        if action.new_network is None:
-            model.NetworkAttachment.query \
-                .filter_by(nic=action.nic, channel=action.channel)\
-                .delete()
-        else:
-            db.session.add(model.NetworkAttachment(
-                nic=action.nic,
-                network=action.new_network,
-                channel=action.channel))
+        try:
+            session.modify_port(action.nic.port.label,
+                                action.channel,
+                                network_id)
+            if action.new_network is None:
+                model.NetworkAttachment.query \
+                    .filter_by(nic=action.nic, channel=action.channel)\
+                    .delete()
+            else:
+                db.session.add(model.NetworkAttachment(
+                    nic=action.nic,
+                    network=action.new_network,
+                    channel=action.channel))
+            action.status = 'DONE'
+        except SwitchError:
+            action.status = 'ERROR'
+            logger.error('Modify port failed on port %s of switch %s',
+                         action.nic.port.label, action.nic.port.owner.label)
 
     def revert_port(self, action):
         """Apply a revert_port action."""
         session = self.get_session(action.nic.port.owner)
-        session.revert_port(action.nic.port.label)
-        model.NetworkAttachment.query.filter_by(nic=action.nic).delete()
+        try:
+            session.revert_port(action.nic.port.label)
+            model.NetworkAttachment.query.filter_by(nic=action.nic).delete()
+            action.status = 'DONE'
+        except SwitchError:
+            action.status = 'ERROR'
+            logger.error('Revert port failed on port %s of switch %s',
+                         action.nic.port.label, action.nic.port.owner.label)
 
     def get_session(self, switch):
         """Get a session for the switch.
@@ -107,7 +107,9 @@ def apply_networking():
     """
 
     action = model.NetworkingAction.query \
-        .order_by(model.NetworkingAction.id).first()
+        .order_by(model.NetworkingAction.id) \
+        .filter_by(status='PENDING').first()
+
     if action is None:
         db.session.commit()
         return False
@@ -115,11 +117,11 @@ def apply_networking():
     session = DaemonSession()
     while action is not None:
         session.handle_action(action)
-        db.session.delete(action)
         db.session.commit()
         # Get the next action
         action = model.NetworkingAction.query \
-            .order_by(model.NetworkingAction.id).first()
+            .order_by(model.NetworkingAction.id)\
+            .filter_by(status='PENDING').first()
 
     # the last statement in the while loop opens a new db session that we must
     # close when we exit the loop.

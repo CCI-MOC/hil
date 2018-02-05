@@ -1,16 +1,3 @@
-# Copyright 2013-2015 Massachusetts Open Cloud Contributors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the
-# License.  You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS
-# IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-# express or implied.  See the License for the specific language
-# governing permissions and limitations under the License.
 """Core database logic for HIL
 
 This module defines a number of built-in database objects used by HIL.
@@ -109,6 +96,14 @@ class Node(db.Model):
                           backref="node",
                           single_parent=True,
                           cascade='all, delete-orphan')
+
+    # obmd endpoint & token for this node. This is currently unused; it
+    # is part of a staged migration. See:
+    #
+    # https://github.com/CCI-MOC/hil/issues/928#issuecomment-356443778
+    obmd_uri = db.Column(db.String, nullable=True)
+    obmd_admin_token = db.Column(db.String, nullable=True)
+    obmd_node_token = db.Column(db.String, nullable=True)
 
 
 class Project(db.Model):
@@ -586,6 +581,13 @@ class NetworkingAction(db.Model):
     legal_types = ('modify_port', 'revert_port')
 
     id = db.Column(BigIntegerType, primary_key=True)
+
+    # UUID of a networking action. Useful for querying the status of a
+    # networking action.
+    uuid = db.Column(db.String, nullable=False, index=True)
+
+    # status of the operation; it can either be 'PENDING', 'DONE' or 'ERROR'
+    status = db.Column(db.String, nullable=False)
 
     # The type of action.
     #

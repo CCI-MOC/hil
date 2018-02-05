@@ -76,7 +76,7 @@ def user_create(user, password, is_admin=False):
     # hil.api:
     api._assert_absent(User, user)
 
-    user = User(user, password, is_admin=is_admin)
+    user = User(user, password, is_admin)
     db.session.add(user)
     db.session.commit()
 

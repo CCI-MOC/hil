@@ -1,23 +1,10 @@
-# 2013-2014 Massachusetts Open Cloud Contributors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the
-# License.  You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS
-# IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-# express or implied.  See the License for the specific language
-# governing permissions and limitations under the License.
-
 """This module provides the HIL service's public API.
 
 TODO: Spec out and document what sanitization is required.
 """
 import json
 import requests
+import uuid
 
 from schema import Schema, Optional
 
@@ -130,7 +117,8 @@ def project_detach_node(project, node):
     if num_attachments != 0:
         raise errors.BlockedError("Node attached to a network")
     for nic in node.nics:
-        if nic.current_action is not None:
+        if nic.current_action is not None and \
+           nic.current_action.status == 'PENDING':
             raise errors.BlockedError("Node has pending network actions")
 
     node.obm.stop_console()
@@ -385,9 +373,7 @@ def node_connect_network(node, nic, network, channel=None):
     if nic.port is None:
         raise errors.NotFoundError("No port is connected to given nic.")
 
-    if nic.current_action:
-        raise errors.BlockedError(
-            "A networking operation is already active on the nic.")
+    check_pending_action(nic)
 
     if (network.access) and (project not in network.access):
         raise errors.ProjectMismatchError(
@@ -410,12 +396,15 @@ def node_connect_network(node, nic, network, channel=None):
     switch = nic.port.owner
     switch.ensure_legal_operation(nic, 'connect', channel)
 
+    unique_id = str(uuid.uuid4())
     db.session.add(model.NetworkingAction(type='modify_port',
                                           nic=nic,
                                           new_network=network,
-                                          channel=channel))
+                                          channel=channel,
+                                          uuid=unique_id,
+                                          status='PENDING'))
     db.session.commit()
-    return '', 202
+    return json.dumps({'status_id': unique_id}), 202
 
 
 @rest_call('POST', '/node/<node>/nic/<nic>/detach_network', Schema({
@@ -440,9 +429,8 @@ def node_detach_network(node, nic, network):
         raise errors.ProjectMismatchError("Node not in project")
     auth_backend.require_project_access(node.project)
 
-    if nic.current_action:
-        raise errors.BlockedError(
-            "A networking operation is already active on the nic.")
+    check_pending_action(nic)
+
     attachment = model.NetworkAttachment.query \
         .filter_by(nic=nic, network=network).one_or_none()
     if attachment is None:
@@ -452,12 +440,16 @@ def node_detach_network(node, nic, network):
     switch = nic.port.owner
     switch.ensure_legal_operation(nic, 'detach', attachment.channel)
 
+    unique_id = str(uuid.uuid4())
     db.session.add(model.NetworkingAction(type='modify_port',
                                           nic=nic,
                                           channel=attachment.channel,
+                                          uuid=unique_id,
+                                          status='PENDING',
                                           new_network=None))
+
     db.session.commit()
-    return '', 202
+    return json.dumps({'status_id': unique_id}), 202
 
 
 @rest_call('PUT', '/node/<node>/metadata/<label>', Schema({
@@ -1098,14 +1090,46 @@ def port_revert(switch, port):
 
     if port.nic is None:
         raise errors.NotFoundError(port.label + " not attached")
-    if port.nic.current_action:
-        raise errors.BlockedError("Port already has a pending action.")
+    check_pending_action(port.nic)
+    unique_id = str(uuid.uuid4())
 
-    db.session.add(model.NetworkingAction(type='revert_port',
-                                          nic=port.nic,
-                                          channel='',
-                                          new_network=None))
+    action = model.NetworkingAction(type='revert_port',
+                                    nic=port.nic,
+                                    channel='',
+                                    uuid=unique_id,
+                                    status='PENDING',
+                                    new_network=None)
+
+    db.session.add(action)
     db.session.commit()
+    return json.dumps({'status_id': unique_id})
+
+
+@rest_call('GET', '/networking_action/<status_id>', Schema({
+    'status_id': basestring}))
+def show_networking_action(status_id):
+    """Returns the status of the networking action by finding the status_id
+    in the networking actions table.
+    """
+    action = model.NetworkingAction.query.filter_by(uuid=status_id).first()
+    if action is None:
+        raise errors.NotFoundError('status_id not found')
+
+    project = action.nic.owner.project
+    get_auth_backend().require_project_access(project)
+
+    action_info = {'status': action.status,
+                   'node': action.nic.owner.label,
+                   'nic': action.nic.label,
+                   'type': action.type,
+                   'channel': action.channel}
+
+    if action.new_network is None:
+        action_info['new_network'] = None
+    else:
+        action_info['new_network'] = action.new_network.label
+
+    return json.dumps(action_info)
 
 
 @rest_call('GET', '/nodes/<is_free>', Schema({'is_free': basestring}))
@@ -1412,3 +1436,15 @@ def _maintain(project, node, node_label):
     if (not 200 <= response < 300):
         logger.warn('POST to maintenance service'
                     ' failed with response: %s', response.text)
+
+
+def check_pending_action(nic):
+    """Raises an error if the nic has a pending action
+    Otherwise deletes the completed action"""
+    if nic.current_action:
+        if nic.current_action.status == 'PENDING':
+            raise errors.BlockedError(
+                "A networking operation is already active on the nic.")
+        else:
+            db.session.delete(nic.current_action)
+    return
