@@ -39,7 +39,8 @@ class Switch(ClientBase):
                                 '<dummy_vlan_no>')
         elif subtype == "mock":
             if len(args) == 3:
-                switchinfo = {"type": switch_api + subtype, "hostname": args[0],
+                switchinfo = {"type": switch_api + subtype,
+                              "hostname": args[0],
                               "username": args[1], "password": args[2]}
             else:
                 raise Exception('ERROR: subtype ' + subtype +
@@ -47,7 +48,8 @@ class Switch(ClientBase):
                                 ' <hostname> <username> <password>')
         elif subtype == "powerconnect55xx":
             if len(args) == 3:
-                switchinfo = {"type": switch_api + subtype, "hostname": args[0],
+                switchinfo = {"type": switch_api + subtype,
+                              "hostname": args[0],
                               "username": args[1], "password": args[2]}
             else:
                 raise Exception('ERROR: subtype ' + subtype +
@@ -55,7 +57,8 @@ class Switch(ClientBase):
                                 ' <hostname> <username> <password>')
         elif subtype == "brocade" or "dellnos9":
             if len(args) == 4:
-                switchinfo = {"type": switch_api + subtype, "hostname": args[0],
+                switchinfo = {"type": switch_api + subtype,
+                              "hostname": args[0],
                               "username": args[1], "password": args[2],
                               "interface_type": args[3]}
             else:
@@ -65,7 +68,7 @@ class Switch(ClientBase):
                                 '<interface_type>' +
                                 'NOTE: interface_type refers ' +
                                 'to the speed of the switchports ' +
-                                'ex. TenGigabitEthernet, FortyGigabitEthernet, ' +
+                                'ex. TenGigabitEthernet, ' +
                                 'etc.')
         else:
             raise Exception('ERROR: Invalid subtype supplied')
