@@ -34,25 +34,25 @@ class Switch(ClientBase):
                     "dummy_vlan": args[3]}
             else:
                 raise Exception('ERROR: subtype ' + subtype +
-                             ' requires exactly 4 arguments\n' +
-                             '<hostname> <username> <password>' +
-                             '<dummy_vlan_no>')
+                                ' requires exactly 4 arguments\n' +
+                                '<hostname> <username> <password>' +
+                                '<dummy_vlan_no>')
         elif subtype == "mock":
             if len(args) == 3:
                 switchinfo = {"type": switch_api + subtype, "hostname": args[0],
                               "username": args[1], "password": args[2]}
             else:
                 raise Exception('ERROR: subtype ' + subtype +
-                                 ' requires exactly 3 arguments\n' +
-                                 ' <hostname> <username> <password>')
+                                ' requires exactly 3 arguments\n' +
+                                ' <hostname> <username> <password>')
         elif subtype == "powerconnect55xx":
             if len(args) == 3:
                 switchinfo = {"type": switch_api + subtype, "hostname": args[0],
                               "username": args[1], "password": args[2]}
             else:
                 raise Exception('ERROR: subtype ' + subtype +
-                             ' requires exactly 3 arguments\n' +
-                             ' <hostname> <username> <password>')
+                                ' requires exactly 3 arguments\n' +
+                                ' <hostname> <username> <password>')
         elif subtype == "brocade" or "dellnos9":
             if len(args) == 4:
                 switchinfo = {"type": switch_api + subtype, "hostname": args[0],
@@ -60,13 +60,13 @@ class Switch(ClientBase):
                               "interface_type": args[3]}
             else:
                 raise Exception('ERROR: subtype ' + subtype +
-                             ' requires exactly 4 arguments\n' +
-                             '<hostname> <username> <password> ' +
-                             '<interface_type>' +
-                             'NOTE: interface_type refers ' +
-                             'to the speed of the switchports ' +
-                             'ex. TenGigabitEthernet, FortyGigabitEthernet, ' +
-                             'etc.')
+                                ' requires exactly 4 arguments\n' +
+                                '<hostname> <username> <password> ' +
+                                '<interface_type>' +
+                                'NOTE: interface_type refers ' +
+                                'to the speed of the switchports ' +
+                                'ex. TenGigabitEthernet, FortyGigabitEthernet, ' +
+                                'etc.')
         else:
             raise Exception('ERROR: Invalid subtype supplied')
         url = self.object_url('switch', switch)

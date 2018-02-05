@@ -552,6 +552,7 @@ def switch_register(switch, subtype, *args):
     """
     C.switch.register(switch, subtype, *args)
 
+
 @cmd
 def switch_delete(switch):
     """Delete a <switch> """
