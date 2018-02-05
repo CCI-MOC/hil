@@ -153,17 +153,24 @@ class Ovs(Switch, SwitchSession):
                 )
         return self._requestOVS(payload, OVS_RequestFailed)
         """
-        payload = (
-                'sudo ovs-vsctl del-port {port}; \
-                        ovs-vsctl add-port {switch} {port}'.format(
+#        import pdb; pdb.set_trace();
+
+        import subprocess, shlex
+        command_line_1 = 'sudo ovs-vsctl del-port {port}'.format(port=port)
+        command_line_2 = 'sudo ovs-vsctl add-port {switch} {port}'.format(
                     switch=self.hostname, port=port
                     ) + ' vlan_mode=native-untagged'
-                )
-        result = getstatusoutput(payload)
-        if (result[0] != 0):
-            raise OVS_RequestFailed(result[1])
-        else:
-            return None
+        args_1 = shlex.split(command_line_1)
+        args_2 = shlex.split(command_line_2)
+
+        try:
+            subprocess.check_call(args_1)
+            subprocess.check_call(args_2)
+        except subprocess.CalledProcessError as e:
+            print 'Call failed for port {port}: {reason}'.format(
+                    port=port, reason=e
+                    )
+            
 
 
     def modify_port(self, port, channel, new_network):
