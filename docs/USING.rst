@@ -134,7 +134,7 @@ Eg> Project name mockproject01
 api call
 
 
-:: 
+::
 
     curl -X put http://127.0.0.1:5000/project/mockproject01
 
