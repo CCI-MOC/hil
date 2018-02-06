@@ -56,10 +56,6 @@ Copy the following lines in file ``hil_env``
 
         export HIL_USER=hil
 
-        export HIL_DB_ROLE=hil
-
-        export HIL_DB_PASSWORD=secret
-
         export HIL_ADMIN=hil
 
         export HIL_ADMIN_PASSWORD=secret
