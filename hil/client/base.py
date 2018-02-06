@@ -4,6 +4,7 @@ from urlparse import urljoin
 import json
 import re
 from hil.errors import BadArgumentError
+import inspect
 
 
 class FailedAPICallException(Exception):
@@ -79,7 +80,8 @@ def _find_reserved(string, slashes_ok=False):
         p = r"[^A-Za-z0-9 /$_.+!*'(),-]+"
     else:
         p = r"[^A-Za-z0-9 $_.+!*'(),-]+"
-    return list(x for l in re.findall(p, string) for x in l)
+    # return all unique chars that exist neither in p nor string
+    return list(set(x for l in re.findall(p, string) for x in l))
 
 
 def check_reserved(obj_type, obj_string, slashes_ok=False):
@@ -96,17 +98,17 @@ def check_reserved_chars(*outer_args, **outer_kwargs):
     def wrapper(f):
         """Auxiliary wrapper for check_reserved_chars"""
 
+        argspec = inspect.getargspec(f)
+
         def reserved_wrap(*args, **kwargs):
             """Wrapper that is passed the arguments of the wrapped function"""
-            if 'slashes_ok' in outer_kwargs:
-                slashes_ok = outer_kwargs.get('slashes_ok')
-            else:
-                slashes_ok = []
-            for argname, argval in zip(outer_args, args[1:]):
-                if argname not in slashes_ok:
-                    check_reserved(argname, argval)
-                else:
-                    check_reserved(argname, argval, slashes_ok=True)
+            dont_check = outer_kwargs.get('dont_check', [])
+            slashes_ok = outer_kwargs.get('slashes_ok', [])
+            # Looping begins at 1 to skip `self` argument
+            for argname, argval in zip(argspec.args[1:], args[1:]):
+                if argname not in dont_check:
+                    check_reserved(argname, argval,
+                                   slashes_ok=argname in slashes_ok)
             return f(*args, **kwargs)
         return reserved_wrap
     return wrapper
