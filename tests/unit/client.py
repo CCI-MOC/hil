@@ -1,6 +1,7 @@
 """Unit tests for client library"""
 from hil.flaskapp import app
 from hil.client.base import ClientBase, FailedAPICallException
+from hil.errors import BadArgumentError
 from hil.client.client import Client, HTTPClient, HTTPResponse
 from hil.test_common import config_testsuite, config_merge, \
     fresh_database, fail_on_log_warnings, server_init, uuid_pattern
@@ -296,9 +297,16 @@ class Test_node:
                 ]
 
     def test_node_register(self):
-        """(successful) to node_register"""
+        """(successful) to call node_register"""
         assert C.node.register("dummy-node-01", "mock",
                                "dummy", "dummy", "dummy") is None
+        with pytest.raises(BadArgumentError):
+            C.node.register("dummy-node-02", "mock",
+                            "dummy", "dummy")
+        with pytest.raises(BadArgumentError):
+            C.node.register("dummy-node-03", "mock",
+                            "dummy", "dummy", "dummy",
+                            "dummy")
 
     def test_show_node(self):
         """(successful) to show_node"""

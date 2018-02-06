@@ -35,7 +35,8 @@ class Node(ClientBase):
         # obm_api = "http://schema.massopencloud.org/haas/v0/obm/"
         # obm_types = ["ipmi", "mock"]
         if (len(args) != 3):
-            raise BadArgumentError
+            raise BadArgumentError("3 Arguments needed. Supplied " +
+                                   str(len(args)))
 
         obm_api = "http://schema.massopencloud.org/haas/v0/obm/"
         # This is a temp fix. obmd will let node_register no longer
