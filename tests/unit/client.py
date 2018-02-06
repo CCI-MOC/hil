@@ -297,7 +297,7 @@ class Test_node:
                 ]
 
     def test_node_register(self):
-        """(successful) to call node_register"""
+        """Test node_register"""
         assert C.node.register("dummy-node-01", "mock",
                                "dummy", "dummy", "dummy") is None
         with pytest.raises(BadArgumentError):
