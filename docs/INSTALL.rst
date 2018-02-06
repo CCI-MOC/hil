@@ -48,23 +48,23 @@ to
 SELINUX=permissive
 ```
 
-User need to choose appropriate values for their environment:
+User needs to choose appropriate values for their environment:
 -------------------------------------------------------------
 
 For simplicity we have provided default values:
 Copy the following lines in file ``hil_env``
 
-        HIL_USER=hil
+        export HIL_USER=hil
 
-        HIL_DB_ROLE=hil
+        export HIL_DB_ROLE=hil
 
-        HIL_DB_PASSWORD=secret
+        export HIL_DB_PASSWORD=secret
 
-        HIL_ADMIN=hil
+        export HIL_ADMIN=hil
 
-        HIL_ADMIN_PASSWORD=secret
+        export HIL_ADMIN_PASSWORD=secret
 
-        HIL_HOME_DIR=/var/lib/hil
+        export HIL_HOME_DIR=/var/lib/hil
 
 
 
@@ -87,7 +87,7 @@ The HIL software itself can then be installed as root by running::
     $ cd /root
     $ git clone https://github.com/CCI-MOC/hil
     $ cd hil
-    $ sudo python setup.py install
+    $ python setup.py install
 
 
 hil.cfg
