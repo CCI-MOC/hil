@@ -302,6 +302,10 @@ To get started you will need to:
 
 ```
 	yum install openvswitch #For fedora or Centos
+	# Following script will: 
+	# --enable the openvswitch service; 
+	# --Start the openvswitch server;
+	# --Show the status to the user. 
 	for i in enable start status
 	do service openvswitch $i; done
 	ovs-vsctl show
@@ -328,7 +332,7 @@ Optionally, a script is made available for reference at::
 
 	https://github.com/SahilTikale/HIL_contrib/blob/master/hilInYourLap/create_datacenter.sh
 
-**Warning**: Use the script at your own discreation.
+**Warning**: Use the script at your own discretion.
 
 
 
@@ -337,7 +341,7 @@ To register the driver with HIL, you will need the openvswitch bridge name,
 
 #### switch_register
 
-To register a openvswitch, the ``"type"`` field of the request body
+To register an openvswitch, the ``"type"`` field of the request body
 must have a value of::
 
         http://schema.massopencloud.org/haas/v0/switches/ovs

@@ -1,18 +1,4 @@
-# Copyright 2013-2017 Massachusetts Open Cloud Contributors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the
-# License.  You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS
-# IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-# express or implied.  See the License for the specific language
-# governing permissions and limitations under the License.
-"""A switch driver for OpenVswitch.
-"""
+"""A switch driver for OpenVswitch."""
 import re
 import logging
 import schema
@@ -35,7 +21,6 @@ logger = logging.getLogger(__name__)
 class Ovs(Switch, SwitchSession):
     """ Driver for openvswitch. """
     api_name = 'http://schema.massopencloud.org/haas/v0/switches/ovs'
-    dir_name = os.path.dirname(__file__)
     __mapper_args__ = {
         'polymorphic_identity': api_name,
     }
@@ -66,21 +51,34 @@ class Ovs(Switch, SwitchSession):
         """Provides the features of this switch that HIL supports. """
         return['Virtual_switch_for_development_Purpose_only']
 
-    def ovs_connect(self, command_string):
+    def ovs_connect(self, *command_strings):
         """Interacts with the Openvswitch.
 
         Args:
-            command_string (str) : shell commands required to make changes to
-                                   openvswitch
+            *command_strings (tuple) : tuple of shell commands required 
+                        to make changes to openvswitch
         Raises: SwitchError
         Returns: If successful returns None else logs error message
         """
-        args = shlex.split(command_string)
         try:
-            subprocess.check_call(args)
+            for command in command_strings:
+                arg_list = shlex.split(command)
+                subprocess.check_call(arg_list)
         except subprocess.CalledProcessError as e:
             logger.error('%s', e)
             raise SwitchError
+
+    def get_port_networks(self, port):
+        """ Provides networks connected to the given port.
+        Args:
+            port: Valid port name
+        Returns: List of vlans assigned to the port. 
+        """
+        (port,) = filter(lambda p: p.label == port, self.ports)
+        interface = port.label
+        port_info = self._interface_info(interface)
+        return port_info
+
 
     def revert_port(self, port):
         """Resets the port to the factory default.
@@ -89,26 +87,12 @@ class Ovs(Switch, SwitchSession):
 
         Returns: if successful returns None else error message.
         """
-        import pdb; pdb.set_trace()
-
         shell_cmd_1 = 'sudo ovs-vsctl del-port {port}'.format(port=port)
         shell_cmd_2 = 'sudo ovs-vsctl add-port {switch} {port}'.format(
                     switch=self.hostname, port=port
                     ) + ' vlan_mode=native-untagged'
-        args_1 = shlex.split(shell_cmd_1)
-        args_2 = shlex.split(shell_cmd_2)
-        try:
-            subprocess.check_call(args_1)
-            subprocess.check_call(args_2)
-        except subprocess.CalledProcessError as e:
-            logger.error('%s', e)
-            raise SwitchError
+        self.ovs_connect(shell_cmd_1, shell_cmd_2)
         
-#        retcode_1 = self.ovs_connect(shell_cmd_1)
-#        retcode_2 = self.ovs_connect(shell_cmd_2)
-#        if(retcode_1 is None and retcode_2 is None):
-#            return None
-
     def modify_port(self, port, channel, new_network):
         """ Changes vlan assignment to the port.
 
@@ -144,11 +128,12 @@ class Ovs(Switch, SwitchSession):
         """Converts a string representation of list to list.
         Args:
             a_string: list output recieved as string.
+                e.g. Strings starting with '[' and ending with ']'
         Returns: object of list type.
                  Empty list is put as None.
         """
-        if a_string[0] == '[' and a_string[1] == ']':
-            return None
+        if a_string == '[]':
+            return ast.literal_eval(a_string)
         else:
             a_string = a_string.replace("[", "['").replace("]", "']")
             a_string = a_string.replace(",", "','")
@@ -162,43 +147,69 @@ class Ovs(Switch, SwitchSession):
 
         Args:
             a_string: dictionary recieved as type string
+                eg. Strings starting with '{' and ending with '}'
         Returns: Object of dictionary type.
         """
-        if a_string[0] == '{' and a_string[1] == '}':
+        if a_string[0] == '{}':
             a_dict = ast.literal_eval(a_string)
             return a_dict
-        elif a_string[0] == '{' and len(a_string) > 2:
+        else:
             a_string = a_string.replace("{", "{'").replace("}", "'}")
             a_string = a_string.replace(":", "':'").replace(",", "','")
             a_dict = ast.literal_eval(a_string)
             a_dict = {k.strip(): v.strip() for k, v in a_dict.iteritems()}
             return a_dict
-        else:
-            return None
 
-        def _interface_info(self, port):
-            """Gets latest configuration of port from switch.
+    def _interface_info(self, port):
+        """Gets latest configuration of port from switch.
 
+        Args:
+            port: Valid port name
+        Returns: configuration status of the port
+        """
+        shell_cmd = "sudo ovs-vsctl list port {port}".format(port=port)
+        args = shlex.split(shell_cmd)
+        try:
+            output = subprocess.check_output(args)
+        except subprocess.CalledProcessError as e:
+            logger.error(" %s ", e)
+            raise SwitchError
+        output = output.split('\n')
+        output.remove('')
+        i_info = dict(s.split(':') for s in output)
+        i_info = {k.strip(): v.strip() for k, v in i_info.iteritems()}
+        # above statement removes extra white spaces from the keys and values.
+        # That is important since other calls will be querying this dictionary.
+        for x in i_info.keys():
+            if i_info[x][0] == "{":
+                i_info[x] = self._string_to_dict(i_info[x])
+            elif i_info[x][0] == "[":
+                i_info[x] = self._string_to_list(i_info[x])
+        return i_info
+    
+    def iiinterface_info(self, port): 
+        """Gets latest configuration of port from switch.
             Args:
                 port: Valid port name
-            Returns: configuration status of the port
-            """
-            shell_cmd = "sudo ovs-vsctl list port {port}".format(port=port)
-            args = shlex.split(shell_cmd)
-            try:
-                output = subprocess.check_output(args)
-            except subprocess.CalledProcessError as e:
-                logger.error(" %s ", e)
-                raise SwitchError
-            output = output.split('\n')
-            output.remove('')
-            i_info = dict(s.split(':') for s in output)
-            i_info = {k.strip(): v.strip() for k, v in i_info.iteritems()}
-            for x in i_info.keys():
-                if i_info[x][0] in ["{", "["]:
-                    i_info[x] = \
-                     self.str2list(i_info[x]) or self.str2dict(i_info[x])
-            return i_info
+                Returns: configuration status of the port
+        """
+        shell_cmd = "sudo ovs-vsctl list port {port}".format(port=port)
+        args = shlex.split(shell_cmd)
+        try:
+            output = subprocess.check_output(args)
+        except subprocess.CalledProcessError as e:
+            logger.error(" %s ", e)
+            raise SwitchError
+        output = output.split('\n')
+        output.remove('')
+        i_info = dict(s.split(':') for s in output)
+        i_info = {k.strip(): v.strip() for k, v in i_info.iteritems()}
+        for x in i_info.keys():
+            if i_info[x][0] == "{":
+                i_info[x] = self._string_to_dict(i_info[x])
+            elif i_info[x][0] == "[":
+                i_info[x] = self._string_to_list(i_info[x])
+        return i_info
 
     def _remove_native_vlan(self, port):
         """Removes native vlan from a trunked port.
@@ -232,6 +243,7 @@ class Ovs(Switch, SwitchSession):
 
     def _add_vlan_to_trunk(self, port, vlan_id):
         """ Adds vlans to a trunk port. """
+        import pdb; pdb.set_trace()
         port_info = self._interface_info(port)
 
         if port_info['trunks'] is None:
@@ -263,4 +275,7 @@ class Ovs(Switch, SwitchSession):
         """This driver accepts any string as a port name. """
 
     def session(self):
-        """ Super class requires that this method be implemented."""
+        return self
+
+    def disconnect(self):
+        return self
