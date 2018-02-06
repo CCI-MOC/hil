@@ -25,13 +25,13 @@ class Switch(ClientBase):
 #       it with HIL.
         raise NotImplementedError
 
-    @check_reserved_chars('switch')
+    @check_reserved_chars()
     def delete(self, switch):
         """Deletes the switch named <switch>."""
         url = self.object_url('switch', switch)
         return self.check_response(self.httpClient.request("DELETE", url))
 
-    @check_reserved_chars('switch')
+    @check_reserved_chars()
     def show(self, switch):
         """Shows attributes of <switch>. """
         url = self.object_url('switch', switch)
@@ -41,20 +41,19 @@ class Switch(ClientBase):
 class Port(ClientBase):
     """Port related operations. """
 
-    @check_reserved_chars('switch', 'port', slashes_ok=['port'])
+    @check_reserved_chars(slashes_ok=['port'])
     def register(self, switch, port):
         """Register a <port> with <switch>. """
         url = self.object_url('switch', switch, 'port', port)
         return self.check_response(self.httpClient.request("PUT", url))
 
-    @check_reserved_chars('switch', 'port', slashes_ok=['port'])
+    @check_reserved_chars(slashes_ok=['port'])
     def delete(self, switch, port):
         """Deletes information of the <port> for <switch> """
         url = self.object_url('switch', switch, 'port', port)
         return self.check_response(self.httpClient.request("DELETE", url))
 
-    @check_reserved_chars('switch', 'port', 'node', 'nic',
-                          slashes_ok=['port'])
+    @check_reserved_chars(slashes_ok=['port'])
     def connect_nic(self, switch, port, node, nic):
         """Connects <port> of <switch> to <nic> of <node>. """
         url = self.object_url('switch', switch, 'port', port, 'connect_nic')
@@ -63,19 +62,19 @@ class Port(ClientBase):
                 self.httpClient.request("POST", url, data=payload)
                 )
 
-    @check_reserved_chars('switch', 'port', slashes_ok=['port'])
+    @check_reserved_chars(slashes_ok=['port'])
     def detach_nic(self, switch, port):
         """"Detaches <port> of <switch>. """
         url = self.object_url('switch', switch, 'port', port, 'detach_nic')
         return self.check_response(self.httpClient.request("POST", url))
 
-    @check_reserved_chars('switch', 'port', slashes_ok=['port'])
+    @check_reserved_chars(slashes_ok=['port'])
     def show(self, switch, port):
         """Show what's connected to <port>"""
         url = self.object_url('switch', switch, 'port', port)
         return self.check_response(self.httpClient.request("GET", url))
 
-    @check_reserved_chars('switch', 'port', slashes_ok=['port'])
+    @check_reserved_chars(slashes_ok=['port'])
     def port_revert(self, switch, port):
         """removes all vlans from a switch port"""
         url = self.object_url('switch', switch, 'port', port, 'revert')
