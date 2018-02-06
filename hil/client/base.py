@@ -76,12 +76,12 @@ class ClientBase(object):
 
 def _find_reserved(string, slashes_ok=False):
     """Returns a list of illegal characters in a string"""
-    if slashes_ok:
-        p = r"[^A-Za-z0-9 /$_.+!*'(),-]+"
-    else:
-        p = r"[^A-Za-z0-9 $_.+!*'(),-]+"
-    # return all unique chars that exist neither in p nor string
-    return list(set(x for l in re.findall(p, string) for x in l))
+    p = r"[^A-Za-z0-9 /$_.+!*'(),-]"
+    result = re.findall(p, string)
+    if not slashes_ok and '/' in string:
+        result.append('/')
+    # return one of each illegal character in string
+    return list(set(result))
 
 
 def check_reserved(obj_type, obj_string, slashes_ok=False):
