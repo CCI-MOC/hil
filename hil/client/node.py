@@ -47,8 +47,7 @@ class Node(ClientBase):
                        "user": args[1], "password": args[2]
                        }
         else:
-            raise UnknownSubtypeError("Unknown subtype provided.
-                                      Please check your local settings")
+            raise UnknownSubtypeError("Unknown subtype provided.")
 
         url = self.object_url('node', node)
         payload = json.dumps({"obm": obminfo})

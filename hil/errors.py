@@ -63,7 +63,7 @@ class BadArgumentError(APIError):
     """An exception indicating an invalid request on the part of the user."""
 
 
-class InactiveSubtypeError(APIError):
+class UnknownSubtypeError(APIError):
     """An exception indicating an invalid request of subtypes
     on the part of the user.
     """
