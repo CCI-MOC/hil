@@ -2,7 +2,7 @@
 import json
 from hil.client.base import ClientBase
 from hil.errors import BadArgumentError
-from hil.errors import InactiveSubtypeError
+from hil.errors import UnknownSubtypeError
 
 
 class Node(ClientBase):
@@ -47,7 +47,8 @@ class Node(ClientBase):
                        "user": args[1], "password": args[2]
                        }
         else:
-            raise InactiveSubtypeError
+            raise UnknownSubtypeError("Unknown subtype provided.
+                                      Please check your local settings")
 
         url = self.object_url('node', node)
         payload = json.dumps({"obm": obminfo})
