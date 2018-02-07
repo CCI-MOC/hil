@@ -1,9 +1,8 @@
 """Helper commands for moving IPMI info from the database to obmd.
 
 This is part of our obmd migration strategy; see the discussion at:
-
-
 """
+
 import sys
 import json
 
@@ -26,6 +25,11 @@ class MigrateIpmiInfo(Command):
                help='Admin token for obmd'),
     )
 
+    # the correct arguments to this are a function of the available options;
+    # it's normal for subclasses to have implementations with different
+    # arguments.
+    #
+    # pylint: disable=arguments-differ
     def run(self, obmd_base_url, obmd_admin_token):
         server.init()
         with app.app_context():

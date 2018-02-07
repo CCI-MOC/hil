@@ -1,3 +1,5 @@
+"""Tests for the `hil-admin migrate-ipmi-info` command."""
+
 from subprocess import check_call, Popen
 import shutil
 import tempfile
@@ -17,6 +19,7 @@ OBMD_BASE_URL = 'http://localhost:8080'
 
 @pytest.fixture()
 def tmpdir():
+    """Create a temporary directory to store various files."""
     path = tempfile.mkdtemp()
     cwd = os.getcwd()
     os.chdir(path)
@@ -27,6 +30,12 @@ def tmpdir():
 
 @pytest.fixture()
 def configure(tmpdir):
+    """Set up HIL configuration.
+
+    This creates a hil.cfg in tmpdir, and loads it. The file needs to be
+    written out separately , since we invoke other commands that read it,
+    besides the test process.
+    """
     cfg = '\n'.join([
         "[extensions]",
         "hil.ext.network_allocators.null =",
@@ -51,6 +60,7 @@ fresh_database = pytest.fixture(fresh_database)
 
 @pytest.fixture()
 def run_obmd(tmpdir):
+    """Set up and start obmd."""
     check_call(['go', 'get', 'github.com/CCI-MOC/obmd'])
 
     config_file_path = tmpdir + '/obmd-config.json'
@@ -75,6 +85,11 @@ pytestmark = pytest.mark.usefixtures('configure',
 
 
 def test_obmd_migrate(tmpdir):
+    """The test proper.
+
+    Create some nodes, run the script, and verify that it has done the right
+    thing.
+    """
     from hil.ext.obm.ipmi import Ipmi
 
     # Add some objects to the hil database:
