@@ -64,13 +64,21 @@ def db_extract_ipmi_info():
     ipmi_api_name = 'http://schema.massopencloud.org/haas/v0/obm/ipmi'
 
     for obm in obms:
+        # XXX: apparently we've incorrectly specified the relationship between
+        # Obms and nodes, such that the node attribute returns a list, even
+        # though there can only ever be one node. If we were keeping pluggable
+        # obm support for longer, We'd just fix this, but since we're removing
+        # the functionality soon it's easier to just do this and not have to
+        # worry about what other code we might disturb:
+        node = obm.node[0]
+
         if obm.type != ipmi_api_name:
             sys.exit(("Node %s{label} has an obm of unspported "
                       "type %s{type}").format({
-                          'label': obm.owner.label,
+                          'label': node.label,
                           'type': obm.type,
                       }))
-        info[obm.owner.label] = {
+        info[node.label] = {
             'host': obm.host,
             'user': obm.user,
             'password': obm.password,
@@ -91,7 +99,8 @@ def obmd_upload_ipmi_info(obmd_base_url, obmd_admin_token, info):
     `obmd_admin_token` is the admin token to use when authenticating against
     obmd.
     """
-    sess = requests.Session(auth=('admin', obmd_admin_token))
+    sess = requests.Session()
+    sess.auth = ('admin', obmd_admin_token)
 
     for key, val in info.items():
         sess.put(obmd_base_url + '/node/' + key, data=json.dumps({
@@ -115,4 +124,4 @@ def db_add_obmd_info(obmd_base_url, obmd_admin_token):
     model.Node.query.update({'obmd_admin_token': obmd_admin_token})
     for node in model.Node.query.all():
         node.obmd_uri = obmd_base_url + '/node/' + node.label
-    model.db.commit()
+    model.db.session.commit()
