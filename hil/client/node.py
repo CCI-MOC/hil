@@ -1,6 +1,7 @@
 """Client support for node related api calls."""
 import json
 from hil.client.base import ClientBase
+from hil.client.base import check_reserved_chars
 
 
 class Node(ClientBase):
@@ -14,6 +15,7 @@ class Node(ClientBase):
         url = self.object_url('nodes', is_free)
         return self.check_response(self.httpClient.request('GET', url))
 
+    @check_reserved_chars()
     def show(self, node_name):
         """Shows attributes of a given node """
         url = self.object_url('node', node_name)
@@ -34,11 +36,13 @@ class Node(ClientBase):
         # obm_types = ["ipmi", "mock"]
         raise NotImplementedError
 
+    @check_reserved_chars()
     def delete(self, node_name):
         """Deletes the node from database. """
         url = self.object_url('node', node_name)
         return self.check_response(self.httpClient.request('DELETE', url))
 
+    @check_reserved_chars(dont_check=['force'])
     def power_cycle(self, node_name, force=False):
         """Power cycles the <node> """
         url = self.object_url('node', node_name, 'power_cycle')
@@ -47,11 +51,13 @@ class Node(ClientBase):
                 self.httpClient.request('POST', url, data=payload)
                 )
 
+    @check_reserved_chars()
     def power_off(self, node_name):
         """Power offs the <node> """
         url = self.object_url('node', node_name, 'power_off')
         return self.check_response(self.httpClient.request('POST', url))
 
+    @check_reserved_chars(dont_check=['macaddr'])
     def add_nic(self, node_name, nic_name, macaddr):
         """Add a <nic> to <node>"""
         url = self.object_url('node', node_name, 'nic', nic_name)
@@ -60,11 +66,13 @@ class Node(ClientBase):
                 self.httpClient.request('PUT', url, data=payload)
                 )
 
+    @check_reserved_chars()
     def remove_nic(self, node_name, nic_name):
         """Remove a <nic> from <node>"""
         url = self.object_url('node', node_name, 'nic', nic_name)
         return self.check_response(self.httpClient.request('DELETE', url))
 
+    @check_reserved_chars(slashes_ok=['channel'])
     def connect_network(self, node, nic, network, channel):
         """Connect <node> to <network> on given <nic> and <channel>"""
         url = self.object_url(
@@ -77,6 +85,7 @@ class Node(ClientBase):
                 self.httpClient.request('POST', url, data=payload)
                 )
 
+    @check_reserved_chars()
     def detach_network(self, node, nic, network):
         """Disconnect <node> from <network> on the given <nic>. """
         url = self.object_url(
@@ -91,11 +100,13 @@ class Node(ClientBase):
         """Display console log for <node> """
         raise NotImplementedError
 
+    @check_reserved_chars()
     def start_console(self, node):
         """Start logging console output from <node> """
         url = self.object_url('node', node, 'console')
         return self.check_response(self.httpClient.request('PUT', url))
 
+    @check_reserved_chars()
     def stop_console(self, node):
         """Stop logging console output from <node> and delete the log"""
         url = self.object_url('node', node, 'console')
