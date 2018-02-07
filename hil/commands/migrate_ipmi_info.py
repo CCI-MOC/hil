@@ -1,7 +1,8 @@
-"""Helper command for extracting IPMI info from the database.
+"""Helper commands for moving IPMI info from the database to obmd.
 
-This is part of our obmd migration strategy; the idea is that this
-information is then uploaded to obmd.
+This is part of our obmd migration strategy; see the discussion at:
+
+
 """
 import sys
 import json
@@ -36,7 +37,7 @@ class MigrateIpmiInfo(Command):
 def db_extract_ipmi_info():
     """Extract all nodes' ipmi connection info from the database.
 
-    This prints a json object of the form:
+    This returns an dictionary of the form:
 
         {
             "node-23": {
@@ -51,14 +52,19 @@ def db_extract_ipmi_info():
             }
         }
 
-    It will fail if any of the
+    It will fail if any of the nodes in the database have obms with a type
+    other than ipmi.
+
+    This must be run inside of an app context.
     """
     obms = model.Obm.query.all()
 
     info = {}
 
+    ipmi_api_name = 'http://schema.massopencloud.org/haas/v0/obm/ipmi'
+
     for obm in obms:
-        if obm.type != 'ipmi':
+        if obm.type != ipmi_api_name:
             sys.exit(("Node %s{label} has an obm of unspported "
                       "type %s{type}").format({
                           'label': obm.owner.label,
@@ -76,14 +82,16 @@ def db_extract_ipmi_info():
 def obmd_upload_ipmi_info(obmd_base_url, obmd_admin_token, info):
     """Upload nodes' info to obmd.
 
-    The info is loaded from stdin, and should be in the format output
-    by `extract_ipmi_info`.
+    `info` should be a dictionary of the form returned by
+    `db_extract_ipmi_info`.
+
+    `obmd_base_url` is the base URL for the obmd api. i.e. a node named
+    "example_node" would be at the URL `obmd_base_url + '/node/example_node'.`
+
+    `obmd_admin_token` is the admin token to use when authenticating against
+    obmd.
     """
-    info = json.load(sys.stdin)
-
     sess = requests.Session(auth=('admin', obmd_admin_token))
-
-    # TODO: validate the input.
 
     for key, val in info.items():
         sess.put(obmd_base_url + '/node/' + key, data=json.dumps({
@@ -97,6 +105,13 @@ def obmd_upload_ipmi_info(obmd_base_url, obmd_admin_token, info):
 
 
 def db_add_obmd_info(obmd_base_url, obmd_admin_token):
+    """Add obmd connection info to the HIL database.
+
+    This assumes each node is available from obmd at the URL
+    `obmd_base_url + '/node/' + node.label`.
+
+    This must be run inside of an app context.
+    """
     model.Node.query.update({'obmd_admin_token': obmd_admin_token})
     for node in model.Node.query.all():
         node.obmd_uri = obmd_base_url + '/node/' + node.label
