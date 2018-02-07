@@ -75,10 +75,11 @@ Included herewith are some examples about
 1) Register a switch with HIL:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Eg> Switch name: mockswitch01
-     Host name:  switchhost01
-     User name:  switchuser01
-     Password:   password1234
+   - **Switch name:** mockswitch01
+   - **Switch type:** mock
+   - **Host name:**   switchhost01
+   - **User name:**   switchuser01
+   - **Password:**    password1234
 
 api call
 
@@ -108,7 +109,6 @@ cli call
 
 For nodes using IPMI use the following api call:
 
-
 ::
 
      curl -X PUT http://127.0.0.1:5001/node/dummyNode01 -d '
@@ -120,7 +120,6 @@ For nodes using IPMI use the following api call:
 
 Corresponding cli calls will be as follows:
 
-
 ::
 
      $ hil node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01
@@ -129,10 +128,9 @@ Corresponding cli calls will be as follows:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-Eg> Project name mockproject01
+   - **Project name:** mockproject01
 
 api call
-
 
 ::
 
@@ -142,24 +140,21 @@ cli call
 
 ::
 
-
     $ hil project_create mockproject01
 
 4) Register a node in HIL
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-Eg> Node name: mocknode01
-    Node type: mock
-    Host name: mockhost01
-    User name: nodeuser01
-    Password: password1234
+   - **Node name:** mocknode01
+   - **Node type:** mock
+   - **Host name:** mockhost01
+   - **User name:** nodeuser01
+   - **Password:** password1234
 
 api call
 
-
 ::
-
 
     curl -X put http://127.0.0.1:5000/node/mocknode01 -d '
     > {"type": "http://schema.massopencloud.org/haas/v0/nodes/mock",
@@ -169,7 +164,6 @@ api call
 
 cli call
 
-
 ::
 
     $ hil node_register mocknode01 mock mockhost01 nodeuser01 password1234
@@ -178,16 +172,14 @@ cli call
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-Eg> Network name: mocknetwork01
-    owner: admin
-    access: mockproject
-    net_id: 101
+   - **Network name:** mocknetwork01
+   - **owner:** admin
+   - **access:** mockproject
+   - **net_id:** 101
 
 api call
 
-
 ::
-
 
     curl -X put http://127.0.0.1:5000/network/mocknetwork01 -d '
         {"owner": "admin",
@@ -196,9 +188,7 @@ api call
 
 cli call
 
-
 ::
-
 
     $ hil network_create mocnetwork01 admin mockproject 101
 
