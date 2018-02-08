@@ -1,6 +1,6 @@
 """Helper commands for moving IPMI info from the database to obmd.
 
-This is part of our obmd migration strategy; see the discussion at:
+This is part of our obmd migration strategy; see issue #928.
 """
 
 import sys
