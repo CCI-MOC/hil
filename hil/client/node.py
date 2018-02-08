@@ -4,6 +4,7 @@ from hil.client.base import ClientBase
 from hil.client.base import check_reserved_chars
 from hil.errors import BadArgumentError, UnknownSubtypeError
 
+
 class Node(ClientBase):
     """Consists of calls to query and manipulate node related
 
