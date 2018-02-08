@@ -18,6 +18,7 @@ from functools import wraps
 
 from hil.client.client import Client, RequestsHTTPClient, KeystoneHTTPClient
 from hil.client.base import FailedAPICallException
+from hil.errors import BadArgumentError
 
 
 logger = logging.getLogger(__name__)
@@ -846,6 +847,8 @@ def main():
         except FailedAPICallException as e:
             sys.exit('Error: %s\n' % e.message)
         except InvalidAPIArgumentsException as e:
+            sys.exit('Error: %s\n' % e.message)
+        except BadArgumentError as e:
             sys.exit('Error: %s\n' % e.message)
         except Exception as e:
             sys.exit('Unexpected error: %s\n' % e.message)
