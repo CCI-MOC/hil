@@ -3,9 +3,10 @@ from hil.flaskapp import app
 from hil.client.base import ClientBase, FailedAPICallException
 from hil.client.client import Client, HTTPClient, HTTPResponse
 from hil.test_common import config_testsuite, config_merge, \
-    fresh_database, fail_on_log_warnings, server_init
+    fresh_database, fail_on_log_warnings, server_init, uuid_pattern
 from hil.model import db
 from hil import config, deferred
+from hil.errors import BadArgumentError
 
 import json
 import pytest
@@ -311,6 +312,11 @@ class Test_node:
                 u'name': u'node-07'
                 }
 
+    def test_show_node_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.node.show('node-/%]07')
+
     def test_power_cycle(self):
         """(successful) to node_power_cycle"""
         assert C.node.power_cycle('node-07') is None
@@ -328,9 +334,19 @@ class Test_node:
         with pytest.raises(FailedAPICallException):
             C.node.power_cycle('node-07', 'wrong')
 
+    def test_power_cycle_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.node.power_cycle('node-/%]07', False)
+
     def test_power_off(self):
         """(successful) to node_power_off"""
         assert C.node.power_off('node-07') is None
+
+    def test_power_off_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.node.power_off('node-/%]07')
 
     def test_node_add_nic(self):
         """Test removing and then adding a nic."""
@@ -349,6 +365,11 @@ class Test_node:
         with pytest.raises(FailedAPICallException):
             C.node.add_nic('abcd', 'eth0', 'aa:bb:cc:dd:ee:ff')
 
+    def test_add_nic_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.node.add_nic('node-/%]08', 'eth0', 'aa:bb:cc:dd:ee:ff')
+
     def test_remove_nic(self):
         """(successful) call to node_remove_nic"""
         assert C.node.remove_nic('node-08', 'eth0') is None
@@ -359,19 +380,37 @@ class Test_node:
         with pytest.raises(FailedAPICallException):
             C.node.remove_nic('node-08', 'eth0')
 
+    def test_remove_nic_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.node.remove_nic('node-/%]08', 'eth0')
+
     def test_node_start_console(self):
         """(successful) call to node_start_console"""
         assert C.node.start_console('node-01') is None
+
+    def test_node_start_console_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.node.start_console('node-/%]01')
 
     def test_node_stop_console(self):
         """(successful) call to node_stop_console"""
         assert C.node.stop_console('node-01') is None
 
+    def test_node_stop_console_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.node.stop_console('node-/%]01')
+
     def test_node_connect_network(self):
         """(successful) call to node_connect_network"""
-        assert C.node.connect_network(
+        response = C.node.connect_network(
                 'node-01', 'eth0', 'net-01', 'vlan/native'
-                ) is None
+                )
+
+        # check that the reponse contains a valid UUID.
+        assert uuid_pattern.match(response['status_id'])
         deferred.apply_networking()
 
     def test_node_connect_network_error(self):
@@ -382,11 +421,18 @@ class Test_node:
             C.node.connect_network('node-02', 'eth0', 'net-04', 'vlan/native')
         deferred.apply_networking()
 
+    def test_node_connect_network_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.node.connect_network('node-/%]01', 'eth0', 'net-01',
+                                   'vlan/native')
+
     def test_node_detach_network(self):
         """(successful) call to node_detach_network"""
         C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
         deferred.apply_networking()
-        assert C.node.detach_network('node-04', 'eth0', 'net-04') is None
+        response = C.node.detach_network('node-04', 'eth0', 'net-04')
+        assert uuid_pattern.match(response['status_id'])
         deferred.apply_networking()
 
     def test_node_detach_network_error(self):
@@ -397,6 +443,11 @@ class Test_node:
         deferred.apply_networking()
         with pytest.raises(FailedAPICallException):
             C.node.detach_network('node-04', 'eth0', 'net-04')
+
+    def test_node_detach_network_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.node.detach_network('node-/%]04', 'eth0', 'net-04')
 
 
 class Test_project:
@@ -411,11 +462,21 @@ class Test_project:
         assert C.project.nodes_in('proj-01') == [u'node-01']
         assert C.project.nodes_in('proj-02') == [u'node-02', u'node-04']
 
+    def test_list_nodes_inproject_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.project.nodes_in('pr/%[oj-01')
+
     def test_list_networks_inproject(self):
         """ test for getting list of networks connected to a project. """
         assert C.project.networks_in('proj-01') == [
                 u'net-01', u'net-02', u'net-03'
                 ]
+
+    def test_list_networks_inproject_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.project.networks_in('pr/%[oj-01')
 
     def test_project_create(self):
         """ test for creating project. """
@@ -427,6 +488,11 @@ class Test_project:
         with pytest.raises(FailedAPICallException):
             C.project.create('dummy-02')
 
+    def test_project_create_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.project.create('dummy/%[-02')
+
     def test_project_delete(self):
         """ test for deleting project. """
         C.project.create('dummy-03')
@@ -436,6 +502,11 @@ class Test_project:
         """ test to capture error condition in project delete. """
         with pytest.raises(FailedAPICallException):
             C.project.delete('dummy-03')
+
+    def test_project_delete_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.project.delete('dummy/%[-03')
 
     def test_project_connect_node(self):
         """ test for connecting node to project. """
@@ -457,6 +528,11 @@ class Test_project:
         with pytest.raises(FailedAPICallException):
             C.project.connect('no-such-project', 'node-06')
 
+    def test_project_connect_node_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.project.connect('proj/%[-04', 'node-07')
+
     def test_project_detach_node(self):
         """ Test for correctly detaching node from project."""
         C.project.create('proj-07')
@@ -470,6 +546,11 @@ class Test_project:
             C.project.detach('proj-08', 'no-such-node')
         with pytest.raises(FailedAPICallException):
             C.project.detach('no-such-project', 'node-06')
+
+    def test_project_detach_node_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.project.detach('proj/%]-08', 'node-07')
 
 
 class Test_switch:
@@ -487,9 +568,19 @@ class Test_switch:
             u'name': u'dell-01', u'ports': [],
             u'capabilities': ['nativeless-trunk-mode']}
 
+    def test_show_switch_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.switch.show('dell-/%]-01')
+
     def test_delete_switch(self):
         """(successful) call to switch_delete"""
         assert C.switch.delete('nexus-01') is None
+
+    def test_delete_switch_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.switch.delete('nexus/%]-01')
 
 
 class Test_port:
@@ -505,6 +596,11 @@ class Test_port:
         with pytest.raises(FailedAPICallException):
             C.port.register('mock-01', 'gi1/1/2')
 
+    def test_port_register_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.port.register('mock-/%[-01', 'gi1/1/1')
+
     def test_port_delete(self):
         """(successful) call to port_delete"""
         C.port.register('mock-01', 'gi1/1/3')
@@ -516,6 +612,11 @@ class Test_port:
         C.port.delete('mock-01', 'gi1/1/4')
         with pytest.raises(FailedAPICallException):
             C.port.delete('mock-01', 'gi1/1/4')
+
+    def test_port_delete_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.port.delete('mock/%]-01', 'gi1/1/4')
 
     def test_port_connect_nic(self):
         """(successfully) Call port_connect_nic on an existent port"""
@@ -537,6 +638,11 @@ class Test_port:
         with pytest.raises(FailedAPICallException):
             C.port.connect_nic('mock-01', 'gi1/1/6', 'node-09', 'eth0')
 
+    def test_port_connect_nic_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.port.connect_nic('mock/%]-01', 'gi1/1/6', 'node-09', 'eth0')
+
     def test_port_detach_nic(self):
         """(succesfully) call port_detach_nic."""
         C.port.register('mock-01', 'gi1/1/7')
@@ -548,6 +654,11 @@ class Test_port:
         C.port.register('mock-01', 'gi1/1/8')
         with pytest.raises(FailedAPICallException):
             C.port.detach_nic('mock-01', 'gi1/1/8')
+
+    def test_port_detach_nic_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.port.detach_nic('mock/%]-01', 'gi1/1/8')
 
     def test_show_port(self):
         """Test show_port"""
@@ -567,6 +678,11 @@ class Test_port:
         with pytest.raises(FailedAPICallException):
             C.port.show('unknown-switch', 'unknown-port')
 
+    def test_show_port_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.port.show('mock/%]-01', 'gi1/1/8')
+
     def test_port_revert(self):
         """Revert port should run without error and remove all networks"""
         C.node.connect_network('node-01', 'eth0', 'net-01', 'vlan/native')
@@ -575,12 +691,18 @@ class Test_port:
                 'node': 'node-01',
                 'nic': 'eth0',
                 'networks': {'vlan/native': 'net-01'}}
-        assert C.port.port_revert('mock-01', 'gi1/0/1') is None
+        response = C.port.port_revert('mock-01', 'gi1/0/1')
+        assert uuid_pattern.match(response['status_id'])
         deferred.apply_networking()
         assert C.port.show('mock-01', 'gi1/0/1') == {
                 'node': 'node-01',
                 'nic': 'eth0',
                 'networks': {}}
+
+    def test_port_revert_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.port.port_revert('mock/%]-01', 'gi1/0/1')
 
 
 class Test_user:
@@ -603,6 +725,11 @@ class Test_user:
         with pytest.raises(FailedAPICallException):
             C.user.create('bill', 'pass1234', is_admin=False)
 
+    def test_user_create_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.user.create('b/%]ill', 'pass1234', is_admin=True)
+
     def test_user_delete(self):
         """ Test user deletion. """
         C.user.create('jack', 'pass1234', is_admin=True)
@@ -614,6 +741,11 @@ class Test_user:
         C.user.delete('Ata')
         with pytest.raises(FailedAPICallException):
             C.user.delete('Ata')
+
+    def test_user_delete_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.user.delete('A/%]ta')
 
     def test_user_add(self):
         """ test adding a user to a project. """
@@ -628,6 +760,11 @@ class Test_user:
         C.user.add('sam01', 'test-proj01')
         with pytest.raises(FailedAPICallException):
             C.user.add('sam01', 'test-proj01')
+
+    def test_user_add_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.user.add('sam/%]01', 'test-proj01')
 
     def test_user_remove(self):
         """Test revoking user's access to a project. """
@@ -645,6 +782,11 @@ class Test_user:
         C.user.remove('sam03', 'test-proj03')
         with pytest.raises(FailedAPICallException):
             C.user.remove('sam03', 'test_proj03')
+
+    def test_user_remove_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.user.remove('sam/%]03', 'test-proj03')
 
     def test_user_set_admin(self):
         """Test changing a user's admin status """
@@ -666,6 +808,11 @@ class Test_user:
         C.user.delete('hugo')
         with pytest.raises(FailedAPICallException):
             C.user.set_admin('hugo', True)
+
+    def test_user_set_admin_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.user.set_admin('hugo/%]', True)
 
 
 class Test_network:
@@ -691,6 +838,11 @@ class Test_network:
                 u'connected-nodes': {},
                 }
 
+    def test_network_show_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.network.show('net/%]-01')
+
     def test_network_create(self):
         """ Test create network. """
         assert C.network.create('net-abcd', 'proj-01', 'proj-01', '') is None
@@ -700,6 +852,11 @@ class Test_network:
         C.network.create('net-123', 'proj-01', 'proj-01', '')
         with pytest.raises(FailedAPICallException):
             C.network.create('net-123', 'proj-01', 'proj-01', '')
+
+    def test_network_create_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.network.create('net/%]-123', 'proj-01', 'proj-01', '')
 
     def test_network_delete(self):
         """ Test network deletion """
@@ -713,6 +870,11 @@ class Test_network:
         with pytest.raises(FailedAPICallException):
             C.network.delete('net-xyz')
 
+    def test_network_delete_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.network.delete('net/%]-xyz')
+
     def test_network_grant_project_access(self):
         """ Test granting  a project access to a network. """
         C.network.create('newnet01', 'admin', '', '')
@@ -725,6 +887,11 @@ class Test_network:
         C.network.grant_access('proj-02', 'newnet04')
         with pytest.raises(FailedAPICallException):
             C.network.grant_access('proj-02', 'newnet04')
+
+    def test_network_grant_project_access_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.network.grant_access('proj/%]-02', 'newnet04')
 
     def test_network_revoke_project_access(self):
         """ Test revoking a project's access to a network. """
@@ -742,6 +909,11 @@ class Test_network:
         with pytest.raises(FailedAPICallException):
             C.network.revoke_access('proj-02', 'newnet03')
 
+    def test_network_revoke_project_access_reserved_chars(self):
+        """ test for catching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.network.revoke_access('proj/%]-02', 'newnet03')
+
 
 class Test_extensions:
     """ Test extension related client calls. """
@@ -758,3 +930,31 @@ class Test_extensions:
                     "hil.ext.switches.mock",
                     "hil.ext.switches.nexus",
                 ]
+
+
+class TestShowNetworkingAction:
+    """Test calls to show networking action method"""
+
+    def test_show_networking_action(self):
+        """(successful) call to show_networking_action"""
+        response = C.node.connect_network(
+                'node-01', 'eth0', 'net-01', 'vlan/native'
+                )
+        status_id = response['status_id']
+
+        response = C.node.show_networking_action(status_id)
+        assert response == {'status': 'PENDING',
+                            'node': 'node-01',
+                            'nic': 'eth0',
+                            'type': 'modify_port',
+                            'channel': 'vlan/native',
+                            'new_network': 'net-01'}
+
+        deferred.apply_networking()
+        response = C.node.show_networking_action(status_id)
+        assert response['status'] == 'DONE'
+
+    def test_show_networking_action_fail(self):
+        """(unsuccessful) call to show_networking_action"""
+        with pytest.raises(FailedAPICallException):
+            C.node.show_networking_action('non-existent-entry')

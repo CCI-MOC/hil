@@ -18,6 +18,7 @@ from functools import wraps
 
 from hil.client.client import Client, RequestsHTTPClient, KeystoneHTTPClient
 from hil.client.base import FailedAPICallException
+from hil.errors import BadArgumentError
 
 
 logger = logging.getLogger(__name__)
@@ -527,13 +528,13 @@ def headnode_delete_hnic(headnode, nic):
 @cmd
 def node_connect_network(node, nic, network, channel):
     """Connect <node> to <network> on given <nic> and <channel>"""
-    C.node.connect_network(node, nic, network, channel)
+    print C.node.connect_network(node, nic, network, channel)
 
 
 @cmd
 def node_detach_network(node, nic, network):
     """Detach <node> from the given <network> on the given <nic>"""
-    C.node.detach_network(node, nic, network)
+    print C.node.detach_network(node, nic, network)
 
 
 @cmd
@@ -669,7 +670,7 @@ def port_detach_nic(switch, port):
 @cmd
 def port_revert(switch, port):
     """Detach a <port> on a <switch> from all attached networks."""
-    C.port.port_revert(switch, port)
+    print C.port.port_revert(switch, port)
 
 
 @cmd
@@ -839,6 +840,12 @@ def list_active_extensions():
 
 
 @cmd
+def show_networking_action(status_id):
+    """Displays the status of the networking action"""
+    print C.node.show_networking_action(status_id)
+
+
+@cmd
 def help(*commands):
     """Display usage of all following <commands>, or of all commands if none
     are given
@@ -873,6 +880,8 @@ def main():
         except FailedAPICallException as e:
             sys.exit('Error: %s\n' % e.message)
         except InvalidAPIArgumentsException as e:
+            sys.exit('Error: %s\n' % e.message)
+        except BadArgumentError as e:
             sys.exit('Error: %s\n' % e.message)
         except Exception as e:
             sys.exit('Unexpected error: %s\n' % e.message)
