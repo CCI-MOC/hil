@@ -7,7 +7,6 @@ from hil.test_common import config_testsuite, config_merge, \
     fresh_database, fail_on_log_warnings, server_init, uuid_pattern
 from hil.model import db
 from hil import config, deferred
-from hil.errors import BadArgumentError
 
 import json
 import pytest
