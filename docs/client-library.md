@@ -1,5 +1,8 @@
 # HIL Client Library
 
+##Description
+The HIL API Client Library for Python is designed for Python client-application developers. It offers simple access to HIL APIs.
+
 ## How to Install HIL Modules?
 ```
 pip install git+https://github.com/cci-moc/hil
