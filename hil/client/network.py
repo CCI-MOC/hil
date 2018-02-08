@@ -1,6 +1,7 @@
 """Client support for network related api calls."""
 import json
 from hil.client.base import ClientBase
+from hil.client.base import check_reserved_chars
 
 
 class Network(ClientBase):
@@ -14,11 +15,13 @@ class Network(ClientBase):
             url = self.object_url('networks')
             return self.check_response(self.httpClient.request("GET", url))
 
+        @check_reserved_chars()
         def show(self, network):
             """Shows attributes of a network. """
             url = self.object_url('network', network)
             return self.check_response(self.httpClient.request("GET", url))
 
+        @check_reserved_chars(slashes_ok=['net_id'])
         def create(self, network, owner, access, net_id):
             """Create a link-layer <network>.
 
@@ -33,11 +36,13 @@ class Network(ClientBase):
                     self.httpClient.request("PUT", url, data=payload)
                     )
 
+        @check_reserved_chars()
         def delete(self, network):
             """Delete a <network>. """
             url = self.object_url('network', network)
             return self.check_response(self.httpClient.request("DELETE", url))
 
+        @check_reserved_chars()
         def grant_access(self, project, network):
             """Grants <project> access to <network>. """
             url = self.object_url(
@@ -45,6 +50,7 @@ class Network(ClientBase):
                     )
             return self.check_response(self.httpClient.request("PUT", url))
 
+        @check_reserved_chars()
         def revoke_access(self, project, network):
             """Removes access of <network> from <project>. """
             url = self.object_url(
