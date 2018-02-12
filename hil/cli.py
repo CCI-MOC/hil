@@ -645,12 +645,7 @@ def list_network_attachments(network, project):
     """List nodes connected to a network
     <project> may be either "all" or a specific project name.
     """
-    url = object_url('network', network, 'attachments')
-
-    if project == "all":
-        do_get(url)
-    else:
-        do_get(url, params={'project': project})
+    print C.network.list_network_attachments(network, project)
 
 
 @cmd
