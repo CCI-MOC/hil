@@ -837,6 +837,11 @@ class Test_network:
                 u'net-05': {u'network_id': u'1005', u'projects': [u'proj-02']}
                 }
 
+    def test_list_network_attachments(self):
+        assert C.network.list_network_attachments("net-01", None) == {}
+        assert C.network.list_network_attachments("net-01", "all") == {}
+        assert C.network.list_network_attachments("net-01", "proj-01") == {}
+
     def test_network_show(self):
         """ Test show network. """
         assert C.network.show('net-01') == {
