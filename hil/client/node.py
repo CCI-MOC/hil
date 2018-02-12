@@ -2,6 +2,7 @@
 import json
 from hil.client.base import ClientBase
 from hil.client.base import check_reserved_chars
+from hil.errors import BadArgumentError, UnknownSubtypeError
 
 
 class Node(ClientBase):
@@ -21,6 +22,7 @@ class Node(ClientBase):
         url = self.object_url('node', node_name)
         return self.check_response(self.httpClient.request('GET', url))
 
+    @check_reserved_chars()
     def register(self, node, subtype, *args):
         """Register a node with appropriate OBM driver. """
         # Registering a node requires apriori knowledge of the
@@ -34,7 +36,26 @@ class Node(ClientBase):
         # and currently active drivers for HIL
         # obm_api = "http://schema.massopencloud.org/haas/v0/obm/"
         # obm_types = ["ipmi", "mock"]
-        raise NotImplementedError
+        if (len(args) != 3):
+            raise BadArgumentError("3 Arguments needed. Supplied " +
+                                   str(len(args)))
+
+        obm_api = "http://schema.massopencloud.org/haas/v0/obm/"
+        # This is a temp fix. obmd will let node_register no longer
+        # need a type so a new design will be required.
+        obm_types = ["ipmi", "mock"]
+        if subtype in obm_types:
+            obminfo = {"type": obm_api + subtype, "host": args[0],
+                       "user": args[1], "password": args[2]
+                       }
+        else:
+            raise UnknownSubtypeError("Unknown subtype provided.")
+
+        url = self.object_url('node', node)
+        payload = json.dumps({"obm": obminfo})
+        return self.check_response(
+                self.httpClient.request('PUT', url, data=payload)
+                )
 
     @check_reserved_chars()
     def delete(self, node_name):
