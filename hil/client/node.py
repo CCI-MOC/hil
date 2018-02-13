@@ -130,7 +130,7 @@ class Node(ClientBase):
     def metadata_set(self, node, label, value):
         """Register metadata with <label> and <value> with <node>"""
         url = self.object_url('node', node, 'metadata', label)
-        payload = json.jumps({'value': value})
+        payload = json.dumps({'value': value})
         return self.check_response(
                 self.httpClient.request('PUT', url, data=payload)
                )

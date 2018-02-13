@@ -1,7 +1,8 @@
 """Unit tests for client library"""
 from hil.flaskapp import app
 from hil.client.base import ClientBase, FailedAPICallException
-from hil.errors import BadArgumentError, UnknownSubtypeError
+from hil.errors import BadArgumentError, UnknownSubtypeError, \
+    NotFoundError
 from hil.client.client import Client, HTTPClient, HTTPResponse
 from hil.test_common import config_testsuite, config_merge, \
     fresh_database, fail_on_log_warnings, server_init, uuid_pattern
@@ -410,7 +411,7 @@ class Test_node:
 
     def test_metadata_delete(self):
         """ test for deleting metadata from a node """
-        with pytest.raises(errors.NotFoundError):
+        with pytest.raises(NotFoundError):
             C.node.metadata_delete("free_node", "EK")
         C.node.metadata_set("node-01", "EK", "pk")
         assert C.node.metadata_delete("node-01", "EK") is None
