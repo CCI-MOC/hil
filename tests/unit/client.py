@@ -838,7 +838,7 @@ class Test_network:
                 }
 
     def test_list_network_attachments(self):
-        """ Test lsit of network attachments """
+        """ Test list of network attachments """
         assert C.network.list_network_attachments("net-01", "all") == {}
         assert C.network.list_network_attachments("net-01", "proj-01") == {}
 
