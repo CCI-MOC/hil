@@ -411,7 +411,7 @@ class Test_node:
 
     def test_metadata_delete(self):
         """ test for deleting metadata from a node """
-        with pytest.raises(NotFoundError):
+        with pytest.raises(FailedAPICallException):
             C.node.metadata_delete("free_node", "EK")
         C.node.metadata_set("node-01", "EK", "pk")
         assert C.node.metadata_delete("node-01", "EK") is None
