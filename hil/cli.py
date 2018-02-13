@@ -526,7 +526,7 @@ def metadata_set(node, label, value):
 @cmd
 def metadata_delete(node, label):
     """Delete metadata with <label> from a <node>"""
-    C.node.metadata_selete(node, label)
+    C.node.metadata_delete(node, label)
 
 
 @cmd
