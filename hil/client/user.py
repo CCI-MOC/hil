@@ -15,7 +15,7 @@ class User(ClientBase):
     """
     def list(self):
         """List all users"""
-        url = self.object_url('/auth/basic/user')
+        url = self.object_url('/auth/basic/users')
         return self.check_response(self.httpClient.request("GET", url))
 
     @check_reserved_chars(dont_check=['password', 'is_admin'])

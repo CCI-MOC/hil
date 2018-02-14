@@ -1255,21 +1255,22 @@ configurations.
 
 ### The `hil.ext.auth.database` auth backend
 
-#### list_user
+#### list_users
 
-`PUT /auth/basic/user`
+`GET /auth/basic/users`
 
-Return a list of all users in HIL
+List all users
 
 Response body:
 
     {
         'hil_user': {'is_admin': True, 'projects': ["runway"]}
+        'mock_user': {'is_admin': False, 'projects': ["manhattan"]}
     }
 
 Authorization requirements:
 
-Administrative access.
+* Administrative access.
 
 #### user_create
 
