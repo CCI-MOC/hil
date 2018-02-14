@@ -75,11 +75,11 @@ Included herewith are some examples about
 1) Register a switch with HIL:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-   - **Switch name:** mockswitch01
-   - **Switch type:** mock
-   - **Host name:**   switchhost01
-   - **User name:**   switchuser01
-   - **Password:**    password1234
+- **Switch name:** mockswitch01
+- **Switch type:** mock
+- **Host name:**   switchhost01
+- **User name:**   switchuser01
+- **Password:**    password1234
 
 api call
 
@@ -101,11 +101,11 @@ cli call
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-   - **Node name:**  dummyNoderHIL-02
-   - **Ipmi info:**
-      + **hostname:**           ipmiHost4node-02
-      + **ipmi_username:**      ipmiUser4node-02
-      + **ipmi_password:**      ipmiPass4node-02
+- **Node name:**  dummyNoderHIL-02
+- **Ipmi info:**
+   + **hostname:**           ipmiHost4node-02
+   + **ipmi_username:**      ipmiUser4node-02
+   + **ipmi_password:**      ipmiPass4node-02
 
 For nodes using IPMI use the following api call:
 
@@ -128,7 +128,7 @@ Corresponding cli calls will be as follows:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-   - **Project name:** mockproject01
+- **Project name:** mockproject01
 
 api call
 
@@ -146,11 +146,11 @@ cli call
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-   - **Node name:** mocknode01
-   - **Node type:** mock
-   - **Host name:** mockhost01
-   - **User name:** nodeuser01
-   - **Password:** password1234
+- **Node name:** mocknode01
+- **Node type:** mock
+- **Host name:** mockhost01
+- **User name:** nodeuser01
+- **Password:** password1234
 
 api call
 
@@ -172,10 +172,10 @@ cli call
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-   - **Network name:** mocknetwork01
-   - **owner:** admin
-   - **access:** mockproject
-   - **net_id:** 101
+- **Network name:** mocknetwork01
+- **owner:** admin
+- **access:** mockproject
+- **net_id:** 101
 
 api call
 
