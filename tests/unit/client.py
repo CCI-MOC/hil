@@ -1,8 +1,7 @@
 """Unit tests for client library"""
 from hil.flaskapp import app
 from hil.client.base import ClientBase, FailedAPICallException
-from hil.errors import BadArgumentError, UnknownSubtypeError, \
-    NotFoundError
+from hil.errors import BadArgumentError, UnknownSubtypeError
 from hil.client.client import Client, HTTPClient, HTTPResponse
 from hil.test_common import config_testsuite, config_merge, \
     fresh_database, fail_on_log_warnings, server_init, uuid_pattern
