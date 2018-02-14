@@ -842,6 +842,7 @@ class Test_network:
         assert C.network.list_network_attachments("net-01", "all") == {}
         assert C.network.list_network_attachments("net-02", "proj-01") == {}
         C.node.connect_network('node-01', 'eth0', 'net-03', 'vlan/native')
+        deferred.apply_networking()
         assert C.network.list_network_attachments("net-03", "all") == {
                 'node-01': {'project': 'proj-01',
                             'nic': 'eth0',
