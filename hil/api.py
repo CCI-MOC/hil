@@ -686,18 +686,15 @@ def list_networks():
     # Admin Operation
     if get_auth_backend().have_admin():
         networks = db.session.query(model.Network).all()
-        for n in networks:
-            if n.access:
-                projects = sorted([p.label for p in n.access])
-                result[n.label] = {'network_id': n.network_id,
-                                   'projects': projects}
-            else:
-                result[n.label] = {'network_id': n.network_id,
-                                   'projects': None}
-    # Regular User Operation
     else:
-        pub_nets = db.session.query(model.Network).filter_by(access=None).all()
-        for n in pub_nets:
+        networks = db.session.query(model.Network).filter_by(access=None).all()
+
+    for n in networks:
+        if n.access:
+            projects = sorted([p.label for p in n.access])
+            result[n.label] = {'network_id': n.network_id,
+                               'projects': projects}
+        else:
             result[n.label] = {'network_id': n.network_id,
                                'projects': None}
 
