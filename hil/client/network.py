@@ -21,10 +21,10 @@ class Network(ClientBase):
             url = self.object_url('network', network, 'attachments')
             if project == "all":
                 return self.check_response(self.httpClient.request("GET", url))
-            else:
-                params = {'project': project}
-                return self.check_response(
-                        self.httpClient.request("GET", url, params=params))
+
+            params = {'project': project}
+            return self.check_response(
+                    self.httpClient.request("GET", url, params=params))
 
         @check_reserved_chars()
         def show(self, network):

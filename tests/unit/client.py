@@ -840,7 +840,13 @@ class Test_network:
     def test_list_network_attachments(self):
         """ Test list of network attachments """
         assert C.network.list_network_attachments("net-01", "all") == {}
-        assert C.network.list_network_attachments("net-01", "proj-01") == {}
+        assert C.network.list_network_attachments("net-02", "proj-01") == {}
+        C.node.connect_network('node-01', 'eth0', 'net-03', 'vlan/native')
+        assert C.network.list_network_attachments("net-03", "all") == {
+                'node-01': {'project': 'proj-01',
+                            'nic': 'eth0',
+                            'channel': 'vlan/native'}
+                }
 
     def test_network_show(self):
         """ Test show network. """
