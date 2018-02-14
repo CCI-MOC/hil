@@ -14,6 +14,7 @@ from hil.migrations import paths
 from hil.model import db, Switch, SwitchSession
 from hil.errors import BadArgumentError
 from hil.model import BigIntegerType
+from hil.ext.switches.common import check_native_networks
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'brocade')
 
@@ -47,6 +48,10 @@ class Brocade(Switch, SwitchSession):
 
     def session(self):
         return self
+
+    def ensure_legal_operation(self, nic, op_type, channel):
+        check_native_networks(nic, op_type, channel)
+        return
 
     @staticmethod
     def validate_port_name(port):
