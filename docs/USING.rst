@@ -60,16 +60,11 @@ been run succesfully.
 Usage examples
 ---------------
 
-Included herewith are some examples about
+Included here with are some examples about
 
- * Interacting with HIL API directly using the curl utility.
+* Interacting with HIL API directly using the curl utility.
 
- * And using equivalent cli calls are also included.
-
-::
-
-        hil node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01
-
+* And using equivalent cli calls are also included.
 
 
 1) Register a switch with HIL:
@@ -191,4 +186,3 @@ cli call
 ::
 
     $ hil network_create mocnetwork01 admin mockproject 101
-
