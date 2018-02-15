@@ -92,7 +92,7 @@ usual confirmation dialog for new hosts:
 
 ...which the HIL drivers do not handle.
 
-* Please make sure that there are no unwanted vlans on a swichport when it is
+* Please make sure that there are no unwanted VLANs on a switchport when it is
 registered in HIL. There are more details about this in the description for
 supported switches.
 

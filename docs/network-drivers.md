@@ -234,7 +234,7 @@ sw0(config-rbridge-id-1)# no http server shutdown
 ```
 
 2. For every switchport that is registered in HIL, make sure that there are no
-vlans attached to that port. Toggling switchport command usually does the trick.
+VLANs attached to that port. Toggling switchport command usually does the trick.
 The switchport should be in access mode with VLAN 1.
 
 ```
