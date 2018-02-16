@@ -1735,10 +1735,22 @@ class TestQuery_populated_db:
 
     def test_list_networks(self):
         """Test list_networks."""
-        result = json.loads(api.list_networks())
-        for net in result.keys():
-            del result[net]['network_id']
-        assert result == {
+        auth = get_auth_backend()
+        auth.set_admin(False)
+        user_result = json.loads(api.list_networks())
+        for net in user_result.keys():
+            del user_result[net]['network_id']
+        assert user_result == {
+            'pub_default': {'projects': None},
+            'stock_ext_pub': {'projects': None},
+            'stock_int_pub': {'projects': None},
+        }
+        # Test against the Admin user
+        auth.set_admin(True)
+        admin_result = json.loads(api.list_networks())
+        for net in admin_result.keys():
+            del admin_result[net]['network_id']
+        assert admin_result == {
             'manhattan_provider': {'projects': ['manhattan']},
             'manhattan_pxe': {'projects': ['manhattan']},
             'manhattan_runway_provider': {'projects': ['manhattan', 'runway']},

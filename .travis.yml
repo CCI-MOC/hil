@@ -17,6 +17,7 @@ addons:
     packages:
       - apache2
       - libapache2-mod-wsgi
+      - golang
 
 branches:
   except:
@@ -39,4 +40,5 @@ script:
   - sh -e ci/run_unit_tests.sh
   - sh -e ci/apache/run_integration_tests.sh
   - sh -e ci/keystone/run_integration_tests.sh
+  - sh -e ci/obmd/run_integration_tests.sh
   - sh -e ci/deployment-mock-networks/run_integration_tests.sh
