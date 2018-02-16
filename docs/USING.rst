@@ -60,25 +60,21 @@ been run succesfully.
 Usage examples
 ---------------
 
-Included herewith are some examples about
+Included here with are some examples about
 
- * Interacting with HIL API directly using the curl utility.
+* Interacting with HIL API directly using the curl utility.
 
- * And using equivalent cli calls are also included.
-
-::
-
-        hil node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01
-
+* And using equivalent cli calls are also included.
 
 
 1) Register a switch with HIL:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Eg> Switch name: mockswitch01
-     Host name:  switchhost01
-     User name:  switchuser01
-     Password:   password1234
+- **Switch name:** mockswitch01
+- **Switch type:** mock
+- **Host name:**   switchhost01
+- **User name:**   switchuser01
+- **Password:**    password1234
 
 api call
 
@@ -94,36 +90,99 @@ cli call
 
 ::
 
-       hil switch_register mockswitch02 mock switchhost01 switchuser01 password1234
+    $ hil switch_register mockswitch02 mock switchhost01 switchuser01 password1234
 
 2) Registering a Node which uses IPMI for out of band management
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-   - **Node name:**  dummyNoderHIL-02
-   - **Ipmi info:**
-      + **hostname:**           ipmiHost4node-02
-      + **ipmi_username:**      ipmiUser4node-02
-      + **ipmi_password:**      ipmiPass4node-02
+- **Node name:**  dummyNoderHIL-02
+- **Ipmi info:**
+   + **hostname:**           ipmiHost4node-02
+   + **ipmi_username:**      ipmiUser4node-02
+   + **ipmi_password:**      ipmiPass4node-02
 
 For nodes using IPMI use the following api call:
 
-
 ::
 
-   curl -X PUT http://127.0.0.1:5001/node/dummyNode01 -d '
-   > {"obm": { "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-   > "host": "ipmiHost4node-01",
-   > "user": "ipmiUser4node-01",
-   > "password": "ipmiPass4node-01"
-   > }}'
+     curl -X PUT http://127.0.0.1:5001/node/dummyNode01 -d '
+     > {"obm": { "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+     > "host": "ipmiHost4node-01",
+     > "user": "ipmiUser4node-01",
+     > "password": "ipmiPass4node-01"
+     > }}'
 
 Corresponding cli calls will be as follows:
 
+::
+
+     $ hil node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01
+
+3) Creating a Project in HIL
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+- **Project name:** mockproject01
+
+api call
 
 ::
 
-        hil node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01
+    curl -X put http://127.0.0.1:5000/project/mockproject01
+
+cli call
+
+::
+
+    $ hil project_create mockproject01
+
+4) Register a node in HIL
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
+- **Node name:** mocknode01
+- **Node type:** mock
+- **Host name:** mockhost01
+- **User name:** nodeuser01
+- **Password:** password1234
 
+api call
+
+::
+
+    curl -X put http://127.0.0.1:5000/node/mocknode01 -d '
+    > {"type": "http://schema.massopencloud.org/haas/v0/nodes/mock",
+    > "hostname": "mockhost01",
+    > "username": "nodeuser01",
+    > "password": "password1234"}'
+
+cli call
+
+::
+
+    $ hil node_register mocknode01 mock mockhost01 nodeuser01 password1234
+
+4) Creating a Network in HIL
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+- **Network name:** mocknetwork01
+- **owner:** admin
+- **access:** mockproject
+- **net_id:** 101
+
+api call
+
+::
+
+    curl -X put http://127.0.0.1:5000/network/mocknetwork01 -d '
+        {"owner": "admin",
+        "access": "mockproject",
+        "net_id": "101"}'
+
+cli call
+
+::
+
+    $ hil network_create mocnetwork01 admin mockproject 101
