@@ -290,11 +290,22 @@ def serve_networks():
 
 
 @cmd
+def list_users():
+    """List all users when the database authentication is active.
+
+    Administrative  privileges required.
+    """
+    q = C.user.list()
+    for item in q.items():
+        sys.stdout.write('%s \t : %s\n' % (item[0], item[1]))
+
+
+@cmd
 def user_create(username, password, is_admin):
     """Create a user <username> with password <password>.
 
     <is_admin> may be either "admin" or "regular", and determines whether
-    the user has administrative priveledges.
+    the user has administrative privileges.
     """
     if is_admin not in ('admin', 'regular'):
         raise ValueError(

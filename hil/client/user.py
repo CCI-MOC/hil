@@ -13,6 +13,11 @@ class User(ClientBase):
 
     manipulate users related objects and relations.
     """
+    def list(self):
+        """List all users"""
+        url = self.object_url('/auth/basic/users')
+        return self.check_response(self.httpClient.request("GET", url))
+
     @check_reserved_chars(dont_check=['password', 'is_admin'])
     def create(self, username, password, is_admin):
         """Create a user <username> with password <password>.
