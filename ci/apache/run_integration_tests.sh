@@ -10,7 +10,7 @@ hil create_admin_user $HIL_USERNAME $HIL_PASSWORD
 cd $TRAVIS_BUILD_DIR
 
 # Test commands
-py.test --cov=hil tests/integration/cli.py
+py.test --cov=hil --cov-append tests/integration/cli.py
 
 # Test dbinit script
 python examples/dbinit.py

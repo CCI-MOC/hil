@@ -8,7 +8,7 @@ if [ $DB = sqlite ]; then
     extra_flags='-n auto'
 fi
 
-py.test --cov=hil $extra_flags \
+py.test --cov=hil --cov-append $extra_flags \
 	tests/custom_lint.py \
 	tests/unit \
 	tests/stress.py
