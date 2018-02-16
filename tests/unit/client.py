@@ -738,6 +738,12 @@ class Test_port:
 class Test_user:
     """ Tests user related client calls."""
 
+    def test_list_users(self):
+        """Test for getting list of user"""
+        assert C.user.list() == {
+            u'hil_user': {u'is_admin': True, u'projects': []}
+        }
+
     def test_user_create(self):
         """ Test user creation. """
         assert C.user.create('billy', 'pass1234', is_admin=True) is None
