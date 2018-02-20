@@ -92,8 +92,7 @@ setup(name='hil',
                         ],
       extras_require={
           'tests': [
-                'pytest>=3.0.0,<4.0',
-                'pytest-catchlog>=1.2.2,<2.0',
+                'pytest>=3.3.0,<4.0',
                 'pytest-cov>2.0,<3.0',
                 'pytest-xdist>=1.14,<2.0',
                 'pycodestyle>=2.3.1',

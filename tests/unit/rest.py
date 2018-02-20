@@ -25,11 +25,6 @@ from hil.test_common import config_testsuite, fail_on_log_warnings
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
 
-# This will get pulled in automaticaly, but if we declare it we'll get
-# better error messages if something goes wrong:
-pytest_plugins = 'pytest_catchlog'
-
-
 @pytest.fixture(autouse=True)
 def configure():
     """Set up the HIL config."""

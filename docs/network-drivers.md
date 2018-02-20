@@ -75,8 +75,6 @@ HIL:
 
 * ``hil.ext.switches.dell``, which provides a driver for the Dell
   Powerconnect 5500 series switches.
-* ``hil.ext.switches.n3000``, which provides a driver for the Dell N3000
-  series switches.
 * ``hil.ext.switches.nexus``, which provides a driver for some Cisco
   Nexus switches. Only the 3500 and 5500 have been tested, though it is
   possible that other models will work as well.
@@ -116,6 +114,9 @@ A few commands are necessary to run on the switch before it can be used with HIL
 password. The user running the HIL network daemon should have access to the
 private key.
 
+4. For any switchport that you register, please make sure that there are no
+VLANs added to it in trunk mode.
+
 #### switch_register
 
 To register a Dell Powerconnect switch, the ``"type"`` field of the
@@ -150,6 +151,9 @@ must first be enabled on the switch. To enable all VLANs to work with the switch
 
 2. HIL uses ssh to connect to these switches. Configure the switch to accept ssh connections.
 
+3. For any switchport that you register, please make sure that there are no
+VLANs added to it in trunk mode.
+
 #### switch_register
 
 To register a Dell N3000 switch, the ``"type"`` field of the
@@ -171,7 +175,10 @@ Register ports just like the powerconnect driver. e.g. ``gi1/0/5``.
 
 #### Switch preparation
 
-This switch uses ssh for connection. Be sure that ssh is enabled on the switch.
+1. This switch uses ssh for connection. Be sure that ssh is enabled on the switch.
+
+2. For any switchport that you register, please make sure that there are no
+VLANs added to it in trunk mode.
 
 #### switch_register
 
@@ -216,6 +223,30 @@ same format accepted by the underlying switch, in this case (e.g.)
 
 ### Brocade driver
 
+#### Switch preparation
+
+1. Make sure the REST server is enabled on the switch.
+
+```
+sw0# config
+sw0(config)# rbridge-id 1
+sw0(config-rbridge-id-1)# no http server shutdown
+```
+
+2. For every switchport that is registered in HIL, make sure that there are no
+VLANs attached to that port. Toggling switchport command usually does the trick.
+The switchport should be in access mode with VLAN 1.
+
+```
+sw0# config
+sw0(config)# interface TenGigabitEthernet 1/0/4
+sw0(conf-if-te-1/0/4)# no switchport
+sw0(conf-if-te-1/0/4)# switchport
+sw0(conf-if-te-1/0/4)# do show running-config interface TenGigabitEthernet 1/0/4
+
+```
+
+
 #### switch_register
 
 The ``type`` field for the Brocade NOS driver has the value:
@@ -245,6 +276,19 @@ The brocade driver accepts interface names the same way they would be accepted
 in the console of the switch, ex. ``101/0/10``.
 
 ### Dell Networking OS 9 driver
+
+#### Switch preparation
+
+1. Make sure the REST server is enabled on the switch.
+
+```
+Dell-S3048-ON#config
+MOC-Dell-S3048-ON(conf)#rest-server http
+```
+
+2. When a port is registered, ensure that it is turned off (otherwise it might be
+sitting on a default native vlan). HIL will then take care of turning on/off
+the port.
 
 #### switch_register
 
@@ -280,10 +324,6 @@ The body of the api call request will look like:
 
 It accepts interface names the same way they would be accepted in the console
 of the switch, ex. ``1/3``.
-
-When a port is registered, ensure that it is turned off (otherwise it might be
-sitting on a default native vlan). HIL will then take care of turning on/off
-the port.
 
 ### Using multiple switches
 
