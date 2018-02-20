@@ -1,4 +1,4 @@
 [run]
-omit = 
+omit =
     hil/ext/obm/*
     hil/ext/switches/*
