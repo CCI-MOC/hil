@@ -16,6 +16,17 @@ class Network(ClientBase):
             return self.check_response(self.httpClient.request("GET", url))
 
         @check_reserved_chars()
+        def list_network_attachments(self, network, project):
+            """Lists nodes connected to a network"""
+            url = self.object_url('network', network, 'attachments')
+            if project == "all":
+                return self.check_response(self.httpClient.request("GET", url))
+
+            params = {'project': project}
+            return self.check_response(
+                    self.httpClient.request("GET", url, params=params))
+
+        @check_reserved_chars()
         def show(self, network):
             """Shows attributes of a network. """
             url = self.object_url('network', network)
