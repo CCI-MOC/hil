@@ -466,13 +466,12 @@ def node_power_off(node):
 @cmd
 def node_set_bootdev(node, dev):
     """
-    Sets <node> to boot from <dev> persistenly
+    Sets <node> to boot from <dev> persistently
 
     eg; hil node_set_bootdev dell-23 pxe
     for IPMI, dev can be set to disk, pxe, or none
     """
-    url = object_url('node', node, 'boot_device')
-    do_put(url, data={'bootdev': dev})
+    C.node.set_bootdev(node, dev)
 
 
 @cmd
@@ -532,15 +531,13 @@ def headnode_detach_network(headnode, hnic):
 @cmd
 def metadata_set(node, label, value):
     """Register metadata with <label> and <value> with <node> """
-    url = object_url('node', node, 'metadata', label)
-    do_put(url, data={'value': value})
+    C.node.metadata_set(node, label, value)
 
 
 @cmd
 def metadata_delete(node, label):
     """Delete metadata with <label> from a <node>"""
-    url = object_url('node', node, 'metadata', label)
-    do_delete(url)
+    C.node.metadata_delete(node, label)
 
 
 @cmd

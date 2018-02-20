@@ -363,6 +363,10 @@ class Test_node:
         with pytest.raises(BadArgumentError):
             C.node.power_off('node-/%]07')
 
+    def test_set_bootdev(self):
+        """ (successful) to node_set_bootdev """
+        assert C.node.set_bootdev("node-08", "pxe") is None
+
     def test_node_add_nic(self):
         """Test removing and then adding a nic."""
         C.node.remove_nic('node-08', 'eth0')
@@ -399,6 +403,17 @@ class Test_node:
         """ test for catching illegal argument characters"""
         with pytest.raises(BadArgumentError):
             C.node.remove_nic('node-/%]08', 'eth0')
+
+    def test_metadata_set(self):
+        """ test for registering metadata from a node """
+        assert C.node.metadata_set("node-01", "EK", "pk") is None
+
+    def test_metadata_delete(self):
+        """ test for deleting metadata from a node """
+        with pytest.raises(FailedAPICallException):
+            C.node.metadata_delete("free_node", "EK")
+        C.node.metadata_set("node-01", "EK", "pk")
+        assert C.node.metadata_delete("node-01", "EK") is None
 
     def test_node_start_console(self):
         """(successful) call to node_start_console"""

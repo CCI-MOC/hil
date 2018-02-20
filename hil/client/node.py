@@ -78,6 +78,15 @@ class Node(ClientBase):
         url = self.object_url('node', node_name, 'power_off')
         return self.check_response(self.httpClient.request('POST', url))
 
+    @check_reserved_chars()
+    def set_bootdev(self, node, dev):
+        """Set <node> to boot from <dev> persistently"""
+        url = self.object_url('node', node, 'boot_device')
+        payload = json.dumps({'bootdev': dev})
+        return self.check_response(
+                self.httpClient.request('PUT', url, data=payload)
+                )
+
     @check_reserved_chars(dont_check=['macaddr'])
     def add_nic(self, node_name, nic_name, macaddr):
         """Add a <nic> to <node>"""
@@ -116,6 +125,21 @@ class Node(ClientBase):
         return self.check_response(
                 self.httpClient.request('POST', url, data=payload)
                 )
+
+    @check_reserved_chars()
+    def metadata_set(self, node, label, value):
+        """Register metadata with <label> and <value> with <node>"""
+        url = self.object_url('node', node, 'metadata', label)
+        payload = json.dumps({'value': value})
+        return self.check_response(
+                self.httpClient.request('PUT', url, data=payload)
+               )
+
+    @check_reserved_chars()
+    def metadata_delete(self, node, label):
+        """Delete metadata with <label> from a <node>"""
+        url = self.object_url('node', node, 'metadata', label)
+        return self.check_response(self.httpClient.request('DELETE', url))
 
     def show_console(self, node):
         """Display console log for <node> """
