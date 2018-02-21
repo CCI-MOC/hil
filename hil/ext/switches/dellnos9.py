@@ -9,9 +9,8 @@ import re
 import requests
 import schema
 
-from hil import model
 from hil.model import db, Switch, SwitchSession
-from hil.errors import BadArgumentError, BlockedError
+from hil.errors import BadArgumentError
 from hil.model import BigIntegerType
 from hil.network_allocator import get_network_allocator
 from hil.ext.switches.common import should_save, check_native_networks
@@ -52,7 +51,6 @@ class DellNOS9(Switch, SwitchSession):
 
     def ensure_legal_operation(self, nic, op_type, channel):
         check_native_networks(nic, op_type, channel)
-        return
 
     def get_capabilities(self):
         return []

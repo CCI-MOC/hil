@@ -51,7 +51,6 @@ class Brocade(Switch, SwitchSession):
 
     def ensure_legal_operation(self, nic, op_type, channel):
         check_native_networks(nic, op_type, channel)
-        return
 
     @staticmethod
     def validate_port_name(port):
