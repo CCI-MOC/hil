@@ -2,3 +2,5 @@
 omit =
     hil/ext/obm/*
     hil/ext/switches/*
+    tests/unit/ext/obm/*
+    tests/unit/ext/switches/*
