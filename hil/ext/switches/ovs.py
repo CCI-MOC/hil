@@ -41,15 +41,11 @@ class Ovs(Switch, SwitchSession):
             'password': basestring,
         }).validate(kwargs)
 
-    @staticmethod
-    def validate_port_name(port):
-        """ This driver accepts any string as port name."""
-
 # 1. Public Methods:
 
     def get_capabilities(self):
         """Provides the features of this switch that HIL supports. """
-        return['Virtual_switch_for_development_Purpose_only']
+        return []
 
     def ovs_connect(self, *command_strings):
         """Interacts with the Openvswitch.
@@ -66,7 +62,7 @@ class Ovs(Switch, SwitchSession):
                 subprocess.check_call(arg_list)
         except subprocess.CalledProcessError as e:
             logger.error('%s', e)
-            raise SwitchError
+            raise SwitchError('ovs command failed: ')
 
     def get_port_networks(self, port):
         """ Provides networks connected to the given port.
@@ -178,7 +174,7 @@ class Ovs(Switch, SwitchSession):
             output = subprocess.check_output(args)
         except subprocess.CalledProcessError as e:
             logger.error(" %s ", e)
-            raise SwitchError
+            raise SwitchError('Ovs command failed: ')
         output = output.split('\n')
         output.remove('')
         i_info = dict(s.split(':') for s in output)

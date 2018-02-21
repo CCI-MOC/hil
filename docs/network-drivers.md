@@ -293,7 +293,7 @@ all VLANs in the allocator's ``vlans`` option are trunked to every managed
 switch.
 
 
-## Openvswitch Driver (For developement purpose only. Do not use in production.)
+## Openvswitch Driver (For development purpose only. Do not use in production.)
 
 This driver is made available so that developers can have real switch
 like functionality without having access to any real switch hardware.
@@ -368,4 +368,3 @@ can be achieved by adding bridges of different names to openvswitch and
 registering them as separate switches and ensure that
 all VLANs in the allocator's ``vlans`` option are trunked to every managed
 switch.
-
