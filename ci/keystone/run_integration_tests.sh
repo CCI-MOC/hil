@@ -12,4 +12,4 @@ for port in 5000 35357; do
 	done
 done
 
-py.test tests/integration/keystone.py
+py.test --cov=hil --cov-append tests/integration/keystone.py

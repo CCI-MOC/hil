@@ -1,0 +1,13 @@
+[run]
+omit =
+    hil/ext/obm/impi.py
+    hil/ext/switches/brocade.py
+    hil/ext/switches/_console.py
+    hil/ext/switches/dellnos9.py
+    hil/ext/switches/dell.py
+    hil/ext/switches/n3000.py
+    hil/ext/switches/common.py
+    hil/ext/switches/nexus.py
+    hil/ext/switches/_dell_base.py
+    tests/unit/ext/obm/*
+    tests/unit/ext/switches/*

@@ -1,5 +1,7 @@
 .. image:: https://travis-ci.org/CCI-MOC/hil.svg?branch=master
     :target: https://travis-ci.org/CCI-MOC/hil
+.. image:: https://coveralls.io/repos/github/CCI-MOC/hil/badge.svg?branch=master
+    :target: https://coveralls.io/github/CCI-MOC/hil?branch=master
 
 
 HIL
