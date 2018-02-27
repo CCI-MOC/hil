@@ -37,7 +37,7 @@ def check_native_networks(nic, op_type, channel):
 
 
 def parse_vlans(raw_vlans):
-    """Method that converts a comma separeted list of vlans and vlan ranges to
+    """Method that converts a comma separated list of vlans and vlan ranges to
     a list of individual vlans.
 
     raw_vlans is a string that can look like:
