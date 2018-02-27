@@ -299,8 +299,9 @@ class Brocade(Switch, SwitchSession):
 
     def _make_request(self, method, url, data=None,
                       acceptable_error_codes=()):
-        try:
-            r = requests.request(method, url, data=data, auth=self._auth)
-        except SwitchError:
+        r = requests.request(method, url, data=data, auth=self._auth)
+        if r.status_code >= 400 and \
+           r.status_code not in acceptable_error_codes:
             logger.error('Bad Request to switch. Response: %s', r.text)
+            raise SwitchError('Bad Request to switch')
         return r
