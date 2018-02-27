@@ -34,3 +34,24 @@ def check_native_networks(nic, op_type, channel):
                            " before removing the native vlan")
     else:
         return
+
+
+def parse_vlans(raw_vlans):
+    """Method that converts a comma separeted list of vlans and vlan ranges to
+    a list of individual vlans.
+
+    raw_vlans is a string that can look like:
+    '12,14-18,23,28,80-90' or '20' or '20,22' or '20-22'
+    """
+    range_str = raw_vlans.split(',')
+
+    vlan_list = []
+    for num_str in range_str:
+        if '-' in num_str:
+            num_str = num_str.split('-')
+            for x in range(int(num_str[0]), int(num_str[1])+1):
+                vlan_list.append(str(x))
+        else:
+            vlan_list.append(num_str)
+
+    return vlan_list

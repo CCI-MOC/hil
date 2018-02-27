@@ -14,7 +14,7 @@ from hil.migrations import paths
 from hil.model import db, Switch, SwitchSession
 from hil.errors import BadArgumentError
 from hil.model import BigIntegerType
-from hil.ext.switches.common import check_native_networks
+from hil.ext.switches.common import check_native_networks, parse_vlans
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'brocade')
 
@@ -187,17 +187,8 @@ class Brocade(Switch, SwitchSession):
             match = re.search(r'(\d+(-\d+)?)(,\d+(-\d+)?)*', vlans)
             if match is None:
                 return []
-            range_str = match.group().split(',')
 
-            vlan_list = []
-            # need to interpret the ranges to numbers. e.g. 14-16 as 14,15,16
-            for num_str in range_str:
-                if '-' in num_str:
-                    num_str = num_str.split('-')
-                    for x in range(int(num_str[0]), int(num_str[1])+1):
-                        vlan_list.append(str(x))
-                else:
-                    vlan_list.append(num_str)
+            vlan_list = parse_vlans(match.group())
 
             return [('vlan/%s' % x, x) for x in vlan_list]
         except AttributeError:

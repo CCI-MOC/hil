@@ -13,7 +13,8 @@ from hil.model import db, Switch, SwitchSession
 from hil.errors import BadArgumentError
 from hil.model import BigIntegerType
 from hil.network_allocator import get_network_allocator
-from hil.ext.switches.common import should_save, check_native_networks
+from hil.ext.switches.common import should_save, check_native_networks, \
+ parse_vlans
 
 logger = logging.getLogger(__name__)
 
@@ -137,16 +138,8 @@ class DellNOS9(Switch, SwitchSession):
         match = re.search(r'T(\d+(-\d+)?)(,\d+(-\d+)?)*', response)
         if match is None:
             return []
-        range_str = match.group().replace('T', '').split(',')
-        vlan_list = []
-        # need to interpret the ranges to numbers. e.g. 14-18 as 14,15,16,17,18
-        for num_str in range_str:
-            if '-' in num_str:
-                num_str = num_str.split('-')
-                for x in range(int(num_str[0]), int(num_str[1])+1):
-                    vlan_list.append(str(x))
-            else:
-                vlan_list.append(num_str)
+
+        vlan_list = parse_vlans(match.group().replace('T', ''))
 
         return [('vlan/%s' % x, x) for x in vlan_list]
 
