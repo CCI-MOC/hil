@@ -8,12 +8,46 @@ Once `load` has been called, it will be ready to use.
 import ConfigParser
 import logging.handlers
 import importlib
+from schema import Schema, Optional
 import os
 import sys
 
 cfg = ConfigParser.RawConfigParser()
 cfg.optionxform = str
 
+core_schema = {
+    'general': {
+        'log_level': str,
+        Optional('log_dir'): str,
+    },
+    'auth': {
+        Optional('require_authentication'): bool,
+    },
+    'headnode': {
+        Optional('trunk_nic'): str,
+        Optional('base_imgs'): str,
+        Optional('libvirt_endpoint'): str,
+    },
+    'client': {
+        Optional('endpoint'): str,
+    },
+    'database': {
+        'uri': str,
+    },
+    'devel': {
+        Optional('dry_run'): bool,
+    },
+    'maintenance': {
+        Optional('url'): str,
+        Optional('shutdown'): '',
+    },
+    'network-daemon': {
+        Optional('sleep_time'): int,
+    },
+    'extensions': {
+        str: '',
+    },
+}
 
 def load(filename='hil.cfg'):
     """Load the configuration from the file 'hil.cfg' in the current directory.
@@ -80,6 +114,16 @@ def load_extensions():
             sys.modules[name].setup()
 
 
+def validate_config():
+    """Validate the current config file"""
+    import pdb; pdb.set_trace()
+    cfg_dict = dict()
+    for section in cfg.sections():
+       cfg_dict[section] = dict(cfg.items(section))
+    validated = Schema(core_schema).validate(cfg_dict)
+    assert validated == core_schema
+
+
 def setup(filename='hil.cfg'):
     """Do full configuration setup.
 
@@ -89,3 +133,12 @@ def setup(filename='hil.cfg'):
     load(filename)
     configure_logging()
     load_extensions()
+    validate_config()
+
+def _string_is_bool(section, option):
+    """Check if a string matches ConfigParser's definition of a bool"""
+    try:
+        cfg.getboolean(section, option)
+    except ValueError as e:
+        return False
+    return True
