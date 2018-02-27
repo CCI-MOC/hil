@@ -302,5 +302,5 @@ class Brocade(Switch, SwitchSession):
         try:
             r = requests.request(method, url, data=data, auth=self._auth)
         except SwitchError:
-            logger.error('Bad Request to switch. Response: %s', r.text)    
+            logger.error('Bad Request to switch. Response: %s', r.text)
         return r
