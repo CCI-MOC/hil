@@ -177,11 +177,29 @@ class Brocade(Switch, SwitchSession):
             url = self._construct_url(interface, suffix='trunk')
             response = self._make_request('GET', url)
             root = etree.fromstring(response.text)
-            vlans = root.\
+            vlans = root. \
                 find(self._construct_tag('allowed')).\
                 find(self._construct_tag('vlan')).\
                 find(self._construct_tag('add')).text
-            return [('vlan/%s' % x, x) for x in vlans.split(',')]
+
+            # finds a comma separated list of integers and/or ranges.
+            # Sample: 12,14-18,23,28,80-90 or 20 or 20,22 or 20-22
+            match = re.search(r'(\d+(-\d+)?)(,\d+(-\d+)?)*', vlans)
+            if match is None:
+                return []
+            range_str = match.group().split(',')
+
+            vlan_list = []
+            # need to interpret the ranges to numbers. e.g. 14-16 as 14,15,16
+            for num_str in range_str:
+                if '-' in num_str:
+                    num_str = num_str.split('-')
+                    for x in range(int(num_str[0]), int(num_str[1])+1):
+                        vlan_list.append(str(x))
+                else:
+                    vlan_list.append(num_str)
+
+            return [('vlan/%s' % x, x) for x in vlan_list]
         except AttributeError:
             return []
 
