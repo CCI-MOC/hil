@@ -38,7 +38,7 @@ TRUNK_VLAN_RESPONSE = """
   <allowed y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/18%22/switchport/trunk/allowed">  # noqa
     <rspan-vlan y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/18%22/switchport/trunk/allowed/rspan-vlan"/>  # noqa
     <vlan y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/18%22/switchport/trunk/allowed/vlan">  # noqa
-      <add>1,4001,4004,4025,4050</add>
+      <add>1,4001-4004,4025,4050</add>
     </vlan>
   </allowed>
   <tag y:self="/rest/config/running/interface/TenGigabitEthernet/%22104/0/18%22/switchport/trunk/tag">  # noqa
@@ -182,6 +182,8 @@ class TestBrocade(object):
                 PORT2: [('vlan/native', '10')],
                 PORT3: [('vlan/1', '1'),
                         ('vlan/4001', '4001'),
+                        ('vlan/4002', '4002'),
+                        ('vlan/4003', '4003'),
                         ('vlan/4004', '4004'),
                         ('vlan/4025', '4025'),
                         ('vlan/4050', '4050')]
