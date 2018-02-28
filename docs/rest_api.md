@@ -246,13 +246,16 @@ Returns a JSON dictionary of dictionaries, where the exterior dictionary is inde
 the network name and the value of each key is another dictionary with keys corresponding
 to that network's id and projects
 
+Response contains all networks if the user is an admin. Otherwise, response
+only contains all public networks.
+
 The response must contain the following fields:
 
 * "network", the name of a network
 * "network_id", the id of the network
 * "projects", a list of projects with access to the network or 'None' if network is public
 
-Example Response:
+Example Response for an admin user:
 
     {
         "netA": {
@@ -265,9 +268,23 @@ Example Response:
         }
     }
 
+Example Response for a regular user:
+
+    {
+        "netA": {
+            "network_id": "102",
+            "projects": None
+        },
+        "netB": {
+            "network_id": "103",
+            "projects": None
+        }
+    }
+
 Authorization requirements:
 
-* Administrative access is required
+* Administrative access is required to list all networks
+* No special access is required to list all public networks
 
 #### list_network_attachments
 
@@ -1254,6 +1271,23 @@ API calls provided by specific extensions. They may not exist in all
 configurations.
 
 ### The `hil.ext.auth.database` auth backend
+
+#### list_users
+
+`GET /auth/basic/users`
+
+List all users
+
+Response body:
+
+    {
+        'hil_user': {'is_admin': True, 'projects': ["runway"]}
+        'mock_user': {'is_admin': False, 'projects': ["manhattan"]}
+    }
+
+Authorization requirements:
+
+* Administrative access.
 
 #### user_create
 
