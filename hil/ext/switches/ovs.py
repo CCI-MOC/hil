@@ -2,7 +2,6 @@
 import re
 import logging
 import schema
-import os
 import ast
 import subprocess
 import shlex
@@ -64,7 +63,7 @@ class Ovs(Switch, SwitchSession):
             logger.error('%s', e)
             raise SwitchError('ovs command failed: ')
 
-    def get_port_networks(self, port):
+    def get_port_networks(self, ports):
         """ Provides networks connected to the given port.
         Args:
             port: Valid port name
