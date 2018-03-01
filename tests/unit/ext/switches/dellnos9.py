@@ -88,7 +88,7 @@ def test_ensure_legal_operations():
                         hostname="switchname",
                         interface_type="GigabitEthernet")
     api.switch_register_port('s3048', '1/3')
-    switch = api._must_find(model.Switch, 's3048')
+    switch = api.get_or_404(model.Switch, 's3048')
 
     # register a ndoe and a nic
     api.node_register('compute-01', obm={
@@ -98,7 +98,7 @@ def test_ensure_legal_operations():
                   "password": "tapeworm"})
     api.project_connect_node('anvil-nextgen', 'compute-01')
     api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
-    nic = api._must_find(model.Nic, 'eth0')
+    nic = api.get_or_404(model.Nic, 'eth0')
 
     api.port_connect_nic('s3048', '1/3', 'compute-01', 'eth0')
 

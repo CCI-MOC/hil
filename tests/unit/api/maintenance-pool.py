@@ -94,6 +94,6 @@ class TestProjectDetachNodeMaintenance:
         # Should raise error due to arbitrary POST url:
         with pytest.raises(LoggedWarningError):
             api.project_detach_node('anvil-nextgen', 'node-99')
-        maintenance_proj = api._must_find(model.Project, 'maintenance')
-        node = api._must_find(model.Node, 'node-99')
+        maintenance_proj = api.get_or_404(model.Project, 'maintenance')
+        node = api.get_or_404(model.Node, 'node-99')
         assert node.project == maintenance_proj

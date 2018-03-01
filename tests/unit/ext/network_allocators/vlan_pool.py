@@ -89,13 +89,13 @@ class TestAdminCreatedNetworks():
 
         # create a project owned network and get its network_id
         api.network_create('hammernet', 'nuggets', 'nuggets', '')
-        network = api._must_find(model.Network, 'hammernet')
+        network = api.get_or_404(model.Network, 'hammernet')
         net_id = int(network.network_id)
         assert network.allocated is True
 
         # create an admin owned network with net_id from pool
         api.network_create('nailnet', 'admin', '', 103)
-        network = api._must_find(model.Network, 'nailnet')
+        network = api.get_or_404(model.Network, 'nailnet')
         assert network.allocated is True
 
         # creating a network with the same network id should raise an error
@@ -107,17 +107,17 @@ class TestAdminCreatedNetworks():
         # free the network ids by deleting the networks
         api.network_delete('hammernet')
         api.network_delete('nailnet')
-        api._assert_absent(model.Network, 'hammernet')
-        api._assert_absent(model.Network, 'nailnet')
+        api.absent_or_conflict(model.Network, 'hammernet')
+        api.absent_or_conflict(model.Network, 'nailnet')
 
         # after deletion we should be able to create admin networks with those
         # network_ids
         api.network_create('redbone', 'admin', '', 103)
-        network = api._must_find(model.Network, 'redbone')
+        network = api.get_or_404(model.Network, 'redbone')
         assert int(network.network_id) == 103
 
         api.network_create('starfish', 'admin', '', net_id)
-        network = api._must_find(model.Network, 'starfish')
+        network = api.get_or_404(model.Network, 'starfish')
         assert int(network.network_id) == net_id
 
     def test_create_network_with_id_outside_pool(self):
@@ -130,7 +130,7 @@ class TestAdminCreatedNetworks():
         # same network id
 
         api.network_create('starfish', 'admin', '', 1511)
-        network = api._must_find(model.Network, 'starfish')
+        network = api.get_or_404(model.Network, 'starfish')
         net_id = int(network.network_id)
         assert network.allocated is False
         assert net_id == 1511

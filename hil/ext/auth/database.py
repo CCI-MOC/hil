@@ -88,7 +88,7 @@ def user_create(user, password, is_admin=False):
 
     # XXX: We need to do a bit of refactoring, so this is available outside of
     # hil.api:
-    api._assert_absent(User, user)
+    api.absent_or_conflict(User, user)
 
     user = User(user, password, is_admin)
     db.session.add(user)
@@ -105,7 +105,7 @@ def user_delete(user):
 
     # XXX: We need to do a bit of refactoring, so this is available outside of
     # hil.api:
-    user = api._must_find(User, user)
+    user = api.get_or_404(User, user)
 
     db.session.delete(user)
     db.session.commit()
@@ -121,8 +121,8 @@ def user_add_project(user, project):
     If the project or user does not exist, a NotFoundError will be raised.
     """
     get_auth_backend().require_admin()
-    user = api._must_find(User, user)
-    project = api._must_find(model.Project, project)
+    user = api.get_or_404(User, user)
+    project = api.get_or_404(model.Project, project)
     if project in user.projects:
         raise errors.DuplicateError(
             'User %s is already in project %s' % (user.label, project.label))
@@ -140,8 +140,8 @@ def user_remove_project(user, project):
     If the project or user does not exist, a NotFoundError will be raised.
     """
     get_auth_backend().require_admin()
-    user = api._must_find(User, user)
-    project = api._must_find(model.Project, project)
+    user = api.get_or_404(User, user)
+    project = api.get_or_404(model.Project, project)
     if project not in user.projects:
         raise errors.NotFoundError(
             "User %s is not in project %s" % (user.label, project.label))
@@ -156,7 +156,7 @@ def user_remove_project(user, project):
 def user_set_admin(user, is_admin):
     """Set whether the user is an admin."""
     get_auth_backend().require_admin()
-    user = api._must_find(User, user)
+    user = api.get_or_404(User, user)
     if user.label == local.auth.label:
         raise errors.IllegalStateError("Cannot set own admin status")
     user.is_admin = is_admin
@@ -177,7 +177,7 @@ class DatabaseAuthBackend(auth.AuthBackend):
         if authorization.password is None:
             return False
 
-        user = api._must_find(User, authorization.username)
+        user = api.get_or_404(User, authorization.username)
         if user.verify_password(authorization.password):
             local.auth = user
             logger.info("Successful authentication for user %r", user.label)
