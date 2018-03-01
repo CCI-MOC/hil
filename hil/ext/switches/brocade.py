@@ -302,6 +302,6 @@ class Brocade(Switch, SwitchSession):
         r = requests.request(method, url, data=data, auth=self._auth)
         if r.status_code >= 400 and \
            r.status_code not in acceptable_error_codes:
-            logger.error('Bad Request to switch. Response: %s', r.text)
-            raise SwitchError('Bad Request to switch')
+            logger.error('Bad Request to switch. Reason: %s', r.reason)
+            raise SwitchError('Bad Request to switch. Reason: %s', r.reason)
         return r
