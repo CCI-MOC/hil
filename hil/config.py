@@ -25,9 +25,9 @@ core_schema = {
             lambda s: string_is_bool(s),
     },
     'headnode': {
-        Optional('trunk_nic'): str,
-        Optional('base_imgs'): str,
-        Optional('libvirt_endpoint'): str,
+        'trunk_nic': str,
+        'base_imgs': str,
+        'libvirt_endpoint': str,
     },
     'client': {
         Optional('endpoint'): str,
