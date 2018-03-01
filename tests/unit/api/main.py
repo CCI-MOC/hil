@@ -604,16 +604,16 @@ class TestNodeRegisterDeleteMetadata:
         """Setting new metadata on a node adds the metadata."""
         api.node_set_metadata('free_node_0', 'EK', 'pk')
         metadata = api.get_child_or_404(api.get_or_404(model.Node,
-                                                   'free_node_0'),
-                                    model.Metadata, 'EK')
+                                                       'free_node_0'),
+                                        model.Metadata, 'EK')
         assert metadata.owner.label == 'free_node_0'
 
     def test_node_update_metadata(self):
         """Updating existing metadata on a node works."""
         api.node_set_metadata('runway_node_0', 'EK', 'new_pk')
         metadata = api.get_child_or_404(api.get_or_404(model.Node,
-                                                   'runway_node_0'),
-                                    model.Metadata, 'EK')
+                                                       'runway_node_0'),
+                                        model.Metadata, 'EK')
         assert json.loads(metadata.value) == 'new_pk'
 
     def test_node_set_metadata_no_node(self):
@@ -626,8 +626,8 @@ class TestNodeRegisterDeleteMetadata:
         api.node_set_metadata('free_node_0', 'EK', 'pk')
         api.node_delete_metadata('free_node_0', 'EK')
         api.absent_child_or_conflict(api.get_or_404(model.Node,
-                                            'free_node_0'),
-                             model.Metadata, 'EK')
+                                                    'free_node_0'),
+                                     model.Metadata, 'EK')
 
     def test_node_delete_metadata_metadata_nexist(self):
         """Deleting a metadata key that does not exist fails."""

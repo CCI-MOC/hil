@@ -610,7 +610,7 @@ def headnode_delete_hnic(headnode, hnic):
     """
     headnode = get_or_404(model.Headnode, headnode)
     get_auth_backend().require_project_access(headnode.project)
-    hnic = headnode, model.Hnic, hnic)
+    hnic = get_child_or_404(headnode, model.Hnic, hnic)
 
     if not headnode.dirty:
         raise errors.IllegalStateError
