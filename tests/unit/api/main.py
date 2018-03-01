@@ -137,7 +137,7 @@ class TestProjectCreateDelete:
     def test_project_create_success(self):
         """(successful) call to project_create"""
         api.project_create('anvil-nextgen')
-        api._must_find(model.Project, 'anvil-nextgen')
+        api.get_or_404(model.Project, 'anvil-nextgen')
 
     def test_project_create_duplicate(self):
         """Call to project_create should fail if the project already exists."""
@@ -148,7 +148,7 @@ class TestProjectCreateDelete:
         """project_delete should successfully delete a project."""
         api.project_delete('empty-project')
         with pytest.raises(errors.NotFoundError):
-            api._must_find(model.Project, 'empty-project')
+            api.get_or_404(model.Project, 'empty-project')
 
     def test_project_delete_nexist(self):
         """Deleting a project which doesn't exist should raise not found."""
@@ -205,16 +205,16 @@ class TestProjectAddDeleteNetwork:
     def test_network_grant_project_access(self):
         """network_grant_project_access should actually grant access."""
         api.network_grant_project_access('manhattan', 'runway_pxe')
-        network = api._must_find(model.Network, 'runway_pxe')
-        project = api._must_find(model.Project, 'manhattan')
+        network = api.get_or_404(model.Network, 'runway_pxe')
+        project = api.get_or_404(model.Project, 'manhattan')
         assert project in network.access
         assert network in project.networks_access
 
     def test_network_revoke_project_access(self):
         """network_revoke_project_access should actually revoke access."""
         api.network_revoke_project_access('runway', 'runway_provider')
-        network = api._must_find(model.Network, 'runway_provider')
-        project = api._must_find(model.Project, 'runway')
+        network = api.get_or_404(model.Network, 'runway_provider')
+        project = api.get_or_404(model.Project, 'runway')
         assert project not in network.access
         assert network not in project.networks_access
 
@@ -290,8 +290,8 @@ class TestProjectConnectDetachNode:
         new_node('node-99')
 
         api.project_connect_node('anvil-nextgen', 'node-99')
-        project = api._must_find(model.Project, 'anvil-nextgen')
-        node = api._must_find(model.Node, 'node-99')
+        project = api.get_or_404(model.Project, 'anvil-nextgen')
+        node = api.get_or_404(model.Node, 'node-99')
         assert node in project.nodes
         assert node.project is project
 
@@ -324,8 +324,8 @@ class TestProjectConnectDetachNode:
         new_node('node-99')
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.project_detach_node('anvil-nextgen', 'node-99')
-        project = api._must_find(model.Project, 'anvil-nextgen')
-        node = api._must_find(model.Node, 'node-99')
+        project = api.get_or_404(model.Project, 'anvil-nextgen')
+        node = api.get_or_404(model.Node, 'node-99')
         assert node not in project.nodes
         assert node.project is not project
 
@@ -441,7 +441,7 @@ class TestNodeRegisterDelete:
                   "host": "ipmihost",
                   "user": "root",
                   "password": "tapeworm"})
-        api._must_find(model.Node, 'node-99')
+        api.get_or_404(model.Node, 'node-99')
 
     def test_node_register_with_metadata(self):
         """Same thing, but try it with metadata."""
@@ -456,7 +456,7 @@ class TestNodeRegisterDelete:
                           metadata={
                               "EK": "pk"
                           })
-        api._must_find(model.Node, 'node-99')
+        api.get_or_404(model.Node, 'node-99')
 
     def test_node_register_JSON_metadata(self):
         """...and with the metadata being something other than a string."""
@@ -470,7 +470,7 @@ class TestNodeRegisterDelete:
                           metadata={
                               "EK": {"val1": 1, "val2": 2}
                           })
-        api._must_find(model.Node, 'node-99')
+        api.get_or_404(model.Node, 'node-99')
 
     def test_node_register_with_multiple_metadata(self):
         """...and with multiple metadata keys."""
@@ -487,7 +487,7 @@ class TestNodeRegisterDelete:
                               "SHA256": "b5962d8173c14e60259211bcf25d1263c36e0"
                               "ad7da32ba9d07b224eac1834813"
                           })
-        api._must_find(model.Node, 'node-99')
+        api.get_or_404(model.Node, 'node-99')
 
     def test_duplicate_node_register(self):
         """Duplicate calls to node_register should fail."""
@@ -500,7 +500,7 @@ class TestNodeRegisterDelete:
         new_node('node-99')
         api.node_delete('node-99')
         with pytest.raises(errors.NotFoundError):
-            api._must_find(model.Node, 'node-99')
+            api.get_or_404(model.Node, 'node-99')
 
     def test_node_delete_nexist(self):
         """node_delete should fail if the node does not exist."""
@@ -530,7 +530,7 @@ class TestNodeRegisterDeleteNic:
         """node_register_nic should add the nic to the db."""
         new_node('compute-01')
         api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
-        nic = api._must_find(model.Nic, '01-eth0')
+        nic = api.get_or_404(model.Nic, '01-eth0')
         assert nic.owner.label == 'compute-01'
 
     def test_node_register_nic_no_node(self):
@@ -542,7 +542,7 @@ class TestNodeRegisterDeleteNic:
         """node_register_nic should fail if the nic already exists."""
         new_node('compute-01')
         api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
-        api._must_find(model.Nic, '01-eth0')
+        api.get_or_404(model.Nic, '01-eth0')
         with pytest.raises(errors.DuplicateError):
             api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:15')
 
@@ -554,8 +554,8 @@ class TestNodeRegisterDeleteNic:
         new_node('compute-01')
         api.node_register_nic('compute-01', '01-eth0', 'DE:AD:BE:EF:20:14')
         api.node_delete_nic('compute-01', '01-eth0')
-        api._assert_absent(model.Nic, '01-eth0')
-        api._must_find(model.Node, 'compute-01')
+        api.absent_or_conflict(model.Nic, '01-eth0')
+        api.get_or_404(model.Node, 'compute-01')
 
     def test_node_delete_nic_nic_nexist(self):
         """node_delete_nic should fail if the nic does not exist."""
@@ -603,7 +603,7 @@ class TestNodeRegisterDeleteMetadata:
     def test_node_set_metadata(self):
         """Setting new metadata on a node adds the metadata."""
         api.node_set_metadata('free_node_0', 'EK', 'pk')
-        metadata = api._must_find_n(api._must_find(model.Node,
+        metadata = api.get_child_or_404(api.get_or_404(model.Node,
                                                    'free_node_0'),
                                     model.Metadata, 'EK')
         assert metadata.owner.label == 'free_node_0'
@@ -611,7 +611,7 @@ class TestNodeRegisterDeleteMetadata:
     def test_node_update_metadata(self):
         """Updating existing metadata on a node works."""
         api.node_set_metadata('runway_node_0', 'EK', 'new_pk')
-        metadata = api._must_find_n(api._must_find(model.Node,
+        metadata = api.get_child_or_404(api.get_or_404(model.Node,
                                                    'runway_node_0'),
                                     model.Metadata, 'EK')
         assert json.loads(metadata.value) == 'new_pk'
@@ -625,7 +625,7 @@ class TestNodeRegisterDeleteMetadata:
         """Deleting metadata from a node removes that key."""
         api.node_set_metadata('free_node_0', 'EK', 'pk')
         api.node_delete_metadata('free_node_0', 'EK')
-        api._assert_absent_n(api._must_find(model.Node,
+        api.absent_child_or_conflict(api.get_or_404(model.Node,
                                             'free_node_0'),
                              model.Metadata, 'EK')
 
@@ -685,8 +685,8 @@ class TestNodeConnectDetachNetwork:
 
         deferred.apply_networking()
 
-        network = api._must_find(model.Network, 'hammernet')
-        nic = api._must_find(model.Nic, '99-eth0')
+        network = api.get_or_404(model.Network, 'hammernet')
+        nic = api.get_or_404(model.Nic, '99-eth0')
         model.NetworkAttachment.query.filter_by(network=network,
                                                 nic=nic).one()
 
@@ -837,8 +837,8 @@ class TestNodeConnectDetachNetwork:
         assert uuid_pattern.match(response['status_id'])
 
         deferred.apply_networking()
-        network = api._must_find(model.Network, 'hammernet')
-        nic = api._must_find(model.Nic, '99-eth0')
+        network = api.get_or_404(model.Network, 'hammernet')
+        nic = api.get_or_404(model.Nic, '99-eth0')
         assert model.NetworkAttachment.query \
             .filter_by(network=network, nic=nic).count() == 0
 
@@ -947,7 +947,7 @@ class TestHeadnodeCreateDelete:
         """
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
-        hn = api._must_find(model.Headnode, 'hn-0')
+        hn = api.get_or_404(model.Headnode, 'hn-0')
         assert hn.project.label == 'anvil-nextgen'
 
     def test_headnode_create_badproject(self):
@@ -974,7 +974,7 @@ class TestHeadnodeCreateDelete:
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_delete('hn-0')
-        api._assert_absent(model.Headnode, 'hn-0')
+        api.absent_or_conflict(model.Headnode, 'hn-0')
 
     def test_headnode_delete_nonexistent(self):
         """Tests that deleting a nonexistent headnode fails"""
@@ -990,7 +990,7 @@ class TestHeadnodeCreateDeleteHnic:
         api.project_create('anvil-nextgen')
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
-        nic = api._must_find(model.Hnic, 'hn-0-eth0')
+        nic = api.get_or_404(model.Hnic, 'hn-0-eth0')
         assert nic.owner.label == 'hn-0'
 
     def test_headnode_create_hnic_no_headnode(self):
@@ -1012,8 +1012,8 @@ class TestHeadnodeCreateDeleteHnic:
         api.headnode_create('hn-0', 'anvil-nextgen', 'base-headnode')
         api.headnode_create_hnic('hn-0', 'hn-0-eth0')
         api.headnode_delete_hnic('hn-0', 'hn-0-eth0')
-        api._assert_absent(model.Hnic, 'hn-0-eth0')
-        api._must_find(model.Headnode, 'hn-0')
+        api.absent_or_conflict(model.Hnic, 'hn-0-eth0')
+        api.get_or_404(model.Headnode, 'hn-0')
 
     def test_headnode_delete_hnic_hnic_nexist(self):
         """Deleting an hnic that does not exist raises not found."""
@@ -1072,8 +1072,8 @@ class TestHeadnodeConnectDetachNetwork:
         network_create_simple('hammernet', 'anvil-nextgen')
 
         api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
-        network = api._must_find(model.Network, 'hammernet')
-        hnic = api._must_find(model.Hnic, 'hn-0-eth0')
+        network = api.get_or_404(model.Network, 'hammernet')
+        hnic = api.get_or_404(model.Hnic, 'hn-0-eth0')
         assert hnic.network is network
         assert hnic in network.hnics
 
@@ -1181,8 +1181,8 @@ class TestHeadnodeConnectDetachNetwork:
         api.headnode_connect_network('hn-0', 'hn-0-eth0', 'hammernet')
 
         api.headnode_detach_network('hn-0', 'hn-0-eth0')
-        network = api._must_find(model.Network, 'hammernet')
-        hnic = api._must_find(model.Hnic, 'hn-0-eth0')
+        network = api.get_or_404(model.Network, 'hammernet')
+        hnic = api.get_or_404(model.Hnic, 'hn-0-eth0')
         assert hnic.network is None
         assert hnic not in network.hnics
 
@@ -1329,7 +1329,7 @@ class TestNetworkCreateDelete:
         """network_create creates the network in the db."""
         api.project_create('anvil-nextgen')
         network_create_simple('hammernet', 'anvil-nextgen')
-        net = api._must_find(model.Network, 'hammernet')
+        net = api.get_or_404(model.Network, 'hammernet')
         assert net.owner.label == 'anvil-nextgen'
 
     def test_network_create_badproject(self):
@@ -1350,7 +1350,7 @@ class TestNetworkCreateDelete:
         api.project_create('anvil-nextgen')
         network_create_simple('hammernet', 'anvil-nextgen')
         api.network_delete('hammernet')
-        api._assert_absent(model.Network, 'hammernet')
+        api.absent_or_conflict(model.Network, 'hammernet')
 
     def test_network_delete_project_complex_success(self, switchinit):
         """Do a handful of operations, and make sure nothing explodes.
@@ -1526,7 +1526,7 @@ class Test_list_show_switch:
                             username="foo",
                             password="bar",
                             hostname="baz")
-        api._must_find(model.Switch, 'sw0')
+        api.get_or_404(model.Switch, 'sw0')
         assert json.loads(api.list_switches()) == ['sw0']
 
         api.switch_register('mock',
@@ -1534,7 +1534,7 @@ class Test_list_show_switch:
                             username="user",
                             password="password",
                             hostname="host")
-        api._must_find(model.Switch, 'mock')
+        api.get_or_404(model.Switch, 'mock')
 
         api.switch_register('cirius',
                             type=MOCK_SWITCH_TYPE,
@@ -1542,7 +1542,7 @@ class Test_list_show_switch:
                             password="password",
                             hostname="switch")
 
-        api._must_find(model.Switch, 'cirius')
+        api.get_or_404(model.Switch, 'cirius')
         assert json.loads(api.list_switches()) == [
             'cirius',
             'mock',
@@ -2245,7 +2245,7 @@ class TestShowNetwork:
 
         # switch to a different user and project
         auth.set_user('spongebob')
-        project = api._must_find(model.Project, 'pineapple')
+        project = api.get_or_404(model.Project, 'pineapple')
         auth.set_project(project)
         auth.set_admin(False)
 
@@ -2263,7 +2263,7 @@ class TestShowNetwork:
         # switch to the network owner and then see the output
 
         auth.set_user('user')
-        project = api._must_find(model.Project, 'anvil-nextgen')
+        project = api.get_or_404(model.Project, 'anvil-nextgen')
         auth.set_project(project)
         auth.set_admin(False)
 
@@ -2295,8 +2295,8 @@ class TestFancyNetworkCreate:
         """Succesfully create a project-owned network."""
         api.project_create('anvil-nextgen')
         api.network_create('hammernet', 'anvil-nextgen', 'anvil-nextgen', '')
-        project = api._must_find(model.Project, 'anvil-nextgen')
-        network = api._must_find(model.Network, 'hammernet')
+        project = api.get_or_404(model.Project, 'anvil-nextgen')
+        network = api.get_or_404(model.Network, 'hammernet')
         assert network.owner is project
         assert project in network.access
         assert network.allocated is True
@@ -2326,20 +2326,20 @@ class TestFancyNetworkCreate:
         Succesfully create all 4 varieties of administrator-owned networks.
         """
         api.project_create('anvil-nextgen')
-        project = api._must_find(model.Project, 'anvil-nextgen')
+        project = api.get_or_404(model.Project, 'anvil-nextgen')
         for project_api, project_db in [('', None),
                                         ('anvil-nextgen', project)]:
             for net_id, allocated in [('', True), ('35', False)]:
                 network = 'hammernet' + project_api + net_id
                 api.network_create(network, 'admin', project_api, net_id)
-                network = api._must_find(model.Network, network)
+                network = api.get_or_404(model.Network, network)
                 assert network.owner is None
                 if project_db is None:
                     assert not network.access
                 else:
                     assert project_db in network.access
                 assert network.allocated is allocated
-            network = api._must_find(model.Network, 'hammernet' +
+            network = api.get_or_404(model.Network, 'hammernet' +
                                      project_api + '35')
             assert network.network_id == '35'
 

@@ -181,7 +181,7 @@ class TestUserCreateDelete(DBAuthTestCase):
 
     def test_new_user(self):
         """Creating a (previously absent) user should succeed."""
-        api._assert_absent(self.dbauth.User, 'charlie')
+        api.absent_or_conflict(self.dbauth.User, 'charlie')
         self.dbauth.user_create('charlie', 'foo')
 
     def test_duplicate_user(self):
@@ -316,8 +316,8 @@ class TestUserAddRemoveProject(DBAuthTestCase):
         self.dbauth.user_create('charlie', 'secret')
         api.project_create('acme-corp')
         self.dbauth.user_add_project('charlie', 'acme-corp')
-        user = api._must_find(self.dbauth.User, 'charlie')
-        project = api._must_find(model.Project, 'acme-corp')
+        user = api.get_or_404(self.dbauth.User, 'charlie')
+        project = api.get_or_404(model.Project, 'acme-corp')
         assert project in user.projects
         assert user in project.users
 
@@ -327,8 +327,8 @@ class TestUserAddRemoveProject(DBAuthTestCase):
         api.project_create('acme-corp')
         self.dbauth.user_add_project('charlie', 'acme-corp')
         self.dbauth.user_remove_project('charlie', 'acme-corp')
-        user = api._must_find(self.dbauth.User, 'charlie')
-        project = api._must_find(model.Project, 'acme-corp')
+        user = api.get_or_404(self.dbauth.User, 'charlie')
+        project = api.get_or_404(model.Project, 'acme-corp')
         assert project not in user.projects
         assert user not in project.users
 
