@@ -11,3 +11,5 @@ omit =
     hil/ext/switches/_dell_base.py
     tests/unit/ext/obm/*
     tests/unit/ext/switches/*
+    # omit travis virtual env
+    /home/travis/virtualenv/*
