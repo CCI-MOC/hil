@@ -32,8 +32,6 @@ def check_native_networks(nic, op_type, channel):
         # are any trunked vlans.
         raise BlockedError("Please remove all trunked Vlans"
                            " before removing the native vlan")
-    else:
-        return
 
 
 def parse_vlans(raw_vlans):
