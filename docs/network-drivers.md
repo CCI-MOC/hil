@@ -342,10 +342,10 @@ To get started you will need to:
 
 ```
 	yum install openvswitch #For fedora or Centos
-	# Following script will: 
-	# --enable the openvswitch service; 
+	# Following script will:
+	# --enable the openvswitch service;
 	# --Start the openvswitch server;
-	# --Show the status to the user. 
+	# --Show the status to the user.
 	for i in enable start status
 	do service openvswitch $i; done
 	ovs-vsctl show
@@ -356,8 +356,8 @@ To get started you will need to:
 ```
 	ovs-vsctl add-br <switch_name>
 ```
- 
- 
+
+
 3.  Add some ports to this bridge:
 
 ```
