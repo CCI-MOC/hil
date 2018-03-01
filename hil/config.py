@@ -52,6 +52,7 @@ core_schema = {
     },
 }
 
+
 def load(filename='hil.cfg'):
     """Load the configuration from the file 'hil.cfg' in the current directory.
 
@@ -121,7 +122,7 @@ def validate_config():
     """Validate the current config file"""
     cfg_dict = dict()
     for section in cfg.sections():
-       cfg_dict[section] = dict(cfg.items(section))
+        cfg_dict[section] = dict(cfg.items(section))
     validated = Schema(core_schema).validate(cfg_dict)
     assert validated == cfg_dict
 
@@ -136,6 +137,7 @@ def setup(filename='hil.cfg'):
     configure_logging()
     load_extensions()
     validate_config()
+
 
 def string_is_bool(option):
     """Check if a string matches ConfigParser's definition of a bool"""

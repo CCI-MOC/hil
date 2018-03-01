@@ -26,7 +26,6 @@ core_schema[__name__] = {
 }
 
 
-
 class Nexus(Switch):
     """A Cisco Nexus switch."""
 
@@ -50,8 +49,8 @@ class Nexus(Switch):
             'hostname': basestring,
             'password': basestring,
             'dummy_vlan': And(Use(int),
-                                     lambda v: 0 <= v and v <= 4096,
-                                     Use(str)),
+                              lambda v: 0 <= v and v <= 4096,
+                              Use(str)),
         }).validate(kwargs)
 
     def session(self):

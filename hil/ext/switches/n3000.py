@@ -6,7 +6,7 @@ the long term we want to be using SNMP.
 
 import re
 import logging
-from schema import Schema, Optional
+from schema import Schema, Optional, And, Use
 
 from hil.model import db, Switch
 from hil.migrations import paths
@@ -48,9 +48,9 @@ class DellN3000(Switch):
             'username': basestring,
             'hostname': basestring,
             'password': basestring,
-            'dummy_vlan': schema.And(schema.Use(int),
-                                     lambda v: 0 < v and v <= 4093,
-                                     schema.Use(str)),
+            'dummy_vlan': And(Use(int),
+                              lambda v: 0 < v and v <= 4093,
+                              Use(str)),
         }).validate(kwargs)
 
     def session(self):
