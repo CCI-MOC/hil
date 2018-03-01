@@ -8,7 +8,7 @@ from lxml import etree
 from os.path import dirname, join
 import re
 import requests
-import schema
+from schema import Schema, Optional
 
 from hil.migrations import paths
 from hil.model import db, Switch, SwitchSession
@@ -16,11 +16,16 @@ from hil.errors import BadArgumentError
 from hil.model import BigIntegerType
 from hil.errors import SwitchError
 from hil.ext.switches.common import check_native_networks, parse_vlans
+from hil.config import core_schema, string_is_bool
 
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'brocade')
 
 logger = logging.getLogger(__name__)
+
+core_schema[__name__] = {
+    Optional('save'): lambda s: string_is_bool(s)
+}
 
 
 class Brocade(Switch, SwitchSession):
@@ -41,7 +46,7 @@ class Brocade(Switch, SwitchSession):
 
     @staticmethod
     def validate(kwargs):
-        schema.Schema({
+        Schema({
             'hostname': basestring,
             'username': basestring,
             'password': basestring,

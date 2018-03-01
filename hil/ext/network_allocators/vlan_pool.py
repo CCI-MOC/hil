@@ -4,7 +4,7 @@ import logging
 
 from hil.network_allocator import NetworkAllocator, set_network_allocator
 from hil.model import db
-from hil.config import cfg
+from hil.config import cfg, core_schema
 from hil.errors import BlockedError
 
 from os.path import join, dirname
@@ -12,6 +12,10 @@ from hil.migrations import paths
 from hil.model import BigIntegerType
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'vlan_pool')
+
+core_schema[__name__] = {
+    'vlans': str
+}
 
 
 def get_vlan_list():

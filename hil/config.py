@@ -16,12 +16,13 @@ cfg = ConfigParser.RawConfigParser()
 cfg.optionxform = str
 
 core_schema = {
-    'general': {
+    Optional('general'): {
         'log_level': str,
         Optional('log_dir'): str,
     },
-    'auth': {
-        Optional('require_authentication'): bool,
+    Optional('auth'): {
+        Optional('require_authentication'):
+            lambda s: string_is_bool(s),
     },
     'headnode': {
         Optional('trunk_nic'): str,
@@ -34,18 +35,20 @@ core_schema = {
     'database': {
         'uri': str,
     },
-    'devel': {
-        Optional('dry_run'): bool,
+    Optional('devel'): {
+        Optional('dry_run'):
+            lambda s: string_is_bool(s),
     },
-    'maintenance': {
+    Optional('maintenance'): {
+        Optional('maintenance_project'): str,
         Optional('url'): str,
         Optional('shutdown'): '',
     },
-    'network-daemon': {
+    Optional('network-daemon'): {
         Optional('sleep_time'): int,
     },
     'extensions': {
-        str: '',
+        Optional(str): '',
     },
 }
 
@@ -116,12 +119,11 @@ def load_extensions():
 
 def validate_config():
     """Validate the current config file"""
-    import pdb; pdb.set_trace()
     cfg_dict = dict()
     for section in cfg.sections():
        cfg_dict[section] = dict(cfg.items(section))
     validated = Schema(core_schema).validate(cfg_dict)
-    assert validated == core_schema
+    assert validated == cfg_dict
 
 
 def setup(filename='hil.cfg'):
@@ -135,10 +137,7 @@ def setup(filename='hil.cfg'):
     load_extensions()
     validate_config()
 
-def _string_is_bool(section, option):
+def string_is_bool(option):
     """Check if a string matches ConfigParser's definition of a bool"""
-    try:
-        cfg.getboolean(section, option)
-    except ValueError as e:
-        return False
-    return True
+    return option.lower() in ['true', 'yes', 'on', '1',
+                              'false', 'no', 'off', '0']

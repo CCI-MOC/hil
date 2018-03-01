@@ -5,7 +5,7 @@ long term we want to be using SNMP.
 """
 
 import re
-import schema
+from schema import Schema, Optional, And, Use
 import logging
 
 from hil.model import db, Switch
@@ -14,10 +14,17 @@ from hil.errors import BadArgumentError
 from os.path import join, dirname
 from hil.migrations import paths
 from hil.model import BigIntegerType
+from hil.config import core_schema, string_is_bool
+
 
 logger = logging.getLogger(__name__)
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'nexus')
+
+core_schema[__name__] = {
+    Optional('save'): lambda s: string_is_bool(s)
+}
+
 
 
 class Nexus(Switch):
@@ -38,13 +45,13 @@ class Nexus(Switch):
 
     @staticmethod
     def validate(kwargs):
-        schema.Schema({
+        Schema({
             'username': basestring,
             'hostname': basestring,
             'password': basestring,
-            'dummy_vlan': schema.And(schema.Use(int),
+            'dummy_vlan': And(Use(int),
                                      lambda v: 0 <= v and v <= 4096,
-                                     schema.Use(str)),
+                                     Use(str)),
         }).validate(kwargs)
 
     def session(self):

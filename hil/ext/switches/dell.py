@@ -5,7 +5,7 @@ the long term we want to be using SNMP.
 """
 
 import logging
-import schema
+from schema import Schema, Optional
 import re
 
 from hil.model import db, Switch
@@ -15,9 +15,14 @@ from hil.ext.switches._dell_base import _BaseSession
 from os.path import dirname, join
 from hil.errors import BadArgumentError
 from hil.model import BigIntegerType
+from hil.config import core_schema, string_is_bool
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'dell')
 logger = logging.getLogger(__name__)
+
+core_schema[__name__] = {
+    Optional('save'): lambda s: string_is_bool(s)
+}
 
 
 class PowerConnect55xx(Switch):
@@ -38,7 +43,7 @@ class PowerConnect55xx(Switch):
 
     @staticmethod
     def validate(kwargs):
-        schema.Schema({
+        Schema({
             'username': basestring,
             'hostname': basestring,
             'password': basestring,
