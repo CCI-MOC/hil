@@ -43,8 +43,7 @@ class Ovs(Switch, SwitchSession):
 # 1. Public Methods:
 
     def get_capabilities(self):
-        """Provides the features of this switch that HIL supports. """
-        return []
+        return ['nativeless-trunk-mode']
 
     def ovs_connect(self, *command_strings):
         """Interacts with the Openvswitch.
@@ -64,29 +63,38 @@ class Ovs(Switch, SwitchSession):
             raise SwitchError('ovs command failed: ')
 
     def get_port_networks(self, ports):
-        """ Provides networks connected to the given port.
-        Args:
-            port: Valid port name
-        Returns: List of vlans assigned to the port.
-        """
-        (port,) = filter(lambda p: p.label == port, self.ports)
-        interface = port.label
-        port_info = self._interface_info(interface)
-        networks = []
-        if port_info['trunks']:
-            for vlan in port_info['trunks']:
-                networks.append(vlan)
-        if port_info['tag']:
-            networks.append(port_info['tag'][0])
-        return networks
+
+        response = {}
+        for port in ports:
+            trunk_id_list = self._interface_info(port.label)['trunks']
+            if trunk_id_list == []:
+                response[port] = []
+            else:
+                result = []
+                for trunk in trunk_id_list:
+                    name = "vlan/"+trunk
+                    result.append((name, trunk))
+                response[port] = result
+            native = self._interface_info(port.label)['tag']
+            if native != []:
+                response[port].append(("vlan/native", native))
+
+        return response
+
+
+#        (port,) = filter(lambda p: p.label == port, self.ports)
+#        interface = port.label
+#        port_info = self._interface_info(interface)
+#        networks = []
+#        if port_info['trunks']:
+#            for vlan in port_info['trunks']:
+#                networks.append(vlan)
+#        if port_info['tag']:
+#            networks.append(port_info['tag'][0])
+#        return networks
 
     def revert_port(self, port):
-        """Resets the port to the factory default.
-        Args:
-            port: Valid switch port
 
-        Returns: if successful returns None else error message.
-        """
         shell_cmd_1 = 'sudo ovs-vsctl del-port {port}'.format(port=port)
         shell_cmd_2 = 'sudo ovs-vsctl add-port {switch} {port}'.format(
                     switch=self.hostname, port=port
@@ -94,14 +102,7 @@ class Ovs(Switch, SwitchSession):
         self.ovs_connect(shell_cmd_1, shell_cmd_2)
 
     def modify_port(self, port, channel, new_network):
-        """ Changes vlan assignment to the port.
 
-        Args:
-            port: switch port in a valid format
-            channel: eg 'vlan/native' or 'vlan/<vlan_id>
-            new_network: vlan_id
-        Returns: If successful returns None else error.
-        """
         (port,) = filter(lambda p: p.label == port, self.ports)
         interface = port.label
 
@@ -167,6 +168,9 @@ class Ovs(Switch, SwitchSession):
             port: Valid port name
         Returns: configuration status of the port
         """
+        # This function is differnet then `ovs_connect` as it uses
+        # subprocess.check_output because it only needs read info from switch
+        # and pass the output to calling funtion.
         shell_cmd = "sudo ovs-vsctl list port {port}".format(port=port)
         args = shlex.split(shell_cmd)
         try:
