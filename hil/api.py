@@ -1089,7 +1089,7 @@ def port_revert(switch, port):
     """Detach the port from all networks."""
     get_auth_backend().require_admin()
     switch = get_or_404(model.Switch, switch)
-    port = get_or_404(switch, model.Port, port)
+    port = get_child_or_404(switch, model.Port, port)
 
     if port.nic is None:
         raise errors.NotFoundError(port.label + " not attached")
