@@ -28,7 +28,9 @@ def make_config(request):
         config = '\n'.join([
             '[client]',
             '[headnode]',
+            'trunk_nic = eth0',
             'base_imgs = base-headnode, img1, img2, img3, img4',
+            'libvirt_endpoint = qemu:///system',
             '[database]',
             'uri = sqlite:///%s/hil.db' % tmpdir,
             '[extensions]',
