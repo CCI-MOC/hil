@@ -4,6 +4,50 @@ from hil.client.base import ClientBase
 from hil.client.base import check_reserved_chars
 
 
+BROCADE = 'http://schema.massopencloud.org/haas/v0/switches/brocade'
+POWERCONNECT_55XX = 'http://schema.massopencloud.org/haas/v0/switches/powerconnect55xx'
+NEXUS = 'http://schema.massopencloud.org/haas/v0/switches/nexus'
+DELL_NOS9 = 'http://schema.massopencloud.org/haas/v0/switches/dellnos9'
+DELL_N3000 = 'http://schema.massopencloud.org/haas/v0/switches/delln3000'
+MOCK = 'http://schema.massopencloud.org/haas/v0/switches/mock'
+
+known_types = {
+    NEXUS: Schema({
+        'hostname': basestring,
+        'username': basestring,
+        'password': basestring,
+        'dummy_vlan': basestring,
+    }),
+    DELL_N3000: Schema({
+        'hostname': basestring,
+        'username': basestring,
+        'password': basestring,
+        'dummy_vlan': basestring,
+    }),
+    DELL_NOS9: Schema({
+        'hostname': basestring,
+        'username': basestring,
+        'password': basestring,
+        'interface_type': basestring,
+    }),
+    BROCADE: Schema({
+        'hostname': basestring,
+        'username': basestring,
+        'password': basestring,
+        'interface_type': basestring,
+    }),
+    POWERCONNECT_55XX: Schema({
+        'hostname': basestring,
+        'username': basestring,
+        'password': basestring,
+    }),
+    MOCK: Schema({
+        'hostname': basestring,
+        'username': basestring,
+        'password': basestring,
+    }),
+}
+
 class Switch(ClientBase):
     """Consists of calls to query and manipulate node related
 
@@ -23,7 +67,12 @@ class Switch(ClientBase):
 #       of the switches HIL will control and has read the
 #       HIL documentation to use appropriate flags to register
 #       it with HIL.
-        switch_api = "http://schema.massopencloud.org/haas/v0/switches/"
+        switch_api = "http://schema.massopencloud.org/haas/v0/switches/" + subtype
+        if switch_api in known_types:
+            try:
+                known_types[switch_api].validate(args)
+            except:
+                SchemaError("Bad Request")
         if subtype == "nexus" or subtype == "delln3000":
             if len(args) == 4:
                 switchinfo = {
