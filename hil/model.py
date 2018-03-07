@@ -58,7 +58,7 @@ class Nic(db.Model):
     """a nic belonging to a Node"""
 
     id = db.Column(BigIntegerType, primary_key=True)
-    label = db.Column(db.String, nullable=False)
+    label = db.Column(db.String, unique=True, nullable=False)
 
     # The Node to which the nic belongs:
     owner_id = db.Column(db.ForeignKey('node.id'), nullable=False)
