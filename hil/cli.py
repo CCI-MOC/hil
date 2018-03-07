@@ -380,5 +380,13 @@ def node_stop_console(node):
 def main():
     ensure_not_root()
     setup_http_client()
-    cli()
-
+    try:
+        cli()
+    except FailedAPICallException as e:
+        sys.exit('Error: %s\n' % e.message)
+    except InvalidAPIArgumentsException as e:
+        sys.exit('Error: %s\n' % e.message)
+    except BadArgumentError as e:
+        sys.exit('Error: %s\n' % e.message)
+    except Exception as e:
+        sys.exit('Unexpected error: %s\n' % e.message)
