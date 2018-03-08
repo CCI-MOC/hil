@@ -1,4 +1,4 @@
 #!/usr/bin/env python
 
-from hil import cli
+from hil.cli import cli
 cli.main()
