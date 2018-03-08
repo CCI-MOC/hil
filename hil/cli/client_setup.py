@@ -4,7 +4,8 @@ import sys
 import os
 import requests
 
-from hil.client.client import Client, RequestsHTTPClient
+from hil.client.client import Client, RequestsHTTPClient, KeystoneHTTPClient
+
 
 def setup_http_client():
     """Set `http_client` to a valid instance of `HTTPClient`

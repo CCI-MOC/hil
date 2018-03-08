@@ -1,3 +1,4 @@
+"""This module implements the HIL CLI"""
 import click
 import sys
 import pkg_resources
@@ -24,6 +25,7 @@ for command in commands:
 
 
 def main():
+    """CLI entry point"""
     ensure_not_root()
     try:
         cli()
