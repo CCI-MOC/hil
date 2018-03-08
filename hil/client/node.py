@@ -143,7 +143,8 @@ class Node(ClientBase):
 
     def show_console(self, node):
         """Display console log for <node> """
-        raise NotImplementedError
+        url = self.object_url('node', node, 'console')
+        return self.check_response(self.httpClient.request('GET', url))
 
     @check_reserved_chars()
     def start_console(self, node):
