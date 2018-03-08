@@ -422,7 +422,7 @@ class Test_node:
     def test_node_show_console_reserved_chars(self):
         """test for cataching illegal argument characters"""
         with pytest.raises(BadArgumentError):
-            C.node.show_console('node-/%]01') 
+            C.node.show_console('node-/%]01')
 
     def test_node_start_console(self):
         """(successful) call to node_start_console"""

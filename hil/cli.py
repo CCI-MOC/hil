@@ -760,6 +760,7 @@ def show_console(node):
     """Display console log for <node>"""
     C.node.show_console(node)
 
+
 @cmd
 def start_console(node):
     """Start logging console output from <node>"""
