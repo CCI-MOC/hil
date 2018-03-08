@@ -58,7 +58,7 @@ class Nic(db.Model):
     """a nic belonging to a Node"""
 
     id = db.Column(BigIntegerType, primary_key=True)
-    label = db.Column(db.String, unique=True, nullable=False)
+    label = db.Column(db.String, nullable=False)
 
     # The Node to which the nic belongs:
     owner_id = db.Column(db.ForeignKey('node.id'), nullable=False)
@@ -81,7 +81,7 @@ class Nic(db.Model):
 class Node(db.Model):
     """a (physical) machine"""
     id = db.Column(BigIntegerType, primary_key=True)
-    label = db.Column(db.String, nullable=False)
+    label = db.Column(db.String, unique=True, nullable=False)
 
     # The project to which this node is allocated. If the project is null, the
     # node is unallocated:
