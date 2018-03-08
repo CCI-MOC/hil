@@ -68,6 +68,35 @@ def serve_networks():
         sleep(sleep_time)
 
 
+@click.command(name='create_admin_user', short_help='Create admin user')
+@click.argument('username')
+@click.argument('password')
+def create_admin_user(username, password):
+    """Create an admin user. Only valid for the database auth backend.
+
+    This must be run on the HIL API server, with access to hil.cfg and the
+    database. It will create an user named <username> with password
+    <password>, who will have administrator privileges.
+
+    This command should only be used for bootstrapping the system; once you
+    have an initial admin, you can (and should) create additional users via
+    the API.
+    """
+    import sys
+    from hil import config
+
+    config.setup()
+    if not config.cfg.has_option('extensions', 'hil.ext.auth.database'):
+        sys.exit("'make_inital_admin' is only valid with the database auth"
+                 " backend.")
+    from hil import model
+    from hil.model import db
+    from hil.ext.auth.database import User
+    model.init_db()
+    db.session.add(User(label=username, password=password, is_admin=True))
+    db.session.commit()
+
+
 @click.group(name='networking-action')
 def networking_action():
     """Commands related to networking-actions"""

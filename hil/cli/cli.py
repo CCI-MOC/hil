@@ -18,7 +18,7 @@ def cli():
 
 commands = [node.node, project.project, network.network, switch.switch,
             port.port, user.user, misc.serve, misc.serve_networks,
-            misc.networking_action]
+            misc.networking_action, misc.create_admin_user]
 
 for command in commands:
     cli.add_command(command)
