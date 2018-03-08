@@ -141,6 +141,7 @@ class Node(ClientBase):
         url = self.object_url('node', node, 'metadata', label)
         return self.check_response(self.httpClient.request('DELETE', url))
 
+    @check_reserved_chars()
     def show_console(self, node):
         """Display console log for <node> """
         url = self.object_url('node', node, 'console')

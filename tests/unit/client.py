@@ -415,6 +415,15 @@ class Test_node:
         C.node.metadata_set("node-01", "EK", "pk")
         assert C.node.metadata_delete("node-01", "EK") is None
 
+    def test_node_show_console(self):
+        """(successful) call to node_show_console"""
+        assert C.node.show_console('node-01') is None
+
+    def test_node_show_console_reserved_chars(self):
+        """test for cataching illegal argument characters"""
+        with pytest.raises(BadArgumentError):
+            C.node.show_console('node-/%]01') 
+
     def test_node_start_console(self):
         """(successful) call to node_start_console"""
         assert C.node.start_console('node-01') is None
