@@ -6,7 +6,7 @@ C = setup_http_client()
 
 
 @click.command(name='serve', help='Run a development HIL server')
-@click.argument('port', type=click.IntRange(0,2**16-1),
+@click.argument('port', type=click.IntRange(0, 2**16-1),
                 default='5000', required=False)
 def serve(port):
     """Run a development api server. Don't use this in production."""
@@ -31,8 +31,13 @@ def serve(port):
 @click.command(name='serve_networks', help='Run the networking server')
 def serve_networks():
     """Start the HIL networking server"""
-    from hil import model, deferred, config
+    from hil import model, deferred, config, server, migrations
+    from hil.config import cfg
     from time import sleep
+    import logging
+    import sys
+
+    logger = logging.getLogger(__name__)
     config.setup()
     server.init()
     server.register_drivers()
@@ -61,3 +66,15 @@ def serve_networks():
         while deferred.apply_networking():
             pass
         sleep(sleep_time)
+
+
+@click.group(name='networking-action')
+def networking_action():
+    """Commands related to networking-actions"""
+
+
+@networking_action.command('show')
+@click.argument('status_id')
+def show_networking_action(status_id):
+    """Displays the status of the networking action"""
+    print C.node.show_networking_action(status_id)

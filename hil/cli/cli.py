@@ -8,13 +8,16 @@ from hil.cli import node, project, network, switch, port, user, misc
 
 VERSION = pkg_resources.require('hil')[0].version
 
+
 @click.group()
 @click.version_option(version=VERSION)
 def cli():
     """The HIL Command line"""
 
+
 commands = [node.node, project.project, network.network, switch.switch,
-            port.port, user.user, misc.serve, misc.serve_networks]
+            port.port, user.user, misc.serve, misc.serve_networks,
+            misc.networking_action]
 
 for command in commands:
     cli.add_command(command)
