@@ -112,7 +112,7 @@ class Project(db.Model):
     A project may contain allocated nodes, networks, and headnodes.
     """
     id = db.Column(BigIntegerType, primary_key=True)
-    label = db.Column(db.String, nullable=False)
+    label = db.Column(db.String, unique=True, nullable=False)
 
     def __init__(self, label):
         """Create a project with the given label."""
@@ -143,7 +143,7 @@ class Network(db.Model):
     See docs/networks.md for more information on the parameters.
     """
     id = db.Column(BigIntegerType, primary_key=True)
-    label = db.Column(db.String, nullable=False)
+    label = db.Column(db.String, unique=True, nullable=False)
 
     # The project to which the network belongs, or None if the network was
     # created by the administrator.  This field determines who can delete a
@@ -205,7 +205,7 @@ class Switch(db.Model):
     Subclasses MUST override both ``validate`` and ``session``.
     """
     id = db.Column(BigIntegerType, primary_key=True)
-    label = db.Column(db.String, nullable=False)
+    label = db.Column(db.String, unique=True, nullable=False)
 
     type = db.Column(db.String, nullable=False)
 
