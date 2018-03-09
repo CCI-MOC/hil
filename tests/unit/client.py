@@ -111,7 +111,6 @@ def configure():
             'hil.ext.switches.dell': '',
             'hil.ext.switches.brocade': '',
             'hil.ext.obm.mock': '',
-            'hil.ext.obm.ipmi': '',
             'hil.ext.network_allocators.null': None,
             'hil.ext.network_allocators.vlan_pool': '',
         },
@@ -153,11 +152,11 @@ def populate_server():
 
     # Adding nodes, node-01 - node-09
     url_node = 'http://127.0.0.1:8000/node/'
-    ipmi = 'http://schema.massopencloud.org/haas/v0/obm/ipmi'
+    mock = 'http://schema.massopencloud.org/haas/v0/obm/mock'
 
     for i in range(1, 10):
         obminfo = {
-                "type": ipmi, "host": "10.10.0.0"+repr(i),
+                "type": mock, "host": "10.10.0.0"+repr(i),
                 "user": "ipmi_u", "password": "pass1234"
                 }
         http_client.request(
@@ -975,7 +974,6 @@ class Test_extensions:
         assert C.extensions.list_active() == [
                     "hil.ext.auth.database",
                     "hil.ext.network_allocators.vlan_pool",
-                    "hil.ext.obm.ipmi",
                     "hil.ext.obm.mock",
                     "hil.ext.switches.brocade",
                     "hil.ext.switches.dell",

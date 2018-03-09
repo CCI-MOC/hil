@@ -12,6 +12,8 @@ from hil.model import BigIntegerType
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'mock')
 
+CONSOLE = False
+
 
 class MockObm(Obm):
     """Mock OBM object, for use in tests."""
@@ -50,22 +52,29 @@ class MockObm(Obm):
     def set_bootdev(self, dev):
         return
 
-    @no_dry_run
     def start_console(self):
+        global CONSOLE
+        CONSOLE = True
         return
 
-    @no_dry_run
     def stop_console(self):
+        global CONSOLE
+        CONSOLE = False
         return
 
     @no_dry_run
     def delete_console(self):
         return
 
-    @no_dry_run
     def get_console(self):
-        return
+        global CONSOLE
+        if CONSOLE:
+            return "Some console output"
 
     @no_dry_run
     def get_console_log_filename(self):
+        return
+
+    @no_dry_run
+    def show_console(self):
         return
