@@ -1,15 +1,16 @@
 """Client support for switch related api calls."""
 import json
-from hil.client.base import ClientBase
 from hil.client.base import check_reserved_chars
+from schema import Schema, SchemaError
+from hil.client.base import ClientBase
 
-SCHEMA = 'http://schema.massopencloud.org/haas/v0/switches/'
-BROCADE = SCHEMA + 'brocade'
-POWERCONNECT_55XX = SCHEMA + 'powerconnect55xx'
-NEXUS = SCHEMA + 'nexus'
-DELL_NOS9 = SCHEMA + 'dellnos9'
-DELL_N3000 = SCHEMA + 'delln3000'
-MOCK = SCHEMA + 'mock'
+BROCADE = 'http://schema.massopencloud.org/haas/v0/switches/brocade'
+POWERCONNECT_55XX = 'http://schema.massopencloud.org/' \
+                    'haas/v0/switches/powerconnect55xx'
+NEXUS = 'http://schema.massopencloud.org/haas/v0/switches/nexus'
+DELL_NOS9 = 'http://schema.massopencloud.org/haas/v0/switches/dellnos9'
+DELL_N3000 = 'http://schema.massopencloud.org/haas/v0/switches/delln3000'
+MOCK = 'http://schema.massopencloud.org/haas/v0/switches/mock'
 
 known_types = {
     NEXUS: Schema({
@@ -64,8 +65,8 @@ class Switch(ClientBase):
         """Registers a switch with name <switch> and
         model <subtype> , and relevant arguments  in <*args>
         """
-        global SCHEMA
-        switch_api = SCHEMA + subtype
+        schema = 'http://schema.massopencloud.org/haas/v0/switches/'
+        switch_api = schema + subtype
         if switch_api in known_types:
             try:
                 known_types[switch_api].validate(args)
