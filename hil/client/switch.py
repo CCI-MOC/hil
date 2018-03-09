@@ -3,13 +3,13 @@ import json
 from hil.client.base import ClientBase
 from hil.client.base import check_reserved_chars
 
-
-BROCADE = 'http://schema.massopencloud.org/haas/v0/switches/brocade'
-POWERCONNECT_55XX = 'http://schema.massopencloud.org/haas/v0/switches/powerconnect55xx'
-NEXUS = 'http://schema.massopencloud.org/haas/v0/switches/nexus'
-DELL_NOS9 = 'http://schema.massopencloud.org/haas/v0/switches/dellnos9'
-DELL_N3000 = 'http://schema.massopencloud.org/haas/v0/switches/delln3000'
-MOCK = 'http://schema.massopencloud.org/haas/v0/switches/mock'
+SCHEMA = 'http://schema.massopencloud.org/haas/v0/switches/'
+BROCADE = SCHEMA + 'brocade'
+POWERCONNECT_55XX = SCHEMA + 'powerconnect55xx'
+NEXUS = SCHEMA + 'nexus'
+DELL_NOS9 = SCHEMA + 'dellnos9'
+DELL_N3000 = SCHEMA + 'delln3000'
+MOCK = SCHEMA + 'mock'
 
 known_types = {
     NEXUS: Schema({
@@ -48,6 +48,7 @@ known_types = {
     }),
 }
 
+
 class Switch(ClientBase):
     """Consists of calls to query and manipulate node related
 
@@ -63,64 +64,37 @@ class Switch(ClientBase):
         """Registers a switch with name <switch> and
         model <subtype> , and relevant arguments  in <*args>
         """
-#       It is assumed that the HIL administrator is aware of
-#       of the switches HIL will control and has read the
-#       HIL documentation to use appropriate flags to register
-#       it with HIL.
-        switch_api = "http://schema.massopencloud.org/haas/v0/switches/" + subtype
+        global SCHEMA
+        switch_api = SCHEMA + subtype
         if switch_api in known_types:
             try:
                 known_types[switch_api].validate(args)
-            except:
-                SchemaError("Bad Request")
+            except Exception as e:
+                SchemaError("Bad Request " + e)
+
         if subtype == "nexus" or subtype == "delln3000":
-            if len(args) == 4:
-                switchinfo = {
-                    "type": switch_api + subtype,
-                    "hostname": args[0],
-                    "username": args[1],
-                    "password": args[2],
-                    "dummy_vlan": args[3]}
-            else:
-                raise Exception('ERROR: subtype ' + subtype +
-                                ' requires exactly 4 arguments\n' +
-                                '<hostname> <username> <password>' +
-                                '<dummy_vlan_no>')
+            switchinfo = {
+                "type": switch_api,
+                "hostname": args[0],
+                "username": args[1],
+                "password": args[2],
+                "dummy_vlan": args[3]}
         elif subtype == "mock":
-            if len(args) == 3:
-                switchinfo = {"type": switch_api + subtype,
-                              "hostname": args[0],
-                              "username": args[1], "password": args[2]}
-            else:
-                raise Exception('ERROR: subtype ' + subtype +
-                                ' requires exactly 3 arguments\n' +
-                                ' <hostname> <username> <password>')
+            switchinfo = {"type": switch_api,
+                          "hostname": args[0],
+                          "username": args[1], "password": args[2]}
         elif subtype == "powerconnect55xx":
-            if len(args) == 3:
-                switchinfo = {"type": switch_api + subtype,
-                              "hostname": args[0],
-                              "username": args[1], "password": args[2]}
-            else:
-                raise Exception('ERROR: subtype ' + subtype +
-                                ' requires exactly 3 arguments\n' +
-                                ' <hostname> <username> <password>')
+            switchinfo = {"type": switch_api,
+                          "hostname": args[0],
+                          "username": args[1], "password": args[2]}
         elif subtype == "brocade" or "dellnos9":
-            if len(args) == 4:
-                switchinfo = {"type": switch_api + subtype,
-                              "hostname": args[0],
-                              "username": args[1], "password": args[2],
-                              "interface_type": args[3]}
-            else:
-                raise Exception('ERROR: subtype ' + subtype +
-                                ' requires exactly 4 arguments\n' +
-                                '<hostname> <username> <password> ' +
-                                '<interface_type>' +
-                                'NOTE: interface_type refers ' +
-                                'to the speed of the switchports ' +
-                                'ex. TenGigabitEthernet, ' +
-                                'etc.')
+            swtchinfo = {"type": switch_api,
+                         "hostname": args[0],
+                         "username": args[1], "password": args[2],
+                         "interface_type": args[3]}
         else:
             raise Exception('ERROR: Invalid subtype supplied')
+
         url = self.object_url('switch', switch)
         payload = json.dumps(switchinfo)
         return self.check_response(
