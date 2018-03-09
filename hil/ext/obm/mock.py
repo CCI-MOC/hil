@@ -77,4 +77,5 @@ class MockObm(Obm):
 
     @no_dry_run
     def show_console(self):
+        """ return nothing for obm mock driver """
         return
