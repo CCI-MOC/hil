@@ -35,14 +35,14 @@ def hil(*args):
     check_call(['hil'] + args)
 
 
-hil('switch_register', switch, 'mock', 'ip', 'user', 'pass')
+hil('switch register', switch, 'mock', 'ip', 'user', 'pass')
 
 for node in range(N_NODES):
     ipmi_ip = "10.0.0." + str(node + 1)
 
     nic_port = "gi1/0/%d" % (node)
     nic_name = 'nic1'
-    hil('node_register', node, "mock", ipmi_ip, ipmi_user, ipmi_pass)
-    hil('node_register_nic', node, nic_name, 'FillThisInLater')
-    hil('port_register', switch, nic_port)
-    hil('port_connect_nic', switch, nic_port, node, nic_name)
+    hil('node register', node, "mock", ipmi_ip, ipmi_user, ipmi_pass)
+    hil('node nic register', node, nic_name, 'FillThisInLater')
+    hil('port register', switch, nic_port)
+    hil('port nic add', switch, nic_port, node, nic_name)
