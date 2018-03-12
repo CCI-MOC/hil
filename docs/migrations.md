@@ -19,7 +19,7 @@ installations may be upgraded to the next HIL release automatically.
 ## Background
 
 Developers unfamiliar with alembic should at least skim the [Alembic
-tutorial](http://alembic.readthedocs.org/en/latest/tutorial.html), which
+tutorial](http://alembic.zzzcomputing.com/en/latest/tutorial.html), which
 explains general alembic concepts. Developers should also read [the
 overview documentation for Flask-Migrate][4], which integrates Alembic
 with Flask.
