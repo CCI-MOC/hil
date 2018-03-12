@@ -89,7 +89,7 @@ class Switch(ClientBase):
                           "hostname": args[0],
                           "username": args[1], "password": args[2]}
         elif subtype == "brocade" or "dellnos9":
-            swtchinfo = {"type": switch_api,
+            switchinfo = {"type": switch_api,
                          "hostname": args[0],
                          "username": args[1], "password": args[2],
                          "interface_type": args[3]}
