@@ -170,7 +170,7 @@ def switch(_deferred_test_switch_class):
 def new_nic(name):
     """Create a new nic named ``name``, and an associated Node + Obm.
     The new nic is attached to a new node each time, and the node is added to
-    the project named 'anvil-nextgen-defer' """
+    the project named 'anvil-nextgen-####' """
 
     from hil.ext.obm.mock import MockObm
     unique_id = str(uuid.uuid4())
