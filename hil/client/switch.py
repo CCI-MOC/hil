@@ -90,9 +90,9 @@ class Switch(ClientBase):
                           "username": args[1], "password": args[2]}
         elif subtype == "brocade" or "dellnos9":
             switchinfo = {"type": switch_api,
-                         "hostname": args[0],
-                         "username": args[1], "password": args[2],
-                         "interface_type": args[3]}
+                          "hostname": args[0],
+                          "username": args[1], "password": args[2],
+                          "interface_type": args[3]}
         else:
             raise Exception('ERROR: Invalid subtype supplied')
 
