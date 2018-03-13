@@ -13,7 +13,7 @@ from alembic import op
 # revision identifiers, used by Alembic.
 revision = '264ddaebdfcc'
 down_revision = '89ff8a6d72b2'
-branch_labels = ('hil')
+branch_labels = ('hil',)
 
 # pylint: disable=missing-docstring
 
