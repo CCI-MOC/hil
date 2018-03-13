@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 paths[__name__] = join(dirname(__file__), 'migrations', 'n3000')
 
 core_schema[__name__] = {
-    Optional('save'): lambda s: string_is_bool(s)
+    Optional('save'): string_is_bool
 }
 
 
@@ -44,12 +44,13 @@ class DellN3000(Switch):
 
     @staticmethod
     def validate(kwargs):
+        """Note: Dell N3000 VLAN range only from 1 - 4093."""
         Schema({
             'username': basestring,
             'hostname': basestring,
             'password': basestring,
             'dummy_vlan': And(Use(int),
-                              lambda v: 0 < v and v <= 4093,
+                              lambda v: 0 < v <= 4093,
                               Use(str)),
         }).validate(kwargs)
 

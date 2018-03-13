@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 paths[__name__] = join(dirname(__file__), 'migrations', 'nexus')
 
 core_schema[__name__] = {
-    Optional('save'): lambda s: string_is_bool(s)
+    Optional('save'): string_is_bool
 }
 
 
@@ -49,7 +49,7 @@ class Nexus(Switch):
             'hostname': basestring,
             'password': basestring,
             'dummy_vlan': And(Use(int),
-                              lambda v: 0 <= v and v <= 4096,
+                              lambda v: 0 < v and v <= 4096,
                               Use(str)),
         }).validate(kwargs)
 

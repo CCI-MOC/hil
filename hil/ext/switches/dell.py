@@ -21,7 +21,7 @@ paths[__name__] = join(dirname(__file__), 'migrations', 'dell')
 logger = logging.getLogger(__name__)
 
 core_schema[__name__] = {
-    Optional('save'): lambda s: string_is_bool(s)
+    Optional('save'): string_is_bool
 }
 
 

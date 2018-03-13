@@ -25,7 +25,7 @@ SHOW = 'show-command'
 EXEC = 'exec-command'
 
 core_schema[__name__] = {
-    Optional('save'): lambda s: string_is_bool(s)
+    Optional('save'): string_is_bool
 }
 
 
