@@ -148,6 +148,7 @@ must first be enabled on the switch. To enable all VLANs to work with the switch
    # configure
    # vlan 2-4093
 ```
+Note: VLAN range for the Dell N3000 is shorter than the other switches'.
 
 2. HIL uses ssh to connect to these switches. Configure the switch to accept ssh connections.
 
