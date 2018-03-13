@@ -11,18 +11,53 @@ import importlib
 from schema import Schema, Optional
 import os
 import sys
+from urlparse import urlparse
 
 cfg = ConfigParser.RawConfigParser()
 cfg.optionxform = str
 
+
+def string_is_bool(option):
+    """Check if a string matches ConfigParser's definition of a bool"""
+    return option.lower() in ['true', 'yes', 'on', '1',
+                              'false', 'no', 'off', '0']
+
+def string_is_web_url(option):
+    """Check if a string is a valid web URL"""
+    url = urlparse(option)
+    if url.scheme == '' or url.netloc == '':
+        return False
+    return True
+
+def string_is_db_uri(option):
+    """Check if a string is a valid DB URI"""
+    url = urlparse(option)
+    if not ('postgres' in url.scheme or 'sqlite' in url.scheme):
+        return False
+    if url.path == '':
+        return False
+    return True
+
+def is_log_level(option):
+    return option.lower() in ['debug', 'info', 'warn', 'warning', 'error',
+                      'critical', 'fatal']
+
+def string_has_vlans(option):
+    """Check if a string is a valid list of VLANs"""
+    for r in option.split(","):
+        r = r.strip().split("-")
+        if not all(s.isdigit() for s in r):
+            return False
+    return True
+
+# Note: headnode section receiving minimal checking due to soon replacement
 core_schema = {
     Optional('general'): {
-        'log_level': str,
+        'log_level': is_log_level,
         Optional('log_dir'): str,
     },
     Optional('auth'): {
-        Optional('require_authentication'):
-            lambda s: string_is_bool(s),
+        Optional('require_authentication'): string_is_bool,
     },
     'headnode': {
         'trunk_nic': str,
@@ -30,18 +65,17 @@ core_schema = {
         'libvirt_endpoint': str,
     },
     'client': {
-        Optional('endpoint'): str,
+        Optional('endpoint'): string_is_web_url,
     },
     'database': {
-        'uri': str,
+        'uri': string_is_db_uri,
     },
     Optional('devel'): {
-        Optional('dry_run'):
-            lambda s: string_is_bool(s),
+        Optional('dry_run'): string_is_bool,
     },
     Optional('maintenance'): {
         Optional('maintenance_project'): str,
-        Optional('url'): str,
+        Optional('url'): string_is_web_url,
         Optional('shutdown'): '',
     },
     Optional('network-daemon'): {
@@ -137,9 +171,3 @@ def setup(filename='hil.cfg'):
     configure_logging()
     load_extensions()
     validate_config()
-
-
-def string_is_bool(option):
-    """Check if a string matches ConfigParser's definition of a bool"""
-    return option.lower() in ['true', 'yes', 'on', '1',
-                              'false', 'no', 'off', '0']
