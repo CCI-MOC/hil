@@ -36,10 +36,11 @@ def setup_http_client():
     both ways of intereacting with HIL.
     """
     # First try basic auth:
-    ep = (
-            os.environ.get('HIL_ENDPOINT') or
-            sys.stdout.write("Error: HIL_ENDPOINT not set \n")
-            )
+    ep = os.environ.get('HIL_ENDPOINT')
+
+    if ep is None:
+        sys.exit("Error: HIL_ENDPOINT not set \n")
+
     basic_username = os.getenv('HIL_USERNAME')
     basic_password = os.getenv('HIL_PASSWORD')
     if basic_username is not None and basic_password is not None:

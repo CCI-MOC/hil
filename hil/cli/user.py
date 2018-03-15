@@ -2,12 +2,13 @@
 import click
 from hil.cli.client_setup import setup_http_client
 
-C = setup_http_client()
-
+C = None
 
 @click.group()
 def user():
     """Commands related to user"""
+    global C
+    C = setup_http_client()
 
 
 @user.command(name='create', help='Create a new user')

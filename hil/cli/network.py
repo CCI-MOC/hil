@@ -3,12 +3,14 @@ import click
 import sys
 from hil.cli.client_setup import setup_http_client
 
-C = setup_http_client()
+C = None
 
 
 @click.group()
 def network():
     """Commands related to network"""
+    global C
+    C = setup_http_client()
 
 
 @network.command(name='create', short_help='Create a new network')

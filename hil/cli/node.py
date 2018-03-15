@@ -3,12 +3,14 @@ import click
 import sys
 from hil.cli.client_setup import setup_http_client
 
-C = setup_http_client()
+C = None
 
 
 @click.group()
 def node():
     """Commands related to node"""
+    global C
+    C = setup_http_client()
 
 
 @node.command(name='list')

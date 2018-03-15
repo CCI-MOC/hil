@@ -2,12 +2,14 @@
 import click
 from hil.cli.client_setup import setup_http_client
 
-C = setup_http_client()
+C = None
 
 
 @click.group(name='networking-action')
 def networking_action():
     """Commands related to networking-actions"""
+    global C
+    C = setup_http_client()
 
 
 @networking_action.command('show')

@@ -31,4 +31,4 @@ def main():
     except FailedAPICallException as e:
         sys.exit('Error: %s\n' % e.message)
     except Exception as e:
-        sys.exit('Unexpected error: %s\n' % e.message)
+        sys.exit(e)

@@ -2,12 +2,14 @@
 import click
 from hil.cli.client_setup import setup_http_client
 
-C = setup_http_client()
+C = None
 
 
 @click.group()
 def port():
     """Commands related to port"""
+    global C
+    C = setup_http_client()
 
 
 @port.command(name='show', help='Show port information')
