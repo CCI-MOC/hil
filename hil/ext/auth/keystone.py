@@ -19,6 +19,7 @@ core_schema[__name__] = {
     'username': str,
     'password': str,
     'project_name': str,
+    'admin_user': str,
     'admin_password': str,
 }
 

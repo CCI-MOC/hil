@@ -22,39 +22,48 @@ def string_is_bool(option):
     return option.lower() in ['true', 'yes', 'on', '1',
                               'false', 'no', 'off', '0']
 
+
 def string_is_web_url(option):
     """Check if a string is a valid web URL"""
     url = urlparse(option)
-    if url.scheme == '' or url.netloc == '':
-        return False
-    return True
+    return not (url.scheme == '' or url.netloc == '')
+
 
 def string_is_db_uri(option):
     """Check if a string is a valid DB URI"""
     url = urlparse(option)
-    if not ('postgres' in url.scheme or 'sqlite' in url.scheme):
+    if url.scheme not in ('postgresql', 'sqlite'):
         return False
     if url.path == '':
         return False
     return True
 
-def is_log_level(option):
+
+def string_is_dir(option):
+    """Check if a string is a valid directory path"""
+    return os.path.isabs(option)
+
+
+def string_is_log_level(option):
+    """Check if a string is a valid log level"""
     return option.lower() in ['debug', 'info', 'warn', 'warning', 'error',
-                      'critical', 'fatal']
+                              'critical', 'fatal']
+
 
 def string_has_vlans(option):
     """Check if a string is a valid list of VLANs"""
     for r in option.split(","):
         r = r.strip().split("-")
-        if not all(s.isdigit() for s in r):
+        if not all(s.isdigit() and 0 < int(s) <= 4096 for s in r):
             return False
     return True
+
 
 # Note: headnode section receiving minimal checking due to soon replacement
 core_schema = {
     Optional('general'): {
-        'log_level': is_log_level,
-        Optional('log_dir'): str,
+        'log_level': string_is_log_level,
+        Optional('log_dir'): string_is_dir,
     },
     Optional('auth'): {
         Optional('require_authentication'): string_is_bool,
@@ -168,6 +177,6 @@ def setup(filename='hil.cfg'):
     load_extensions in sequence.
     """
     load(filename)
-    configure_logging()
     load_extensions()
     validate_config()
+    configure_logging()
