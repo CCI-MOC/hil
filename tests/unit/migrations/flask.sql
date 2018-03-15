@@ -147,7 +147,7 @@ CREATE TABLE mockswitch (
 
 CREATE TABLE network (
     id integer NOT NULL,
-    label character varying NOT NULL UNIQUE,
+    label character varying NOT NULL,
     creator_id integer,
     access_id integer,
     allocated boolean,
@@ -287,7 +287,7 @@ ALTER SEQUENCE nic_id_seq OWNED BY nic.id;
 
 CREATE TABLE node (
     id integer NOT NULL,
-    label character varying NOT NULL UNIQUE,
+    label character varying NOT NULL,
     project_id integer,
     obm_id integer NOT NULL
 );
@@ -389,7 +389,7 @@ CREATE TABLE powerconnect55xx (
 
 CREATE TABLE project (
     id integer NOT NULL,
-    label character varying NOT NULL UNIQUE
+    label character varying NOT NULL
 );
 
 
@@ -418,7 +418,7 @@ ALTER SEQUENCE project_id_seq OWNED BY project.id;
 
 CREATE TABLE switch (
     id integer NOT NULL,
-    label character varying NOT NULL UNIQUE,
+    label character varying NOT NULL,
     type character varying NOT NULL
 );
 
@@ -448,7 +448,7 @@ ALTER SEQUENCE switch_id_seq OWNED BY switch.id;
 
 CREATE TABLE "user" (
     id integer NOT NULL,
-    label character varying NOT NULL UNIQUE,
+    label character varying NOT NULL,
     is_admin boolean NOT NULL,
     hashed_password character varying
 );
