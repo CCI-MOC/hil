@@ -5,7 +5,7 @@ This is a thin wrapper around the `keystonemiddleware` library.
 from keystonemiddleware.auth_token import filter_factory
 from flask import request
 from hil.flaskapp import app
-from hil.config import cfg, core_schema
+from hil.config import cfg, core_schema, string_is_web_url
 from hil.model import Project
 from hil import auth, rest
 import logging
@@ -14,7 +14,7 @@ import sys
 logger = rest.ContextLogger(logging.getLogger(__name__), {})
 
 core_schema[__name__] = {
-    'auth_url': str,
+    'auth_url': string_is_web_url,
     'auth_protocol': str,
     'username': str,
     'password': str,
