@@ -16,8 +16,10 @@ def network():
 @network.command(name='create', short_help='Create a new network')
 @click.argument('network')
 @click.argument('owner')
-@click.option('--access')
-@click.option('--net_id')
+@click.option('--access', help='Projects that can access this network. '
+              'Defaults to the owner of the network')
+@click.option('--net-id',
+              help='Network ID for network. Only admins can specify this.')
 def network_create(network, owner, access, net_id):
     """Create a link-layer <network>.  See docs/networks.md for details"""
     if net_id is None:
@@ -51,14 +53,9 @@ def network_list():
         sys.stdout.write('%s \t : %s\n' % (item[0], item[1]))
 
 
-@network.group(name='project')
-def network_project():
-    """Commands that manipulate project and network relations"""
-
-
-@network_project.command('list')
+@network.command('list-attachments')
 @click.argument('network')
-@click.option('--project')
+@click.option('--project', help='Name of project.')
 def list_network_attachments(network, project):
     """Lists all the attachments from <project> for <network>
 
@@ -67,7 +64,7 @@ def list_network_attachments(network, project):
     print C.network.list_network_attachments(network, project)
 
 
-@network_project.command(name='add')
+@network.command(name='grant-access')
 @click.argument('network')
 @click.argument('project')
 def network_grant_project_access(project, network):
@@ -75,7 +72,7 @@ def network_grant_project_access(project, network):
     C.network.grant_access(project, network)
 
 
-@network_project.command(name='remove')
+@network.command(name='revoke-access')
 @click.argument('network')
 @click.argument('project')
 def network_revoke_project_access(project, network):
