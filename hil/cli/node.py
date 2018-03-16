@@ -14,8 +14,7 @@ def node():
 
 
 @node.command(name='list')
-@click.argument('free', type=click.Choice(['free', 'all']),
-                default='all', required=False)
+@click.argument('free', type=click.Choice(['free', 'all']), required=True)
 def nodes_list(free):
     """List all nodes or free nodes"""
     q = C.node.list(free)
@@ -71,7 +70,6 @@ def node_delete(node):
 @node.group(name='network')
 def node_network():
     """Perform node network operations"""
-    # This docstring doesn't read right
 
 
 @node_network.command(name='connect', short_help="Connect a node to a network")

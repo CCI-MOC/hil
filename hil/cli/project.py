@@ -34,12 +34,7 @@ def project_list():
     sys.stdout.write('%s Projects :    ' % len(q) + " ".join(q) + '\n')
 
 
-@project.group(name='network')
-def project_network():
-    """Project and network related operations"""
-
-
-@project_network.command(name='list')
+@project.command(name='list-networks')
 @click.argument('project')
 def project_list_networks(project):
     """List all networks attached to a <project>"""

@@ -13,8 +13,12 @@ VERSION = pkg_resources.require('hil')[0].version
 @click.group()
 @click.version_option(version=VERSION)
 def cli():
-    """The HIL Command line"""
+    """The HIL Command line.
 
+    Every subcommand supports --help option to see all arguments
+    (positional and optional) and additional help for that subcommand.
+
+    """
 
 commands = [node.node, project.project, network.network, switch.switch,
             port.port, user.user, misc.networking_action]
