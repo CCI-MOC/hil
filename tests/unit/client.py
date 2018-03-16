@@ -424,9 +424,18 @@ class Test_node:
             C.node.start_console('node-/%]01')
 
     def test_node_show_console(self):
-        """(successful) call to node_show_console"""
+        """various calls to node_show_console"""
+
+        # show console without staring should fail.
+        with pytest.raises(FailedAPICallException):
+            C.node.show_console('node-01')
+
         C.node.start_console('node-01')
-        assert C.node.show_console('node-01') is None
+        assert C.node.show_console('node-01') == 'Some console output'
+
+        C.node.stop_console('node-01')
+        with pytest.raises(FailedAPICallException):
+            C.node.show_console('node-01')
 
     def test_node_show_console_reserved_chars(self):
         """test for cataching illegal argument characters"""

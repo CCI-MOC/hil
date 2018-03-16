@@ -1289,7 +1289,7 @@ def show_console(nodename):
     if log is None:
         raise errors.NotFoundError(
             'The console log for %s does not exist.' % nodename)
-    return log
+    return json.dumps(log)
 
 
 @rest_call('PUT', '/node/<nodename>/console', Schema({'nodename': basestring}))

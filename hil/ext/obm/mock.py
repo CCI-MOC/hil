@@ -4,15 +4,15 @@ from sqlalchemy import Column, String, ForeignKey
 import schema
 
 from hil.model import Obm
-from hil.dev_support import no_dry_run
 
 from os.path import join, dirname
 from hil.migrations import paths
 from hil.model import BigIntegerType
+from collections import defaultdict
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'mock')
 
-CONSOLE = False
+LOCAL_STATE = defaultdict(lambda: defaultdict(dict))
 
 
 class MockObm(Obm):
@@ -38,11 +38,9 @@ class MockObm(Obm):
             'password': basestring,
             }).validate(kwargs)
 
-    @no_dry_run
     def power_cycle(self, force):
         return
 
-    @no_dry_run
     def power_off(self):
         return
 
@@ -53,29 +51,22 @@ class MockObm(Obm):
         return
 
     def start_console(self):
-        global CONSOLE
-        CONSOLE = True
+        state = LOCAL_STATE[self.id]
+        state['console'] = True
         return
 
     def stop_console(self):
-        global CONSOLE
-        CONSOLE = False
+        state = LOCAL_STATE[self.id]
+        state['console'] = False
         return
 
-    @no_dry_run
     def delete_console(self):
         return
 
     def get_console(self):
-        global CONSOLE
-        if CONSOLE:
+        state = LOCAL_STATE[self.id]
+        if state['console']:
             return "Some console output"
 
-    @no_dry_run
     def get_console_log_filename(self):
-        return
-
-    @no_dry_run
-    def show_console(self):
-        """ return nothing for obm mock driver """
         return
