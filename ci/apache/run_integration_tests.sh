@@ -6,7 +6,7 @@ export HIL_PASSWORD=12345
 # Initial Setup
 cd /etc
 hil-admin db create
-hil create_admin_user $HIL_USERNAME $HIL_PASSWORD
+hil-admin create_admin_user $HIL_USERNAME $HIL_PASSWORD
 cd $TRAVIS_BUILD_DIR
 
 # Test commands

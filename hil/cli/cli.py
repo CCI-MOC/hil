@@ -17,8 +17,8 @@ def cli():
 
     Every subcommand supports --help option to see all arguments
     (positional and optional) and additional help for that subcommand.
-
     """
+
 
 commands = [node.node, project.project, network.network, switch.switch,
             port.port, user.user, misc.networking_action]

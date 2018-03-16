@@ -178,7 +178,7 @@ then you will need to add an initial user with administrative privileges to the
 database in order to bootstrap the system.
 You can do this by running the following command (as user ``hil``)::
 
-  $ sudo -i -u ${HIL_USER}; hil create_admin_user ${HIL_ADMIN_USER} ${HIL_ADMIN_PASSWORD}
+  $ sudo -i -u ${HIL_USER}; hil-admin create_admin_user ${HIL_ADMIN_USER} ${HIL_ADMIN_PASSWORD}
 
 You can then create additional users via the HTTP API. You may want to
 subsequently delete the initial user; this can also be done via the API.

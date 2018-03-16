@@ -75,21 +75,22 @@ def runs_for_seconds(cmd, seconds=1):
     return status == -signal.SIGTERM
 
 
-def test_serve():
-    """Check that hil serve doesn't immediately die."""
+def test_run_dev_server():
+    """Check that hil-admin run_dev_server doesn't immediately die."""
     check_call(['hil-admin', 'db', 'create'])
-    assert runs_for_seconds(['hil', 'serve', '5000'], seconds=1)
+    assert runs_for_seconds(
+                ['hil-admin', 'run_dev_server', '--port', '5000'], seconds=1)
 
 
 def test_serve_networks():
-    """Check that hil serve_networks doesn't immediately die."""
+    """Check that hil-admin serve_networks doesn't immediately die."""
     check_call(['hil-admin', 'db', 'create'])
-    assert runs_for_seconds(['hil', 'serve_networks'], seconds=1)
+    assert runs_for_seconds(['hil-admin', 'serve_networks'], seconds=1)
 
 
 @pytest.mark.parametrize('command', [
-    ['hil', 'serve', '5000'],
-    ['hil', 'serve_networks'],
+    ['hil-admin', 'run_dev_server', '--port', '5000'],
+    ['hil-admin', 'serve_networks'],
 ])
 def test_db_init_error(command):
     """Test that a command fails if the database has not been created."""

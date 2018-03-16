@@ -53,7 +53,7 @@ def serve_networks():
 
 
 @manager.option('-p', '--port', type=IntRange(0, 2**16-1), default=5000)
-def dev_server(port):
+def run_dev_server(port):
     """Run a development api server. Don't use this in production.
     Specify the port with -p or --port otherwise defaults to 5000"""
     if config.cfg.has_option('devel', 'debug'):
