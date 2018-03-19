@@ -1,53 +1,9 @@
 """Client support for switch related api calls."""
 import json
+import ast
+import sys
 from hil.client.base import check_reserved_chars
-from schema import Schema, SchemaError
 from hil.client.base import ClientBase
-
-BROCADE = 'http://schema.massopencloud.org/haas/v0/switches/brocade'
-POWERCONNECT_55XX = 'http://schema.massopencloud.org/' \
-                    'haas/v0/switches/powerconnect55xx'
-NEXUS = 'http://schema.massopencloud.org/haas/v0/switches/nexus'
-DELL_NOS9 = 'http://schema.massopencloud.org/haas/v0/switches/dellnos9'
-DELL_N3000 = 'http://schema.massopencloud.org/haas/v0/switches/delln3000'
-MOCK = 'http://schema.massopencloud.org/haas/v0/switches/mock'
-
-known_types = {
-    NEXUS: Schema({
-        'hostname': basestring,
-        'username': basestring,
-        'password': basestring,
-        'dummy_vlan': basestring,
-    }),
-    DELL_N3000: Schema({
-        'hostname': basestring,
-        'username': basestring,
-        'password': basestring,
-        'dummy_vlan': basestring,
-    }),
-    DELL_NOS9: Schema({
-        'hostname': basestring,
-        'username': basestring,
-        'password': basestring,
-        'interface_type': basestring,
-    }),
-    BROCADE: Schema({
-        'hostname': basestring,
-        'username': basestring,
-        'password': basestring,
-        'interface_type': basestring,
-    }),
-    POWERCONNECT_55XX: Schema({
-        'hostname': basestring,
-        'username': basestring,
-        'password': basestring,
-    }),
-    MOCK: Schema({
-        'hostname': basestring,
-        'username': basestring,
-        'password': basestring,
-    }),
-}
 
 
 class Switch(ClientBase):
@@ -61,46 +17,20 @@ class Switch(ClientBase):
         url = self.object_url('/switches')
         return self.check_response(self.httpClient.request("GET", url))
 
-    def register(self, switch, subtype, *args):
+    def register(self, switch, subtype, switchinfo):
         """Registers a switch with name <switch> and
         model <subtype> , and relevant arguments  in <*args>
         """
-        schema = 'http://schema.massopencloud.org/haas/v0/switches/'
-        switch_api = schema + subtype
-        if switch_api in known_types:
-            try:
-                known_types[switch_api].validate(args)
-            except Exception as e:
-                SchemaError("Bad Request " + e)
+        try:
+            switchinfo = ast.literal_eval(switchinfo)
+        except ValueError:
+            sys.exit('Malformed switchinfo')
 
-        if subtype == "nexus" or subtype == "delln3000":
-            switchinfo = {
-                "type": switch_api,
-                "hostname": args[0],
-                "username": args[1],
-                "password": args[2],
-                "dummy_vlan": args[3]}
-        elif subtype == "mock":
-            switchinfo = {"type": switch_api,
-                          "hostname": args[0],
-                          "username": args[1], "password": args[2]}
-        elif subtype == "powerconnect55xx":
-            switchinfo = {"type": switch_api,
-                          "hostname": args[0],
-                          "username": args[1], "password": args[2]}
-        elif subtype == "brocade" or "dellnos9":
-            switchinfo = {"type": switch_api,
-                          "hostname": args[0],
-                          "username": args[1], "password": args[2],
-                          "interface_type": args[3]}
-        else:
-            raise Exception('ERROR: Invalid subtype supplied')
-
+        switchinfo['type'] = subtype
         url = self.object_url('switch', switch)
-        payload = json.dumps(switchinfo)
-        return self.check_response(
-                self.httpClient.request("PUT", url, data=payload)
-                )
+        payload = json.dumps(str(switchinfo))
+        return self.check_response(self.httpClient.request("PUT", url,
+                                                           data=payload))
 
     @check_reserved_chars()
     def delete(self, switch):
