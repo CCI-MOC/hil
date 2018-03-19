@@ -546,11 +546,53 @@ def switch_register(switch, subtype, *args):
     <subtype>, <hostname>, <username>,  <password>
     eg. hil switch_register mock03 mock mockhost01 mockuser01 mockpass01
 
-    FIXME: current design needs to change. CLI should not know about every
-    backend. Ideally, this should be taken care of in the driver itself or
-    client library (work-in-progress) should manage it.
+    To make a generic switch register call, pass the arguments like:
+
+    hil switch_register switchname subtype switchinfo
+    hil switch_register 'http://example.com/switch/schema/url' '{"foo": "bar"}'
     """
-    C.switch.register(switch, subtype, *args)
+
+    switch_api = "http://schema.massopencloud.org/haas/v0/switches/"
+    if subtype == "nexus" or subtype == "delln3000":
+        if len(args) == 4:
+            switchinfo = {
+                "hostname": args[0],
+                "username": args[1],
+                "password": args[2],
+                "dummy_vlan": args[3]}
+        else:
+            sys.stderr.write('ERROR: subtype ' + subtype +
+                             ' requires exactly 4 arguments\n'
+                             '<hostname> <username> <password>'
+                             '<dummy_vlan_no>\n')
+            return
+    elif subtype == "mock" or subtype == "powerconnect55xx":
+        if len(args) == 3:
+            switchinfo = {"hostname": args[0],
+                          "username": args[1], "password": args[2]}
+        else:
+            sys.stderr.write('ERROR: subtype ' + subtype +
+                             ' requires exactly 3 arguments\n')
+            sys.stderr.write('<hostname> <username> <password>\n')
+            return
+    elif subtype == "brocade" or subtype == "dellnos9":
+        if len(args) == 4:
+            switchinfo = {"hostname": args[0],
+                          "username": args[1], "password": args[2],
+                          "interface_type": args[3]}
+        else:
+            sys.stderr.write('ERROR: subtype ' + subtype +
+                             ' requires exactly 4 arguments\n'
+                             '<hostname> <username> <password> '
+                             '<interface_type>\n'
+                             'NOTE: interface_type refers '
+                             'to the speed of the switchports\n '
+                             'ex. TenGigabitEthernet, FortyGigabitEthernet, '
+                             'etc.\n')
+            return
+    else:
+        switchinfo = args[0]
+    C.switch.register(switch, subtype, switchinfo)
 
 
 @cmd
