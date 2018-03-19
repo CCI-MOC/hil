@@ -758,7 +758,7 @@ def list_headnode_images():
 @cmd
 def show_console(node):
     """Display console log for <node>"""
-    print C.node.show_console(node)
+    print (C.node.show_console(node))
 
 
 @cmd
