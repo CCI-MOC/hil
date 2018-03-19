@@ -69,6 +69,8 @@ def run_obmd(tmpdir):
         f.write(json.dumps({
             'AdminToken': ADMIN_TOKEN,
             'ListenAddr': ':8080',
+            'DBType': 'sqlite3',
+            'DBPath': ':memory:',
         }))
 
     proc = Popen(['obmd', '-config', config_file_path])
