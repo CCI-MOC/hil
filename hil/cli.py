@@ -758,8 +758,7 @@ def list_headnode_images():
 @cmd
 def show_console(node):
     """Display console log for <node>"""
-    url = object_url('node', node, 'console')
-    do_get(url)
+    print (C.node.show_console(node))
 
 
 @cmd
