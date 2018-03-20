@@ -165,8 +165,7 @@ def node_console():
 @click.argument('node')
 def node_show_console(node):
     """Display console log for <node>"""
-    # Should be simple to implement in the client library for now.
-    C.node.show_console(node)
+    print(C.node.show_console(node))
 
 
 @node_console.command(name='start', short_help='Start console')
