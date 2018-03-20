@@ -426,7 +426,7 @@ class Test_node:
     def test_node_show_console(self):
         """various calls to node_show_console"""
 
-        # show console without staring should fail.
+        # show console without starting should fail.
         with pytest.raises(FailedAPICallException):
             C.node.show_console('node-01')
 
