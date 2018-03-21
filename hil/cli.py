@@ -11,6 +11,7 @@ import sys
 import urllib
 import schema
 import logging
+import ast
 
 import pkg_resources
 
@@ -549,9 +550,8 @@ def switch_register(switch, subtype, *args):
     To make a generic switch register call, pass the arguments like:
 
     hil switch_register switchname subtype switchinfo
-    hil switch_register 'http://example.com/switch/schema/url' '{"foo": "bar"}'
+    hil switch_register dell-1 'http://example.com/schema/url' '{"foo": "bar"}'
     """
-
     switch_api = "http://schema.massopencloud.org/haas/v0/switches/"
     if subtype == "nexus" or subtype == "delln3000":
         if len(args) == 4:
@@ -560,6 +560,7 @@ def switch_register(switch, subtype, *args):
                 "username": args[1],
                 "password": args[2],
                 "dummy_vlan": args[3]}
+            subtype = switch_api + subtype
         else:
             sys.stderr.write('ERROR: subtype ' + subtype +
                              ' requires exactly 4 arguments\n'
@@ -570,6 +571,7 @@ def switch_register(switch, subtype, *args):
         if len(args) == 3:
             switchinfo = {"hostname": args[0],
                           "username": args[1], "password": args[2]}
+            subtype = switch_api + subtype
         else:
             sys.stderr.write('ERROR: subtype ' + subtype +
                              ' requires exactly 3 arguments\n')
@@ -580,6 +582,7 @@ def switch_register(switch, subtype, *args):
             switchinfo = {"hostname": args[0],
                           "username": args[1], "password": args[2],
                           "interface_type": args[3]}
+            subtype = switch_api + subtype
         else:
             sys.stderr.write('ERROR: subtype ' + subtype +
                              ' requires exactly 4 arguments\n'
@@ -591,8 +594,13 @@ def switch_register(switch, subtype, *args):
                              'etc.\n')
             return
     else:
-        switchinfo = args[0]
-    C.switch.register(switch, subtype, switchinfo)
+        if len(args) == 0:
+            sys.exit('No switchinfo provided')
+        try:
+            switchinfo = ast.literal_eval(args[0])
+        except (ValueError, SyntaxError):
+            sys.exit('Malformed switchinfo')
+    print C.switch.register(switch, subtype, switchinfo)
 
 
 @cmd
