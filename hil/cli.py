@@ -600,7 +600,7 @@ def switch_register(switch, subtype, *args):
             switchinfo = ast.literal_eval(args[0])
         except (ValueError, SyntaxError):
             sys.exit('Malformed switchinfo')
-    print C.switch.register(switch, subtype, switchinfo)
+    C.switch.register(switch, subtype, switchinfo)
 
 
 @cmd

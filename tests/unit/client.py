@@ -646,10 +646,10 @@ class Test_switch:
             "type": "http://schema.massopencloud.org/haas/v0/switches/mock",
             "username": "name",
             "password": "asdasd",
-            "hostnameasd": "example.com"}
+            "unknown_keyword": "example.com"}
         subtype = "http://schema.massopencloud.org/haas/v0/switches/mock"
-        # this get a 500, dont know why
-        C.switch.register('mytestswitch', subtype, switchinfo)
+        with pytest.raises(FailedAPICallException):
+            C.switch.register('mytestswitch', subtype, switchinfo)
 
 
 class Test_port:
