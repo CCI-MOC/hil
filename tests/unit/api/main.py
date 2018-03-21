@@ -1435,6 +1435,16 @@ class Test_switch_register:
                                 password="switch_pass",
                                 hostname="switchname")
 
+    def test_register_fail(self):
+        """test that switch register fails if the arguments are invalid for
+        that switch. Here we are testing the mock switch
+        """
+        with pytest.raises(errors.BadArgumentError):
+            api.switch_register('sw2', type=MOCK_SWITCH_TYPE,
+                                username="switch_user",
+                                password="switch_pass",
+                                unknown_keyword="switchname")
+
 
 class Test_switch_delete:
     """Test switch_delete."""
