@@ -20,15 +20,12 @@ class Switch(ClientBase):
     def register(self, switch, subtype, switchinfo):
         """Registers a switch with name <switch> and
         model <subtype> , and relevant arguments  in <*args>
-        """
-        try:
-            switchinfo = ast.literal_eval(switchinfo)
-        except ValueError:
-            sys.exit('Malformed switchinfo')
 
+        switchinfo must be a dictionary.
+        """
         switchinfo['type'] = subtype
         url = self.object_url('switch', switch)
-        payload = json.dumps(str(switchinfo))
+        payload = json.dumps(switchinfo)
         return self.check_response(self.httpClient.request("PUT", url,
                                                            data=payload))
 

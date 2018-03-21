@@ -630,6 +630,27 @@ class Test_switch:
         with pytest.raises(BadArgumentError):
             C.switch.delete('nexus/%]-01')
 
+    def test_switch_register(self):
+        """test various cases of switch register"""
+        switchinfo = {
+            "type": "http://schema.massopencloud.org/haas/v0/switches/mock",
+            "username": "name",
+            "password": "asdasd",
+            "hostname": "example.com"}
+        subtype = "http://schema.massopencloud.org/haas/v0/switches/mock"
+        assert C.switch.register('mytestswitch', subtype, switchinfo) is None
+
+    def test_switch_register_fail(self):
+        """test various cases of switch register"""
+        switchinfo = {
+            "type": "http://schema.massopencloud.org/haas/v0/switches/mock",
+            "username": "name",
+            "password": "asdasd",
+            "hostnameasd": "example.com"}
+        subtype = "http://schema.massopencloud.org/haas/v0/switches/mock"
+        # this get a 500, dont know why
+        C.switch.register('mytestswitch', subtype, switchinfo)
+
 
 class Test_port:
     """ Tests port related client calls."""
