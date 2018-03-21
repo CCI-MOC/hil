@@ -11,7 +11,7 @@ Extensions are permitted to create new database objects by subclassing from
 # from sqlalchemy import *
 # from sqlalchemy.ext.declarative import declarative_base, declared_attr
 # from sqlalchemy.orm import relationship, sessionmaker,backref
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
 from subprocess import call, check_call, Popen, PIPE
 from hil.flaskapp import app
 from hil.config import cfg
