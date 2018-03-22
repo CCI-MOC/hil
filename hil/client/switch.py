@@ -1,7 +1,5 @@
 """Client support for switch related api calls."""
 import json
-import ast
-import sys
 from hil.client.base import check_reserved_chars
 from hil.client.base import ClientBase
 

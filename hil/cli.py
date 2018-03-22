@@ -11,6 +11,7 @@ import sys
 import urllib
 import schema
 import logging
+import ast
 
 import pkg_resources
 
