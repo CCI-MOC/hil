@@ -79,18 +79,18 @@ def test_run_dev_server():
     """Check that hil-admin run_dev_server doesn't immediately die."""
     check_call(['hil-admin', 'db', 'create'])
     assert runs_for_seconds(
-                ['hil-admin', 'run_dev_server', '--port', '5000'], seconds=1)
+                ['hil-admin', 'run-dev-server', '--port', '5000'], seconds=1)
 
 
 def test_serve_networks():
     """Check that hil-admin serve_networks doesn't immediately die."""
     check_call(['hil-admin', 'db', 'create'])
-    assert runs_for_seconds(['hil-admin', 'serve_networks'], seconds=1)
+    assert runs_for_seconds(['hil-admin', 'serve-networks'], seconds=1)
 
 
 @pytest.mark.parametrize('command', [
-    ['hil-admin', 'run_dev_server', '--port', '5000'],
-    ['hil-admin', 'serve_networks'],
+    ['hil-admin', 'run-dev-server', '--port', '5000'],
+    ['hil-admin', 'serve-networks'],
 ])
 def test_db_init_error(command):
     """Test that a command fails if the database has not been created."""
