@@ -32,11 +32,7 @@ def string_is_web_url(option):
 def string_is_db_uri(option):
     """Check if a string is a valid DB URI"""
     url = urlparse(option)
-    if url.scheme not in ('postgresql', 'sqlite'):
-        return False
-    if url.path == '':
-        return False
-    return True
+    return url.scheme in ('postgresql', 'sqlite')
 
 
 def string_is_dir(option):
@@ -138,12 +134,16 @@ def configure_logging():
     # Add the file handlers for the modules
     if cfg.has_option('general', 'log_dir'):
         log_dir = cfg.get('general', 'log_dir')
-
         # logging
         log_file = os.path.join(log_dir, 'hil.log')
         logger = logging.getLogger('hil')
-        logger.addHandler(logging.handlers.TimedRotatingFileHandler(
-            log_file, when='D', interval=1))
+        # Catch bad log directories
+        try:
+            logger.addHandler(logging.handlers.TimedRotatingFileHandler(
+                log_file, when='D', interval=1))
+        except IOError:
+            sys.exit("Error: log directory does not exist or user "
+                     "has insufficient permissions")
 
 
 def load_extensions():
