@@ -1,18 +1,14 @@
 """Commands related to user are in this module"""
 import click
-from hil.cli.client_setup import setup_http_client
-
-C = None
+from hil.cli.client_setup import client
 
 
 @click.group()
 def user():
     """Commands related to user"""
-    global C
-    C = setup_http_client()
 
 
-@user.command(name='create', help='Create a new user')
+@user.command(name='create', short_help='Create a new user')
 @click.argument('username')
 @click.argument('password')
 @click.argument('is_admin', type=click.Choice(['admin', 'regular']))
@@ -22,17 +18,17 @@ def user_create(username, password, is_admin):
     <is_admin> may be either "admin" or "regular", and determines whether
     the user has administrative privileges.
     """
-    C.user.create(username, password, is_admin == 'admin')
+    client.user.create(username, password, is_admin == 'admin')
 
 
-@user.command(name='delete', help='Delete user')
+@user.command(name='delete')
 @click.argument('username')
 def user_delete(username):
     """Delete the user <username>"""
-    C.user.delete(username)
+    client.user.delete(username)
 
 
-@user.group(name='project', help='add/remove users from project')
+@user.group(name='project')
 def user_project():
     """add/remove users from project"""
 
@@ -42,7 +38,7 @@ def user_project():
 @click.argument('project')
 def user_add_project(user, project):
     """Add <user> to <project>"""
-    C.user.add(user, project)
+    client.user.add(user, project)
 
 
 @user_project.command('remove')
@@ -50,7 +46,7 @@ def user_add_project(user, project):
 @click.argument('project')
 def user_remove_project(user, project):
     """Remove <user> from <project>"""
-    C.user.remove(user, project)
+    client.user.remove(user, project)
 
 
 @user.command(name='set-admin')
@@ -62,4 +58,4 @@ def user_set_admin(username, is_admin):
     <is_admin> may by either "admin" or "regular", and determines whether
     a user is authorized for administrative privileges.
     """
-    C.user.set_admin(username, is_admin == 'admin')
+    client.user.set_admin(username, is_admin == 'admin')

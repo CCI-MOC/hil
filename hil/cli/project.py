@@ -1,36 +1,32 @@
 """Commands related to projects are in this module"""
 import click
 import sys
-from hil.cli.client_setup import setup_http_client
-
-C = None
+from hil.cli.client_setup import client
 
 
 @click.group()
 def project():
     """Commands related to project"""
-    global C
-    C = setup_http_client()
 
 
 @project.command(name='create')
 @click.argument('project')
 def project_create(project):
     """Create a new project"""
-    C.project.create(project)
+    client.project.create(project)
 
 
 @project.command(name='delete')
 @click.argument('project')
 def project_delete(project):
     """Delete a project"""
-    C.project.delete(project)
+    client.project.delete(project)
 
 
 @project.command(name='list')
 def project_list():
     """List all projects"""
-    q = C.project.list()
+    q = client.project.list()
     sys.stdout.write('%s Projects :    ' % len(q) + " ".join(q) + '\n')
 
 
@@ -38,7 +34,7 @@ def project_list():
 @click.argument('project')
 def project_list_networks(project):
     """List all networks attached to a <project>"""
-    q = C.project.networks_in(project)
+    q = client.project.networks_in(project)
     sys.stdout.write(
             "Networks allocated to %s\t:   %s\n" % (project, " ".join(q))
             )
@@ -53,7 +49,7 @@ def project_node():
 @click.argument('project')
 def project_node_list(project):
     """List all nodes attached to a <project>"""
-    q = C.project.nodes_in(project)
+    q = client.project.nodes_in(project)
     sys.stdout.write('Nodes allocated to %s:  ' % project + " ".join(q) + '\n')
 
 
@@ -62,7 +58,7 @@ def project_node_list(project):
 @click.argument('node')
 def project_connect_node(project, node):
     """Add <node> to <project>"""
-    C.project.connect(project, node)
+    client.project.connect(project, node)
 
 
 @project_node.command(name='remove')
@@ -70,4 +66,4 @@ def project_connect_node(project, node):
 @click.argument('node')
 def project_detach_node(project, node):
     """Remove <node> from <project>"""
-    C.project.detach(project, node)
+    client.project.detach(project, node)

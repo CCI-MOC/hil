@@ -2,31 +2,27 @@
 import click
 import sys
 import ast
-from hil.cli.client_setup import setup_http_client
-
-C = None
+from hil.cli.client_setup import client
 
 
 @click.group()
 def switch():
     """Commands related to switch"""
-    global C
-    C = setup_http_client()
 
 
-@switch.command(name='show', help='Show switch information')
+@switch.command(name='show')
 @click.argument('switch')
 def node_show(switch):
     """Display information about <switch>"""
-    q = C.switch.show(switch)
+    q = client.switch.show(switch)
     for item in q.items():
         sys.stdout.write("%s\t  :  %s\n" % (item[0], item[1]))
 
 
-@switch.command(name='list', help='List all switches')
+@switch.command(name='list')
 def list_switches():
     """List all switches"""
-    q = C.switch.list()
+    q = client.switch.list()
     sys.stdout.write('%s switches :    ' % len(q) + " ".join(q) + '\n')
 
 
@@ -95,10 +91,10 @@ def switch_register(switch, subtype, args):
         except (ValueError, SyntaxError):
             sys.exit('Malformed switchinfo')
 
-    C.switch.register(switch, subtype, switchinfo)
+    client.switch.register(switch, subtype, switchinfo)
 
 
-@switch.command(name='delete', help='Delete a switch')
+@switch.command(name='delete')
 def switch_delete(switch):
     """Delete a <switch> """
-    C.switch.delete(switch)
+    client.switch.delete(switch)

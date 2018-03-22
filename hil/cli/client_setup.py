@@ -76,3 +76,6 @@ def setup_http_client():
     # Finally, fall back to no authentication:
     http_client = requests.Session()
     return Client(ep, http_client)
+
+
+client = setup_http_client()
