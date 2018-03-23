@@ -95,6 +95,7 @@ def switch_register(switch, subtype, args):
 
 
 @switch.command(name='delete')
+@click.argument('switch')
 def switch_delete(switch):
     """Delete a <switch> """
     client.switch.delete(switch)
