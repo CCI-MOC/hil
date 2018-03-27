@@ -70,8 +70,8 @@ def node_network():
 
 @node_network.command(name='connect', short_help="Connect a node to a network")
 @click.argument('node')
-@click.argument('network')
 @click.argument('nic')
+@click.argument('network')
 @click.argument('channel', default='', required=False)
 def node_network_connect(node, network, nic, channel):
     """Connect <node> to <network> on given <nic> and <channel>"""
@@ -80,8 +80,8 @@ def node_network_connect(node, network, nic, channel):
 
 @node_network.command(name='detach', short_help="Detach node from a network")
 @click.argument('node')
-@click.argument('network')
 @click.argument('nic')
+@click.argument('network')
 def node_network_detach(node, network, nic):
     """Detach <node> from the given <network> on the given <nic>"""
     print client.node.detach_network(node, nic, network)
