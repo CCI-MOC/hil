@@ -49,7 +49,7 @@ def setup_http_client():
         http_client = RequestsHTTPClient()
         http_client.auth = (basic_username, basic_password)
         # For calls using the client library
-        return Client(ep, http_client)
+        return Client(ep, http_client), http_client
     # Next try keystone:
     try:
         from keystoneauth1.identity import v3
@@ -70,7 +70,7 @@ def setup_http_client():
                            project_domain_id=os_project_domain_id)
         sess = session.Session(auth=auth)
         http_client = KeystoneHTTPClient(sess)
-        return Client(ep, http_client)
+        return Client(ep, http_client), http_client
     except (ImportError, KeyError):
         pass
     # Finally, fall back to no authentication:
