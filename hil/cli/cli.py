@@ -5,7 +5,7 @@ import pkg_resources
 
 from hil.client.base import FailedAPICallException
 from hil.commands.util import ensure_not_root
-from hil.cli import node, project, network, switch, port, user, misc
+from hil.cli import node, project, network, switch, port, user, misc, headnode
 
 VERSION = pkg_resources.require('hil')[0].version
 
@@ -21,7 +21,7 @@ def cli():
 
 
 commands = [node.node, project.project, network.network, switch.switch,
-            port.port, user.user, misc.networking_action]
+            port.port, user.user, misc.networking_action, headnode.headnode]
 
 for command in commands:
     cli.add_command(command)
