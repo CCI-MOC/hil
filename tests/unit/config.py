@@ -4,6 +4,7 @@ from hil.test_common import config_set, fail_on_log_warnings, \
 from hil import config
 import sys
 import pytest
+from schema import SchemaError
 
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
@@ -108,7 +109,9 @@ def test_bool_validation_lower():
 def test_bool_validation_bad_cases():
     """Test invalid bools."""
     opts = ['frue', 'nes', 'yOn', '2', 'Salse', 'Go', 'bff', '3']
-    assert all(not config.string_is_bool(s) for s in opts)
+    for s in opts:
+        with pytest.raises(SchemaError):
+            config.string_is_bool(opts)
 
 
 def test_good_web_urls():
@@ -120,7 +123,9 @@ def test_good_web_urls():
 def test_bad_web_urls():
     """Test malformed web URLs."""
     opts = ['http/', 'test.com', 'C:\POPUPLOG.OS2']
-    assert all(not config.string_is_web_url(s) for s in opts)
+    for s in opts:
+        with pytest.raises(SchemaError):
+            config.string_is_web_url(s)
 
 
 def test_good_db_uris():
@@ -133,7 +138,9 @@ def test_good_db_uris():
 def test_bad_db_uris():
     """Test malformed DB URIs."""
     opts = ['https://database.com', 'postsqlite://localhost/db', 'snake']
-    assert all(not config.string_is_db_uri(s) for s in opts)
+    for s in opts:
+        with pytest.raises(SchemaError):
+            config.string_is_db_uri(s)
 
 
 def test_good_dirs():
@@ -163,7 +170,9 @@ def test_good_log_level_lower():
 def test_bad_log_level_upper():
     """Test invalid log level strings."""
     opts = ['Rebug', 'Infor', 'W4rn', '12345', '\\\\\\']
-    assert all(not config.string_is_log_level(s) for s in opts)
+    for s in opts:
+        with pytest.raises(SchemaError):
+            config.string_is_db_uri(s)
 
 
 def test_good_vlans():

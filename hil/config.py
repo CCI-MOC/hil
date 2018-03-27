@@ -8,10 +8,11 @@ Once `load` has been called, it will be ready to use.
 import ConfigParser
 import logging.handlers
 import importlib
-from schema import Schema, Optional
+from schema import Schema, Optional, Use, And, Or
 import os
 import sys
 from urlparse import urlparse
+import errno
 
 cfg = ConfigParser.RawConfigParser()
 cfg.optionxform = str
@@ -19,31 +20,31 @@ cfg.optionxform = str
 
 def string_is_bool(option):
     """Check if a string matches ConfigParser's definition of a bool"""
-    return option.lower() in ['true', 'yes', 'on', '1',
-                              'false', 'no', 'off', '0']
+    return And(Use(str.lower), Or('true', 'yes', 'on', '1',
+                                  'false', 'no', 'off', '0')).validate(option)
 
 
 def string_is_web_url(option):
     """Check if a string is a valid web URL"""
-    url = urlparse(option)
-    return not (url.scheme == '' or url.netloc == '')
+    return And(lambda s: urlparse(s).scheme != '',
+               lambda s: urlparse(s).netloc != '').validate(option)
 
 
 def string_is_db_uri(option):
     """Check if a string is a valid DB URI"""
-    url = urlparse(option)
-    return url.scheme in ('postgresql', 'sqlite')
+    return And(Use(lambda s: urlparse(s).scheme),
+               Or('postgresql', 'sqlite')).validate(option)
 
 
 def string_is_dir(option):
     """Check if a string is a valid directory path"""
-    return os.path.isabs(option)
+    return Use(lambda s: os.path.isabs(s), True).validate(option)
 
 
 def string_is_log_level(option):
     """Check if a string is a valid log level"""
-    return option.lower() in ['debug', 'info', 'warn', 'warning', 'error',
-                              'critical', 'fatal']
+    return And(Use(str.lower), Or('debug', 'info', 'warn', 'warning', 'error',
+                                  'critical', 'fatal')).validate(option)
 
 
 def string_has_vlans(option):
@@ -141,9 +142,14 @@ def configure_logging():
         try:
             logger.addHandler(logging.handlers.TimedRotatingFileHandler(
                 log_file, when='D', interval=1))
-        except IOError:
-            sys.exit("Error: log directory does not exist or user "
-                     "has insufficient permissions")
+        except IOError as e:
+            if e.errno == errno.ENOENT:
+                sys.exit("Error: log directory does not exist")
+            elif e.errno == errno.EACCES:
+                sys.exit("Error: insufficient permissions to "
+                         "access log directory")
+            else:
+                raise(e)
 
 
 def load_extensions():
