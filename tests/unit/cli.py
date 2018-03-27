@@ -83,7 +83,7 @@ def test_run_dev_server():
 
 
 def test_serve_networks():
-    """Check that hil-admin serve_networks doesn't immediately die."""
+    """Check that hil-admin serve-networks doesn't immediately die."""
     check_call(['hil-admin', 'db', 'create'])
     assert runs_for_seconds(['hil-admin', 'serve-networks'], seconds=1)
 

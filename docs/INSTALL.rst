@@ -178,7 +178,7 @@ then you will need to add an initial user with administrative privileges to the
 database in order to bootstrap the system.
 You can do this by running the following command (as user ``hil``)::
 
-  $ sudo -i -u ${HIL_USER}; hil-admin create_admin_user ${HIL_ADMIN_USER} ${HIL_ADMIN_PASSWORD}
+  $ sudo -i -u ${HIL_USER}; hil-admin create-admin-user ${HIL_ADMIN_USER} ${HIL_ADMIN_PASSWORD}
 
 You can then create additional users via the HTTP API. You may want to
 subsequently delete the initial user; this can also be done via the API.
@@ -478,11 +478,11 @@ It uses "Upstart" an equivalent of systemd to manage its daemons/processes.
 
 For such systems, the networking server may be started as the HIL user by running::
 
-  $ hil serve_networks &
+  $ hil-admin serve-networks &
 
 To make this happen on boot, add the following to ``/etc/rc.local``::
 
-  ($ cd /var/lib/hil && su hil -c 'hil serve_networks') &
+  ($ cd /var/lib/hil && su hil -c 'hil-admin serve-networks') &
 
 
 HIL Client:

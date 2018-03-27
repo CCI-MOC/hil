@@ -38,7 +38,7 @@ Initialize database::
 
 Start server::
 
-  hil serve 5000
+  hil-admin run-dev-server 5000
 
 
 From a separate terminal window::
