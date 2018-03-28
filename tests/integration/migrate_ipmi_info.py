@@ -61,7 +61,7 @@ fresh_database = pytest.fixture(fresh_database)
 @pytest.fixture()
 def run_obmd(tmpdir):
     """Set up and start obmd."""
-    check_call(['go', 'get', 'github.com/CCI-MOC/obmd'])
+    check_call(['go', 'get', '-v', 'github.com/CCI-MOC/obmd'])
 
     config_file_path = tmpdir + '/obmd-config.json'
 
