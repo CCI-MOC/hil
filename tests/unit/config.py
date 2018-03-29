@@ -111,7 +111,7 @@ def test_bool_validation_bad_cases():
     opts = ['frue', 'nes', 'yOn', '2', 'Salse', 'Go', 'bff', '3']
     for s in opts:
         with pytest.raises(SchemaError):
-            config.string_is_bool(opts)
+            config.string_is_bool(s)
 
 
 def test_good_web_urls():

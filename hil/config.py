@@ -38,7 +38,7 @@ def string_is_db_uri(option):
 
 def string_is_dir(option):
     """Check if a string is a valid directory path"""
-    return Use(lambda s: os.path.isabs(s), True).validate(option)
+    return Use(os.path.isabs).validate(option)
 
 
 def string_is_log_level(option):
