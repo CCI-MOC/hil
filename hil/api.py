@@ -6,7 +6,7 @@ import json
 import requests
 import uuid
 
-from schema import Schema, Optional
+from schema import Schema, Optional, SchemaError
 
 from hil import model, errors
 from hil.model import db
@@ -41,7 +41,7 @@ def project_create(project):
     If the project already exists, a DuplicateError will be raised.
     """
     get_auth_backend().require_admin()
-    _assert_absent(model.Project, project)
+    absent_or_conflict(model.Project, project)
     project = model.Project(project)
     db.session.add(project)
     db.session.commit()
@@ -54,7 +54,7 @@ def project_delete(project):
     If the project does not exist, a NotFoundError will be raised.
     """
     get_auth_backend().require_admin()
-    project = _must_find(model.Project, project)
+    project = get_or_404(model.Project, project)
     if project.nodes:
         raise errors.BlockedError("Project has nodes still")
     if project.networks_created:
@@ -86,9 +86,9 @@ def project_connect_node(project, node):
 
     If node is already owned by a project, a BlockedError will be raised.
     """
-    project = _must_find(model.Project, project)
+    project = get_or_404(model.Project, project)
     get_auth_backend().require_project_access(project)
-    node = _must_find(model.Node, node)
+    node = get_or_404(model.Node, node)
     if node.project is not None:
         raise errors.BlockedError("Node is already owned by a project.")
     project.nodes.append(node)
@@ -106,9 +106,9 @@ def project_detach_node(project, node):
     If the node has network attachments or pending network actions, a
     BlockedError will be raised.
     """
-    project = _must_find(model.Project, project)
+    project = get_or_404(model.Project, project)
     get_auth_backend().require_project_access(project)
-    node = _must_find(model.Node, node)
+    node = get_or_404(model.Node, node)
     if node not in project.nodes:
         raise errors.NotFoundError("Node not in project")
     num_attachments = model.NetworkAttachment.query \
@@ -138,8 +138,8 @@ def network_grant_project_access(project, network):
     If the project already has access to the network a DuplicateError will be
     raised.
     """
-    network = _must_find(model.Network, network)
-    project = _must_find(model.Project, project)
+    network = get_or_404(model.Network, network)
+    project = get_or_404(model.Project, project)
 
     # Must be admin or the owner of the network to add projects
     get_auth_backend().require_project_access(network.owner)
@@ -163,8 +163,8 @@ def network_revoke_project_access(project, network):
     If the project is the owner of the network a BlockedError will be raised.
     """
     auth_backend = get_auth_backend()
-    network = _must_find(model.Network, network)
-    project = _must_find(model.Project, project)
+    network = get_or_404(model.Network, network)
+    project = get_or_404(model.Project, project)
     # must be admin, the owner of the network, or <project> to remove
     # <project>.
 
@@ -222,7 +222,7 @@ def node_register(node, **kwargs):
     node_register_nic.
     """
     get_auth_backend().require_admin()
-    _assert_absent(model.Node, node)
+    absent_or_conflict(model.Node, node)
     obm_type = kwargs['obm']['type']
     cls = concrete_class_for(model.Obm, obm_type)
     if cls is None:
@@ -247,7 +247,7 @@ def node_power_cycle(node, force=False):
     Force indicates whether the node should be forced off, or allowed
     to respond to the shutdown signal.
     """
-    node = _must_find(model.Node, node)
+    node = get_or_404(model.Node, node)
     get_auth_backend().require_project_access(node.project)
     node.obm.power_cycle(force)
 
@@ -255,7 +255,7 @@ def node_power_cycle(node, force=False):
 @rest_call('POST', '/node/<node>/power_off', Schema({'node': basestring}))
 def node_power_off(node):
     """Power off the node."""
-    node = _must_find(model.Node, node)
+    node = get_or_404(model.Node, node)
     get_auth_backend().require_project_access(node.project)
     node.obm.power_off()
 
@@ -265,7 +265,7 @@ def node_power_off(node):
 }))
 def node_set_bootdev(node, bootdev):
     """Set the node's boot device."""
-    node = _must_find(model.Node, node)
+    node = get_or_404(model.Node, node)
     get_auth_backend().require_project_access(node.project)
 
     node.obm.require_legal_bootdev(bootdev)
@@ -280,7 +280,7 @@ def node_delete(node):
     If the node does not exist, a NotFoundError will be raised.
     """
     get_auth_backend().require_admin()
-    node = _must_find(model.Node, node)
+    node = get_or_404(model.Node, node)
     if node.project:
         raise errors.BlockedError(
             "Node %r is part of project %r; remove from "
@@ -306,8 +306,8 @@ def node_register_nic(node, nic, macaddr):
     If there is already an nic with that name, a DuplicateError will be raised.
     """
     get_auth_backend().require_admin()
-    node = _must_find(model.Node, node)
-    _assert_absent_n(node, model.Nic, nic)
+    node = get_or_404(model.Node, node)
+    absent_child_or_conflict(node, model.Nic, nic)
     nic = model.Nic(node, nic, macaddr)
     db.session.add(nic)
     db.session.commit()
@@ -322,7 +322,7 @@ def node_delete_nic(node, nic):
     If the node or nic does not exist, a NotFoundError will be raised.
     """
     get_auth_backend().require_admin()
-    nic = _must_find_n(_must_find(model.Node, node), model.Nic, nic)
+    nic = get_child_or_404(get_or_404(model.Node, node), model.Nic, nic)
     db.session.delete(nic)
     db.session.commit()
 
@@ -358,9 +358,9 @@ def node_connect_network(node, nic, network, channel=None):
         ).first() is not None
     auth_backend = get_auth_backend()
 
-    node = _must_find(model.Node, node)
-    nic = _must_find_n(node, model.Nic, nic)
-    network = _must_find(model.Network, network)
+    node = get_or_404(model.Node, node)
+    nic = get_child_or_404(node, model.Nic, nic)
+    network = get_or_404(model.Network, network)
 
     if not node.project:
         raise errors.ProjectMismatchError("Node not in project")
@@ -421,9 +421,9 @@ def node_detach_network(node, nic, network):
     """
     auth_backend = get_auth_backend()
 
-    node = _must_find(model.Node, node)
-    network = _must_find(model.Network, network)
-    nic = _must_find_n(node, model.Nic, nic)
+    node = get_or_404(model.Node, node)
+    network = get_or_404(model.Network, network)
+    nic = get_child_or_404(node, model.Nic, nic)
 
     if not node.project:
         raise errors.ProjectMismatchError("Node not in project")
@@ -461,10 +461,10 @@ def node_set_metadata(node, label, value):
     If the label already exists, the value will be updated.
     """
     get_auth_backend().require_admin()
-    node = _must_find(model.Node, node)
+    node = get_or_404(model.Node, node)
     obj_inner = _namespaced_query(node, model.Metadata, label)
     if obj_inner is not None:
-        metadata = _must_find_n(node, model.Metadata, label)
+        metadata = get_child_or_404(node, model.Metadata, label)
         metadata.value = json.dumps(value)
     else:
         metadata = model.Metadata(label, json.dumps(value), node)
@@ -481,8 +481,8 @@ def node_delete_metadata(node, label):
     If the metadata does not exist, a NotFoundError will be raised.
     """
     get_auth_backend().require_admin()
-    node = _must_find(model.Node, node)
-    metadata = _must_find_n(node, model.Metadata, label)
+    node = get_or_404(model.Node, node)
+    metadata = get_child_or_404(node, model.Metadata, label)
 
     db.session.delete(metadata)
     db.session.commit()
@@ -511,8 +511,8 @@ def headnode_create(headnode, project, base_img):
     if base_img not in valid_imgs:
         raise errors.BadArgumentError('Provided image is not a valid image.')
 
-    _assert_absent(model.Headnode, headnode)
-    project = _must_find(model.Project, project)
+    absent_or_conflict(model.Headnode, headnode)
+    project = get_or_404(model.Project, project)
     get_auth_backend().require_project_access(project)
 
     headnode = model.Headnode(project, headnode, base_img)
@@ -527,7 +527,7 @@ def headnode_delete(headnode):
 
     If the node does not exist, a NotFoundError will be raised.
     """
-    headnode = _must_find(model.Headnode, headnode)
+    headnode = get_or_404(model.Headnode, headnode)
     get_auth_backend().require_project_access(headnode.project)
     if not headnode.dirty:
         headnode.delete()
@@ -548,7 +548,7 @@ def headnode_start(headnode):
     "frozen," and all other headnode-related api calls will fail (by raising
     an IllegalStateError), with the exception of headnode_stop.
     """
-    headnode = _must_find(model.Headnode, headnode)
+    headnode = get_or_404(model.Headnode, headnode)
     get_auth_backend().require_project_access(headnode.project)
     if headnode.dirty:
         headnode.create()
@@ -566,7 +566,7 @@ def headnode_stop(headnode):
     the opportunity to shut down cleanly. This does *not* unfreeze the VM;
     headnode_start will be the only valid API call after the VM is powered off.
     """
-    headnode = _must_find(model.Headnode, headnode)
+    headnode = get_or_404(model.Headnode, headnode)
     get_auth_backend().require_project_access(headnode.project)
     headnode.stop()
 
@@ -585,9 +585,9 @@ def headnode_create_hnic(headnode, hnic):
     If the headnode's VM has already created (headnode is not "dirty"), raises
     an IllegalStateError
     """
-    headnode = _must_find(model.Headnode, headnode)
+    headnode = get_or_404(model.Headnode, headnode)
     get_auth_backend().require_project_access(headnode.project)
-    _assert_absent_n(headnode, model.Hnic, hnic)
+    absent_child_or_conflict(headnode, model.Hnic, hnic)
 
     if not headnode.dirty:
         raise errors.IllegalStateError
@@ -608,9 +608,9 @@ def headnode_delete_hnic(headnode, hnic):
     If the headnode's VM has already created (headnode is not "dirty"), raises
     an IllegalStateError
     """
-    headnode = _must_find(model.Headnode, headnode)
+    headnode = get_or_404(model.Headnode, headnode)
     get_auth_backend().require_project_access(headnode.project)
-    hnic = _must_find_n(headnode, model.Hnic, hnic)
+    hnic = get_child_or_404(headnode, model.Hnic, hnic)
 
     if not headnode.dirty:
         raise errors.IllegalStateError
@@ -634,10 +634,10 @@ def headnode_connect_network(headnode, hnic, network):
     is currently unsupported due to an implementation limitation, but will be
     supported in a future release. See issue #333.
     """
-    headnode = _must_find(model.Headnode, headnode)
+    headnode = get_or_404(model.Headnode, headnode)
     get_auth_backend().require_project_access(headnode.project)
-    hnic = _must_find_n(headnode, model.Hnic, hnic)
-    network = _must_find(model.Network, network)
+    hnic = get_child_or_404(headnode, model.Hnic, hnic)
+    network = get_or_404(model.Network, network)
 
     if not network.allocated:
         raise errors.BadArgumentError(
@@ -665,9 +665,9 @@ def headnode_detach_network(headnode, hnic):
 
     Raises IllegalStateError if the headnode has already been started.
     """
-    headnode = _must_find(model.Headnode, headnode)
+    headnode = get_or_404(model.Headnode, headnode)
     get_auth_backend().require_project_access(headnode.project)
-    hnic = _must_find_n(headnode, model.Hnic, hnic)
+    hnic = get_child_or_404(headnode, model.Hnic, hnic)
 
     if not headnode.dirty:
         raise errors.IllegalStateError
@@ -710,7 +710,7 @@ def list_network_attachments(network, project=None):
     If <project> is `None`, lists all attachments for <network>
     """
     auth_backend = get_auth_backend()
-    network = _must_find(model.Network, network)
+    network = get_or_404(model.Network, network)
 
     # Determine if caller has access to owning project
     owner_access = auth_backend.have_project_access(network.owner)
@@ -726,7 +726,7 @@ def list_network_attachments(network, project=None):
     else:
         # Only list the nodes coming from the specified project that are
         # connected to this network.
-        project = _must_find(model.Project, project)
+        project = get_or_404(model.Project, project)
         if not owner_access:
             # Caller does not own the network, so they need both basic access
             # to the network, and access to tueh queried project.
@@ -775,12 +775,12 @@ def network_create(network, owner, access, net_id):
     docs/networks.md
     """
     auth_backend = get_auth_backend()
-    _assert_absent(model.Network, network)
+    absent_or_conflict(model.Network, network)
 
     # Check authorization and legality of arguments, and find correct 'access'
     # and 'owner'
     if owner != "admin":
-        owner = _must_find(model.Project, owner)
+        owner = get_or_404(model.Project, owner)
         auth_backend.require_project_access(owner)
         # Project-owned network
         if access != owner.label:
@@ -789,7 +789,7 @@ def network_create(network, owner, access, net_id):
         if net_id != "":
             raise errors.BadArgumentError(
                 "Project-owned networks must use network ID allocation")
-        access = [_must_find(model.Project, access)]
+        access = [get_or_404(model.Project, access)]
     else:
         # Administrator-owned network
         auth_backend.require_admin()
@@ -797,7 +797,7 @@ def network_create(network, owner, access, net_id):
         if access == "":
             access = []
         else:
-            access = [_must_find(model.Project, access)]
+            access = [get_or_404(model.Project, access)]
 
     # Allocate net_id, if requested
     if net_id == "":
@@ -824,7 +824,7 @@ def network_delete(network):
     If the network is connected to nodes or headnodes, or there are pending
     network actions involving it, a BlockedError will be raised.
     """
-    network = _must_find(model.Network, network)
+    network = get_or_404(model.Network, network)
     get_auth_backend().require_project_access(network.owner)
 
     if len(network.attachments) != 0:
@@ -850,7 +850,7 @@ def show_network(network):
     allocator = get_network_allocator()
     auth_backend = get_auth_backend()
 
-    network = _must_find(model.Network, network)
+    network = get_or_404(model.Network, network)
 
     if network.access:
         authorized = False
@@ -898,12 +898,17 @@ def show_network(network):
 def switch_register(switch, type, **kwargs):
     """Register a new switch"""
     get_auth_backend().require_admin()
-    _assert_absent(model.Switch, switch)
+    absent_or_conflict(model.Switch, switch)
 
     cls = concrete_class_for(model.Switch, type)
     if cls is None:
         raise errors.BadArgumentError('%r is not a valid switch type.' % type)
-    cls.validate(kwargs)
+    try:
+        cls.validate(kwargs)
+    except SchemaError:
+        raise errors.BadArgumentError(
+                        'The arguments are not valid for this switch type')
+
     obj = cls(**kwargs)
     obj.label = switch
     obj.type = type
@@ -916,7 +921,7 @@ def switch_register(switch, type, **kwargs):
 def switch_delete(switch):
     """Delete a switch"""
     get_auth_backend().require_admin()
-    switch = _must_find(model.Switch, switch)
+    switch = get_or_404(model.Switch, switch)
 
     if switch.ports != []:
         raise errors.BlockedError(
@@ -935,8 +940,8 @@ def switch_register_port(switch, port):
     If the port already exists, a DuplicateError will be raised.
     """
     get_auth_backend().require_admin()
-    switch = _must_find(model.Switch, switch)
-    _assert_absent_n(switch, model.Port, port)
+    switch = get_or_404(model.Switch, switch)
+    absent_child_or_conflict(switch, model.Port, port)
 
     switch.validate_port_name(port)
 
@@ -955,8 +960,8 @@ def switch_delete_port(switch, port):
     If the port does not exist, a NotFoundError will be raised.
     """
     get_auth_backend().require_admin()
-    switch = _must_find(model.Switch, switch)
-    port = _must_find_n(switch, model.Port, port)
+    switch = get_or_404(model.Switch, switch)
+    port = get_child_or_404(switch, model.Port, port)
     if port.nic is not None:
         raise errors.BlockedError(
             "Port %r is attached to a nic; please detach "
@@ -979,7 +984,7 @@ def show_switch(switch):
     this switch. right now it needs support from the switch backend.
     """
     get_auth_backend().require_admin()
-    switch = _must_find(model.Switch, switch)
+    switch = get_or_404(model.Switch, switch)
     return json.dumps({
         'name': switch.label,
         'ports': [{'label': port.label}
@@ -996,8 +1001,8 @@ def show_port(switch, port):
     Return a JSON object showing the node and nic to which port is connected.
     """
     get_auth_backend().require_admin()
-    switch = _must_find(model.Switch, switch)
-    port = _must_find_n(switch, model.Port, port)
+    switch = get_or_404(model.Switch, switch)
+    port = get_child_or_404(switch, model.Port, port)
     nic = port.nic
     return_obj = {}
     if nic:
@@ -1039,11 +1044,11 @@ def port_connect_nic(switch, port, node, nic):
     will be raised.
     """
     get_auth_backend().require_admin()
-    switch = _must_find(model.Switch, switch)
-    port = _must_find_n(switch, model.Port, port)
+    switch = get_or_404(model.Switch, switch)
+    port = get_child_or_404(switch, model.Port, port)
 
-    node = _must_find(model.Node, node)
-    nic = _must_find_n(node, model.Nic, nic)
+    node = get_or_404(model.Node, node)
+    nic = get_child_or_404(node, model.Nic, nic)
 
     if nic.port is not None:
         raise errors.DuplicateError(nic.label)
@@ -1069,8 +1074,8 @@ def port_detach_nic(switch, port):
     will be raised.
     """
     get_auth_backend().require_admin()
-    switch = _must_find(model.Switch, switch)
-    port = _must_find_n(switch, model.Port, port)
+    switch = get_or_404(model.Switch, switch)
+    port = get_child_or_404(switch, model.Port, port)
 
     if port.nic is None:
         raise errors.NotFoundError(port.label + " not attached")
@@ -1088,8 +1093,8 @@ def port_detach_nic(switch, port):
 def port_revert(switch, port):
     """Detach the port from all networks."""
     get_auth_backend().require_admin()
-    switch = _must_find(model.Switch, switch)
-    port = _must_find_n(switch, model.Port, port)
+    switch = get_or_404(model.Switch, switch)
+    port = get_child_or_404(switch, model.Port, port)
 
     if port.nic is None:
         raise errors.NotFoundError(port.label + " not attached")
@@ -1160,7 +1165,7 @@ def list_project_nodes(project):
 
     Example:  '["node1", "node2", "node3"]'
     """
-    project = _must_find(model.Project, project)
+    project = get_or_404(model.Project, project)
     get_auth_backend().require_project_access(project)
     nodes = project.nodes
     nodes = [n.label for n in nodes]
@@ -1177,7 +1182,7 @@ def list_project_networks(project):
 
     Example:  '["net1", "net2", "net3"]'
     """
-    project = _must_find(model.Project, project)
+    project = get_or_404(model.Project, project)
     get_auth_backend().require_project_access(project)
     networks = project.networks_access
     networks = sorted([n.label for n in networks])
@@ -1191,7 +1196,7 @@ def show_node(nodename):
     Returns a JSON object representing a node.
     """
 
-    node = _must_find(model.Node, nodename)
+    node = get_or_404(model.Node, nodename)
     if node.project is not None:
         get_auth_backend().require_project_access(node.project)
 
@@ -1229,7 +1234,7 @@ def list_project_headnodes(project):
 
     Example:  '["headnode1", "headnode2", "headnode3"]'
     """
-    project = _must_find(model.Project, project)
+    project = get_or_404(model.Project, project)
     get_auth_backend().require_project_access(project)
     headnodes = project.headnodes
     headnodes = sorted([hn.label for hn in headnodes])
@@ -1244,7 +1249,7 @@ def show_headnode(nodename):
 
     Returns a JSON object representing a headnode.
     """
-    headnode = _must_find(model.Headnode, nodename)
+    headnode = get_or_404(model.Headnode, nodename)
     get_auth_backend().require_project_access(headnode.project)
     return json.dumps({
         'name': headnode.label,
@@ -1284,7 +1289,7 @@ def list_active_extensions():
 @rest_call('GET', '/node/<nodename>/console', Schema({'nodename': basestring}))
 def show_console(nodename):
     """Show the contents of the console log."""
-    node = _must_find(model.Node, nodename)
+    node = get_or_404(model.Node, nodename)
     log = node.obm.get_console()
     if log is None:
         raise errors.NotFoundError(
@@ -1295,7 +1300,7 @@ def show_console(nodename):
 @rest_call('PUT', '/node/<nodename>/console', Schema({'nodename': basestring}))
 def start_console(nodename):
     """Start logging output from the console."""
-    node = _must_find(model.Node, nodename)
+    node = get_or_404(model.Node, nodename)
     node.obm.start_console()
 
 
@@ -1304,14 +1309,14 @@ def start_console(nodename):
 }))
 def stop_console(nodename):
     """Stop logging output from the console and delete the log."""
-    node = _must_find(model.Node, nodename)
+    node = get_or_404(model.Node, nodename)
     node.obm.stop_console()
     node.obm.delete_console()
 
 
 # Helper functions #
 ####################
-def _assert_absent(cls, name):
+def absent_or_conflict(cls, name):
     """Raises a DuplicateError if the given object is already in the database.
 
     This is useful for most of the *_create functions.
@@ -1329,7 +1334,7 @@ def _assert_absent(cls, name):
                                                                name))
 
 
-def _must_find(cls, name):
+def get_or_404(cls, name):
     """Raises a NotFoundError if the given object doesn't exist in the datbase.
     Otherwise returns the object
 
@@ -1356,7 +1361,7 @@ def _namespaced_query(obj_outer, cls_inner, name_inner):
         .filter_by(label=name_inner).first()
 
 
-def _assert_absent_n(obj_outer, cls_inner, name_inner):
+def absent_child_or_conflict(obj_outer, cls_inner, name_inner):
     """Raises DuplicateError if a "namespaced" object, such as a node's nic,
     exists.
 
@@ -1379,7 +1384,7 @@ def _assert_absent_n(obj_outer, cls_inner, name_inner):
                                                obj_outer.label))
 
 
-def _must_find_n(obj_outer, cls_inner, name_inner):
+def get_child_or_404(obj_outer, cls_inner, name_inner):
     """Searches the database for a "namespaced" object, such as a nic on a node.
 
     Raises NotFoundError if there is none.  Otherwise returns the object.
@@ -1410,7 +1415,7 @@ def _maintain(project, node, node_label):
     logger = logging.getLogger(__name__)
     if (cfg.has_option('maintenance', 'maintenance_project') and
             cfg.has_option('maintenance', 'url')):
-        maintenance_proj = _must_find(
+        maintenance_proj = get_or_404(
                 model.Project,
                 cfg.get('maintenance', 'maintenance_project')
                 )

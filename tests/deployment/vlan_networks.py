@@ -169,7 +169,7 @@ class TestNetworkVlan(NetworkTest):
             again, we do various checks along the way.
             """
             # Query the DB for nodes on this project
-            project = api._must_find(model.Project, 'anvil-nextgen')
+            project = api.get_or_404(model.Project, 'anvil-nextgen')
             nodes = project.nodes
             ports = self.get_all_ports(nodes)
 

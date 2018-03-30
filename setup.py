@@ -36,9 +36,10 @@ setup(name='hil',
       use_scm_version=True,
       packages=find_packages(),
       # TODO: we should merge scripts into entry_points, below.
-      scripts=['scripts/hil', 'scripts/create_bridges'],
+      scripts=['scripts/create_bridges'],
       entry_points={
-          'console_scripts': ['hil-admin=hil.commands.admin:main'],
+          'console_scripts': ['hil-admin=hil.commands.admin:main',
+                              'hil=hil.cli.cli:main'],
       },
       package_data={
           'hil': [
@@ -82,13 +83,14 @@ setup(name='hil',
                         'Flask-Migrate>=1.8,<2.0',
                         'Flask-Script>=2.0.5,<3.0',
                         'Werkzeug>=0.9.4,<0.10',
-                        'Flask>=0.10.1,<0.11',
+                        'Flask>=0.12.1,<0.13',
                         'schema==0.3.1',
                         'importlib>=1.0.3,<2.0',
                         'passlib>=1.6.2,<2.0',
                         'pexpect>=3.3,<4.0',
                         'requests>=2.4.1,<3.0',
                         'lxml>=3.6.0,<4.0',
+                        'click>=6.0,<7.0'
                         ],
       extras_require={
           'tests': [

@@ -11,7 +11,7 @@ Extensions are permitted to create new database objects by subclassing from
 # from sqlalchemy import *
 # from sqlalchemy.ext.declarative import declarative_base, declared_attr
 # from sqlalchemy.orm import relationship, sessionmaker,backref
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
 from subprocess import call, check_call, Popen, PIPE
 from hil.flaskapp import app
 from hil.config import cfg
@@ -81,7 +81,7 @@ class Nic(db.Model):
 class Node(db.Model):
     """a (physical) machine"""
     id = db.Column(BigIntegerType, primary_key=True)
-    label = db.Column(db.String, nullable=False)
+    label = db.Column(db.String, unique=True, nullable=False)
 
     # The project to which this node is allocated. If the project is null, the
     # node is unallocated:
@@ -112,7 +112,7 @@ class Project(db.Model):
     A project may contain allocated nodes, networks, and headnodes.
     """
     id = db.Column(BigIntegerType, primary_key=True)
-    label = db.Column(db.String, nullable=False)
+    label = db.Column(db.String, unique=True, nullable=False)
 
     def __init__(self, label):
         """Create a project with the given label."""
@@ -143,7 +143,7 @@ class Network(db.Model):
     See docs/networks.md for more information on the parameters.
     """
     id = db.Column(BigIntegerType, primary_key=True)
-    label = db.Column(db.String, nullable=False)
+    label = db.Column(db.String, unique=True, nullable=False)
 
     # The project to which the network belongs, or None if the network was
     # created by the administrator.  This field determines who can delete a
@@ -205,7 +205,7 @@ class Switch(db.Model):
     Subclasses MUST override both ``validate`` and ``session``.
     """
     id = db.Column(BigIntegerType, primary_key=True)
-    label = db.Column(db.String, nullable=False)
+    label = db.Column(db.String, unique=True, nullable=False)
 
     type = db.Column(db.String, nullable=False)
 

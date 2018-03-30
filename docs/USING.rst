@@ -10,7 +10,8 @@ help`` will display an overview of the available commands. To tell ``hil``
 which HIL instance to use, be sure to do one of:
 
 1. Set the ``HIL_ENDPOINT`` environmental variable. An example (using
-   the default port used when running ``hil serve``) would be ``http://127.0.0.1:5000``
+   the default port used when running ``hil-admin run-dev-server``) would be
+   ``http://127.0.0.1:5000``
 2. Ensure that there is a ``hil.cfg`` in the current directory which contains
    a valid ``client`` section. A valid config file in this case could look
    like
@@ -90,7 +91,7 @@ cli call
 
 ::
 
-    $ hil switch_register mockswitch02 mock switchhost01 switchuser01 password1234
+    $ hil switch register mockswitch02 mock switchhost01 switchuser01 password1234
 
 2) Registering a Node which uses IPMI for out of band management
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -117,7 +118,7 @@ Corresponding cli calls will be as follows:
 
 ::
 
-     $ hil node_register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01
+     $ hil node register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01
 
 3) Creating a Project in HIL
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -135,7 +136,7 @@ cli call
 
 ::
 
-    $ hil project_create mockproject01
+    $ hil project create mockproject01
 
 4) Register a node in HIL
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -161,7 +162,7 @@ cli call
 
 ::
 
-    $ hil node_register mocknode01 mock mockhost01 nodeuser01 password1234
+    $ hil node register mocknode01 mock mockhost01 nodeuser01 password1234
 
 4) Creating a Network in HIL
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -185,4 +186,4 @@ cli call
 
 ::
 
-    $ hil network_create mocnetwork01 admin mockproject 101
+    $ hil network create mocnetwork01 admin mockproject 101

@@ -7,20 +7,26 @@ import logging
 from lxml import etree
 import re
 import requests
-import schema
+from schema import Schema, Optional
 
-from hil import model
 from hil.model import db, Switch, SwitchSession
-from hil.errors import BadArgumentError, BlockedError
+from hil.errors import BadArgumentError
 from hil.model import BigIntegerType
 from hil.network_allocator import get_network_allocator
-from hil.ext.switches.common import should_save
+from hil.ext.switches.common import should_save, check_native_networks, \
+ parse_vlans
+from hil.config import core_schema, string_is_bool
+
 
 logger = logging.getLogger(__name__)
 
 CONFIG = 'config-commands'
 SHOW = 'show-command'
 EXEC = 'exec-command'
+
+core_schema[__name__] = {
+    Optional('save'): string_is_bool
+}
 
 
 class DellNOS9(Switch, SwitchSession):
@@ -40,7 +46,7 @@ class DellNOS9(Switch, SwitchSession):
 
     @staticmethod
     def validate(kwargs):
-        schema.Schema({
+        Schema({
             'hostname': basestring,
             'username': basestring,
             'password': basestring,
@@ -51,23 +57,7 @@ class DellNOS9(Switch, SwitchSession):
         return self
 
     def ensure_legal_operation(self, nic, op_type, channel):
-        # get the network attachments for <nic> from the database
-        table = model.NetworkAttachment
-        query = db.session.query(table).filter(table.nic_id == nic.id)
-
-        if channel != 'vlan/native' and op_type == 'connect' and \
-           query.filter(table.channel == 'vlan/native').count() == 0:
-            # checks if it is trying to attach a trunked network, and then in
-            # in the db see if nic does not have any networks attached natively
-            raise BlockedError("Please attach a native network first")
-        elif channel == 'vlan/native' and op_type == 'detach' and \
-                query.filter(table.channel != 'vlan/native').count() > 0:
-            # if it is detaching a network, then check in the database if there
-            # are any trunked vlans.
-            raise BlockedError("Please remove all trunked Vlans"
-                               " before removing the native vlan")
-        else:
-            return
+        check_native_networks(nic, op_type, channel)
 
     def get_capabilities(self):
         return []
@@ -154,16 +144,8 @@ class DellNOS9(Switch, SwitchSession):
         match = re.search(r'T(\d+(-\d+)?)(,\d+(-\d+)?)*', response)
         if match is None:
             return []
-        range_str = match.group().replace('T', '').split(',')
-        vlan_list = []
-        # need to interpret the ranges to numbers. e.g. 14-18 as 14,15,16,17,18
-        for num_str in range_str:
-            if '-' in num_str:
-                num_str = num_str.split('-')
-                for x in range(int(num_str[0]), int(num_str[1])+1):
-                    vlan_list.append(str(x))
-            else:
-                vlan_list.append(num_str)
+
+        vlan_list = parse_vlans(match.group().replace('T', ''))
 
         return [('vlan/%s' % x, x) for x in vlan_list]
 

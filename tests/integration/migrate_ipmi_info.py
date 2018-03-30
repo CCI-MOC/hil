@@ -44,9 +44,12 @@ def configure(tmpdir):
         "[devel]",
         "dry_run = True",
         "[headnode]",
+        "trunk_nic = eth0",
         "base_imgs = base-headnode, img1, img2, img3, img4",
+        "libvirt_endpoint = qemu:///system",
         "[database]",
         "uri = sqlite:///" + tmpdir + "/hil.db",
+        "[client]"
     ])
     with open(tmpdir + '/hil.cfg', 'w') as f:
         f.write(cfg)
@@ -61,7 +64,10 @@ fresh_database = pytest.fixture(fresh_database)
 @pytest.fixture()
 def run_obmd(tmpdir):
     """Set up and start obmd."""
-    check_call(['go', 'get', 'github.com/CCI-MOC/obmd'])
+    # Print out the version of Go we're running; useful for debugging purposes.
+    check_call(['go', 'version'])
+
+    check_call(['go', 'get', '-v', 'github.com/CCI-MOC/obmd'])
 
     config_file_path = tmpdir + '/obmd-config.json'
 
@@ -69,6 +75,8 @@ def run_obmd(tmpdir):
         f.write(json.dumps({
             'AdminToken': ADMIN_TOKEN,
             'ListenAddr': ':8080',
+            'DBType': 'sqlite3',
+            'DBPath': ':memory:',
         }))
 
     proc = Popen(['obmd', '-config', config_file_path])

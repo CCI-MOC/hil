@@ -178,7 +178,7 @@ then you will need to add an initial user with administrative privileges to the
 database in order to bootstrap the system.
 You can do this by running the following command (as user ``hil``)::
 
-  $ sudo -i -u ${HIL_USER}; hil create_admin_user ${HIL_ADMIN_USER} ${HIL_ADMIN_PASSWORD}
+  $ sudo -i -u ${HIL_USER}; hil-admin create-admin-user ${HIL_ADMIN_USER} ${HIL_ADMIN_PASSWORD}
 
 You can then create additional users via the HTTP API. You may want to
 subsequently delete the initial user; this can also be done via the API.
@@ -478,11 +478,11 @@ It uses "Upstart" an equivalent of systemd to manage its daemons/processes.
 
 For such systems, the networking server may be started as the HIL user by running::
 
-  $ hil serve_networks &
+  $ hil-admin serve-networks &
 
 To make this happen on boot, add the following to ``/etc/rc.local``::
 
-  ($ cd /var/lib/hil && su hil -c 'hil serve_networks') &
+  ($ cd /var/lib/hil && su hil -c 'hil-admin serve-networks') &
 
 
 HIL Client:
@@ -503,10 +503,17 @@ Create a file ``client_env`` with following entries::
 To get started with HIL from your home dir do the following::
 
     $ source client_env
-    $ hil list_nodes all
+    $ hil list nodes all
 
 If you get an empty list ``[]`` as output then congratulations !!
 At this point, you should have a functional HIL service running!
+
+Tab completion is supported only for Bash. In order to activate that, copy the
+file `scripts/hil-complete.sh` to some location and put this in your bashrc:
+
+`. /path/to/hil-complete.sh`
+
+For more information see the [click documentation](http://click.pocoo.org/5/bashcomplete/)
 
 Describe datacenter resources
 ------------------------------

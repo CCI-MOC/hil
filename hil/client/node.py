@@ -1,6 +1,6 @@
 """Client support for node related api calls."""
 import json
-from hil.client.base import ClientBase
+from hil.client.base import ClientBase, FailedAPICallException
 from hil.client.base import check_reserved_chars
 from hil.errors import BadArgumentError, UnknownSubtypeError
 
@@ -141,9 +141,17 @@ class Node(ClientBase):
         url = self.object_url('node', node, 'metadata', label)
         return self.check_response(self.httpClient.request('DELETE', url))
 
+    @check_reserved_chars()
     def show_console(self, node):
         """Display console log for <node> """
-        raise NotImplementedError
+        url = self.object_url('node', node, 'console')
+        response = self.httpClient.request('GET', url)
+        # we don't call check_response here because we want to return the
+        # raw byte stream, rather than converting it to json.
+        if 200 <= response.status_code < 300:
+            return response.content
+        raise FailedAPICallException(error_type=response.status_code,
+                                     message=response.content)
 
     @check_reserved_chars()
     def start_console(self, node):
