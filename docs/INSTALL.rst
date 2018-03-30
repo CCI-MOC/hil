@@ -508,8 +508,8 @@ To get started with HIL from your home dir do the following::
 If you get an empty list ``[]`` as output then congratulations !!
 At this point, you should have a functional HIL service running!
 
-To enable tab completion, copy this file `scripts/hil-complete.sh` to some location
-and put this in your bashrc:
+Tab completion is supported only for Bash. In order to activate that, copy the
+file `scripts/hil-complete.sh` to some location and put this in your bashrc:
 
 `. /path/to/hil-complete.sh`
 
