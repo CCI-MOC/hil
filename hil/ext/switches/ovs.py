@@ -28,16 +28,12 @@ class Ovs(Switch, SwitchSession):
             BigIntegerType, db.ForeignKey('switch.id'), primary_key=True
             )
     hostname = db.Column(db.String, nullable=False)
-    username = db.Column(db.String, nullable=False)
-    password = db.Column(db.String, nullable=False)
 
     @staticmethod
     def validate(kwargs):
         """Checks input to match switch parameters."""
         schema.Schema({
-            'username': basestring,
             'hostname': basestring,
-            'password': basestring,
         }).validate(kwargs)
 
 # 1. Public Methods:
@@ -80,18 +76,6 @@ class Ovs(Switch, SwitchSession):
                 response[port].append(("vlan/native", native))
 
         return response
-
-
-#        (port,) = filter(lambda p: p.label == port, self.ports)
-#        interface = port.label
-#        port_info = self._interface_info(interface)
-#        networks = []
-#        if port_info['trunks']:
-#            for vlan in port_info['trunks']:
-#                networks.append(vlan)
-#        if port_info['tag']:
-#            networks.append(port_info['tag'][0])
-#        return networks
 
     def revert_port(self, port):
 
