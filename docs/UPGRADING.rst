@@ -53,6 +53,19 @@ Release Notes
   settings accordingly (although the HIL tools themselves should remaining
   internally consistent).
 
+Other changes, which do not require specific action when upgrading:
+
+* All HIL APIs are now wrapped by the client library.
+* Support for a new optional "maintenance pool" feature; see
+  ``docs/maintenance-pool.md``.
+* Some new APIs (see ``docs/rest_api.md`` for details):
+  * Networking actions can now be queried to get their status.
+  * When using the database auth backend, it is possible to list users.
+* Updated APIs:
+  * List networks now shows public networks to regular users.
+  * Some switches now support public key authentication. See
+    ``docs/network-drivers.md`` for details.
+
 0.2
 +++
 
