@@ -7,7 +7,7 @@ import logging
 from lxml import etree
 import re
 import requests
-import schema
+from schema import Schema, Optional
 
 from hil.model import db, Switch, SwitchSession
 from hil.errors import BadArgumentError
@@ -15,12 +15,18 @@ from hil.model import BigIntegerType
 from hil.network_allocator import get_network_allocator
 from hil.ext.switches.common import should_save, check_native_networks, \
  parse_vlans
+from hil.config import core_schema, string_is_bool
+
 
 logger = logging.getLogger(__name__)
 
 CONFIG = 'config-commands'
 SHOW = 'show-command'
 EXEC = 'exec-command'
+
+core_schema[__name__] = {
+    Optional('save'): string_is_bool
+}
 
 
 class DellNOS9(Switch, SwitchSession):
@@ -40,7 +46,7 @@ class DellNOS9(Switch, SwitchSession):
 
     @staticmethod
     def validate(kwargs):
-        schema.Schema({
+        Schema({
             'hostname': basestring,
             'username': basestring,
             'password': basestring,
