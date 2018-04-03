@@ -50,7 +50,7 @@ Release Notes
   modified.
 * URLs for API calls are now prefixed with a version number, which for the
   current (unstable) API is ``v0``; you may need to update scripts and
-  settings accordingly (although the HIL tools themselves should remaining
+  settings accordingly (although the HIL tools themselves should remain
   internally consistent).
 
 Other changes, which do not require specific action when upgrading:
@@ -70,7 +70,7 @@ Other changes, which do not require specific action when upgrading:
 +++
 
 HaaS was renamed to HIL in this release. Accordingly, there are several
-changess that need to be made when upgrading:
+changes that need to be made when upgrading:
 
 * Since the systemd service file is created manually, the old one needs to
   manually be deleted and the new one copied in.
