@@ -297,11 +297,11 @@ Start the server
 
 Run the server with the port number as defined in ``hil.cfg``::
 
-  hil serve <port no>
+  hil-admin run-dev-server <port no>
 
 and in a separate window terminal::
 
-  hil serve_networks
+  hil-admin serve-networks
 
 Finally, ``hil help`` lists the various API commands one can use.
 Here is an example session, testing ``headnode_delete_hnic``::

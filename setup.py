@@ -36,9 +36,10 @@ setup(name='hil',
       use_scm_version=True,
       packages=find_packages(),
       # TODO: we should merge scripts into entry_points, below.
-      scripts=['scripts/hil', 'scripts/create_bridges'],
+      scripts=['scripts/create_bridges'],
       entry_points={
-          'console_scripts': ['hil-admin=hil.commands.admin:main'],
+          'console_scripts': ['hil-admin=hil.commands.admin:main',
+                              'hil=hil.cli.cli:main'],
       },
       package_data={
           'hil': [
@@ -89,6 +90,7 @@ setup(name='hil',
                         'pexpect>=3.3,<4.0',
                         'requests>=2.4.1,<3.0',
                         'lxml>=3.6.0,<4.0',
+                        'click>=6.0,<7.0'
                         ],
       extras_require={
           'tests': [
