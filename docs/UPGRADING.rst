@@ -47,7 +47,7 @@ Release Notes
   undetected you may need to fix them before the servers will start again
 * The interface to the ``hil`` command line tool has changed substantially;
   If you have custom scripts that invoke it they will likely need to be
-  modified.
+  modified. Use ``hil --help`` to explore the new interface.
 * URLs for API calls are now prefixed with a version number, which for the
   current (unstable) API is ``v0``; you may need to update scripts and
   settings accordingly (although the HIL tools themselves should remain
