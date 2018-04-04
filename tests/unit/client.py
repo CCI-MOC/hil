@@ -128,7 +128,7 @@ def assign_nodes2project(project, *nodes):
      Takes as input
      <*nodes> one or more node names.
     """
-    url_project = 'http://127.0.0.1:8000/project/'
+    url_project = 'http://127.0.0.1:8000/v0/project/'
 
     for node in nodes:
         http_client.request(
@@ -151,7 +151,7 @@ def populate_server():
         db.session.commit()
 
     # Adding nodes, node-01 - node-09
-    url_node = 'http://127.0.0.1:8000/node/'
+    url_node = 'http://127.0.0.1:8000/v0/node/'
     mock = 'http://schema.massopencloud.org/haas/v0/obm/mock'
 
     for i in range(1, 10):
@@ -172,10 +172,10 @@ def populate_server():
 
     # Adding Projects proj-01 - proj-03
     for i in ["proj-01", "proj-02", "proj-03"]:
-        http_client.request('PUT', 'http://127.0.0.1:8000/project/' + i)
+        http_client.request('PUT', 'http://127.0.0.1:8000/v0/project/' + i)
 
     # Adding switches one for each driver
-    url_switch = 'http://127.0.0.1:8000/switch/'
+    url_switch = 'http://127.0.0.1:8000/v0/switch/'
     api_name = 'http://schema.massopencloud.org/haas/v0/switches/'
 
     dell_param = {
@@ -224,7 +224,7 @@ def populate_server():
 
     # Adding Projects proj-01 - proj-03
     for i in ["proj-01", "proj-02", "proj-03"]:
-        http_client.request('PUT', 'http://127.0.0.1:8000/project/' + i)
+        http_client.request('PUT', 'http://127.0.0.1:8000/v0/project/' + i)
 
     # Allocating nodes to projects
     assign_nodes2project('proj-01', 'node-01')
@@ -232,7 +232,7 @@ def populate_server():
     assign_nodes2project('proj-03', 'node-03', 'node-05')
 
     # Assigning networks to projects
-    url_network = 'http://127.0.0.1:8000/network/'
+    url_network = 'http://127.0.0.1:8000/v0/network/'
     for i in ['net-01', 'net-02', 'net-03']:
         http_client.request(
                 'PUT',
@@ -276,7 +276,7 @@ class Test_ClientBase:
         """Test the object_url method."""
         x = ClientBase(ep, 'some_base64_string')
         y = x.object_url('abc', '123', 'xy23z')
-        assert y == 'http://127.0.0.1:8000/abc/123/xy23z'
+        assert y == 'http://127.0.0.1:8000/v0/abc/123/xy23z'
 
 
 class Test_node:

@@ -335,75 +335,75 @@ def _do_request(client, method, path, data=None, query=None):
 
 
 @pytest.mark.parametrize('args', [
-    {'request': {'method': 'GET', 'path': '/no/args'},
+    {'request': {'method': 'GET', 'path': '/v0/no/args'},
      'expected': {'status': 200, 'body_json': None}},
-    {'request': {'method': 'POST', 'path': '/no/args', 'data': ''},
+    {'request': {'method': 'POST', 'path': '/v0/no/args', 'data': ''},
      'expected': {'status': 200, 'body_json': None}},
 
     {'request': {'method': 'POST',
-                 'path': '/url/args/hello/goodbye',
+                 'path': '/v0/url/args/hello/goodbye',
                  'data': ''},
      'expected': {'status': 200,
                   'body_json': ['hello', 'goodbye']}},
     {'request': {'method': 'GET',
-                 'path': '/url/args/hello/goodbye'
+                 'path': '/v0/url/args/hello/goodbye'
                  },
      'expected': {'status': 200,
                   'body_json': ['hello', 'goodbye']}},
 
     # Should fail because arg2 is expected in URL
     {'request': {'method': 'GET',
-                 'path': '/url/args/hello/',
+                 'path': '/v0/url/args/hello/',
                  'query': {'arg2': "goodbye"}
                  },
      'expected': {'status': 404,
                   'body_json': None}},
 
     {'request': {'method': 'PUT',
-                 'path': '/mixed/args/hello',
+                 'path': '/v0/mixed/args/hello',
                  'data': json.dumps({'arg2': 'goodbye'})},
      'expected': {'status': 200,
                   'body_json': ['hello', 'goodbye']}},
     {'request': {'method': 'GET',
-                 'path': '/mixed/args/hello',
+                 'path': '/v0/mixed/args/hello',
                  'query': {'arg2': 'goodbye'}},
      'expected': {'status': 200,
                   'body_json': ['hello', 'goodbye']}},
     # Should fail because GET doesn't take body args
     {'request': {'method': 'GET',
-                 'path': '/mixed/args/hello',
+                 'path': '/v0/mixed/args/hello',
                  'query': {'arg2': 'goodbye'},
                  'data': json.dumps({'arg2': 'goodbye'})},
      'expected': {'status': 400,
                   'body_json': None}},
     {'request': {'method': 'GET',
-                 'path': '/mixed/args/hello',
+                 'path': '/v0/mixed/args/hello',
                  'data': json.dumps({'arg2': 'goodbye'})},
      'expected': {'status': 400,
                   'body_json': None}},
 
     {'request': {'method': 'GET',
-                 'path': '/just/bodyargs',
+                 'path': '/v0/just/bodyargs',
                  'query': {'arg1': 'hello',
                            'arg2': 'goodbye'}},
      'expected': {'status': 200,
                   'body_json': ['hello', 'goodbye']}},
     # Should fail because GET doesn't take body args
     {'request': {'method': 'GET',
-                 'path': '/just/bodyargs',
+                 'path': '/v0/just/bodyargs',
                  'data': json.dumps({'arg1': 'hello',
                                      'arg2': 'goodbye'})},
      'expected': {'status': 400,
                   'body_json': None}},
     {'request': {'method': 'GET',
-                 'path': '/just/bodyargs',
+                 'path': '/v0/just/bodyargs',
                  'query': {'arg1': '',
                            'arg2': 'goodbye'}},
      'expected': {'status': 400,
                   'body_json': None}},
 
     {'request': {'method': 'POST',
-                 'path': '/just/bodyargs',
+                 'path': '/v0/just/bodyargs',
                  'data': json.dumps({'arg1': 'hello',
                                      'arg2': 'goodbye'})},
      'expected': {'status': 200,
@@ -411,13 +411,13 @@ def _do_request(client, method, path, data=None, query=None):
 
     # Missing arg2:
     {'request': {'method': 'POST',
-                 'path': '/just/bodyargs',
+                 'path': '/v0/just/bodyargs',
                  'data': json.dumps({'arg1': 'hello'})},
      'expected': {'status': 400,
                   'body_json': None}},
     # Extra arg (arg3):
     {'request': {'method': 'POST',
-                 'path': '/just/bodyargs',
+                 'path': '/v0/just/bodyargs',
                  'data': json.dumps({'arg1': 'hello',
                                      'arg2': 'goodbye',
                                      'arg3': '????'})},
@@ -426,65 +426,65 @@ def _do_request(client, method, path, data=None, query=None):
 
 
     {'request': {'method': 'GET',
-                 'path': '/just/bodyargs/optional_arg2_int',
+                 'path': '/v0/just/bodyargs/optional_arg2_int',
                  'query': {'arg1': 'foo',
                            'arg2': 'bar'}},
      'expected': {'status': 400,
                   'body_json': None}},
 
     {'request': {'method': 'GET',
-                 'path': '/just/bodyargs/optional_arg2_int',
+                 'path': '/v0/just/bodyargs/optional_arg2_int',
                  'query': {'arg1': 'foo',
                            'arg2': '123'}},
      'expected': {'status': 200,
                   'body_json': ['foo', 123]}},
     {'request': {'method': 'GET',
-                 'path': '/just/bodyargs/optional_arg2_int',
+                 'path': '/v0/just/bodyargs/optional_arg2_int',
                  'query': {'arg1': 'foo'}},
      'expected': {'status': 200,
                   'body_json': ['foo', -42]}},
 
     {'request': {'method': 'GET',
-                 'path': '/get-int-body-arg-with-use',
+                 'path': '/v0/get-int-body-arg-with-use',
                  'query': {'the_value': 42}},
      'expected': {'status': 200,
                   'body_json': 42}},
     {'request': {'method': 'GET',
-                 'path': '/get-int-body-arg-with-use',
+                 'path': '/v0/get-int-body-arg-with-use',
                  'query': {'the_value': "42"}},
      'expected': {'status': 200,
                   'body_json': 42}},
 
     # These should fail: passing a float, and then a totally invalid value.
     {'request': {'method': 'GET',
-                 'path': '/get-int-body-arg-with-use',
+                 'path': '/v0/get-int-body-arg-with-use',
                  'query': {'the_value': 42.234}},
      'expected': {'status': 400,
                   'body_json': None}},
     {'request': {'method': 'GET',
-                 'path': '/get-int-body-arg-with-use',
+                 'path': '/v0/get-int-body-arg-with-use',
                  'query': {'the_value': "42.A"}},
      'expected': {'status': 400,
                   'body_json': None}},
 
     {'request': {'method': 'PUT',
-                 'path': '/put-int-body-arg',
+                 'path': '/v0/put-int-body-arg',
                  'data': json.dumps({'the_value': 42})},
      'expected': {'status': 200,
                   'body_json': 42}},
 
     # Illegal JSON in the body:
     {'request': {'method': 'POST',
-                 'path': '/just/bodyargs',
+                 'path': '/v0/just/bodyargs',
                  'data': 'xploit'},
      'expected': {'status': 400,
                   'body_json': None}},
 
     # Arguments in the body for a function that expects no arguments
-    {'request': {'method': 'POST', 'path': '/no/args',
+    {'request': {'method': 'POST', 'path': '/v0/no/args',
                  'data': json.dumps({'arg1': 'foo'})},
      'expected': {'status': 400, 'body_json': None}},
-    {'request': {'method': 'GET', 'path': '/no/args',
+    {'request': {'method': 'GET', 'path': '/v0/no/args',
                  'data': json.dumps({'arg1': 'foo'})},
      'expected': {'status': 400, 'body_json': None}},
 
@@ -492,7 +492,7 @@ def _do_request(client, method, path, data=None, query=None):
     # hit the same exact code paths as the illegal JSON test, but it's
     # conceptually different:
     {'request': {'method': 'POST',
-                 'path': '/just/bodyargs',
+                 'path': '/v0/just/bodyargs',
                  'data': ''},
      'expected': {'status': 400,
                   'body_json': None}},
@@ -503,7 +503,7 @@ def _do_request(client, method, path, data=None, query=None):
     {'request': {'method': 'PUT',
                  # The mixed_args function calls the 'hello' segment of it's
                  # path "arg1":
-                 'path': '/mixed/args/hello',
+                 'path': '/v0/mixed/args/hello',
                  'data': json.dumps({'arg1': 'howdy',
                                      'arg2': 'goodbye'})},
      'expected': {'status': 400,
@@ -511,13 +511,13 @@ def _do_request(client, method, path, data=None, query=None):
 
     # Invalid arg types:
     {'request': {'method': 'PUT',
-                 'path': '/mixed/args/hello',
+                 'path': '/v0/mixed/args/hello',
                  'data': json.dumps({'arg2': 3232})},
      'expected': {'status': 400,
                   'body_json': None}},
 
     {'request': {'method': 'PUT',
-                 'path': '/put-int-body-arg',
+                 'path': '/v0/put-int-body-arg',
                  'data': json.dumps({'the_value': 'Not an integer!'})},
      'expected': {'status': 400, 'body_json': None}},
 
