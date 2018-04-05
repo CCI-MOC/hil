@@ -599,7 +599,7 @@ def test_dont_log(client, caplog):
         """
 
     with caplog.at_level(logging.DEBUG):
-        resp = client.post('/some-path', data=json.dumps({
+        resp = client.post('/v0/some-path', data=json.dumps({
             'public': 'common knowledge',
             'private': 'sensitive info',
             'stuff': 'Other stuff',
