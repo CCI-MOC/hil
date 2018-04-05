@@ -183,3 +183,35 @@ class _DellN3000Session(_BaseSession):
                 if v != native_vlan:
                     network_list.append(('vlan/%s' % v, int(v)))
         return network_list
+
+
+    def get_port_networks(self, ports):
+        port_configs = self._port_configs(ports)
+        badchars = ' (Inactive)'
+        network_list = []
+        for k, v in port_configs.iteritems():
+            non_natives = ''
+            non_native_list = []
+            # Get native vlan then remove junk if native not None
+            native_vlan = v['Trunking Native Mode VLAN'].strip()
+            if (native_vlan != 'none'):
+                native_vlan = ''.join(c for c in native_vlan
+                                      if c not in badchars)
+            else:
+                native_vlan = None
+            # Get other vlans and parse out junk if not None
+            trunk_vlans = v['Trunking VLANs Enabled'].strip()
+            if (trunk_vlans != 'none'):
+                non_natives = ''.join(c for c in trunk_vlans
+                                      if c not in badchars)
+                non_natives = non_natives.split('\r\n')
+                non_natives = ','.join(non_natives)
+                non_native_list = parse_vlans(non_natives)
+            else:
+                non_natives = None
+            if native_vlan is not None:
+                network_list.append(('vlan/native', native_vlan))
+            for v in (non_native_list):
+                if v != native_vlan:
+                    network_list.append(('vlan/%s' % v, int(v)))
+        return network_list
