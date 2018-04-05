@@ -145,7 +145,7 @@ class TestUrlArgs(HttpEquivalenceTest, HttpTest):
         return json.dumps(['alice', 'bob'])
 
     def request(self):
-        return self.client.get('/func/alice/bob')
+        return self.client.get('/v0/func/alice/bob')
 
 
 class TestBodyArgs(HttpEquivalenceTest, HttpTest):
@@ -167,7 +167,7 @@ class TestBodyArgs(HttpEquivalenceTest, HttpTest):
         return json.dumps(['bonnie', 'clyde'])
 
     def request(self):
-        return self.client.post('/func/foo',
+        return self.client.post('/v0/func/foo',
                                 data=json.dumps({'bar': 'bonnie',
                                                  'baz': 'clyde'}))
 
@@ -192,7 +192,7 @@ class TestRestCallSchema(HttpEquivalenceTest, HttpTest):
         return json.dumps(14)
 
     def request(self):
-        return self.client.post('/product',
+        return self.client.post('/v0/product',
                                 data=json.dumps({'x': 2, 'y': 7}))
 
 
@@ -212,7 +212,7 @@ class TestEquiv_basic_APIError(HttpEquivalenceTest, HttpTest):
         raise rest.APIError("Basic test of the APIError code.")
 
     def request(self):
-        return self.client.get('/some_error')
+        return self.client.get('/v0/some_error')
 
 
 class TestNoneReturnValue(HttpTest):
@@ -233,7 +233,7 @@ class TestNoneReturnValue(HttpTest):
 
     def test_none_return(self):
         """Returning None should return 200 OK with an empty body."""
-        resp = self.client.get('/nothing')
+        resp = self.client.get('/v0/nothing')
         assert resp.status_code == 200
         assert resp.get_data() == ''
 
@@ -577,7 +577,7 @@ class TestCallOnce(HttpTest):
             """Increment a counter each time this function is called."""
             self.num_calls += 1
 
-        self.client.post('/increment')
+        self.client.post('/v0/increment')
         assert self.num_calls == 1
 
 
