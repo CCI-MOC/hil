@@ -52,6 +52,7 @@ import pytest
 import unittest
 import json
 import uuid
+from schema import SchemaError
 
 MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/v0/switches/mock'
 OBM_TYPE_MOCK = 'http://schema.massopencloud.org/haas/v0/obm/mock'
@@ -457,6 +458,20 @@ class TestNodeRegisterDelete:
                               "EK": "pk"
                           })
         api.get_or_404(model.Node, 'node-99')
+
+    def test_node_register_with_bad_metadata(self):
+        """Test attempting to register a node with a non-dictonary metadata."""
+        with pytest.raises(SchemaError):
+            api.node_register.api_schema.validate({
+                'node': 'node-99',
+                'obm': {
+                    "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                    "host": "ipmihost",
+                    "user": "root",
+                    "password": "tapeworm"
+                },
+                'metadata': 42,
+            })
 
     def test_node_register_JSON_metadata(self):
         """...and with the metadata being something other than a string."""
