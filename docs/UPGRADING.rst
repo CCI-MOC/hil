@@ -39,6 +39,23 @@ This file describes the procedure for upgrading HIL to a new version.
 Release Notes
 -------------
 
+0.4 (Upcoming)
+++++++++++++++
+
+* HIL now depends on OBMd to manage obms; the built in driver support has
+  been removed. Upgrading requires several steps:
+  1. set up OBMd.
+  2. *Before* updating HIL (i.e. while still running 0.3):
+       * run ``hil-admin migrate-ipmi-info``, supplying the OBMd base url
+         and admin token. See ``hil-admin migrate-ipmi-info --help``. This will
+         register all of your existing nodes with OBMd.
+       * Ensure that both the extensions ``hil.ext.obm.ipmi`` and
+         ``hil.ext.obm.mock`` are listed in ``hil.cfg``.
+       * Run ``hil-admin db create``.
+  3. Update the HIL software as usual. Before restarting the serivces, remove
+     both of the above obm extensions from ``hil.cfg``.
+
+
 0.3
 +++
 

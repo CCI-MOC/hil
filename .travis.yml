@@ -28,7 +28,10 @@ branches:
 
 env:
   - DB=sqlite
-  - DB=postgres
+    # SPOOF_MANUAL_MIGRATIONS is used to tell the migration scripts that they
+    # should make up data that would otherwise require manual intervention;
+    # this is important for the migration tests.
+  - DB=postgres SPOOF_MANUAL_MIGRATIONS=true
 
 install:
   # A dependency might use new pip syntax; upgrade to prevent breakage. See #771

@@ -61,11 +61,19 @@ def maintenance_proj_init():
 
 def new_node(name):
     """Create a mock node named ``name``"""
-    api.node_register(name, obm={
-              "type": OBM_TYPE_MOCK,
-              "host": "ipmihost",
-              "user": "root",
-              "password": "tapeworm"})
+    api.node_register(
+        node=name,
+        obm={
+            "type": OBM_TYPE_MOCK,
+            "host": "ipmihost",
+            "user": "root",
+            "password": "tapeworm",
+        },
+        obmd={
+            'uri': 'http://obmd.example.com/node/' + name,
+            'admin_token': 'secret',
+        },
+    )
 
 
 default_fixtures = ['fail_on_log_warnings',

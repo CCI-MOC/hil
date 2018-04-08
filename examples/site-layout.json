@@ -29,7 +29,11 @@
                 "host": "192.168.1.1",
                 "user": "foo",
                 "pass": "bar"
-            }
+            },
+						"obmd": {
+								"uri": "http://obmd.example.com/nodes/node-1",
+								"admin_token": "secret"
+						}
         },
         {
             "name": "node-2",
@@ -45,7 +49,11 @@
                 "host": "192.168.1.2",
                 "user": "foo",
                 "pass": "bar"
-            }
+            },
+						"obmd": {
+								"uri": "http://obmd.example.com/nodes/node-2",
+								"admin_token": "secret"
+						}
         }
     ]
 }

@@ -317,7 +317,11 @@ def site_layout():
         api.switch_register(**switch)
 
     for node in layout['nodes']:
-        api.node_register(node['name'], obm=node['obm'])
+        api.node_register(
+            node=node['name'],
+            obm=node['obm'],
+            obmd=node['obmd'],
+        )
         for nic in node['nics']:
             api.node_register_nic(node['name'], nic['name'], nic['mac'])
             api.switch_register_port(nic['switch'], nic['port'])
@@ -536,7 +540,12 @@ def initial_db():
                           host=node_dict['label'],
                           user='user',
                           password='password')
-            node = Node(label=node_dict['label'], obm=obm)
+            node = Node(
+                label=node_dict['label'],
+                obm=obm,
+                obmd_uri='http://obmd.example.com/nodes/'+node_dict['label'],
+                obmd_admin_token='secret',
+            )
             node.project = node_dict['project']
             db.session.add(Nic(node, label='boot-nic', mac_addr='Unknown'))
 
@@ -578,6 +587,13 @@ def initial_db():
                       host='hostname',
                       user='user',
                       password='password')
-        db.session.add(Node(label='no_nic_node', obm=obm))
+        db.session.add(
+            Node(
+                label='no_nic_node',
+                obm=obm,
+                obmd_uri='http://obmd.example.com/nodes/'+node_dict['label'],
+                obmd_admin_token='secret',
+            )
+        )
 
         db.session.commit()
