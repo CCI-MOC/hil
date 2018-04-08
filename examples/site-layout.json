@@ -25,7 +25,8 @@
                     "switch": "dell-1"
                 }
             ],
-            "ipmi": {
+						"obm": {
+								"type": "ipmi",
                 "host": "192.168.1.1",
                 "user": "foo",
                 "pass": "bar"
@@ -45,7 +46,8 @@
                     "switch": "dell-1"
                 }
             ],
-            "ipmi": {
+						"obm": {
+								"type": "ipmi",
                 "host": "192.168.1.2",
                 "user": "foo",
                 "pass": "bar"
