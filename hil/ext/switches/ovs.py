@@ -116,6 +116,8 @@ class Ovs(Switch, SwitchSession):
                 e.g. Strings starting with '[' and ending with ']'
         Returns: object of list type.
                  Empty list is put as None.
+        Sample String:
+        '[abc, def, 786, hil]'
         """
         if a_string == '[]':
             return ast.literal_eval(a_string)
@@ -134,6 +136,8 @@ class Ovs(Switch, SwitchSession):
             a_string: dictionary recieved as type string
                 eg. Strings starting with '{' and ending with '}'
         Returns: Object of dictionary type.
+        Sample String:
+        '{abc:123, def:xyz,    space   :    lot of it , 2345:some number }'
         """
         if a_string == '{}':
             a_dict = ast.literal_eval(a_string)
