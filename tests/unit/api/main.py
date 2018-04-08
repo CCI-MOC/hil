@@ -454,7 +454,7 @@ class TestNodeRegisterDelete:
                         "/obm/ipmi",
                 "host": "ipmihost",
                 "user": "root",
-                    "password": "tapeworm"
+                "password": "tapeworm"
             },
             obmd={
                 'uri': 'http://obmd.example.com/nodes/node-99',
@@ -1443,8 +1443,8 @@ class TestNetworkCreateDelete:
                 "user": "root",
                 "password": "tapeworm",
             },
-        obmd={
-            'uri': 'http://obmd.example.com/nodes/node-99',
+            obmd={
+                'uri': 'http://obmd.example.com/nodes/node-99',
                 'admin_token': 'secret',
             },
         )

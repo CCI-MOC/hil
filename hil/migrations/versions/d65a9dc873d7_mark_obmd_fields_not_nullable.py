@@ -8,6 +8,7 @@ Create Date: 2018-04-07 19:10:35.243712
 
 import os
 from alembic import op
+import sqlalchemy as sa
 from sqlalchemy.orm import Session
 from hil import model
 
