@@ -40,18 +40,30 @@ def upgrade():
             node.obmd_uri = 'http://obmd.example.com/nodes/' + node.label
             node.obmd_admin_token = 'secret'
 
-    op.alter_column('node', 'obmd_admin_token',
-               existing_type=sa.VARCHAR(),
-               nullable=False)
-    op.alter_column('node', 'obmd_uri',
-               existing_type=sa.VARCHAR(),
-               nullable=False)
+    op.alter_column(
+        'node',
+        'obmd_admin_token',
+        existing_type=sa.VARCHAR(),
+        nullable=False,
+    )
+    op.alter_column(
+        'node',
+        'obmd_uri',
+        existing_type=sa.VARCHAR(),
+        nullable=False,
+    )
 
 
 def downgrade():
-    op.alter_column('node', 'obmd_uri',
-               existing_type=sa.VARCHAR(),
-               nullable=True)
-    op.alter_column('node', 'obmd_admin_token',
-               existing_type=sa.VARCHAR(),
-               nullable=True)
+    op.alter_column(
+        'node',
+        'obmd_uri',
+        existing_type=sa.VARCHAR(),
+        nullable=True,
+    )
+    op.alter_column(
+        'node',
+        'obmd_admin_token',
+        existing_type=sa.VARCHAR(),
+        nullable=True,
+    )
