@@ -33,15 +33,15 @@
                 }
             ],
             "obm": {
-							  "type": "http://schema.massopencloud.org/haas/v0/obm/mock",
+                "type": "http://schema.massopencloud.org/haas/v0/obm/mock",
                 "host": "192.168.1.1",
                 "user": "foo",
                 "password": "bar"
             },
-						"obmd": {
-								"uri": "http://obmd.example.com/nodes/node-1",
-								"admin_token": "secret"
-						}
+            "obmd": {
+                "uri": "http://obmd.example.com/nodes/node-1",
+                "admin_token": "secret"
+            }
         },
         {
             "name": "node-1",
@@ -54,15 +54,15 @@
                 }
             ],
             "obm": {
-							  "type": "http://schema.massopencloud.org/haas/v0/obm/mock",
+                "type": "http://schema.massopencloud.org/haas/v0/obm/mock",
                 "host": "192.168.1.2",
                 "user": "foo",
                 "password": "bar"
             },
-						"obmd": {
-								"uri": "http://obmd.example.com/nodes/node-1",
-								"admin_token": "secret"
-						}
+            "obmd": {
+                "uri": "http://obmd.example.com/nodes/node-1",
+                "admin_token": "secret"
+            }
         },
         {
             "name": "node-2",
@@ -81,15 +81,15 @@
                 }
             ],
             "obm": {
-							  "type": "http://schema.massopencloud.org/haas/v0/obm/mock",
+                "type": "http://schema.massopencloud.org/haas/v0/obm/mock",
                 "host": "192.168.1.1",
                 "user": "foo",
                 "password": "bar"
             },
-						"obmd": {
-								"uri": "http://obmd.example.com/nodes/node-1",
-								"admin_token": "secret"
-						}
+            "obmd": {
+                "uri": "http://obmd.example.com/nodes/node-1",
+                "admin_token": "secret"
+            }
         },
         {
             "name": "node-3",
@@ -102,15 +102,15 @@
                 }
             ],
             "obm": {
-							  "type": "http://schema.massopencloud.org/haas/v0/obm/mock",
+                "type": "http://schema.massopencloud.org/haas/v0/obm/mock",
                 "host": "192.168.1.2",
                 "user": "foo",
                 "password": "bar"
             },
-						"obmd": {
-								"uri": "http://obmd.example.com/nodes/node-1",
-								"admin_token": "secret"
-						}
+            "obmd": {
+                "uri": "http://obmd.example.com/nodes/node-1",
+                "admin_token": "secret"
+            }
         }
     ]
 }

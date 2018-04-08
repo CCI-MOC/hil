@@ -25,16 +25,16 @@
                     "switch": "dell-1"
                 }
             ],
-						"obm": {
-								"type": "ipmi",
+            "obm": {
+                "type": "ipmi",
                 "host": "192.168.1.1",
                 "user": "foo",
                 "pass": "bar"
             },
-						"obmd": {
-								"uri": "http://obmd.example.com/nodes/node-1",
-								"admin_token": "secret"
-						}
+            "obmd": {
+                "uri": "http://obmd.example.com/nodes/node-1",
+                "admin_token": "secret"
+            }
         },
         {
             "name": "node-2",
@@ -46,16 +46,16 @@
                     "switch": "dell-1"
                 }
             ],
-						"obm": {
-								"type": "ipmi",
+            "obm": {
+                "type": "ipmi",
                 "host": "192.168.1.2",
                 "user": "foo",
                 "pass": "bar"
             },
-						"obmd": {
-								"uri": "http://obmd.example.com/nodes/node-2",
-								"admin_token": "secret"
-						}
+            "obmd": {
+                "uri": "http://obmd.example.com/nodes/node-2",
+                "admin_token": "secret"
+            }
         }
     ]
 }
