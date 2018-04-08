@@ -16,6 +16,8 @@ from subprocess import call, check_call, Popen, PIPE
 from hil.flaskapp import app
 from hil.config import cfg
 from hil.dev_support import no_dry_run
+from hil import errors
+import requests
 import uuid
 import xml.etree.ElementTree
 from sqlalchemy import BigInteger
@@ -97,13 +99,43 @@ class Node(db.Model):
                           single_parent=True,
                           cascade='all, delete-orphan')
 
-    # obmd endpoint & token for this node. This is currently unused, but
-    # required to be present; it is part of a staged migration. See:
-    #
-    # https://github.com/CCI-MOC/hil/issues/928#issuecomment-356443778
     obmd_uri = db.Column(db.String, nullable=False)
     obmd_admin_token = db.Column(db.String, nullable=False)
     obmd_node_token = db.Column(db.String, nullable=True)
+
+    @no_dry_run
+    def enable_obm(self):
+        """Enable the nodes' obm."""
+        resp = self._obmd_admin_request('POST', 'token')
+        if not resp.ok:
+            raise errors.OBMError("Failed to get a token for node")
+        self.obmd_node_token = resp.json()['token']
+
+    @no_dry_run
+    def disable_obm(self):
+        """Disable the node's obm."""
+        resp = self._obmd_admin_request('DELETE', 'token')
+        if not resp.ok:
+            raise errors.OBMError("Failed invalidate token for node")
+        self.obmd_node_token = None
+
+    def obm_is_enabled(self):
+        """Return whether the obm is enabled."""
+        return self.obmd_node_token is not None
+
+    def _obmd_admin_request(self, method, path):
+        """Make an "admin" request to the OBMd api.
+
+        Makes an API call to the OBMd api, to <node's obmd uri>/<path>, with
+        the given HTTP method, using the node's stored admin token.
+
+        Returns a response object from the requests library.
+        """
+        return requests.request(
+            method,
+            self.obmd_uri + '/' + path,
+            auth=('admin', self.obmd_admin_token),
+        )
 
 
 class Project(db.Model):

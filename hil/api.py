@@ -112,6 +112,8 @@ def project_detach_node(project, node):
     node = get_or_404(model.Node, node)
     if node not in project.nodes:
         raise errors.NotFoundError("Node not in project")
+    if node.obm_is_enabled():
+        raise errors.BlockedError("Node's obm is enabled.")
     num_attachments = model.NetworkAttachment.query \
         .filter(model.Nic.owner == node,
                 model.NetworkAttachment.nic_id == model.Nic.id).count()
@@ -243,6 +245,21 @@ def node_register(node, obmd, **kwargs):
             metadata_obj = model.Metadata(label, json.dumps(value), node_obj)
             db.session.add(metadata_obj)
     db.session.add(node_obj)
+    db.session.commit()
+
+
+@rest_call('PUT', '/node/<node>/obm', Schema({
+    'enabled': bool,
+}))
+def node_enable_disable_obm(node, enabled):
+    node = get_or_404(model.Node, node)
+    get_auth_backend().require_project_access(node.project)
+
+    if enabled:
+        node.enable_obm()
+    else:
+        node.disable_obm()
+
     db.session.commit()
 
 
