@@ -39,8 +39,8 @@ This file describes the procedure for upgrading HIL to a new version.
 Release Notes
 -------------
 
-0.3 (Upcoming)
-++++++++++++++
+0.3
++++
 
 * Validation checks for the configuration file have been added; be advised
   that if there were errors in your ``hil.cfg`` that were previously
