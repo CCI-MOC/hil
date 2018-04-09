@@ -34,7 +34,11 @@ def test_cli():
     """
 
     # Test node and nic creation
-    hil('node', 'register', NODE1, 'mock', 'host', 'user', 'password')
+    hil('node', 'register',
+        NODE1,
+        'http://obmd.exampl.com/nodes/node',
+        'secret',
+        'mock', 'host', 'user', 'password')
     assert NODE1 in hil('node', 'list', 'all')
     assert NODE1 in hil('node', 'list', 'free')
 
