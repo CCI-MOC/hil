@@ -15,7 +15,7 @@ class User(ClientBase):
     """
     def list(self):
         """List all users"""
-        url = self.object_url('/auth/basic/users')
+        url = self.object_url('auth/basic/users')
         return self.check_response(self.httpClient.request("GET", url))
 
     @check_reserved_chars(dont_check=['password', 'is_admin'])
@@ -26,7 +26,7 @@ class User(ClientBase):
         and determines whether a user is authorized for
         administrative privileges.
         """
-        url = self.object_url('/auth/basic/user', username)
+        url = self.object_url('auth/basic/user', username)
 
         payload = json.dumps({
                 'password': password, 'is_admin': is_admin,
@@ -38,7 +38,7 @@ class User(ClientBase):
     @check_reserved_chars()
     def delete(self, username):
         """Deletes the user <username>. """
-        url = self.object_url('/auth/basic/user', username)
+        url = self.object_url('auth/basic/user', username)
         return self.check_response(
                 self.httpClient.request("DELETE", url)
                 )
@@ -46,7 +46,7 @@ class User(ClientBase):
     @check_reserved_chars()
     def add(self, user, project):
         """Adds <user> to a <project>. """
-        url = self.object_url('/auth/basic/user', user, 'add_project')
+        url = self.object_url('auth/basic/user', user, 'add_project')
         payload = json.dumps({'project': project})
         return self.check_response(
                 self.httpClient.request("POST", url, data=payload)
@@ -55,7 +55,7 @@ class User(ClientBase):
     @check_reserved_chars()
     def remove(self, user, project):
         """Removes all access of <user> to <project>. """
-        url = self.object_url('/auth/basic/user', user, 'remove_project')
+        url = self.object_url('auth/basic/user', user, 'remove_project')
         payload = json.dumps({'project': project})
         return self.check_response(
                 self.httpClient.request("POST", url, data=payload)
@@ -70,7 +70,7 @@ class User(ClientBase):
         administrative privileges.
         """
 
-        url = self.object_url('/auth/basic/user', username)
+        url = self.object_url('auth/basic/user', username)
         payload = json.dumps({'is_admin': is_admin})
         return self.check_response(
                 self.httpClient.request("PATCH", url, data=payload)

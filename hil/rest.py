@@ -174,7 +174,9 @@ def rest_call(methods, path, schema, dont_log=()):
         else:
             meths = [methods]
 
-        app.add_url_rule(path,
+        # Add REST API version
+        versioned_path = "/v0" + path
+        app.add_url_rule(versioned_path,
                          f.__name__,
                          _rest_wrapper(f, schema, dont_log),
                          methods=meths)

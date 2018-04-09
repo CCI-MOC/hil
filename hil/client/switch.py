@@ -12,7 +12,7 @@ class Switch(ClientBase):
 
     def list(self):
         """List all nodes that HIL manages """
-        url = self.object_url('/switches')
+        url = self.object_url('switches')
         return self.check_response(self.httpClient.request("GET", url))
 
     def register(self, switch, subtype, switchinfo):
