@@ -45,6 +45,7 @@ def upgrade():
         node.obmd_admin_token = 'secret'
 
     session.commit()
+    session.close()
 
 
 def downgrade():
