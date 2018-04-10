@@ -44,6 +44,10 @@ def create_pending_actions_db():
     api.project_create('runway')
     api.node_register(
         'node-1',
+        obmd={
+            'obmd_uri': 'http://obmd.example.com/nodes/node-1',
+            'obmd_admin_token': 'secret',
+        },
         obm={
             'type': MOCK_OBM_TYPE,
             'user': 'user',

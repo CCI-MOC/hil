@@ -591,7 +591,7 @@ def initial_db():
             Node(
                 label='no_nic_node',
                 obm=obm,
-                obmd_uri='http://obmd.example.com/nodes/'+node_dict['label'],
+                obmd_uri='http://obmd.example.com/nodes/no_nic_node',
                 obmd_admin_token='secret',
             )
         )
