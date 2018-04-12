@@ -44,7 +44,7 @@ Release Notes
 
 * HIL now depends on OBMd to manage obms; the built in driver support has
   been removed. Upgrading requires several steps:
-  1. set up OBMd.
+  1. Set up OBMd: `<https://github.com/CCI-MOC/obmd/>`_
   2. *Before* updating HIL (i.e. while still running 0.3):
        * run ``hil-admin migrate-ipmi-info``, supplying the OBMd base url
          and admin token. See ``hil-admin migrate-ipmi-info --help``. This will
