@@ -327,7 +327,7 @@ class Test_node:
             C.node.register("dummy-node-04",
                             "http://obmd.example.com/node/dummy-node-02",
                             "secret",
-                            # Non-existant subtype.
+                            # Non-existent subtype.
                             "donotexist", "dummy", "dummy", "dummy")
 
     def test_show_node(self):
