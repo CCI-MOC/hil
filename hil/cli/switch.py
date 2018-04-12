@@ -84,12 +84,12 @@ def switch_register(switch, subtype, args):
                      'etc.\n')
     elif subtype == "ovs":
         if len(args) == 1:
-            switchinfo = {"hostname": args[0]}
+            switchinfo = {"ovs_bridge": args[0]}
             subtype = switch_api + subtype
         else:
             sys.exit('ERROR: subtype ' + subtype +
                      ' requires exactly 1 arguments\n'
-                     '<hostname> \n')
+                     '<ovs_bridge> \n')
 
     else:
         if len(args) == 0:
