@@ -6,7 +6,7 @@ import ast
 import subprocess
 import shlex
 
-from hil.model import db, Switch, BigIntegerType, SwitchSession
+from hil.model import db, Switch, Port, BigIntegerType, SwitchSession
 from hil.errors import SwitchError
 
 logger = logging.getLogger(__name__)
@@ -27,13 +27,13 @@ class Ovs(Switch, SwitchSession):
     id = db.Column(
             BigIntegerType, db.ForeignKey('switch.id'), primary_key=True
             )
-    hostname = db.Column(db.String, nullable=False)
+    ovs_bridge = db.Column(db.String, nullable=False)
 
     @staticmethod
     def validate(kwargs):
         """Checks input to match switch parameters."""
         schema.Schema({
-            'hostname': basestring,
+            'ovs_bridge': basestring,
         }).validate(kwargs)
 
 # 1. Public Methods:
@@ -56,7 +56,7 @@ class Ovs(Switch, SwitchSession):
                 subprocess.check_call(arg_list)
         except subprocess.CalledProcessError as e:
             logger.error('%s', e)
-            raise SwitchError('ovs command failed: ')
+            raise SwitchError('ovs command failed: %s', e)
 
     def get_port_networks(self, ports):
 
@@ -81,7 +81,7 @@ class Ovs(Switch, SwitchSession):
 
         shell_cmd_1 = 'sudo ovs-vsctl del-port {port}'.format(port=port)
         shell_cmd_2 = 'sudo ovs-vsctl add-port {switch} {port}'.format(
-                    switch=self.hostname, port=port
+                    switch=self.ovs_bridge, port=port
                     ) + ' vlan_mode=native-untagged'
         self.ovs_connect(shell_cmd_1, shell_cmd_2)
 
@@ -113,11 +113,9 @@ class Ovs(Switch, SwitchSession):
         """Converts a string representation of list to list.
         Args:
             a_string: list output recieved as string.
-                e.g. Strings starting with '[' and ending with ']'
+                No quotes around any values: e.g: '[abc, def, 786, hil]'
         Returns: object of list type.
                  Empty list is put as None.
-        Sample String:
-        '[abc, def, 786, hil]'
         """
         if a_string == '[]':
             return ast.literal_eval(a_string)
@@ -134,10 +132,9 @@ class Ovs(Switch, SwitchSession):
 
         Args:
             a_string: dictionary recieved as type string
-                eg. Strings starting with '{' and ending with '}'
+            Sample String: No quotes around keys or values.
+                '{abc:123, def:xyz,  space  :  lot of it , 2345:some number }'
         Returns: Object of dictionary type.
-        Sample String:
-        '{abc:123, def:xyz,    space   :    lot of it , 2345:some number }'
         """
         if a_string == '{}':
             a_dict = ast.literal_eval(a_string)
@@ -154,7 +151,38 @@ class Ovs(Switch, SwitchSession):
 
         Args:
             port: Valid port name
-        Returns: configuration status of the port
+        Returns intermediate output which processed to return final output:
+        It is a string of the following format:
+        '_uuid               : ad489368-9b53-4a3e-8732-697ad5141de9\n
+        bond_downdelay      : 0\nbon    d_fake_iface     : false\n
+        external_ids        : {}\nfake_bridge         : false\n
+        interfaces              : [fc61c8ff99c5,fc61c8ff99c6]\n
+        name                : "veth-0"\n
+        statistics          : {abc:123    , def:xyz,  space  :  lot of it , \
+                2345:some number}\n
+        status              : {}\ntag                     : 100\n
+        trunks              : [200,300,400]\n
+        vlan_mode           : native-untagged\n'
+
+        Which is used as input for further processing.
+        Returns: A dictionary of configuration status of the port.
+             String, Dictionary and list are valid values of this dictionary.
+             eg: Sample output.
+               {
+                '_uuid': 'ad489368-9b53-4a3e-8732-697ad5141de9',
+                'bond_downdelay': '0',
+                'bond_fake_iface': 'false',
+                'external_ids': {},
+                'fake_bridge': 'false',
+                'interfaces': ['fc61c8ff99c5', 'fc61c8ff99c6'],
+                'name': '"veth-0"',
+                'statistics': {'2345': 'some number','abc': '123','def': 'xyz'
+                                ,'space': 'lot of it'},
+                'status': {},
+                'tag': '100',
+                'trunks': ['200', '300', '400'],
+                'vlan_mode': 'native-untagged'
+              }
         """
         # This function is differnet then `ovs_connect` as it uses
         # subprocess.check_output because it only needs read info from switch
@@ -165,10 +193,10 @@ class Ovs(Switch, SwitchSession):
             output = subprocess.check_output(args)
         except subprocess.CalledProcessError as e:
             logger.error(" %s ", e)
-            raise SwitchError('Ovs command failed: ')
+            raise SwitchError('Ovs command failed: %s', e)
         output = output.split('\n')
         output.remove('')
-        i_info = dict(s.split(':') for s in output)
+        i_info = dict(s.split(':', 1) for s in output)
         i_info = {k.strip(): v.strip() for k, v in i_info.iteritems()}
         # above statement removes extra white spaces from the keys and values.
         # That is important since other calls will be querying this dictionary.
@@ -235,7 +263,7 @@ class Ovs(Switch, SwitchSession):
             return self.ovs_connect(shell_cmd)
         return None
 
-# 3. superclass methods (Not Required):
+# 3. Other superclass methods:
 
     @staticmethod
     def validate_port_name(port):

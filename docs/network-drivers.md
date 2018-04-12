@@ -344,11 +344,13 @@ To get started you will need to:
 ```
 	yum install openvswitch #For fedora or Centos
 	# Following script will:
-	# --enable the openvswitch service;
-	# --Start the openvswitch server;
-	# --Show the status to the user.
-	for i in enable start status
-	do service openvswitch $i; done
+	# * enable the openvswitch service;
+	# * Start the openvswitch server;
+	# * Show the status to the user.
+	
+	do service openvswitch enable.
+	do service openvswitch start.
+	do service openvswitch status.
 	ovs-vsctl show
 ```
 
