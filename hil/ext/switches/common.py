@@ -3,6 +3,44 @@ from hil.config import cfg
 from hil import model
 from hil.model import db
 from hil.errors import BlockedError
+import ast
+
+def string_to_list(a_string):
+    """Converts a string representation of list to list.
+    Args:
+        a_string: list output recieved as string.
+            No quotes around any values: e.g: '[abc, def, 786, hil]'
+    Returns: object of list type.
+             Empty list is put as None.
+    """
+    if a_string == '[]':
+        return ast.literal_eval(a_string)
+    else:
+        a_string = a_string.replace("[", "['").replace("]", "']")
+        a_string = a_string.replace(",", "','")
+        a_list = ast.literal_eval(a_string)
+        a_list = [ele.strip() for ele in a_list]
+        return a_list
+
+def string_to_dict(a_string):
+    """Converts a string representation of dictionary
+    into a dictionary type object.
+
+    Args:
+        a_string: dictionary recieved as type string
+        Sample String: No quotes around keys or values.
+            '{abc:123, def:xyz,  space  :  lot of it , 2345:some number }'
+    Returns: Object of dictionary type.
+    """
+    if a_string == '{}':
+        a_dict = ast.literal_eval(a_string)
+        return a_dict
+    else:
+        a_string = a_string.replace("{", "{'").replace("}", "'}")
+        a_string = a_string.replace(":", "':'").replace(",", "','")
+        a_dict = ast.literal_eval(a_string)
+        a_dict = {k.strip(): v.strip() for k, v in a_dict.iteritems()}
+        return a_dict
 
 
 def should_save(switch_obj):

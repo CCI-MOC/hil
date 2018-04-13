@@ -2,12 +2,12 @@
 import re
 import logging
 import schema
-import ast
 import subprocess
 import shlex
 
 from hil.model import db, Switch, Port, BigIntegerType, SwitchSession
 from hil.errors import SwitchError
+from hil.ext.switches.common import string_to_dict, string_to_list
 
 logger = logging.getLogger(__name__)
 
@@ -87,8 +87,8 @@ class Ovs(Switch, SwitchSession):
 
     def modify_port(self, port, channel, new_network):
 
-        (port,) = filter(lambda p: p.label == port, self.ports)
-        interface = port.label
+        port_obj = Port.query.filter_by(label=port).one()
+        interface = port_obj.label
 
         if channel == 'vlan/native':
             if new_network is None:
@@ -106,45 +106,6 @@ class Ovs(Switch, SwitchSession):
             else:
                 assert new_network == vlan_id
                 return self._add_vlan_to_trunk(interface, vlan_id)
-
-# 2. Private Methods:
-
-    def _string_to_list(self, a_string):
-        """Converts a string representation of list to list.
-        Args:
-            a_string: list output recieved as string.
-                No quotes around any values: e.g: '[abc, def, 786, hil]'
-        Returns: object of list type.
-                 Empty list is put as None.
-        """
-        if a_string == '[]':
-            return ast.literal_eval(a_string)
-        else:
-            a_string = a_string.replace("[", "['").replace("]", "']")
-            a_string = a_string.replace(",", "','")
-            a_list = ast.literal_eval(a_string)
-            a_list = [ele.strip() for ele in a_list]
-            return a_list
-
-    def _string_to_dict(self, a_string):
-        """Converts a string representation of dictionary
-        into a dictionary type object.
-
-        Args:
-            a_string: dictionary recieved as type string
-            Sample String: No quotes around keys or values.
-                '{abc:123, def:xyz,  space  :  lot of it , 2345:some number }'
-        Returns: Object of dictionary type.
-        """
-        if a_string == '{}':
-            a_dict = ast.literal_eval(a_string)
-            return a_dict
-        else:
-            a_string = a_string.replace("{", "{'").replace("}", "'}")
-            a_string = a_string.replace(":", "':'").replace(",", "','")
-            a_dict = ast.literal_eval(a_string)
-            a_dict = {k.strip(): v.strip() for k, v in a_dict.iteritems()}
-            return a_dict
 
     def _interface_info(self, port):
         """Gets latest configuration of port from switch.
@@ -202,9 +163,9 @@ class Ovs(Switch, SwitchSession):
         # That is important since other calls will be querying this dictionary.
         for x in i_info.keys():
             if i_info[x][0] == "{":
-                i_info[x] = self._string_to_dict(i_info[x])
+                i_info[x] = string_to_dict(i_info[x])
             elif i_info[x][0] == "[":
-                i_info[x] = self._string_to_list(i_info[x])
+                i_info[x] = string_to_list(i_info[x])
         return i_info
 
     def _remove_native_vlan(self, port):
