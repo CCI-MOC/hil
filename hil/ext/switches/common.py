@@ -5,6 +5,7 @@ from hil.model import db
 from hil.errors import BlockedError
 import ast
 
+
 def string_to_list(a_string):
     """Converts a string representation of list to list.
     Args:
@@ -21,6 +22,7 @@ def string_to_list(a_string):
         a_list = ast.literal_eval(a_string)
         a_list = [ele.strip() for ele in a_list]
         return a_list
+
 
 def string_to_dict(a_string):
     """Converts a string representation of dictionary
