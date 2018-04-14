@@ -13,7 +13,7 @@ class Project(ClientBase):
         def list(self):
             """Lists all projects under HIL """
 
-            url = self.object_url('/projects')
+            url = self.object_url('projects')
             return self.check_response(self.httpClient.request("GET", url))
 
         @check_reserved_chars()

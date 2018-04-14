@@ -81,7 +81,7 @@ api call
 
 ::
 
-    curl -X put http://127.0.0.1:5000/switch/mockswitch01 -d '
+    curl -X put http://127.0.0.1:5000/v0/switch/mockswitch01 -d '
         {"type": "http://schema.massopencloud.org/haas/v0/switches/mock",
         "hostname": "switchhost01",
         "username": "switchuser01",
@@ -107,7 +107,7 @@ For nodes using IPMI use the following api call:
 
 ::
 
-     curl -X PUT http://127.0.0.1:5001/node/dummyNode01 -d '
+     curl -X PUT http://127.0.0.1:5001/v0/node/dummyNode01 -d '
      > {"obm": { "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
      > "host": "ipmiHost4node-01",
      > "user": "ipmiUser4node-01",
@@ -130,7 +130,7 @@ api call
 
 ::
 
-    curl -X put http://127.0.0.1:5000/project/mockproject01
+    curl -X put http://127.0.0.1:5000/v0/project/mockproject01
 
 cli call
 
@@ -152,7 +152,7 @@ api call
 
 ::
 
-    curl -X put http://127.0.0.1:5000/node/mocknode01 -d '
+    curl -X put http://127.0.0.1:5000/v0/node/mocknode01 -d '
     > {"type": "http://schema.massopencloud.org/haas/v0/nodes/mock",
     > "hostname": "mockhost01",
     > "username": "nodeuser01",
@@ -177,7 +177,7 @@ api call
 
 ::
 
-    curl -X put http://127.0.0.1:5000/network/mocknetwork01 -d '
+    curl -X put http://127.0.0.1:5000/v0/network/mocknetwork01 -d '
         {"owner": "admin",
         "access": "mockproject",
         "net_id": "101"}'

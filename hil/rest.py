@@ -92,9 +92,10 @@ class ValidationError(APIError):
 def rest_call(methods, path, schema, dont_log=()):
     """A decorator which registers an http mapping to a python api call.
 
-    `rest_call` makes no modifications to the function itself, though the
-    function need not worry about most of the details of the http request, see
-    below for details.
+    `rest_call` adds an attribute 'api_schema', which is equal to the `schema`
+    parameter, but makes no modifications to the function's behavior. The
+    function need not worry about most of the details of the http request;
+    see below for details.
 
     Arguments:
 
@@ -165,6 +166,7 @@ def rest_call(methods, path, schema, dont_log=()):
     """
     def register(f):
         """Return value from rest call; this decorates the function itself."""
+        setattr(f, 'api_schema', schema)
 
         if isinstance(methods, list):
             # Methods can be either passed as a single string
@@ -174,7 +176,9 @@ def rest_call(methods, path, schema, dont_log=()):
         else:
             meths = [methods]
 
-        app.add_url_rule(path,
+        # Add REST API version
+        versioned_path = "/v0" + path
+        app.add_url_rule(versioned_path,
                          f.__name__,
                          _rest_wrapper(f, schema, dont_log),
                          methods=meths)

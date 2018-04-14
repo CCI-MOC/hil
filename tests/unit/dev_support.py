@@ -37,7 +37,7 @@ def _method():
 # We test the decorator both with the option enabled and with it disabled.
 def _dry(func):
     """Call ``func`` with dry_run enabled."""
-    config_merge({'devel': {'dry_run': True}})
+    config_merge({'devel': {'dry_run': 'True'}})
     func()
 
 

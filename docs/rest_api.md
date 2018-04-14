@@ -1,8 +1,10 @@
 # Overview
 
-This file describes the HIL Api. We first describe the main objects,
+This file describes the HIL API. We first describe the main objects,
 then users and security model, and finally provide a full reference for
 the API.
+
+By default, HIL is using the unstable "v0" version for all its API.
 
 ## Objects in the HIL
 

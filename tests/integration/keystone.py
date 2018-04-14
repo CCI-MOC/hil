@@ -247,7 +247,7 @@ def test_admin_call(keystone_projects, user_info):
     sess = _get_keystone_session(username=user_info['name'],
                                  password=user_info['password'],
                                  project_name=user_info['project_name'])
-    resp = _do_get(sess, 'admin-only')
+    resp = _do_get(sess, 'v0/admin-only')
     if user_info['admin']:
         assert resp.status_code < 300, (
             "Status code for admin-only call should be successful for admin."
@@ -270,7 +270,7 @@ def test_project_call(keystone_projects, caller_info, project_name):
     sess = _get_keystone_session(username=caller_info['name'],
                                  password=caller_info['password'],
                                  project_name=caller_info['project_name'])
-    resp = _do_get(sess, 'project-only/' + project_name)
+    resp = _do_get(sess, 'v0/project-only/' + project_name)
     if caller_info['admin'] or caller_info['project_name'] == project_name:
         assert 200 <= resp.status_code < 300, (
             "Status code for project-only call should be successful for "
@@ -289,7 +289,7 @@ def test_anyone_call_authenticated(keystone_projects, caller_info):
     sess = _get_keystone_session(username=caller_info['name'],
                                  password=caller_info['password'],
                                  project_name=caller_info['project_name'])
-    resp = _do_get(sess, 'anyone')
+    resp = _do_get(sess, 'v0/anyone')
     assert 200 <= resp.status_code < 300, (
         "Status code for call with no special authorization requirements "
         "should succeed for any authenticated project in the db!"
@@ -309,7 +309,7 @@ def test_anyone_call_unknown_project(keystone_projects):
     sess = _get_keystone_session(username='non-hil-user',
                                  password='secret',
                                  project_name='non-hil-project')
-    resp = _do_get(sess, 'anyone')
+    resp = _do_get(sess, 'v0/anyone')
     assert 400 <= resp.status_code < 500, (
         "Status code for call with no special authorization requirements "
         "should still fail if the keystone project is not in the HIL db!"
@@ -325,7 +325,7 @@ def test_unregistered_admin():
     sess = _get_keystone_session(username='admin',
                                  password='s3cr3t',
                                  project_name='admin')
-    resp = _do_get(sess, 'admin-only')
+    resp = _do_get(sess, 'v0/admin-only')
     assert 200 <= resp.status_code < 300, (
         "Status code for admin-only call by non-registered admin project "
         "should still succeed."

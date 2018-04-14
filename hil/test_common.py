@@ -53,7 +53,7 @@ def config_testsuite():
                 'hil.ext.auth.null': '',
             },
             'devel': {
-                'dry_run': True,
+                'dry_run': 'True',
             },
             'headnode': {
                 'base_imgs': 'base-headnode, img1, img2, img3, img4',
@@ -86,6 +86,9 @@ def config_merge(config_dict):
                     print('remove option: %r' % option)
                     cfg.remove_option(section, option)
                 else:
+                    assert isinstance(config_dict[section][option], str), (
+                        "Passed a non-string value in config!"
+                    )
                     print('set option: %r' % option)
                     cfg.set(section, option, config_dict[section][option])
 
