@@ -3,7 +3,6 @@ import re
 import logging
 import schema
 import subprocess
-import shlex
 
 from hil.model import db, Switch, Port, BigIntegerType, SwitchSession
 from hil.errors import SwitchError
@@ -45,14 +44,13 @@ class Ovs(Switch, SwitchSession):
         """Interacts with the Openvswitch.
 
         Args:
-            *command_strings (tuple) : tuple of shell commands required
+            *command_strings (tuple) : tuple of list of arguments required
                         to make changes to openvswitch
         Raises: SwitchError
         Returns: If successful returns None else logs error message
         """
         try:
-            for command in command_strings:
-                arg_list = shlex.split(command)
+            for arg_list in command_strings:
                 subprocess.check_call(arg_list)
         except subprocess.CalledProcessError as e:
             logger.error('%s', e)
@@ -79,11 +77,12 @@ class Ovs(Switch, SwitchSession):
 
     def revert_port(self, port):
 
-        shell_cmd_1 = 'sudo ovs-vsctl del-port {port}'.format(port=port)
-        shell_cmd_2 = 'sudo ovs-vsctl add-port {switch} {port}'.format(
-                    switch=self.ovs_bridge, port=port
-                    ) + ' vlan_mode=native-untagged'
-        self.ovs_connect(shell_cmd_1, shell_cmd_2)
+        args_1 = ['sudo', 'ovs-vsctl', 'del-port', str(port)]
+        args_2 = [
+                'sudo', 'ovs-vsctl', 'add-port', str(self.ovs_bridge),
+                str(port), 'vlan_mode=native-untagged'
+                ]
+        self.ovs_connect(args_1, args_2)
 
     def modify_port(self, port, channel, new_network):
 
@@ -148,8 +147,7 @@ class Ovs(Switch, SwitchSession):
         # This function is differnet then `ovs_connect` as it uses
         # subprocess.check_output because it only needs read info from switch
         # and pass the output to calling funtion.
-        shell_cmd = "sudo ovs-vsctl list port {port}".format(port=port)
-        args = shlex.split(shell_cmd)
+        args = ['sudo', 'ovs-vsctl', 'list', 'port', str(port)]
         try:
             output = subprocess.check_output(args)
         except subprocess.CalledProcessError as e:
@@ -159,8 +157,6 @@ class Ovs(Switch, SwitchSession):
         output.remove('')
         i_info = dict(s.split(':', 1) for s in output)
         i_info = {k.strip(): v.strip() for k, v in i_info.iteritems()}
-        # above statement removes extra white spaces from the keys and values.
-        # That is important since other calls will be querying this dictionary.
         for x in i_info.keys():
             if i_info[x][0] == "{":
                 i_info[x] = string_to_dict(i_info[x])
@@ -178,10 +174,11 @@ class Ovs(Switch, SwitchSession):
         """
         port_info = self._interface_info(port)
         vlan_id = port_info['tag']
-        shell_cmd = "sudo ovs-vsctl remove port {port} tag {vlan_id}".format(
-                    port=port, vlan_id=vlan_id
-                    )
-        return self.ovs_connect(shell_cmd)
+        args = [
+                'sudo', 'ovs-vsctl', 'remove', 'port', str(port), 'tag',
+                str(vlan_id)
+                ]
+        return self.ovs_connect(args)
 
     def _set_native_vlan(self, port, new_network):
         """Sets native vlan for a trunked port.
@@ -190,38 +187,40 @@ class Ovs(Switch, SwitchSession):
             port: valid port of switch
             new_network: vlan_id
         """
-        shell_cmd = (
-                "sudo ovs-vsctl set port {port} tag={netid}".format(
-                        port=port, netid=new_network
-                        ) + " vlan_mode=native-untagged"
-                    )
+        args = [
+                'sudo', 'ovs-vsctl', 'set', 'port', str(port),
+                'tag='+str(new_network), 'vlan_mode=native-untagged'
+                ]
 
-        return self.ovs_connect(shell_cmd)
+        return self.ovs_connect(args)
 
     def _add_vlan_to_trunk(self, port, vlan_id):
         """ Adds vlans to a trunk port. """
         port_info = self._interface_info(port)
 
         if not port_info['trunks']:
-            shell_cmd = "sudo ovs-vsctl set port {port} trunks={vlans}".format(
-                    port=port, vlans=vlan_id
-                    )
+            args = [
+                    'sudo', 'ovs-vsctl', 'set', 'port', str(port),
+                    'trunks='+str(vlan_id)
+                    ]
         else:
             all_trunks = ','.join(port_info['trunks'])+','+vlan_id
-            shell_cmd = "sudo ovs-vsctl set port {port} trunks={vlans}".format(
-                        port=port, vlans=all_trunks
-                        )
+            args = [
+                    'sudo', 'ovs-vsctl', 'set', 'port', str(port),
+                    'trunks='+str(all_trunks)
+                    ]
 
-        return self.ovs_connect(shell_cmd)
+        return self.ovs_connect(args)
 
     def _remove_vlan_from_port(self, port, vlan_id):
         """ removes a single vlan specified by `vlan_id` """
         port_info = self._interface_info(port)
-        shell_cmd = "sudo ovs-vsctl remove port {port} trunks {vlan}".format(
-                      port=port, vlan=vlan_id
-                      )
+        args = [
+                'sudo', 'ovs-vsctl', 'remove', 'port', str(port), 'trunks',
+                str(vlan_id)
+                ]
         if port_info['trunks']:
-            return self.ovs_connect(shell_cmd)
+            return self.ovs_connect(args)
         return None
 
 # 3. Other superclass methods:
