@@ -152,7 +152,7 @@ class _DellN3000Session(_BaseSession):
         self.console.expect(self.main_prompt)
         return result
 
-    def get_port_networks(self, ports):
+    """def get_port_networks(self, ports):
         num_re = re.compile(r'(\d+)')
         port_configs = self._port_configs(ports)
         result = {}
@@ -183,7 +183,7 @@ class _DellN3000Session(_BaseSession):
             if native is not None:
                 networks.append(('vlan/native', native))
             result[k] = networks
-        return result
+        return result"""
 
 
     def get_port_networks(self, ports):

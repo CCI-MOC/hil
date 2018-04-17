@@ -14,12 +14,8 @@ from hil.errors import BadArgumentError
 from os.path import join, dirname
 from hil.migrations import paths
 from hil.model import BigIntegerType
-<<<<<<< refs/remotes/upstream/master
 from hil.config import core_schema, string_is_bool
-
-=======
 from hil.ext.switches.common import parse_vlans
->>>>>>> first pass at dell and nexus get_port_networks fix.  Need to remove debug statements
 
 logger = logging.getLogger(__name__)
 
@@ -39,16 +35,16 @@ class Nexus(Switch):
         'polymorphic_identity': api_name,
     }
 
-    #id = db.Column(BigIntegerType,
-    #               db.ForeignKey('switch.id'), primary_key=True)
-    #hostname = db.Column(db.String, nullable=False)
-    #username = db.Column(db.String, nullable=False)
-    #password = db.Column(db.String, nullable=False)
-    #dummy_vlan = db.Column(db.String, nullable=False)
-    hostname = '192.168.3.230'
-    username = 'admin'
-    password = '.bluegit4'
-    dummy_vlan = 0
+    id = db.Column(BigIntegerType,
+                   db.ForeignKey('switch.id'), primary_key=True)
+    hostname = db.Column(db.String, nullable=False)
+    username = db.Column(db.String, nullable=False)
+    password = db.Column(db.String, nullable=False)
+    dummy_vlan = db.Column(db.String, nullable=False)
+    #hostname = '192.168.3.230'
+    #username = 'admin'
+    #password = '.bluegit4'
+    #dummy_vlan = 0
 
     @staticmethod
     def validate(kwargs):
@@ -296,10 +292,10 @@ class _Session(_console.Session):
 
 
 
-switcher = Nexus()
+#switcher = Nexus()
 # test port 19 too
-ports = [Port('Ethernet1/19', switcher), Port('Ethernet1/27', switcher), Port('Ethernet1/25', switcher)]
+#ports = [Port('Ethernet1/19', switcher), Port('Ethernet1/27', switcher), Port('Ethernet1/25', switcher)]
 #ports = [Port('Ethernet1/19', switcher)]
 #ports = [Port('gi1/0/3', switcher)]
-print switcher.session()._port_configs(ports)
-print switcher.session().get_port_networks(ports)
+#print switcher.session()._port_configs(ports)
+#print switcher.session().get_port_networks(ports)
