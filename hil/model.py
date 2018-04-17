@@ -221,7 +221,7 @@ class Switch(db.Model):
 
     @staticmethod
     def validate(kwargs):
-        """Verify that ``kwargs`` is a legal set of keyword args to ``__init__``
+        """Make sure ``kwargs`` is a legal set of keyword args to ``__init__``
 
         Raise a ``schema.SchemaError`` if the ``kwargs`` is invalid.
 
@@ -345,7 +345,7 @@ class Obm(db.Model):
 
     @staticmethod
     def validate(kwargs):
-        """Verify that ``kwargs`` is a legal set of keywords args to ``__init__``
+        """Make sure ``kwargs`` is a legal set of keywords args to ``__init__``
 
         Raise a ``schema.SchemaError`` if the  ``kwargs`` is invalid.
         Note well: This is a *static* method; it will be invoked on the class.

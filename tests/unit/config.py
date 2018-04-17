@@ -122,7 +122,7 @@ def test_good_web_urls():
 
 def test_bad_web_urls():
     """Test malformed web URLs."""
-    opts = ['http/', 'test.com', 'C:\POPUPLOG.OS2']
+    opts = ['http/', 'test.com', 'C:\\POPUPLOG.OS2']
     for s in opts:
         with pytest.raises(SchemaError):
             config.string_is_web_url(s)
@@ -151,7 +151,7 @@ def test_good_dirs():
 
 def test_bad_dirs():
     """Test for malformed directories."""
-    opts = ['\0', 'C:\dir', '12345']
+    opts = ['\0', 'C:\\dir', '12345']
     assert all(not config.string_is_dir(s) for s in opts)
 
 

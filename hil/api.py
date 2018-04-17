@@ -348,7 +348,7 @@ def node_connect_network(node, nic, network, channel=None):
     """
 
     def _have_attachment(nic, query):
-        """Return whether there are any attachments matching ``query`` for ``nic``.
+        """Return if there are any attachments matching ``query`` for ``nic``.
 
         ``query`` should an argument suitable to pass to db.query(...).filter
         """
@@ -1385,7 +1385,7 @@ def absent_child_or_conflict(obj_outer, cls_inner, name_inner):
 
 
 def get_child_or_404(obj_outer, cls_inner, name_inner):
-    """Searches the database for a "namespaced" object, such as a nic on a node.
+    """Search the database for a "namespaced" object, such as a nic on a node.
 
     Raises NotFoundError if there is none.  Otherwise returns the object.
 

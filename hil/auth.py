@@ -26,7 +26,7 @@ class AuthBackend(object):
 
     @abstractmethod
     def authenticate(self):
-        """Authenticate the api call, and prepare for later authorization checks.
+        """Authenticate the api call & prepare for later authorization checks.
 
         This method will be invoked inside of a flask request context,
         with ``hil.rest.local.db`` initialized to a valid database session.
