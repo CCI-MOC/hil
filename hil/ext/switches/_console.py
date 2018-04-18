@@ -162,7 +162,7 @@ def get_prompts(console):
         # :-1 omits the last hash character
         return {
             'config_prompt': re.escape(cmd_prompt[:-1] + '(config)#'),
-            'if_prompt': re.escape(cmd_prompt[:-1]) + '\(config\\-if[^)]*\)#',
+            'if_prompt': re.escape(cmd_prompt[:-1]) + r'\(config\-if[^)]*\)#',
             'main_prompt': re.escape(cmd_prompt),
         }
 
