@@ -76,15 +76,12 @@ class DellNOS9(Switch, SwitchSession):
         establish a session or disconnect from it."""
 
     def modify_port(self, port, channel, new_network):
-        (port,) = filter(lambda p: p.label == port, self.ports)
-        interface = port.label
-
         if channel == 'vlan/native':
             if new_network is None:
-                self._remove_native_vlan(interface)
-                self._port_shutdown(interface)
+                self._remove_native_vlan(port)
+                self._port_shutdown(port)
             else:
-                self._set_native_vlan(interface, new_network)
+                self._set_native_vlan(port, new_network)
         else:
             vlan_id = channel.replace('vlan/', '')
             legal = get_network_allocator(). \
@@ -92,10 +89,10 @@ class DellNOS9(Switch, SwitchSession):
             assert legal, "HIL passed an invalid channel to the switch!"
 
             if new_network is None:
-                self._remove_vlan_from_trunk(interface, vlan_id)
+                self._remove_vlan_from_trunk(port, vlan_id)
             else:
                 assert new_network == vlan_id
-                self._add_vlan_to_trunk(interface, vlan_id)
+                self._add_vlan_to_trunk(port, vlan_id)
         if should_save(self):
             self.save_running_config()
 
