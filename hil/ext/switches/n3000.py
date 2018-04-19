@@ -184,7 +184,6 @@ class _DellN3000Session(_BaseSession):
                     network_list.append(('vlan/%s' % v, int(v)))
         return network_list
 
-
     def get_port_networks(self, ports):
         port_configs = self._port_configs(ports)
         badchars = ' (Inactive)'
