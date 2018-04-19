@@ -44,6 +44,10 @@ def create_pending_actions_db():
     api.project_create('runway')
     api.node_register(
         'node-1',
+        obmd={
+            'uri': 'http://obmd.example.com/nodes/node-1',
+            'admin_token': 'secret',
+        },
         obm={
             'type': MOCK_OBM_TYPE,
             'user': 'user',
@@ -127,6 +131,8 @@ def create_bigint_db():
                            password='pass')
         db.session.add(mock_obm)
         node1 = model.Node(label='node-1',
+                           obmd_uri='http://obmd.example.com/nodes/node-1',
+                           obmd_admin_token='secret',
                            obm=ipmi)
         db.session.add(node1)
 

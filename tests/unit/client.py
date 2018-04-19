@@ -144,6 +144,9 @@ def populate_server():
     this function will populate some mock objects to faciliate testing of the
     client library
     """
+    # FIXME: we're not checking responses for any of these requests, so
+    # failures here will show up as stranger errors later on.
+
     # create our initial admin user:
     with app.app_context():
         from hil.ext.auth.database import User
@@ -161,8 +164,15 @@ def populate_server():
                 }
         http_client.request(
                 'PUT',
-                url_node + 'node-0'+repr(i), data=json.dumps({"obm": obminfo})
-                )
+                url_node + 'node-0'+repr(i), data=json.dumps({
+                    "obm": obminfo,
+                    "obmd": {
+                        'uri': 'https://obmd.example.org/nodes/node-0' +
+                               repr(i),
+                        'admin_token': 'secret',
+                    },
+                })
+        )
         http_client.request(
                 'PUT',
                 url_node + 'node-0' + repr(i) + '/nic/eth0', data=json.dumps(
@@ -297,18 +307,28 @@ class Test_node:
 
     def test_node_register(self):
         """Test node_register"""
-        assert C.node.register("dummy-node-01", "mock",
-                               "dummy", "dummy", "dummy") is None
+        assert C.node.register("dummy-node-01",
+                               "http://obmd.example.com/node/dummy-node-01",
+                               "secret",
+                               "mock", "dummy", "dummy", "dummy") is None
         with pytest.raises(BadArgumentError):
-            C.node.register("dummy-node-02", "mock",
-                            "dummy", "dummy")
+            C.node.register("dummy-node-02",
+                            "http://obmd.example.com/node/dummy-node-02",
+                            "secret",
+                            # Too few arguments
+                            "mock", "dummy", "dummy")
         with pytest.raises(BadArgumentError):
-            C.node.register("dummy-node-03", "mock",
-                            "dummy", "dummy", "dummy",
-                            "dummy")
+            C.node.register("dummy-node-03",
+                            "http://obmd.example.com/node/dummy-node-02",
+                            "secret",
+                            # Too many arguments
+                            "mock", "dummy", "dummy", "dummy", "dummy")
         with pytest.raises(UnknownSubtypeError):
-            C.node.register("dummy-node-04", "donotexist",
-                            "dummy", "dummy", "dummy")
+            C.node.register("dummy-node-04",
+                            "http://obmd.example.com/node/dummy-node-02",
+                            "secret",
+                            # Non-existent subtype.
+                            "donotexist", "dummy", "dummy", "dummy")
 
     def test_show_node(self):
         """(successful) to show_node"""

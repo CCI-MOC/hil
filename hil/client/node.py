@@ -22,27 +22,21 @@ class Node(ClientBase):
         url = self.object_url('node', node_name)
         return self.check_response(self.httpClient.request('GET', url))
 
-    @check_reserved_chars()
-    def register(self, node, subtype, *args):
+    @check_reserved_chars(dont_check=['obmd_uri'])
+    def register(self, node, obmd_uri, obmd_admin_token, subtype, *args):
         """Register a node with appropriate OBM driver. """
         # Registering a node requires apriori knowledge of the
         # available OBM driver and its corresponding arguments.
         # We assume that the HIL administrator is aware as to which
         # Node requires which OBM, and knows arguments required
         # for successful node registration.
-
-        # FIXME: In future obm_types should be dynamically fetched.
-        # We need a new api call for querying available
-        # and currently active drivers for HIL
-        # obm_api = "http://schema.massopencloud.org/haas/v0/obm/"
-        # obm_types = ["ipmi", "mock"]
         if (len(args) != 3):
             raise BadArgumentError("3 Arguments needed. Supplied " +
                                    str(len(args)))
 
         obm_api = "http://schema.massopencloud.org/haas/v0/obm/"
-        # This is a temp fix. obmd will let node_register no longer
-        # need a type so a new design will be required.
+        # This is a bit of a hack, but this block of code will be removed
+        # soon when obmd becomes the only mechanism.
         obm_types = ["ipmi", "mock"]
         if subtype in obm_types:
             obminfo = {"type": obm_api + subtype, "host": args[0],
@@ -52,7 +46,13 @@ class Node(ClientBase):
             raise UnknownSubtypeError("Unknown subtype provided.")
 
         url = self.object_url('node', node)
-        payload = json.dumps({"obm": obminfo})
+        payload = json.dumps({
+            "obm": obminfo,
+            "obmd": {
+                'uri': obmd_uri,
+                'admin_token': obmd_admin_token,
+            },
+        })
         return self.check_response(
                 self.httpClient.request('PUT', url, data=payload)
                 )

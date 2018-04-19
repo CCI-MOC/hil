@@ -112,11 +112,19 @@ def switchinit():
 
 def new_node(name):
     """Create a mock node named ``name``"""
-    api.node_register(name, obm={
-              "type": OBM_TYPE_MOCK,
-              "host": "ipmihost",
-              "user": "root",
-              "password": "tapeworm"})
+    api.node_register(
+        node=name,
+        obm={
+            "type": OBM_TYPE_MOCK,
+            "host": "ipmihost",
+            "user": "root",
+            "password": "tapeworm",
+        },
+        obmd={
+            'uri': 'http://obmd.example.com/nodes/' + name,
+            'admin_token': 'secret',
+        },
+    )
 
 
 default_fixtures = ['fail_on_log_warnings',
@@ -390,46 +398,31 @@ class TestProjectConnectDetachNode:
 
 
 class TestRegisterCorrectObm:
-    """Tests that node_register stores obm driver information into
-    correct corresponding tables
+    """Tests that node_register stores obm information into the node table."""
 
-    """
-
-    def test_ipmi(self):
-        """...for the ipmi driver."""
-        api.node_register('compute-01', obm={
-                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                  "host": "ipmihost",
-                  "user": "root",
-                  "password": "tapeworm"})
+    def test_obmd_info(self):
+        """Check for the label and obmd parameters."""
+        api.node_register(
+            node='compute-01',
+            obmd={
+                'uri': 'http://obmd.example.com/nodes/compute-01',
+                'admin_token': 'secret',
+            },
+            obm={
+                "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                "host": "ipmihost",
+                "user": "root",
+                "password": "tapeworm",
+            },
+        )
 
         node_obj = model.Node.query.filter_by(label="compute-01")\
                         .join(model.Obm).join(hil.ext.obm.ipmi.Ipmi).one()
 
-        # Comes from table node
         assert str(node_obj.label) == 'compute-01'
-        # Comes from table obm
-        assert str(node_obj.obm.api_name) == OBM_TYPE_IPMI
-        # Comes from table ipmi
-        assert str(node_obj.obm.host) == 'ipmihost'
-
-    def test_mockobm(self):
-        """...for the mock driver."""
-        api.node_register('compute-01', obm={
-                  "type": "http://schema.massopencloud.org/haas/v0/obm/mock",
-                  "host": "mockObmhost",
-                  "user": "root",
-                  "password": "tapeworm"})
-
-        node_obj = model.Node.query.filter_by(label="compute-01")\
-                        .join(model.Obm).join(hil.ext.obm.mock.MockObm).one()  # noqa
-
-        # Comes from table node
-        assert str(node_obj.label) == 'compute-01'
-        # Comes from table obm
-        assert str(node_obj.obm.api_name) == OBM_TYPE_MOCK
-        # Comes from table mockobm
-        assert str(node_obj.obm.host) == 'mockObmhost'
+        assert str(node_obj.obmd_uri) == \
+            'http://obmd.example.com/nodes/compute-01'
+        assert str(node_obj.obmd_admin_token) == 'secret'
 
 
 class TestNodeRegisterDelete:
@@ -437,26 +430,40 @@ class TestNodeRegisterDelete:
 
     def test_node_register(self):
         """node_register should add the node to the db."""
-        api.node_register('node-99', obm={
-                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                  "host": "ipmihost",
-                  "user": "root",
-                  "password": "tapeworm"})
+        api.node_register(
+            node='node-99',
+            obm={
+                "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                "host": "ipmihost",
+                "user": "root",
+                "password": "tapeworm",
+            },
+            obmd={
+                'uri': 'http://obmd.example.com/nodes/node-99',
+                'admin_token': 'secret',
+            },
+        )
         api.get_or_404(model.Node, 'node-99')
 
     def test_node_register_with_metadata(self):
         """Same thing, but try it with metadata."""
-        api.node_register('node-99',
-                          obm={
-                              "type": "http://schema.massopencloud.org/haas/v0"
-                                      "/obm/ipmi",
-                              "host": "ipmihost",
-                              "user": "root",
-                              "password": "tapeworm"
-                          },
-                          metadata={
-                              "EK": "pk"
-                          })
+        api.node_register(
+            node='node-99',
+            obm={
+                "type": "http://schema.massopencloud.org/haas/v0"
+                        "/obm/ipmi",
+                "host": "ipmihost",
+                "user": "root",
+                "password": "tapeworm"
+            },
+            obmd={
+                'uri': 'http://obmd.example.com/nodes/node-99',
+                'admin_token': 'secret',
+            },
+            metadata={
+                "EK": "pk"
+            },
+        )
         api.get_or_404(model.Node, 'node-99')
 
     def test_node_register_with_bad_metadata(self):
@@ -470,38 +477,55 @@ class TestNodeRegisterDelete:
                     "user": "root",
                     "password": "tapeworm"
                 },
+                'obmd': {
+                    'uri': 'http://obmd.example.com/nodes/node-99',
+                    'admin_token': 'secret',
+                },
                 'metadata': 42,
             })
 
     def test_node_register_JSON_metadata(self):
         """...and with the metadata being something other than a string."""
-        api.node_register('node-99',
-                          obm={
-                              "type": "http://schema.massopencloud.org/haas/v0"
-                                      "/obm/ipmi",
-                              "host": "ipmihost",
-                              "user": "root",
-                              "password": "tapeworm"},
-                          metadata={
-                              "EK": {"val1": 1, "val2": 2}
-                          })
+        api.node_register(
+            node='node-99',
+            obm={
+                "type": "http://schema.massopencloud.org/haas/v0"
+                        "/obm/ipmi",
+                "host": "ipmihost",
+                "user": "root",
+                "password": "tapeworm",
+            },
+            obmd={
+                'uri': 'http://obmd.example.com/nodes/node-99',
+                'admin_token': 'secret',
+            },
+            metadata={
+                "EK": {"val1": 1, "val2": 2}
+            },
+        )
         api.get_or_404(model.Node, 'node-99')
 
     def test_node_register_with_multiple_metadata(self):
         """...and with multiple metadata keys."""
-        api.node_register('node-99',
-                          obm={
-                              "type": "http://schema.massopencloud.org/haas/v0"
-                                      "/obm/ipmi",
-                              "host": "ipmihost",
-                              "user": "root",
-                              "password": "tapeworm"
-                          },
-                          metadata={
-                              "EK": "pk",
-                              "SHA256": "b5962d8173c14e60259211bcf25d1263c36e0"
-                              "ad7da32ba9d07b224eac1834813"
-                          })
+        api.node_register(
+            node='node-99',
+            obm={
+                "type": "http://schema.massopencloud.org/haas/v0"
+                        "/obm/ipmi",
+                "host": "ipmihost",
+                "user": "root",
+                "password": "tapeworm"
+            },
+            obmd={
+                'uri': 'http://obmd.example.com/nodes/node-99',
+                'admin_token': 'secret',
+            },
+            metadata={
+                "EK": "pk",
+                "SHA256": "b5962d8173c14e60259211bcf25d1263c36e0"
+                "ad7da32ba9d07b224eac1834813"
+            },
+        )
         api.get_or_404(model.Node, 'node-99')
 
     def test_duplicate_node_register(self):
@@ -1380,11 +1404,19 @@ class TestNetworkCreateDelete:
         """
         api.project_create('anvil-nextgen')
         network_create_simple('hammernet', 'anvil-nextgen')
-        api.node_register('node-99', obm={
-                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                  "host": "ipmihost",
-                  "user": "root",
-                  "password": "tapeworm"})
+        api.node_register(
+            node='node-99',
+            obm={
+                "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                "host": "ipmihost",
+                "user": "root",
+                "password": "tapeworm",
+            },
+            obmd={
+                'uri': 'http://obmd.example.com/nodes/node-99',
+                'admin_token': 'secret',
+            },
+        )
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.port_connect_nic('sw0', PORTS[2], 'node-99', 'eth0')
@@ -1403,11 +1435,19 @@ class TestNetworkCreateDelete:
         """Deleting a node that is attached to a network should fail."""
         api.project_create('anvil-nextgen')
         network_create_simple('hammernet', 'anvil-nextgen')
-        api.node_register('node-99', obm={
-                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                  "host": "ipmihost",
-                  "user": "root",
-                  "password": "tapeworm"})
+        api.node_register(
+            node='node-99',
+            obm={
+                "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                "host": "ipmihost",
+                "user": "root",
+                "password": "tapeworm",
+            },
+            obmd={
+                'uri': 'http://obmd.example.com/nodes/node-99',
+                'admin_token': 'secret',
+            },
+        )
         api.node_register_nic('node-99', 'eth0', 'DE:AD:BE:EF:20:14')
         api.project_connect_node('anvil-nextgen', 'node-99')
         api.port_connect_nic('sw0', PORTS[2], 'node-99', 'eth0')
@@ -2001,11 +2041,19 @@ class TestQuery_unpopulated_db:
                             hostname="switchname")
         api.switch_register_port('sw0', PORTS[0])
         api.switch_register_port('sw0', PORTS[1])
-        api.node_register('robocop', obm={
-                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                  "host": "ipmihost",
-                  "user": "root",
-                  "password": "tapeworm"})
+        api.node_register(
+            node='robocop',
+            obm={
+                "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                "host": "ipmihost",
+                "user": "root",
+                "password": "tapeworm",
+            },
+            obmd={
+                'uri': 'http://obmd.example.com/nodes/robocop',
+                'admin_token': 'secret',
+            },
+        )
         api.node_register_nic('robocop', 'eth0', 'DE:AD:BE:EF:20:14')
         api.node_register_nic('robocop', 'wlan0', 'DE:AD:BE:EF:20:15')
 

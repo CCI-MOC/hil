@@ -175,13 +175,18 @@ def new_nic(name):
     from hil.ext.obm.mock import MockObm
     unique_id = str(uuid.uuid4())
     project = model.Project('anvil-nextgen-' + unique_id)
+    label = str(uuid.uuid4())
     node = model.Node(
-            label=str(uuid.uuid4()),
-            obm=MockObm(
-                type="http://schema.massopencloud.org/haas/v0/obm/mock",
-                host="ipmihost",
-                user="root",
-                password="tapeworm"))
+        label=label,
+        obm=MockObm(
+            type="http://schema.massopencloud.org/haas/v0/obm/mock",
+            host="ipmihost",
+            user="root",
+            password="tapeworm",
+        ),
+        obmd_uri='http://obmd.example.com/nodes/' + label,
+        obmd_admin_token='secret',
+    )
     if node.project is None:
         project.nodes.append(node)
     return model.Nic(node, name, '00:11:22:33:44:55')
