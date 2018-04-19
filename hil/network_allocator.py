@@ -30,9 +30,11 @@ class NetworkAllocator(object):
 
     @abstractmethod
     def get_new_network_id(self):
-        """Gets a new network ID, valid for this driver.  Returns 'None' if there
-        are no more possible IDs available.  Pass in the database connection,
-        to make the allocation part of the current transaction.
+        """Gets a new network ID, valid for this driver.
+
+        Returns 'None' if there are no more possible IDs available.  Pass
+        in the database connection, to make the allocation part of the current
+        transaction.
         """
 
     @abstractmethod
@@ -44,7 +46,7 @@ class NetworkAllocator(object):
 
     @abstractmethod
     def populate(self):
-        """Populate the database with any initial state needed by the allocator.
+        """Populate the database with initial state needed by the allocator.
 
         This is invoked when the hil database is first initialized. It *must*
         be safe to call this method multiple times, including on a database
