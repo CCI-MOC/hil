@@ -41,10 +41,6 @@ class Nexus(Switch):
     username = db.Column(db.String, nullable=False)
     password = db.Column(db.String, nullable=False)
     dummy_vlan = db.Column(db.String, nullable=False)
-    #hostname = '192.168.3.230'
-    #username = 'admin'
-    #password = '.bluegit4'
-    #dummy_vlan = 0
 
     @staticmethod
     def validate(kwargs):
@@ -183,45 +179,6 @@ class _Session(_console.Session):
 
         return result
 
-    '''def get_port_networks(self, ports):
-        num_re = re.compile(r'(\d+)')
-        port_configs = self._port_configs(ports)
-        result = {}
-
-        for k, v in port_configs.iteritems():
-            networks = []
-            if 'Trunking Native Mode VLAN' not in v:
-                # XXX (probable BUG): For some reason the last port on the
-                # switch sometimes isn't read correctly. For now just don't use
-                # that port for the test suite, and will skip it if this
-                # happens.
-                continue
-            native = v['Trunking Native Mode VLAN'].strip()
-            match = re.match(num_re, native)
-            if match:
-                num_str = match.groups()[0]
-                native = int(num_str)
-                if native == int(self.switch.dummy_vlan):
-                    native = None
-            else:
-                native = None
-            for range_str in v['Trunking VLANs Allowed'].split(','):
-                # XXX TODO make this actualy interpret e.g. 2-7 as a *range*
-                for num_str in range_str.split('-'):
-                    num_str = num_str.strip()
-                    match = re.match(num_re, num_str)
-                    if match:
-                        # There may be other tokens in the output, e.g.
-                        # the string "(Inactive)" somteimtes appears.
-                        # We should only use the value if it's an actual
-                        # number.
-                        num_str = match.groups()[0]
-                        networks.append(('vlan/%s' % num_str, int(num_str)))
-
-            if native is not None:
-                networks.append(('vlan/native', native))
-            result[k] = networks
-        return result'''
 
     def get_port_networks(self, ports):
           port_configs = self._port_configs(ports)
@@ -289,13 +246,3 @@ class _Session(_console.Session):
     def disable_port(self):
         self._sendline('sw trunk allowed vlan none')
         self._sendline('sw trunk native vlan ' + self.dummy_vlan)
-
-
-
-#switcher = Nexus()
-# test port 19 too
-#ports = [Port('Ethernet1/19', switcher), Port('Ethernet1/27', switcher), Port('Ethernet1/25', switcher)]
-#ports = [Port('Ethernet1/19', switcher)]
-#ports = [Port('gi1/0/3', switcher)]
-#print switcher.session()._port_configs(ports)
-#print switcher.session().get_port_networks(ports)

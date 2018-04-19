@@ -41,9 +41,6 @@ class PowerConnect55xx(Switch):
     hostname = db.Column(db.String, nullable=False)
     username = db.Column(db.String, nullable=False)
     password = db.Column(db.String, nullable=False)
-    #hostname = '192.168.3.247'
-    #username = 'admin'
-    #password = '.bluegit4'
 
     @staticmethod
     def validate(kwargs):
@@ -107,10 +104,3 @@ class _PowerConnect55xxSession(_BaseSession):
             self._sendline('terminal datadump')
         elif lines == 'default':
             self._sendline('no terminal datadump')
-
-#switcho = PowerConnect55xx()
-#ports = [Port('gi1/0/3', switcho), Port('gi1/0/20', switcho),
-#         Port('gi1/0/21', switcho), Port('gi1/0/2', switcho)]
-#ports = [Port('gi1/0/3', switcho)]
-#print switcho.session()._port_configs(ports)
-#print switcho.session().get_port_networks(ports)
