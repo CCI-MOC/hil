@@ -14,8 +14,8 @@ from hil.migrations import paths
 from hil.model import db, Switch, SwitchSession
 from hil.errors import BadArgumentError, SwitchError
 from hil.model import BigIntegerType
-from hil.network_allocator import get_network_allocator
-from hil.ext.switches.common import check_native_networks, parse_vlans
+from hil.ext.switches.common import check_native_networks, parse_vlans, \
+ modify_port_common
 from hil.config import core_schema, string_is_bool
 
 
@@ -74,34 +74,11 @@ class Brocade(Switch, SwitchSession):
     def disconnect(self):
         pass
 
-    def modify_port(self, port, channel, new_network):
-        if channel == 'vlan/native':
-            if new_network is None:
-                self._remove_native_vlan(port)
-            else:
-                self._set_native_vlan(port, new_network)
-        else:
-            match = re.match(r'vlan/(\d+)', channel)
+    modify_port = modify_port_common
 
-            if match is None:
-                raise SwitchError("Malformed channel: No VLAN ID found")
-
-            vlan_id = match.groups()[0]
-            # we already do these checks in the API, are we being extra careful
-            # by doing it here or is this redundant?
-            legal = get_network_allocator(). \
-                is_legal_channel_for(channel, vlan_id)
-
-            if not legal:
-                raise SwitchError("Invalid VLAN ID")
-
-            if new_network is None:
-                self._remove_vlan_from_trunk(port, vlan_id)
-            else:
-                if new_network != vlan_id:
-                    raise SwitchError("VLAN ID from channel and new network"
-                                      " are different")
-                self._add_vlan_to_trunk(port, vlan_id)
+    def _port_shutdown(self, interface):
+        """Shuts down port; unimplemented right now
+        TODO: Implement this and associated methods see #970"""
 
     def revert_port(self, port):
         self._remove_all_vlans_from_trunk(port)
