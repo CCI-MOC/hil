@@ -273,15 +273,6 @@ pytestmark = pytest.mark.usefixtures('dummy_verify',
 class Test_ClientBase:
     """Tests client initialization and object_url creation. """
 
-    def test_init_error(self):
-        """Test that we get a TypeError given bad arguments to ClientBase()"""
-        # XXX: I(zenhack) think this test is of dubious utility; At some point
-        # during review, Sahil had some explicit logic to throw this error, but
-        # we got rid of that. Arguably we should remove this, but I want to do
-        # so in a separate patch, so just noting it now.
-        with pytest.raises(TypeError):
-            ClientBase()
-
     def test_object_url(self):
         """Test the object_url method."""
         x = ClientBase(ep, 'some_base64_string')
