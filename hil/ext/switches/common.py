@@ -5,8 +5,7 @@ import ast
 from hil.config import cfg
 from hil import model
 from hil.model import db
-from hil.errors import BlockedError, SwitchError
-from hil.network_allocator import get_network_allocator
+from hil.errors import BlockedError
 
 
 def string_to_list(a_string):
@@ -96,36 +95,3 @@ def parse_vlans(raw_vlans):
             vlan_list.append(num_str)
 
     return vlan_list
-
-
-def modify_port_common(self, port, channel, new_network):
-    """This implements modify port method that non-console like drivers can use
-    """
-    if channel == 'vlan/native':
-        if new_network is None:
-            self._remove_native_vlan(port)
-            self._port_shutdown(port)
-        else:
-            self._set_native_vlan(port, new_network)
-    else:
-        match = re.match(r'vlan/(\d+)', channel)
-
-        if match is None:
-            raise SwitchError("Malformed channel: No VLAN ID found")
-
-        vlan_id = match.groups()[0]
-        # we already do these checks in the API, are we being extra careful
-        # by doing it here or is this redundant?
-        legal = get_network_allocator(). \
-            is_legal_channel_for(channel, vlan_id)
-
-        if not legal:
-            raise SwitchError("Invalid VLAN ID")
-
-        if new_network is None:
-            self._remove_vlan_from_trunk(port, vlan_id)
-        else:
-            if new_network != vlan_id:
-                raise SwitchError("VLAN ID from channel and new network"
-                                  " are different")
-            self._add_vlan_to_trunk(port, vlan_id)

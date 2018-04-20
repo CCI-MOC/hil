@@ -6,15 +6,14 @@ Uses the XML REST API for communicating with the switch.
 import logging
 from lxml import etree
 import re
-import requests
 from schema import Schema, Optional
 
-from hil.model import db, Switch, SwitchSession
-from hil.errors import BadArgumentError, SwitchError
+from hil.model import db, Switch
+from hil.errors import BadArgumentError
 from hil.model import BigIntegerType
-from hil.ext.switches.common import should_save, check_native_networks, \
- parse_vlans, modify_port_common
+from hil.ext.switches.common import check_native_networks, parse_vlans
 from hil.config import core_schema, string_is_bool
+from hil.ext.switches import _unconsole
 
 
 logger = logging.getLogger(__name__)
@@ -28,7 +27,7 @@ core_schema[__name__] = {
 }
 
 
-class DellNOS9(Switch, SwitchSession):
+class DellNOS9(Switch, _unconsole.Session):
     """Dell S3048-ON running Dell NOS9"""
     api_name = 'http://schema.massopencloud.org/haas/v0/switches/dellnos9'
 
@@ -69,33 +68,6 @@ class DellNOS9(Switch, SwitchSession):
             raise BadArgumentError("Invalid port name. Valid port names for "
                                    "this switch are of the form 1/0/1 or 1/2")
         return
-
-    def disconnect(self):
-        """Since the switch is not connection oriented, we don't need to
-        establish a session or disconnect from it.
-        We save the switch configuration when this method is called"""
-        if should_save(self):
-            self.save_running_config()
-
-    modify_port = modify_port_common
-
-    def revert_port(self, port):
-        self._remove_all_vlans_from_trunk(port)
-        if self._get_native_vlan(port) is not None:
-            self._remove_native_vlan(port)
-        self._port_shutdown(port)
-        if should_save(self):
-            self.save_running_config()
-
-    def get_port_networks(self, ports):
-        response = {}
-        for port in ports:
-            response[port] = self._get_vlans(port.label)
-            native = self._get_native_vlan(port.label)
-            if native is not None:
-                response[port].append(native)
-
-        return response
 
     def _get_vlans(self, interface):
         """ Return the vlans of a trunk port.
@@ -382,10 +354,6 @@ class DellNOS9(Switch, SwitchSession):
 
         return iftypes[interface_type]
 
-    @property
-    def _auth(self):
-        return self.username, self.password
-
     @staticmethod
     def _make_payload(command_type, command):
         """Makes payload for passing CLI commands using the REST API"""
@@ -397,12 +365,3 @@ class DellNOS9(Switch, SwitchSession):
     def _construct_tag(name):
         """ Construct the xml tag by prepending the dell tag prefix. """
         return '{http://www.dell.com/ns/dell:0.1/root}%s' % name
-
-    def _make_request(self, method, url, data=None):
-        r = requests.request(method, url, data=data, auth=self._auth)
-        if r.status_code >= 400:
-            logger.error('Bad Request to switch. Response: %s', r.text)
-            raise SwitchError('Bad Request to switch. '
-                              'Response: %s and '
-                              'Reason: %s', r.text, r.reason)
-        return r
