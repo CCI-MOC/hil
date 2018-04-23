@@ -91,11 +91,19 @@ def test_ensure_legal_operations():
     switch = api.get_or_404(model.Switch, 's3048')
 
     # register a ndoe and a nic
-    api.node_register('compute-01', obm={
-                  "type": "http://schema.massopencloud.org/haas/v0/obm/mock",
-                  "host": "ipmihost",
-                  "user": "root",
-                  "password": "tapeworm"})
+    api.node_register(
+        node='compute-01',
+        obm={
+            "type": "http://schema.massopencloud.org/haas/v0/obm/mock",
+            "host": "ipmihost",
+            "user": "root",
+            "password": "tapeworm"
+        },
+        obmd={
+            'uri': 'http://obmd.example.com',
+            'admin_token': 'secret',
+        },
+    )
     api.project_connect_node('anvil-nextgen', 'compute-01')
     api.node_register_nic('compute-01', 'eth0', 'DE:AD:BE:EF:20:14')
     nic = api.get_or_404(model.Nic, 'eth0')

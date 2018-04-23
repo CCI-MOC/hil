@@ -97,12 +97,12 @@ class Node(db.Model):
                           single_parent=True,
                           cascade='all, delete-orphan')
 
-    # obmd endpoint & token for this node. This is currently unused; it
-    # is part of a staged migration. See:
+    # obmd endpoint & token for this node. This is currently unused, but
+    # required to be present; it is part of a staged migration. See:
     #
     # https://github.com/CCI-MOC/hil/issues/928#issuecomment-356443778
-    obmd_uri = db.Column(db.String, nullable=True)
-    obmd_admin_token = db.Column(db.String, nullable=True)
+    obmd_uri = db.Column(db.String, nullable=False)
+    obmd_admin_token = db.Column(db.String, nullable=False)
     obmd_node_token = db.Column(db.String, nullable=True)
 
 
@@ -221,7 +221,7 @@ class Switch(db.Model):
 
     @staticmethod
     def validate(kwargs):
-        """Verify that ``kwargs`` is a legal set of keyword args to ``__init__``
+        """Make sure ``kwargs`` is a legal set of keyword args to ``__init__``
 
         Raise a ``schema.SchemaError`` if the ``kwargs`` is invalid.
 
@@ -345,7 +345,7 @@ class Obm(db.Model):
 
     @staticmethod
     def validate(kwargs):
-        """Verify that ``kwargs`` is a legal set of keywords args to ``__init__``
+        """Make sure ``kwargs`` is a legal set of keywords args to ``__init__``
 
         Raise a ``schema.SchemaError`` if the  ``kwargs`` is invalid.
         Note well: This is a *static* method; it will be invoked on the class.

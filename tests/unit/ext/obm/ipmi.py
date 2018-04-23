@@ -41,11 +41,19 @@ class TestIpmi:
     def test_node_set_bootdev(self):
         """Check that node_set_bootdev throws error for invalid devices."""
 
-        api.node_register('node-99', obm={
-                  "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                  "host": "ipmihost",
-                  "user": "root",
-                  "password": "tapeworm"})
+        api.node_register(
+            node='node-99',
+            obm={
+                "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
+                "host": "ipmihost",
+                "user": "root",
+                "password": "tapeworm",
+            },
+            obmd={
+                "uri": "http://obmd.example.com/nodes/node-99",
+                "admin_token": "secret",
+            },
+        )
 
         # throw BadArgumentError for an invalid bootdevice
         with pytest.raises(errors.BadArgumentError):

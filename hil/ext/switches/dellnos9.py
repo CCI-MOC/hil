@@ -299,7 +299,7 @@ class DellNOS9(Switch, SwitchSession):
         """ Returns a boolean that tells the status of a switchport"""
 
         # the url here requires a suffix to GET the shutdown tag in response.
-        url = self._construct_url(interface=port) + '\?with-defaults'
+        url = self._construct_url(interface=port) + r'\?with-defaults'
         response = self._make_request('GET', url)
         root = etree.fromstring(response.text)
         shutdown = root.find(self._construct_tag('shutdown')).text

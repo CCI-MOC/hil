@@ -6,7 +6,8 @@ import json
 import requests
 import uuid
 
-from schema import Schema, Optional, SchemaError
+from schema import Schema, And, Optional, SchemaError
+from urlparse import urlparse
 
 from hil import model, errors
 from hil.model import db
@@ -212,9 +213,14 @@ def network_revoke_project_access(project, network):
         'type': basestring,
         Optional(object): object,
     },
+    'obmd': {
+        'uri': And(basestring,
+                   lambda s: urlparse(s).scheme in ('http', 'https')),
+        'admin_token': basestring,
+    },
     Optional('metadata'): {basestring: object},
 }))
-def node_register(node, **kwargs):
+def node_register(node, obmd, **kwargs):
     """Create node.
 
     If the node already exists, a DuplicateError will be raised.
@@ -228,7 +234,10 @@ def node_register(node, **kwargs):
     if cls is None:
         raise errors.BadArgumentError('%r is not a valid OBM type.' % obm_type)
     cls.validate(kwargs['obm'])
-    node_obj = model.Node(label=node, obm=cls(**kwargs['obm']))
+    node_obj = model.Node(label=node,
+                          obmd_uri=obmd['uri'],
+                          obmd_admin_token=obmd['admin_token'],
+                          obm=cls(**kwargs['obm']))
     if 'metadata' in kwargs:
         for label, value in kwargs['metadata'].items():
             metadata_obj = model.Metadata(label, json.dumps(value), node_obj)
@@ -348,7 +357,7 @@ def node_connect_network(node, nic, network, channel=None):
     """
 
     def _have_attachment(nic, query):
-        """Return whether there are any attachments matching ``query`` for ``nic``.
+        """Return if there are any attachments matching ``query`` for ``nic``.
 
         ``query`` should an argument suitable to pass to db.query(...).filter
         """
@@ -1385,7 +1394,7 @@ def absent_child_or_conflict(obj_outer, cls_inner, name_inner):
 
 
 def get_child_or_404(obj_outer, cls_inner, name_inner):
-    """Searches the database for a "namespaced" object, such as a nic on a node.
+    """Search the database for a "namespaced" object, such as a nic on a node.
 
     Raises NotFoundError if there is none.  Otherwise returns the object.
 

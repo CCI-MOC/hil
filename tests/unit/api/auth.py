@@ -609,11 +609,18 @@ def test_auth_call(kwargs):
 # these are below.
 
 admin_calls = [
-    (api.node_register, ['new_node'], {'obm': {
-              "type": MOCK_OBM_API_NAME,
-              "host": "ipmihost",
-              "user": "root",
-              "password": "tapeworm"}}),
+    (api.node_register, ['new_node'], {
+        'obm': {
+            "type": MOCK_OBM_API_NAME,
+            "host": "ipmihost",
+            "user": "root",
+            "password": "tapeworm",
+        },
+        'obmd': {
+            'uri': 'http://obmd.example.com/node/new_node',
+            'admin_token': 'secret',
+        },
+    }),
     # (api.node_register, ['new_node', obm=obm, {}),
     (api.node_delete, ['no_nic_node'], {}),
     (api.node_register_nic, ['free_node_0', 'extra-nic',

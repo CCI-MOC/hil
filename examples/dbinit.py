@@ -24,6 +24,8 @@ N_NODES = 6
 ipmi_user = "ADMIN_USER"
 ipmi_pass = "ADMIN_PASSWORD"
 switch = "mock01"
+obmd_base_uri = 'http://obmd.example.com/nodes/'
+obmd_admin_token = 'secret'
 
 
 def hil(*args):
@@ -42,7 +44,11 @@ for node in range(N_NODES):
 
     nic_port = "gi1/0/%d" % (node)
     nic_name = 'nic1'
-    hil('node', 'register', node, "mock", ipmi_ip, ipmi_user, ipmi_pass)
+    hil('node', 'register',
+        node,
+        obmd_base_uri + str(node),
+        obmd_admin_token,
+        "mock", ipmi_ip, ipmi_user, ipmi_pass)
     hil('node', 'nic', 'register', node, nic_name, 'FillThisInLater')
     hil('port', 'register', switch, nic_port)
     hil('port', 'nic', 'add', switch, nic_port, node, nic_name)
