@@ -36,33 +36,43 @@ class _BaseSession(_console.Session):
         self.disable_vlan(vlan_id)
         self._sendline('sw trunk native vlan none')
 
-
     def get_port_networks(self, ports):
+        '''Returns every trunking VLAN and native VLAN from a port config.
+        Example: Port 1 has 'Trunking Native Mode VLAN': ' 3 (Inactive)',
+        'Trunking VLANs Enabled': 'none'
+        Port 2 has 'Trunking Native Mode VLAN': 'none',
+        'Trunking VLANs Enabled': ' 10, 2000'
+        Port 3 has 'Trunking Native Mode VLAN': 'none',
+        'Trunking VLANs Enabled': ' 23 - 25'
+
+        Return: [('vlan/native', '3'), ('vlan/10', 10), ('vlan/2000', 2000),
+                 ('vlan/23', 23), ('vlan/24', 24), ('vlan/25', 25)]
+        '''
         port_configs = self._port_configs(ports)
         badchars = ' (Inactive)'
         network_list = []
+        # iterate through the port configurations
         for k, v in port_configs.iteritems():
             non_natives = ''
             non_native_list = []
-            # Get native vlan then remove junk if native not None
+            # get native vlan then remove junk if native is not None
             native_vlan = v['Trunking Native Mode VLAN'].strip()
-            if (native_vlan != 'none'):
+            if native_vlan != 'none':
                 native_vlan = ''.join(c for c in native_vlan
                                       if c not in badchars)
+                network_list.append(('vlan/native', native_vlan))
             else:
                 native_vlan = None
-            # Get other vlans and parse out junk if not None
+            # get other vlans and parse out junk if there are any
             trunk_vlans = v['Trunking VLANs Enabled'].strip()
-            if (trunk_vlans != 'none'):
+            if trunk_vlans != 'none':
+                # remove ' (Inactive)' if it's there; want all VLANS
                 non_natives = ''.join(c for c in trunk_vlans
                                       if c not in badchars)
                 non_natives = non_natives.split('\r\n')
+                # create comma-separated list to use parse_vlans()
                 non_natives = ','.join(non_natives)
                 non_native_list = parse_vlans(non_natives)
-            else:
-                non_natives = None
-            if native_vlan is not None:
-                network_list.append(('vlan/native', native_vlan))
             for v in (non_native_list):
                 if v != native_vlan:
                     network_list.append(('vlan/%s' % v, int(v)))

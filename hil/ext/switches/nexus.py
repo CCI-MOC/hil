@@ -190,7 +190,7 @@ class _Session(_console.Session):
               native_vlan = v['Trunking Native Mode VLAN'].strip()
               if native_vlan == int(self.switch.dummy_vlan):
                   native_vlan = None
-              elif (native_vlan != 'none'):
+              elif native_vlan != 'none':
                   temp = ''
                   for c in native_vlan:
                       if c == ' ':
@@ -201,7 +201,7 @@ class _Session(_console.Session):
                   native_vlan = None
               # Get other vlans
               trunk_vlans = v['Trunking VLANs Allowed'].strip()
-              if (trunk_vlans != 'none'):
+              if trunk_vlans != 'none':
                   non_native_list = parse_vlans(trunk_vlans)
               else:
                   non_natives = None
