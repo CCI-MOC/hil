@@ -13,7 +13,7 @@ from hil.errors import BadArgumentError
 from hil.model import BigIntegerType
 from hil.ext.switches.common import check_native_networks, parse_vlans
 from hil.config import core_schema, string_is_bool
-from hil.ext.switches import _unconsole
+from hil.ext.switches import _vlan_http
 
 
 logger = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ core_schema[__name__] = {
 }
 
 
-class DellNOS9(Switch, _unconsole.Session):
+class DellNOS9(Switch, _vlan_http.Session):
     """Dell S3048-ON running Dell NOS9"""
     api_name = 'http://schema.massopencloud.org/haas/v0/switches/dellnos9'
 
@@ -260,10 +260,12 @@ class DellNOS9(Switch, _unconsole.Session):
         return shutdown == 'false'
 
     def save_running_config(self):
+        """save running config to startup config"""
         command = 'write'
         self._execute(EXEC, command)
 
     def get_config(self, config_type):
+        """Returns config file"""
         command = config_type + '-config'
         config = self._execute(SHOW, command).text
 

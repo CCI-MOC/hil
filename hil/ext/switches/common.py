@@ -1,11 +1,9 @@
 """Helper methods for switches"""
-import re
-import ast
-
 from hil.config import cfg
 from hil import model
 from hil.model import db
 from hil.errors import BlockedError
+import ast
 
 
 def string_to_list(a_string):
@@ -89,7 +87,7 @@ def parse_vlans(raw_vlans):
     for num_str in range_str:
         if '-' in num_str:
             num_str = num_str.split('-')
-            for x in range(int(num_str[0]), int(num_str[1]) + 1):
+            for x in range(int(num_str[0]), int(num_str[1])+1):
                 vlan_list.append(str(x))
         else:
             vlan_list.append(num_str)

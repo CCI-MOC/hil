@@ -16,7 +16,7 @@ from hil.errors import BadArgumentError
 from hil.model import BigIntegerType
 from hil.ext.switches.common import check_native_networks, parse_vlans
 from hil.config import core_schema, string_is_bool
-from hil.ext.switches import _unconsole
+from hil.ext.switches import _vlan_http
 
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'brocade')
@@ -27,7 +27,7 @@ core_schema[__name__] = {
 }
 
 
-class Brocade(Switch, _unconsole.Session):
+class Brocade(Switch, _vlan_http.Session):
     """Brocade switch"""
 
     api_name = 'http://schema.massopencloud.org/haas/v0/switches/brocade'

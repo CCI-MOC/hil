@@ -1,5 +1,5 @@
 """Common functionality for switches that aren't session oriented and have
-an API to talk to"""
+an API to talk to. This only works with the vlan_pool network allocator."""
 
 import logging
 import re
@@ -40,6 +40,7 @@ class Session(SwitchSession):
                 self._add_vlan_to_trunk(port, vlan_id)
 
     def revert_port(self, port):
+        """Implements revert port for switches that use VLANs"""
         self._remove_all_vlans_from_trunk(port)
         if self._get_native_vlan(port) is not None:
             self._remove_native_vlan(port)
@@ -49,6 +50,9 @@ class Session(SwitchSession):
         pass
 
     def get_port_networks(self, ports):
+        """Implements get_port_networks. See hil/model.py for more details
+        about this method"""
+
         response = {}
         for port in ports:
             native = self._get_native_vlan(port.label)
@@ -62,7 +66,7 @@ class Session(SwitchSession):
     def _make_request(self, method, url, data=None,
                       acceptable_error_codes=()):
         """This can make the http request for you.
-        Also accetps a list of acceptable error codes if you need."""
+        Also accepts a list of acceptable error codes if you need."""
 
         r = requests.request(method, url, data=data, auth=self._auth)
         if r.status_code >= 400 and \
@@ -77,28 +81,75 @@ class Session(SwitchSession):
 
     @property
     def _auth(self):
+        """Returns tuple for authentication"""
         return self.username, self.password
 
     def _remove_native_vlan(self, interface):
-        assert False
+        """ Remove the native vlan from an interface.
+
+        Args:
+            interface: interface to remove the native vlan from
+        """
+        assert False, "Subclasses MUST override _remove_native_vlan"
 
     def _port_shutdown(self, interface):
-        assert False
+        """ Shuts down <interface> """
+        assert False, "Subclasses MUST override _port_shutdown"
 
     def _set_native_vlan(self, interface, vlan):
-        assert False
+        """ Set the native vlan of an interface.
+
+        Args:
+            interface: interface to set the native vlan of
+            vlan: vlan to set as the native vlan
+        """
+        assert False, "Subclasses MUST override _set_native_vlan"
 
     def _remove_vlan_from_trunk(self, interface, vlan):
-        assert False
+        """ Remove a vlan from a trunk port.
+
+        Args:
+            interface: interface to remove the vlan from
+            vlan: vlan to remove
+        """
+        assert False, "Subclasses MUST override _remove_vlan_from_trunk"
 
     def _add_vlan_to_trunk(self, interface, vlan):
-        assert False
+        """ Add a vlan to a trunk port.
+
+        Args:
+            interface: interface to add the vlan to
+            vlan: vlan to add
+        """
+        assert False, "Subclasses MUST override _add_vlan_to_trunk"
 
     def _remove_all_vlans_from_trunk(self, interface):
-        assert False
+        """ Remove all vlan from a trunk port.
+
+        Args:
+            interface: interface to remove the vlan from
+        """
+        assert False, "Subclasses MUST override _remove_all_vlans_from_trunk"
 
     def _get_native_vlan(self, interface):
-        assert False
+        """ Return the native vlan of an interface.
+
+        Args:
+            interface: interface to return the native vlan of
+        Returns: Tuple of the form ('vlan/native', vlan) or None
+        """
+        assert False, "Subclasses MUST override _get_native_vlan"
 
     def _get_vlans(self, interface):
-        assert False
+        """ Return the vlans of a trunk port.
+
+        Should not include the native vlan. `_get_native_vlan` should return
+        that.
+
+        Args:
+            interface: interface to return the vlans of
+        Returns: List containing the vlans of the form:
+        [('vlan/vlan1', vlan1), ('vlan/vlan2', vlan2)] or an empy list if there
+        are no trunked vlans.
+        """
+        assert False, "Subclasses MUST override _get_vlans"
