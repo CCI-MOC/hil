@@ -36,7 +36,6 @@ class _BaseSession(_console.Session):
         self.disable_vlan(vlan_id)
         self._sendline('sw trunk native vlan none')
 
-
     def get_port_networks(self, ports):
         '''Returns every trunking VLAN and native VLAN from a port config.
         Example: Port 1 has 'Trunking Native Mode VLAN': ' 3 (Inactive)',

@@ -200,7 +200,7 @@ class _DellN3000Session(_BaseSession):
                 native_vlan = None
             # Get other vlans and parse out junk if not None
             trunk_vlans = v['Trunking VLANs Enabled'].strip()
-            if (trunk_vlans != 'none'):
+            if trunk_vlans != 'none':
                 non_natives = ''.join(c for c in trunk_vlans
                                       if c not in badchars)
                 non_natives = non_natives.split('\r\n')
