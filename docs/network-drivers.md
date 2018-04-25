@@ -348,7 +348,7 @@ To get started you will need to:
 	# * enable the openvswitch service;
 	# * Start the openvswitch server;
 	# * Show the status to the user.
-	
+
 	systemctl enable openvswitch
 	systemctl start openvswitch
 	systemctl status openvswitch
@@ -371,7 +371,7 @@ To get started you will need to:
 These are just illustrative examples. You may have to do more to setup
 your switch before using it with HIL.
 
-For setup on other linux flavors refer to the openvswitch documentation. 
+For setup on other linux flavors refer to the openvswitch documentation.
 
 
 Optionally, a script is made available for reference at::
