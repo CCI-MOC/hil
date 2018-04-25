@@ -332,3 +332,79 @@ Networks managed by HIL may span multiple switches. No special configuration
 of HIL itself is required; just register each switch as normal and ensure that
 all VLANs in the allocator's ``vlans`` option are trunked to every managed
 switch.
+
+
+## Openvswitch Driver (For development purpose only. Do not use in production.)
+
+This driver is made available so that developers can have real switch
+like functionality without having access to any real switch hardware.
+Following documentation is relevant for Openvswitch 2.5.0
+To get started you will need to:
+1.  install openvswitch in your development machine (or VM):
+
+```
+	yum install openvswitch #For fedora
+	# Following script will:
+	# * enable the openvswitch service;
+	# * Start the openvswitch server;
+	# * Show the status to the user.
+
+	systemctl enable openvswitch
+	systemctl start openvswitch
+	systemctl status openvswitch
+	ovs-vsctl show
+```
+
+2.  create a bridge and name it <switch_name>:
+
+```
+	ovs-vsctl add-br <switch_name>
+```
+
+
+3.  Add some ports to this bridge:
+
+```
+	ovs-vsctl add-port <switch_name> <port_name>
+```
+
+These are just illustrative examples. You may have to do more to setup
+your switch before using it with HIL.
+
+For setup on other linux flavors refer to the openvswitch documentation.
+
+
+Optionally, a script is made available for reference at::
+
+	https://github.com/SahilTikale/HIL_contrib/blob/master/hilInYourLap/create_datacenter.sh
+
+**Warning**: Use the script at your own discretion.
+
+
+To register the driver with HIL, you will need the openvswitch bridge name.
+
+#### switch_register
+
+To register an openvswitch, the ``"type"`` field of the request body
+must have a value of::
+
+        http://schema.massopencloud.org/haas/v0/switches/ovs
+
+In addition, it requires one extra field:
+``"ovs_bridge"`` which provides the bridge name already created in openvswitch.
+
+#### switch_register_port
+
+Openvswitch accepts any string for port name.
+Once you add a port to the openvswitch, you can register the same with HIL.
+
+**Notice**: Bridge and Ports must pre-exist in the openvswitch before registering
+them with HIL.
+
+### Using multiple switches
+
+Use-cases that involve configurations requiring access to multiple switches
+can be achieved by adding bridges of different names to openvswitch and
+registering them as separate switches and ensure that
+all VLANs in the allocator's ``vlans`` option are trunked to every managed
+switch.

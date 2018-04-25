@@ -82,6 +82,14 @@ def switch_register(switch, subtype, args):
                      'to the speed of the switchports\n '
                      'ex. TenGigabitEthernet, FortyGigabitEthernet, '
                      'etc.\n')
+    elif subtype == "ovs":
+        if len(args) == 1:
+            switchinfo = {"ovs_bridge": args[0]}
+            subtype = switch_api + subtype
+        else:
+            sys.exit('ERROR: subtype ' + subtype +
+                     ' requires exactly 1 arguments\n'
+                     '<ovs_bridge> \n')
 
     else:
         if len(args) == 0:
