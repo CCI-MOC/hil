@@ -338,19 +338,20 @@ switch.
 
 This driver is made available so that developers can have real switch
 like functionality without having access to any real switch hardware.
+Following documentation is relevant for Openvswitch 2.5.0
 To get started you will need to:
 1.  install openvswitch in your development machine (or VM):
 
 ```
-	yum install openvswitch #For fedora or Centos
+	yum install openvswitch #For fedora
 	# Following script will:
 	# * enable the openvswitch service;
 	# * Start the openvswitch server;
 	# * Show the status to the user.
 	
-	do service openvswitch enable.
-	do service openvswitch start.
-	do service openvswitch status.
+	systemctl enable openvswitch
+	systemctl start openvswitch
+	systemctl status openvswitch
 	ovs-vsctl show
 ```
 
@@ -370,6 +371,8 @@ To get started you will need to:
 These are just illustrative examples. You may have to do more to setup
 your switch before using it with HIL.
 
+For setup on other linux flavors refer to the openvswitch documentation. 
+
 
 Optionally, a script is made available for reference at::
 
@@ -378,9 +381,7 @@ Optionally, a script is made available for reference at::
 **Warning**: Use the script at your own discretion.
 
 
-
-To register the driver with HIL, you will need the openvswitch bridge name,
-  username of your machine; sudo password of this user.
+To register the driver with HIL, you will need the openvswitch bridge name.
 
 #### switch_register
 
@@ -389,12 +390,8 @@ must have a value of::
 
         http://schema.massopencloud.org/haas/v0/switches/ovs
 
-In addition, it requires three extra fields:
-``"username"``, ``"hostname"``, and ``"password"``, which provide the necessary
-information to connect to the openvswitch.
-``"hostname"`` has to be the name of the bridge created in step 2.
-``"username"`` is the username for your development machine (or VM)
-``"password"`` is the sudo password of your machine (or VM).
+In addition, it requires one extra field:
+``"ovs_bridge"`` which provides the bridge name already created in openvswitch.
 
 #### switch_register_port
 

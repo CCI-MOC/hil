@@ -233,4 +233,4 @@ class Ovs(Switch, SwitchSession):
         return self
 
     def disconnect(self):
-        return self
+        pass
