@@ -58,8 +58,7 @@ class _BaseSession(_console.Session):
             # get native vlan then remove junk if native is not None
             native_vlan = v['Trunking Native Mode VLAN'].strip()
             if native_vlan != 'none':
-                native_vlan = ''.join(c for c in native_vlan
-                                      if c not in badchars)
+                native_vlan.replace(' (Inactive)', '')
                 network_list.append(('vlan/native', native_vlan))
             else:
                 native_vlan = None
@@ -73,7 +72,7 @@ class _BaseSession(_console.Session):
                 # create comma-separated list to use parse_vlans()
                 non_natives = ','.join(non_natives)
                 non_native_list = parse_vlans(non_natives)
-            for v in (non_native_list):
+            for v in non_native_list:
                 if v != native_vlan:
                     network_list.append(('vlan/%s' % v, int(v)))
         return network_list

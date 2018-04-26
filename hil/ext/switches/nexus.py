@@ -181,36 +181,31 @@ class _Session(_console.Session):
 
 
     def get_port_networks(self, ports):
-          port_configs = self._port_configs(ports)
-          network_list = []
-          for k, v in port_configs.iteritems():
-              non_natives = ''
-              non_native_list = []
-              # Get native vlan then remove junk if native not None
-              native_vlan = v['Trunking Native Mode VLAN'].strip()
-              if native_vlan == int(self.switch.dummy_vlan):
-                  native_vlan = None
-              elif native_vlan != 'none':
-                  temp = ''
-                  for c in native_vlan:
-                      if c == ' ':
-                          break
-                      temp += c
-                  native_vlan = temp
-              else:
-                  native_vlan = None
-              # Get other vlans
-              trunk_vlans = v['Trunking VLANs Allowed'].strip()
-              if trunk_vlans != 'none':
-                  non_native_list = parse_vlans(trunk_vlans)
-              else:
-                  non_natives = None
-              if native_vlan is not None:
-                  network_list.append(('vlan/native', native_vlan))
-              for v in (non_native_list):
-                  if v != native_vlan:
-                      network_list.append(('vlan/%s' % v, int(v)))
-          return network_list
+        port_configs = self._port_configs(ports)
+        network_list = []
+        for k, v in port_configs.iteritems():
+            non_natives = ''
+            non_native_list = []
+            # Get native vlan then remove junk if native not None
+            native_vlan = v['Trunking Native Mode VLAN'].strip()
+            if native_vlan == int(self.switch.dummy_vlan):
+                native_vlan = None
+            elif native_vlan != 'none':
+                native_vlan = native_vlan.split(' ')[0]
+            else:
+                native_vlan = None
+            # Get other vlans
+            trunk_vlans = v['Trunking VLANs Allowed'].strip()
+            if trunk_vlans != 'none':
+                non_native_list = parse_vlans(trunk_vlans)
+            else:
+                non_natives = None
+            if native_vlan is not None:
+                network_list.append(('vlan/native', native_vlan))
+            for v in (non_native_list):
+                if v != native_vlan:
+                    network_list.append(('vlan/%s' % v, int(v)))
+        return network_list
 
     def save_running_config(self):
         self._sendline('copy running-config startup-config')
