@@ -1,3 +1,5 @@
+"""Integration tests for interactions with obmd."""
+
 import tempfile
 import os
 import json
@@ -12,6 +14,7 @@ from hil import api, config, errors
 
 @pytest.fixture()
 def configure():
+    """Set up the HIL configureation."""
     config_testsuite()
     config_merge({
         'extensions': {
@@ -41,6 +44,11 @@ pytestmark = pytest.mark.usefixtures(
 
 @pytest.fixture
 def obmd_cfg():
+        """Fixture launching obmd with a config.
+
+        The fixture yields the config as a parsed json object. The obmd
+        process is teminated when the test completes.
+        """
         cfg = {
             'ListenAddr': ":8833",
             'AdminToken': "8fcfe5d3f8ca8c4b87d0f8ae86b43bca",
@@ -61,6 +69,7 @@ def obmd_cfg():
 
 
 def test_enable_disable_obm(obmd_cfg):
+    """Test enabling and disabling the obm of a node via the api."""
     obmd_uri = 'http://localhost' + obmd_cfg['ListenAddr'] + '/node/node-99'
 
     # register a node with obmd:

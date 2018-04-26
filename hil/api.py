@@ -252,6 +252,7 @@ def node_register(node, obmd, **kwargs):
     'enabled': bool,
 }))
 def node_enable_disable_obm(node, enabled):
+    """Enable or disable the obm for the given node."""
     node = get_or_404(model.Node, node)
     get_auth_backend().require_project_access(node.project)
 
