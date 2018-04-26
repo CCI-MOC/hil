@@ -8,8 +8,7 @@ import logging
 from schema import Schema, Optional
 import re
 
-from hil import model
-from hil.model import db, Switch, Port
+from hil.model import db, Switch
 from hil.migrations import paths
 from hil.ext.switches import _console
 from hil.ext.switches._dell_base import _BaseSession

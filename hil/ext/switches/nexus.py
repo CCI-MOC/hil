@@ -8,7 +8,7 @@ import re
 from schema import Schema, Optional, And, Use
 import logging
 
-from hil.model import db, Switch, Port
+from hil.model import db, Switch
 from hil.ext.switches import _console
 from hil.errors import BadArgumentError
 from os.path import join, dirname
@@ -179,12 +179,10 @@ class _Session(_console.Session):
 
         return result
 
-
     def get_port_networks(self, ports):
         port_configs = self._port_configs(ports)
         network_list = []
-        for k, v in port_configs.iteritems():
-            non_natives = ''
+        for _, v in port_configs.iteritems():
             non_native_list = []
             # Get native vlan then remove junk if native not None
             native_vlan = v['Trunking Native Mode VLAN'].strip()
@@ -198,8 +196,6 @@ class _Session(_console.Session):
             trunk_vlans = v['Trunking VLANs Allowed'].strip()
             if trunk_vlans != 'none':
                 non_native_list = parse_vlans(trunk_vlans)
-            else:
-                non_natives = None
             if native_vlan is not None:
                 network_list.append(('vlan/native', native_vlan))
             for v in (non_native_list):

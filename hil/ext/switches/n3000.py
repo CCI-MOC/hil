@@ -6,7 +6,7 @@ the long term we want to be using SNMP.
 
 import re
 import logging
-import schema
+from schema import Schema, Optional, And, Use
 
 from hil.model import db, Switch
 from hil.migrations import paths
@@ -16,10 +16,13 @@ from os.path import dirname, join
 from hil.errors import BadArgumentError
 from hil.model import BigIntegerType
 from hil.config import core_schema, string_is_bool
-from hil.ext.switches.common import parse_vlans
 
 logger = logging.getLogger(__name__)
 paths[__name__] = join(dirname(__file__), 'migrations', 'n3000')
+
+core_schema[__name__] = {
+    Optional('save'): string_is_bool
+}
 
 
 class DellN3000(Switch):
@@ -41,12 +44,13 @@ class DellN3000(Switch):
 
     @staticmethod
     def validate(kwargs):
-        schema.Schema({
+        """Note: Dell N3000 VLAN range only from 1 - 4093."""
+        Schema({
             'username': basestring,
             'hostname': basestring,
             'password': basestring,
             'dummy_vlan': And(Use(int),
-                              lambda v: 0 < v <=4093,
+                              lambda v: 0 < v <= 4093,
                               Use(str)),
         }).validate(kwargs)
 
@@ -151,66 +155,3 @@ class _DellN3000Session(_BaseSession):
         self._sendline('\n')
         self.console.expect(self.main_prompt)
         return result
-
-
-    def get_port_networks(self, ports):
-        port_configs = self._port_configs(ports)
-        badchars = ' (Inactive)'
-        network_list = []
-        for k, v in port_configs.iteritems():
-            non_natives = ''
-            non_native_list = []
-            # Get native vlan then remove junk if native not None
-            native_vlan = v['Trunking Native Mode VLAN'].strip()
-            if native_vlan != 'none':
-                native_vlan = ''.join(c for c in native_vlan
-                                      if c not in badchars)
-            else:
-                native_vlan = None
-            # Get other vlans and parse out junk if not None
-            trunk_vlans = v['Trunking VLANs Enabled'].strip()
-            if trunk_vlans != 'none':
-                non_natives = ''.join(c for c in trunk_vlans
-                                      if c not in badchars)
-                non_natives = non_natives.split('\r\n')
-                non_natives = ','.join(non_natives)
-                non_native_list = parse_vlans(non_natives)
-            else:
-                non_natives = None
-            if native_vlan is not None:
-                network_list.append(('vlan/native', native_vlan))
-            for v in (non_native_list):
-                if v != native_vlan:
-                    network_list.append(('vlan/%s' % v, int(v)))
-        return network_list
-
-    def get_port_networks(self, ports):
-        port_configs = self._port_configs(ports)
-        badchars = ' (Inactive)'
-        network_list = []
-        for k, v in port_configs.iteritems():
-            non_natives = ''
-            non_native_list = []
-            # Get native vlan then remove junk if native not None
-            native_vlan = v['Trunking Native Mode VLAN'].strip()
-            if (native_vlan != 'none'):
-                native_vlan = ''.join(c for c in native_vlan
-                                      if c not in badchars)
-            else:
-                native_vlan = None
-            # Get other vlans and parse out junk if not None
-            trunk_vlans = v['Trunking VLANs Enabled'].strip()
-            if trunk_vlans != 'none':
-                non_natives = ''.join(c for c in trunk_vlans
-                                      if c not in badchars)
-                non_natives = non_natives.split('\r\n')
-                non_natives = ','.join(non_natives)
-                non_native_list = parse_vlans(non_natives)
-            else:
-                non_natives = None
-            if native_vlan is not None:
-                network_list.append(('vlan/native', native_vlan))
-            for v in (non_native_list):
-                if v != native_vlan:
-                    network_list.append(('vlan/%s' % v, int(v)))
-        return network_list
