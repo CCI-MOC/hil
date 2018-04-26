@@ -46,13 +46,13 @@ The type field for the IPMI driver has the value::
 IPMI driver requires three additional feilds
 to be able to communicate with the IPMI subsystem of a server.
 These feilds are `host`, `user`, and `password`.
-In addition it also requires obm daemon information 
+In addition it also requires obm daemon information
 These information is passed as a part of the `node_register` api call
 when registering the node for the first time with HIL
 
 For example, if a node with its ipmi-hostname as "ipmi_node01", ipmi-username as "ipmi-user01"
-and ipmi-password as "pass1234" and obm daemon information as follows: 
-unique uri as "http://obmd.example.com/nodes/node-2" and admin_token as some string say "secret" 
+and ipmi-password as "pass1234" and obm daemon information as follows:
+unique uri as "http://obmd.example.com/nodes/node-2" and admin_token as some string say "secret"
 
 The body of the api call request `node_register` can then look like::
 
@@ -66,4 +66,3 @@ The body of the api call request `node_register` can then look like::
                 "admin_token": "secret"
             }
     }
-
