@@ -77,11 +77,10 @@ def test_enable_disable_obm(obmd_cfg):
         obmd_uri,
         auth=('admin', obmd_cfg['AdminToken']),
         data=json.dumps({
-            "type": "ipmi",
+            "type": "mock",
             "info": {
                 "addr": "10.0.0.4",
-                "user": "ipmuser",
-                "pass": "ipmipass",
+                "NumWrites": 0,
             },
         }))
 
