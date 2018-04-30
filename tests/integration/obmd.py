@@ -125,3 +125,55 @@ def test_enable_disable_obm(mock_node):
 
     # ...and then it should work:
     api.project_detach_node('anvil-nextgen', mock_node)
+
+
+def _follow_redirect(method, resp, data=None, stream=False):
+    assert resp.status_code == 307
+    resp = requests.request(method, resp.location, data=data, stream=stream)
+    assert resp.ok
+    return resp
+
+
+def test_power_operations(mock_node):
+    # Obm is disabled; these should all fail:
+    with pytest.raises(errors.BlockedError):
+        api.node_power_off(mock_node)
+    with pytest.raises(errors.BlockedError):
+        api.node_set_bootdev(mock_node, 'A')
+    with pytest.raises(errors.BlockedError):
+        api.node_power_cycle(mock_node, force=True)
+    with pytest.raises(errors.BlockedError):
+        api.node_power_cycle(mock_node, force=False)
+    with pytest.raises(errors.BlockedError):
+        api.show_console(mock_node)
+
+    # Now let's enable it and try again.
+    api.node_enable_disable_obm(mock_node, enabled=True)
+
+    def _power_cycle(force):
+        _follow_redirect(
+            'POST',
+            api.node_power_cycle(mock_node, force=force),
+            data=json.dumps({
+                'force': force,
+            }))
+
+    _follow_redirect('POST', api.node_power_off(mock_node))
+    _follow_redirect(
+        'PUT',
+        api.node_set_bootdev(mock_node, 'A'),
+        data=json.dumps({'bootdev': 'A'}),
+    )
+    _power_cycle(True)
+    _power_cycle(False)
+
+    resp = _follow_redirect('GET', api.show_console(mock_node), stream=True)
+    iterator = resp.iter_lines()
+    for i in range(50):
+        assert iterator.next() == str(i)
+
+
+def test_show_console(mock_node):
+    # Obm is disabled
+    with pytest.raises(errors.BlockedError):
+        api.show_console(mock_node)
