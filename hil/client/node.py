@@ -63,6 +63,25 @@ class Node(ClientBase):
         url = self.object_url('node', node_name)
         return self.check_response(self.httpClient.request('DELETE', url))
 
+    @check_reserved_chars()
+    def enable_obm(self, node_name):
+        """Enables the node's obm."""
+        url = self.object_url('node', node_name, 'obm')
+        return self.check_response(
+            self.httpClient.request('PUT', url, data=json.dumps({
+                'enabled': True,
+            }))
+        )
+
+    @check_reserved_chars()
+    def disable_obm(self, node_name):
+        """Disables the node's obm."""
+        url = self.object_url('node', node_name, 'obm')
+        return self.check_response(
+            self.httpClient.request('PUT', url, data=json.dumps({
+                'enabled': False,
+            })))
+
     @check_reserved_chars(dont_check=['force'])
     def power_cycle(self, node_name, force=False):
         """Power cycles the <node> """

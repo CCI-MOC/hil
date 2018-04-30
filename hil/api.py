@@ -249,6 +249,7 @@ def node_register(node, obmd, **kwargs):
 
 
 @rest_call('PUT', '/node/<node>/obm', Schema({
+    'node': basestring,
     'enabled': bool,
 }))
 def node_enable_disable_obm(node, enabled):
