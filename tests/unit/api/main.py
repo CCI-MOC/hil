@@ -127,6 +127,18 @@ def new_node(name):
     )
 
 
+def _spoof_enable_obm(nodename):
+    """spoof "enabling" the named node's obm.
+
+    Stores a phony token in the node's obmd_node_token. This is necessary
+    for tests where we can't actually get a token from obmd, but need to run
+    other tests that will check for a token.
+    """
+    node = api.get_or_404(model.Node, nodename)
+    node.obmd_node_token = '0123456789'
+    model.db.session.commit()
+
+
 default_fixtures = ['fail_on_log_warnings',
                     'configure',
                     'fresh_database',
@@ -2444,6 +2456,7 @@ class TestDryRun:
         api.project_create('anvil-nextgen')
         new_node('node-99')
         api.project_connect_node('anvil-nextgen', 'node-99')
+        _spoof_enable_obm('node-99')
         api.node_power_cycle('node-99')
 
     def test_node_power_cycle_force(self):
@@ -2455,6 +2468,7 @@ class TestDryRun:
         api.project_create('anvil-nextgen')
         new_node('node-99')
         api.project_connect_node('anvil-nextgen', 'node-99')
+        _spoof_enable_obm('node-99')
         api.node_power_cycle('node-99', True)
 
 
