@@ -27,11 +27,12 @@ branches:
     - none
 
 env:
-  - DB=sqlite
+  - TEST_SUITE=unit DB=sqlite
     # SPOOF_MANUAL_MIGRATIONS is used to tell the migration scripts that they
     # should make up data that would otherwise require manual intervention;
     # this is important for the migration tests.
-  - DB=postgres SPOOF_MANUAL_MIGRATIONS=true
+  - TEST_SUITE=unit DB=postgres SPOOF_MANUAL_MIGRATIONS=true
+  - TEST_SUITE=integration DB=postgres SPOOF_MANUAL_MIGRATIONS=true
 
 install:
   # A dependency might use new pip syntax; upgrade to prevent breakage. See #771
@@ -41,14 +42,7 @@ install:
   - sh -e ci/obmd/install.sh
 
 script:
-  - sh -e ci/pycodestyle_tests.sh
-  - sh -e ci/pylint_tests.sh
-  - sh -e ci/no_trailing_whitespace.sh
-  - sh -e ci/run_unit_tests.sh
-  - sh -e ci/apache/run_integration_tests.sh
-  - sh -e ci/keystone/run_integration_tests.sh
-  - sh -e ci/obmd/run_integration_tests.sh
-  - sh -e ci/deployment-mock-networks/run_integration_tests.sh
+  - sh -e ci/run_tests.sh
   - coverage report -m
 
 after_success:
