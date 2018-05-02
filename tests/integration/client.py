@@ -1,4 +1,4 @@
-"""Unit tests for client library"""
+"""Integration tests for client library"""
 from hil.flaskapp import app
 from hil.client.base import ClientBase, FailedAPICallException
 from hil.errors import BadArgumentError, UnknownSubtypeError
