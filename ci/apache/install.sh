@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# Exit if we are only running unit tests
+if [ $TEST_SUITE = unit ]; then
+	exit 0
+fi
+
 # Setup configuration
 cp ci/testsuite.cfg.$DB testsuite.cfg
 sudo cp ci/apache/hil.cfg.$DB /etc/hil.cfg
