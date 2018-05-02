@@ -7,7 +7,8 @@ import requests
 import pytest
 from subprocess import Popen
 from hil.test_common import config_testsuite, config_merge, \
-    fresh_database, fail_on_log_warnings, server_init, with_request_context
+    fresh_database, fail_on_log_warnings, server_init, with_request_context, \
+    obmd_cfg
 
 from hil import api, config, errors
 
@@ -31,6 +32,7 @@ fresh_database = pytest.fixture(fresh_database)
 fail_on_log_warnings = pytest.fixture(fail_on_log_warnings)
 server_init = pytest.fixture(server_init)
 with_request_context = pytest.yield_fixture(with_request_context)
+obmd_cfg = pytest.fixture(obmd_cfg)
 
 
 pytestmark = pytest.mark.usefixtures(
@@ -40,32 +42,6 @@ pytestmark = pytest.mark.usefixtures(
     'server_init',
     'with_request_context',
 )
-
-
-@pytest.fixture
-def obmd_cfg():
-        """Fixture launching obmd with a config.
-
-        The fixture yields the config as a parsed json object. The obmd
-        process is teminated when the test completes.
-        """
-        cfg = {
-            'ListenAddr': ":8833",
-            'AdminToken': "8fcfe5d3f8ca8c4b87d0f8ae86b43bca",
-            'DBType': 'sqlite3',
-            'DBPath': ':memory:',
-        }
-
-        (fd, name) = tempfile.mkstemp()
-        os.write(fd, json.dumps(cfg))
-        os.close(fd)
-        obmd_proc = Popen(['obmd', '-config', name])
-
-        yield cfg
-
-        obmd_proc.terminate()
-        obmd_proc.wait()
-        os.remove(name)
 
 
 @pytest.fixture

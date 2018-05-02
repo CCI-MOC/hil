@@ -17,6 +17,7 @@ import subprocess
 import sys
 import os.path
 import logging
+import tempfile
 import re
 
 uuid_pattern = re.compile(
@@ -327,6 +328,35 @@ def site_layout():
             api.switch_register_port(nic['switch'], nic['port'])
             api.port_connect_nic(nic['switch'], nic['port'],
                                  node['name'], nic['name'])
+
+
+def obmd_cfg():
+        """Fixture launching obmd with a config.
+
+        The fixture yields the config as a parsed json object. The obmd
+        process is teminated when the test completes.
+
+        Like many of the functions in this module, this is intended to
+        be used as a fixture, but not declared here as such; individual
+        modules should declare it as a fixture.
+        """
+        cfg = {
+            'ListenAddr': ":8833",
+            'AdminToken': "8fcfe5d3f8ca8c4b87d0f8ae86b43bca",
+            'DBType': 'sqlite3',
+            'DBPath': ':memory:',
+        }
+
+        (fd, name) = tempfile.mkstemp()
+        os.write(fd, json.dumps(cfg))
+        os.close(fd)
+        obmd_proc = subprocess.Popen(['obmd', '-config', name])
+
+        yield cfg
+
+        obmd_proc.terminate()
+        obmd_proc.wait()
+        os.remove(name)
 
 
 def headnode_cleanup(request):
