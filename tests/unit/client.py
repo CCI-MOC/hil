@@ -2,7 +2,8 @@
 from hil.flaskapp import app
 from hil.client.base import ClientBase, FailedAPICallException
 from hil.errors import BadArgumentError, UnknownSubtypeError
-from hil.client.client import Client, HTTPClient, HTTPResponse
+from hil.client.client import Client, HTTPClient, HTTPResponse, \
+    RequestsHTTPClient
 from hil.test_common import config_testsuite, config_merge, \
     fresh_database, fail_on_log_warnings, server_init, uuid_pattern
 from hil.model import db
@@ -20,33 +21,66 @@ username = "hil_user"
 password = "hil_pass1234"
 
 
-class FlaskHTTPClient(HTTPClient):
-    """Implementation of HTTPClient wrapping Flask's test client."""
+class HybridHTTPClient(HTTPClient):
+    """Implementation of HTTPClient for use in testing.
+
+    Depending on the URL, his uses either Flask's test client,
+    or a RequestsHTTPClient. This allows us to do testing without
+    launching a separate process for the API server, while still
+    being able to talk to external services (like OBMd and keystone).
+    """
 
     def __init__(self):
         self._flask_client = app.test_client()
+        self._requests_client = RequestsHTTPClient()
 
     def request(self, method, url, data=None, params=None):
+        # Manually follow redirects. We can't just rely on flask to do it,
+        # since if we get redirected to something outside of the app, we
+        # want to switch to a different client.
+        resp = self._make_request(method, url, data=data, params=params)
+        while self._is_redirect(resp):
+            url = resp.headers['Location']
+            resp = self._make_request(method, url, data=data, params=params)
+        return resp
 
-        # Flask doesn't provide a straightforward way to do basic auth,
-        # but it's not actually that complicated:
-        auth_header = 'Basic ' + urlsafe_b64encode(username + ':' + password)
+    @staticmethod
+    def _is_redirect(resp):
+        """Return whether `resp` is a redirect response."""
+        return resp.status_code == 307
 
-        resp = self._flask_client.open(
-            method=method,
-            headers={'Authorization': auth_header},
-            # flask expects just a path, and assumes
-            # the host & scheme:
-            path=urlparse(url).path,
-            data=data,
-            query_string=params,
-        )
-        return HTTPResponse(status_code=resp.status_code,
-                            headers=resp.headers,
-                            content=resp.get_data())
+    def _make_request(self, method, url, data, params):
+        """Make an HTTP Request.
+
+        This is a helper method for `request`. It handles making a request,
+        but does not itself follow redirects.
+        """
+        if urlparse(url).netloc == urlparse(ep).netloc:
+            # Flask doesn't provide a straightforward way to do basic auth,
+            # but it's not actually that complicated:
+            auth_header = 'Basic ' + \
+                urlsafe_b64encode(username + ':' + password)
+            resp = self._flask_client.open(
+                method=method,
+                headers={'Authorization': auth_header},
+                # flask expects just a path, and assumes
+                # the host & scheme:
+                path=urlparse(url).path,
+                data=data,
+                query_string=params,
+            )
+            return HTTPResponse(status_code=resp.status_code,
+                                headers=resp.headers,
+                                content=resp.get_data())
+        else:
+            # URL is outside of our flask app; use the real http client.
+            return self._requests_client.request(method,
+                                                 url,
+                                                 data=data,
+                                                 params=params)
 
 
-http_client = FlaskHTTPClient()
+http_client = HybridHTTPClient()
 C = Client(ep, http_client)  # Initializing client library
 
 

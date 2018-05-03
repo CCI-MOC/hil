@@ -32,6 +32,7 @@ class HTTPClient(object):
         Makes an HTTP request on URL `url` with method `method`, request body
         `data`(if supplied) and query parameter `params`(if supplied). May add
         authentication or other backend-specific information to the request.
+        *Must* follow redirects.
 
         Parameters
         ----------
