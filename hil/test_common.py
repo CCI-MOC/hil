@@ -18,6 +18,8 @@ import sys
 import os.path
 import logging
 import tempfile
+import time
+import socket
 import re
 
 uuid_pattern = re.compile(
@@ -340,8 +342,9 @@ def obmd_cfg():
         be used as a fixture, but not declared here as such; individual
         modules should declare it as a fixture.
         """
+        portno = 8833
         cfg = {
-            'ListenAddr': ":8833",
+            'ListenAddr': ":" + str(portno),
             'AdminToken': "8fcfe5d3f8ca8c4b87d0f8ae86b43bca",
             'DBType': 'sqlite3',
             'DBPath': ':memory:',
@@ -351,6 +354,18 @@ def obmd_cfg():
         os.write(fd, json.dumps(cfg))
         os.close(fd)
         obmd_proc = subprocess.Popen(['obmd', '-config', name])
+
+        # wait for obmd to start accepting connections:
+        attempts = 0
+        while attempts < 60:
+            try:
+                conn = socket.create_connection(('127.0.0.1', portno))
+                conn.close()
+                break
+            except socket.error:
+                time.sleep(0.1)
+                attempts += 1
+        assert attempts < 60
 
         yield cfg
 
