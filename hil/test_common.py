@@ -642,3 +642,15 @@ def initial_db():
         )
 
         db.session.commit()
+
+
+def spoof_enable_obm(nodename):
+    """spoof "enabling" the named node's obm.
+
+    Stores a phony token in the node's obmd_node_token. This is necessary
+    for tests where we can't actually get a token from obmd, but need to run
+    other tests that will check for a token.
+    """
+    node = api.get_or_404(Node, nodename)
+    node.obmd_node_token = '0123456789'
+    db.session.commit()

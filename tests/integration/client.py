@@ -154,6 +154,13 @@ def configure():
         'hil.ext.network_allocators.vlan_pool': {
             'vlans': '1001-1040',
         },
+        'devel': {
+            # Disable dry_run, so we can talk to obmd. Note: We register
+            # several "real" switches in this module, but never actually
+            # preform any "real" network operations on them, so a proper
+            # swtich setup is still not necessary.
+            'dry_run': None,
+        },
     })
     config.load_extensions()
 
