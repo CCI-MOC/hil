@@ -611,6 +611,8 @@ def _with_enabled_obm(api_call, node):
     requirements, need the obm to be enabled. Calls spoof_enable_obm.
     """
     def f(*args, **kwargs):
+        """Wrapper that calls spoof_enable_obm before invoking the api call.
+        """
         spoof_enable_obm(node)
         return api_call(*args, **kwargs)
     return f

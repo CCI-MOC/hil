@@ -1,11 +1,8 @@
 """Integration tests for interactions with obmd."""
 
-import tempfile
-import os
 import json
 import requests
 import pytest
-from subprocess import Popen
 from hil.test_common import config_testsuite, config_merge, \
     fresh_database, fail_on_log_warnings, server_init, with_request_context, \
     obmd_cfg
