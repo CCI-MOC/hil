@@ -24,7 +24,7 @@ password = "hil_pass1234"
 class HybridHTTPClient(HTTPClient):
     """Implementation of HTTPClient for use in testing.
 
-    Depending on the URL, his uses either Flask's test client,
+    Depending on the URL, this uses either Flask's test client,
     or a RequestsHTTPClient. This allows us to do testing without
     launching a separate process for the API server, while still
     being able to talk to external services (like OBMd and keystone).
