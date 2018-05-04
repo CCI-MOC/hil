@@ -1322,10 +1322,11 @@ def list_active_extensions():
 def show_console(nodename):
     """Show the contents of the console log."""
     node = get_or_404(model.Node, nodename)
-    get_auth_backend().require_project_access(node.project)
-    if not node.obm_is_enabled():
-        raise errors.BlockedError('OBM is not enabled')
-    return _obmd_redirect(node, '/console')
+    log = node.obm.get_console()
+    if log is None:
+        raise errors.NotFoundError(
+            'The console log for %s does not exist.' % nodename)
+    return log
 
 
 @rest_call('PUT', '/node/<nodename>/console', Schema({'nodename': basestring}))
