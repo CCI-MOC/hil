@@ -71,9 +71,13 @@ class ClientBase(object):
                 error_type=e['type'],
                 message=e['msg'],
             )
-        # Catching responses that do not return JSON
+        # Catching responses that do not return JSON, and raise a stand-in
+        # error.
         except ValueError:
-            return response.content
+            raise FailedAPICallException(
+                error_type='unknown',
+                message=response.content,
+            )
 
 
 def _find_reserved(string, slashes_ok=False):
