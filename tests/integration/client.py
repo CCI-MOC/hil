@@ -5,12 +5,14 @@ from hil.errors import BadArgumentError, UnknownSubtypeError
 from hil.client.client import Client, HTTPClient, HTTPResponse, \
     RequestsHTTPClient
 from hil.test_common import config_testsuite, config_merge, \
-    fresh_database, fail_on_log_warnings, server_init, uuid_pattern
+    fresh_database, fail_on_log_warnings, server_init, uuid_pattern, \
+    obmd_cfg
 from hil.model import db
 from hil import config, deferred
 
 import json
 import pytest
+import requests
 
 from urlparse import urlparse
 from base64 import urlsafe_b64encode
@@ -87,6 +89,7 @@ C = Client(ep, http_client)  # Initializing client library
 fail_on_log_warnings = pytest.fixture(fail_on_log_warnings)
 fresh_database = pytest.fixture(fresh_database)
 server_init = pytest.fixture(server_init)
+obmd_cfg = pytest.fixture(obmd_cfg)
 
 
 @pytest.fixture
@@ -173,7 +176,7 @@ def assign_nodes2project(project, *nodes):
 
 
 @pytest.fixture()
-def populate_server():
+def populate_server(obmd_cfg):
     """
     this function will populate some mock objects to faciliate testing of the
     client library
@@ -192,6 +195,25 @@ def populate_server():
     mock = 'http://schema.massopencloud.org/haas/v0/obm/mock'
 
     for i in range(1, 10):
+        obmd_uri = 'http://localhost' + obmd_cfg['ListenAddr'] + \
+            '/node/node-0' + repr(i)
+        # We can't use http_client here, because it doesn't
+        # include the auth info for obmd; it is only suitable
+        # for "unprivileged" obmd calls, which include all
+        # ncecessary auth info in the URL.
+        resp = requests.put(
+            obmd_uri,
+            auth=('admin', obmd_cfg['AdminToken']),
+            data=json.dumps({
+                'type': 'mock',
+                'info': {
+                    "addr": "10.0.0.0"+repr(i),
+                    "NumWrites": 0,
+                },
+            }),
+        )
+        assert resp.ok, "Failed to register node with obmd."
+
         obminfo = {
                 "type": mock, "host": "10.10.0.0"+repr(i),
                 "user": "ipmi_u", "password": "pass1234"
@@ -201,9 +223,8 @@ def populate_server():
                 url_node + 'node-0'+repr(i), data=json.dumps({
                     "obm": obminfo,
                     "obmd": {
-                        'uri': 'https://obmd.example.org/nodes/node-0' +
-                               repr(i),
-                        'admin_token': 'secret',
+                        'uri': obmd_uri,
+                        'admin_token': obmd_cfg['AdminToken'],
                     },
                 })
         )
@@ -394,38 +415,46 @@ class Test_node:
 
     def test_power_cycle(self):
         """(successful) to node_power_cycle"""
+        C.node.enable_obm('node-07')
         assert C.node.power_cycle('node-07') is None
 
     def test_power_cycle_force(self):
         """(successful) to node_power_cycle(force=True)"""
+        C.node.enable_obm('node-07')
         assert C.node.power_cycle('node-07', True) is None
 
     def test_power_cycle_no_force(self):
         """(successful) to node_power_cycle(force=False)"""
+        C.node.enable_obm('node-07')
         assert C.node.power_cycle('node-07', False) is None
 
     def test_power_cycle_bad_arg(self):
         """error on call to power_cycle with bad argument."""
+        C.node.enable_obm('node-07')
         with pytest.raises(FailedAPICallException):
             C.node.power_cycle('node-07', 'wrong')
 
     def test_power_cycle_reserved_chars(self):
         """ test for catching illegal argument characters"""
+        C.node.enable_obm('node-07')
         with pytest.raises(BadArgumentError):
             C.node.power_cycle('node-/%]07', False)
 
     def test_power_off(self):
         """(successful) to node_power_off"""
+        C.node.enable_obm('node-07')
         assert C.node.power_off('node-07') is None
 
     def test_power_off_reserved_chars(self):
         """ test for catching illegal argument characters"""
+        C.node.enable_obm('node-07')
         with pytest.raises(BadArgumentError):
             C.node.power_off('node-/%]07')
 
     def test_set_bootdev(self):
         """ (successful) to node_set_bootdev """
-        assert C.node.set_bootdev("node-08", "pxe") is None
+        C.node.enable_obm('node-08')
+        assert C.node.set_bootdev("node-08", "A") is None
 
     def test_node_add_nic(self):
         """Test removing and then adding a nic."""

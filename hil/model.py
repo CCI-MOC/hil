@@ -103,7 +103,6 @@ class Node(db.Model):
     obmd_admin_token = db.Column(db.String, nullable=False)
     obmd_node_token = db.Column(db.String, nullable=True)
 
-    @no_dry_run
     def enable_obm(self):
         """Enable the nodes' obm."""
         resp = self._obmd_admin_request('POST', 'token')
@@ -111,7 +110,6 @@ class Node(db.Model):
             raise errors.OBMError("Failed to get a token for node")
         self.obmd_node_token = resp.json()['token']
 
-    @no_dry_run
     def disable_obm(self):
         """Disable the node's obm."""
         resp = self._obmd_admin_request('DELETE', 'token')
