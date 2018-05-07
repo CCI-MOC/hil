@@ -21,4 +21,4 @@ go get -v github.com/CCI-MOC/obmd
 
 # Copy obmd to somewhere global; this way we don't have to mess with $PATH
 # for every test that uses it:
-sudo cp ~/go/bin/obmd /usr/local/bin/
+sudo cp "$(which obmd)" /usr/local/bin/
