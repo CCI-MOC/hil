@@ -108,6 +108,10 @@ def _follow_redirect(method, resp, data=None, stream=False):
 
 
 def test_power_operations(mock_node):
+    """Test the power-related obm api calls.
+
+    i.e. power_off, power_cycle, set_bootdev.
+    """
     # Obm is disabled; these should all fail:
     with pytest.raises(errors.BlockedError):
         api.node_power_off(mock_node)
