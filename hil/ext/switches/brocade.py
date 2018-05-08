@@ -11,12 +11,12 @@ import requests
 from schema import Schema, Optional
 
 from hil.migrations import paths
-from hil.model import db, Switch, SwitchSession
+from hil.model import db, Switch
 from hil.errors import BadArgumentError
 from hil.model import BigIntegerType
-from hil.errors import SwitchError
 from hil.ext.switches.common import check_native_networks, parse_vlans
 from hil.config import core_schema, string_is_bool
+from hil.ext.switches import _vlan_http
 
 
 paths[__name__] = join(dirname(__file__), 'migrations', 'brocade')
@@ -27,7 +27,7 @@ core_schema[__name__] = {
 }
 
 
-class Brocade(Switch, SwitchSession):
+class Brocade(Switch, _vlan_http.Session):
     """Brocade switch"""
 
     api_name = 'http://schema.massopencloud.org/haas/v0/switches/brocade'
@@ -71,61 +71,9 @@ class Brocade(Switch, SwitchSession):
     def get_capabilities(self):
         return []
 
-    def disconnect(self):
-        pass
-
-    def modify_port(self, port, channel, new_network):
-        # XXX: We ought to be able to do a Port.query ... one() here, but
-        # there's somthing I(zenhack)  don't understand going on with when
-        # things are committed in the tests for this driver, and we don't
-        # get any results that way. We should figure out what's going on with
-        # that test and change this.
-        (port,) = filter(lambda p: p.label == port, self.ports)
-        interface = port.label
-
-        if channel == 'vlan/native':
-            if new_network is None:
-                self._remove_native_vlan(interface)
-            else:
-                self._set_native_vlan(interface, new_network)
-        else:
-            match = re.match(re.compile(r'vlan/(\d+)'), channel)
-            assert match is not None, "HIL passed an invalid channel to the" \
-                " switch!"
-            vlan_id = match.groups()[0]
-
-            if new_network is None:
-                self._remove_vlan_from_trunk(interface, vlan_id)
-            else:
-                assert new_network == vlan_id
-                self._add_vlan_to_trunk(interface, vlan_id)
-
-    def revert_port(self, port):
-        self._remove_all_vlans_from_trunk(port)
-        if self._get_native_vlan(port) is not None:
-            self._remove_native_vlan(port)
-
-    def get_port_networks(self, ports):
-        """Get port configurations of the switch.
-
-        Args:
-            ports: List of ports to get the configuration for.
-
-        Returns: Dictionary containing the configuration of the form:
-        {
-            Port<"port-3">: [("vlan/native", "23"), ("vlan/52", "52")],
-            Port<"port-7">: [("vlan/23", "23")],
-            Port<"port-8">: [("vlan/native", "52")],
-            ...
-        }
-
-        """
-        response = {}
-        for port in ports:
-            response[port] = filter(None,
-                                    [self._get_native_vlan(port.label)]) \
-                                    + self._get_vlans(port.label)
-        return response
+    def _port_shutdown(self, interface):
+        """Shuts down port; unimplemented right now
+        TODO: Implement this and associated methods see #970"""
 
     def _get_mode(self, interface):
         """ Return the mode of an interface.
@@ -306,24 +254,7 @@ class Brocade(Switch, SwitchSession):
                   'suffix': '/switchport/%s' % suffix if suffix else ''
             }
 
-    @property
-    def _auth(self):
-        return self.username, self.password
-
     @staticmethod
     def _construct_tag(name):
         """ Construct the xml tag by prepending the brocade tag prefix. """
         return '{urn:brocade.com:mgmt:brocade-interface}%s' % name
-
-    def _make_request(self, method, url, data=None,
-                      acceptable_error_codes=()):
-        r = requests.request(method, url, data=data, auth=self._auth)
-        if r.status_code >= 400 and \
-           r.status_code not in acceptable_error_codes:
-            logger.error('Bad Request to switch. '
-                         'Response: %s and '
-                         'Reason: %s', r.text, r.reason)
-            raise SwitchError('Bad Request to switch. '
-                              'Response: %s and '
-                              'Reason: %s', r.text, r.reason)
-        return r

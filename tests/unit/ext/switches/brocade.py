@@ -3,11 +3,30 @@
 import pytest
 import requests_mock
 
-from hil import model
-from hil.test_common import fail_on_log_warnings
+from hil import model, config
+from hil.test_common import fail_on_log_warnings, config_testsuite, \
+ config_merge
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
+
+@pytest.fixture
+def configure():
+    """Configure HIL"""
+    config_testsuite()
+    config_merge({
+        'extensions': {
+            'hil.ext.network_allocators.null': None,
+            'hil.ext.network_allocators.vlan_pool': '',
+        },
+        'hil.ext.network_allocators.vlan_pool': {
+            'vlans': '100-105',
+        },
+    })
+    config.load_extensions()
+
+
+pytestmark = pytest.mark.usefixtures('configure')
 
 MODE_RESPONSE_ACCESS = """
 <mode xmlns="urn:brocade.com:mgmt:brocade-interface"
