@@ -38,6 +38,7 @@ install:
   - pip install --upgrade pip
   - sh -e ci/apache/install.sh
   - sh -e ci/keystone/install.sh
+  - sh -e ci/obmd/install.sh
 
 script:
   - sh -e ci/pycodestyle_tests.sh
@@ -46,6 +47,7 @@ script:
   - sh -e ci/run_unit_tests.sh
   - sh -e ci/apache/run_integration_tests.sh
   - sh -e ci/keystone/run_integration_tests.sh
+  - sh -e ci/obmd/run_integration_tests.sh
   - sh -e ci/deployment-mock-networks/run_integration_tests.sh
   - coverage report -m
 

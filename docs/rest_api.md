@@ -524,6 +524,32 @@ Authorization requirements:
 
 * Administrative access.
 
+
+#### node_enable/disable_obm
+
+`PUT /node/<node>/obm`
+
+Request body:
+
+    {
+        "enabled": <boolean>
+    }
+
+Enable or disable management of the node's OBM. The OBM must be disabled
+to detach the node from a project, and must be enabled to do things like
+power cycle the node, view the console etc.
+
+Accepts a boolean argument indicating whether to enable or disable the
+obm.
+
+Enabling an obm which is already enabled, or disabling one that is
+already disabled will silently no-op.
+
+Authorization requirements:
+
+* Access to the project to which `<node>` is assigned (if any) or
+  administrative access.
+
 #### node_power_cycle
 
 `POST /node/<node>/power_cycle`
@@ -802,8 +828,10 @@ Authorization requirements:
 
 * Access to `<project>` or administrative access.
 
+Possible errors
+
 * 409, if the node is attached to any networks, or has pending network
-  actions.
+  actions, or if the node's obm is enabled.
 
 #### list_projects
 

@@ -376,6 +376,22 @@ class Test_node:
         with pytest.raises(BadArgumentError):
             C.node.show('node-/%]07')
 
+    def test_enable_disable_obm(self):
+        """Test enable_obm/disable_obm"""
+        # The spec says that these calls should silently no-op if the
+        # state doesn't need to change so we call them repeatedly in
+        # different orders to verify.
+        C.node.disable_obm('node-07')
+
+        C.node.enable_obm('node-07')
+        C.node.enable_obm('node-07')
+
+        C.node.disable_obm('node-07')
+        C.node.disable_obm('node-07')
+        C.node.disable_obm('node-07')
+
+        C.node.enable_obm('node-07')
+
     def test_power_cycle(self):
         """(successful) to node_power_cycle"""
         assert C.node.power_cycle('node-07') is None

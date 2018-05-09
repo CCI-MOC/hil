@@ -126,6 +126,23 @@ def node_nic_delete(node, nic):
     client.node.remove_nic(node, nic)
 
 
+@node.group(name='obm')
+def obm():
+    """Commands related to obm configuration"""
+
+
+@obm.command()
+def enable(node):
+    """Enable <node>'s obm"""
+    client.node.enable_obm(node)
+
+
+@obm.command()
+def disable(node):
+    """Disable <node>'s obm"""
+    client.node.disable_obm(node)
+
+
 @node.group(name='power')
 def node_power():
     """Perform node power operations"""
