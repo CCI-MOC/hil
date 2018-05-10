@@ -45,13 +45,19 @@ class _BaseSession(_console.Session):
         Port 3 has 'Trunking Native Mode VLAN': 'none',
         'Trunking VLANs Enabled': ' 23 - 25'
 
-        Return: [('vlan/native', '3'), ('vlan/10', 10), ('vlan/2000', 2000),
-                 ('vlan/23', 23), ('vlan/24', 24), ('vlan/25', 25)]
+        Return:
+        {<hil.model.Port object at 0xDEADBEEF0123>: [('vlan/native', '3')],
+        <hil.model.Port object at 0x7F8503AB4991>: [('vlan/10', 10),
+                                                    ('vlan/2000', 2000)],
+        <hil.model.Port object at 0xABCD01234ABCD>: [('vlan/23', 23),
+                                                     ('vlan/24', 24),
+                                                     ('vlan/25', 25)]}
         '''
         port_configs = self._port_configs(ports)
-        network_list = []
         # iterate through the port configurations
-        for _, v in port_configs.iteritems():
+        result = {}
+        for k, v in port_configs.iteritems():
+            network_list = []
             non_native_list = []
             # get native vlan then remove junk if native is not None
             try:
@@ -61,17 +67,16 @@ class _BaseSession(_console.Session):
                 native_vlan = v['Trunking Mode Native VLAN'].strip()
             # append native vlan if appropriate:
             if native_vlan != 'none':
+                native_vlan = native_vlan.replace(' (Inactive)', '')
                 if hasattr(self.switch, 'dummy_vlan'):
                     # ignore if dummy vlan
                     if int(native_vlan) == int(self.switch.dummy_vlan):
                         native_vlan = None
                     else:
-                        native_vlan.replace(' (Inactive)', '')
-                        network_list.append(('vlan/native', native_vlan))
+                        network_list.append(('vlan/native', int(native_vlan)))
                 else:
                     # appropriate to append native vlan to list
-                    native_vlan.replace(' (Inactive)', '')
-                    network_list.append(('vlan/native', native_vlan))
+                    network_list.append(('vlan/native', int(native_vlan)))
             else:
                 native_vlan = None
             # select correct key and get other vlans
@@ -84,9 +89,10 @@ class _BaseSession(_console.Session):
                 non_native_list = self._make_vlan_list(trunk_vlans)
                 # make final vlan list
                 for v in non_native_list:
-                    if v != native_vlan:
-                        network_list.append(('vlan/%s' % v, int(v)))
-        return network_list
+                    v = "".join(v.split())
+                    network_list.append(('vlan/%s' % v, int(v)))
+            result[k] = network_list
+        return result
 
     def _make_vlan_list(self, dirty_list):
         '''Create vlan list from switch config vlan ranges.'''

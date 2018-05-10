@@ -180,13 +180,16 @@ class _Session(_console.Session):
         return result
 
     def get_port_networks(self, ports):
+        '''Returns dictionary of ports, each containing a list of related
+        VLANs.'''
         port_configs = self._port_configs(ports)
-        network_list = []
-        for _, v in port_configs.iteritems():
+        result = {}
+        for k, v in port_configs.iteritems():
+            network_list = []
             non_native_list = []
-            # Get native vlan then remove junk if native not None
+            # Get native vlan then remove junk if native is not None or Dummy
             native_vlan = v['Trunking Native Mode VLAN'].strip()
-            if native_vlan == int(self.switch.dummy_vlan):
+            if int(native_vlan.split(' ')[0]) == int(self.switch.dummy_vlan):
                 native_vlan = None
             elif native_vlan != 'none':
                 native_vlan = native_vlan.split(' ')[0]
@@ -197,11 +200,11 @@ class _Session(_console.Session):
             if trunk_vlans != 'none':
                 non_native_list = parse_vlans(trunk_vlans)
             if native_vlan is not None:
-                network_list.append(('vlan/native', native_vlan))
+                network_list.append(('vlan/native', int(native_vlan)))
             for v in (non_native_list):
-                if v != native_vlan:
-                    network_list.append(('vlan/%s' % v, int(v)))
-        return network_list
+                network_list.append(('vlan/%s' % v, int(v)))
+            result[k] = network_list
+        return result
 
     def save_running_config(self):
         self._sendline('copy running-config startup-config')
