@@ -50,7 +50,7 @@ class HybridHTTPClient(HTTPClient):
     """
 
     def __init__(self, endpoint, username=None, password=None):
-        if username is None != password is None:
+        if (username is None) != (password is None):
             assert False, (
                 "You must either specify both username and password, "
                 "or neither."
