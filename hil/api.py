@@ -1389,7 +1389,7 @@ def get_or_404(cls, name):
 def _obmd_redirect(node, path):
     return flask.redirect(
         node.obmd_uri + path + '?token=' + node.obmd_node_token,
-        # 307 is important, since it requires tha the client not change
+        # 307 is important, since it requires that the client not change
         # the request method. So obmd will see the same method as HIL
         # did:
         code=307,

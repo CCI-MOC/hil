@@ -353,7 +353,10 @@ def obmd_cfg():
         (fd, name) = tempfile.mkstemp()
         os.write(fd, json.dumps(cfg))
         os.close(fd)
-        obmd_proc = subprocess.Popen(['obmd', '-config', name])
+        try:
+            obmd_proc = subprocess.Popen(['obmd', '-config', name])
+        except Exception as e:
+            assert False, ("Error spawning obmd: %r" % e)
 
         # wait for obmd to start accepting connections:
         attempts = 0
@@ -365,7 +368,7 @@ def obmd_cfg():
             except socket.error:
                 time.sleep(0.1)
                 attempts += 1
-        assert attempts < 60
+        assert attempts < 60, "Timeout waiting for obmd to start"
 
         yield cfg
 

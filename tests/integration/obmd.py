@@ -87,7 +87,7 @@ def test_enable_disable_obm(mock_node):
     """Test enabling and disabling the obm of a node via the api."""
 
     # First, enable the obm
-    api.node_enable_disable_obm('node-99', enabled=True)
+    api.node_enable_disable_obm(mock_node, enabled=True)
 
     # Obm is enabled; we shouldn't be able to detach the node:
     with pytest.raises(errors.BlockedError):
