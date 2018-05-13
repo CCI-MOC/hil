@@ -19,6 +19,10 @@ hash -r
 # Download and build obmd:
 go get -v github.com/CCI-MOC/obmd
 
+# For debugging purposes, check what revision of obmd we got:
+cd "$(which obmd)/../../src/github.com/CCI-MOC/obmd/"
+git rev-list --max-count=1 HEAD
+
 # Copy obmd to somewhere global; this way we don't have to mess with $PATH
 # for every test that uses it:
 sudo cp "$(which obmd)" /usr/local/bin/
