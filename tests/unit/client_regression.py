@@ -13,10 +13,9 @@ from hil import config, rest
 from hil.client.base import FailedAPICallException
 from hil.client.client import Client
 from hil.test_common import HybridHTTPClient, fail_on_log_warnings, \
-    fresh_database, server_init, config_testsuite
+    server_init, config_testsuite
 
 fail_on_log_warnings = pytest.fixture(fail_on_log_warnings)
-fresh_database = pytest.fixture(fresh_database)
 server_init = pytest.fixture(server_init)
 
 
@@ -29,7 +28,6 @@ def configure():
 
 pytestmark = pytest.mark.usefixtures('fail_on_log_warnings',
                                      'configure',
-                                     'fresh_database',
                                      'server_init')
 
 
