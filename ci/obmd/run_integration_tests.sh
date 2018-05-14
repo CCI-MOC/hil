@@ -11,4 +11,4 @@ hash -r
 
 go get -v github.com/CCI-MOC/obmd
 
-py.test --cov=hil --cov-append tests/integration/obmd.py
+py.test tests/integration/obmd.py
