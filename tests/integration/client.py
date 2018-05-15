@@ -408,12 +408,14 @@ class Test_project:
 
     def test_list_projects(self):
         """ test for getting list of project """
-        assert C.project.list() == [u'proj-01', u'proj-02', u'proj-03']
+        assert C.project.list() == [u'empty-project', u'manhattan', u'runway']
 
     def test_list_nodes_inproject(self):
         """ test for getting list of nodes connected to a project. """
-        assert C.project.nodes_in('proj-01') == [u'node-01']
-        assert C.project.nodes_in('proj-02') == [u'node-02', u'node-04']
+        assert C.project.nodes_in('manhattan') == [
+            u'manhattan_node_0', u'manhattan_node_1']
+        assert C.project.nodes_in('runway') == [
+            u'runway_node_0', u'runway_node_1']
 
     def test_list_nodes_inproject_reserved_chars(self):
         """ test for catching illegal argument characters"""
@@ -422,9 +424,8 @@ class Test_project:
 
     def test_list_networks_inproject(self):
         """ test for getting list of networks connected to a project. """
-        assert C.project.networks_in('proj-01') == [
-                u'net-01', u'net-02', u'net-03'
-                ]
+        assert C.project.networks_in('runway') == [
+                u'runway_provider', u'runway_pxe']
 
     def test_list_networks_inproject_reserved_chars(self):
         """ test for catching illegal argument characters"""
@@ -461,17 +462,14 @@ class Test_project:
         with pytest.raises(BadArgumentError):
             C.project.delete('dummy/%[-03')
 
-    def test_project_connect_node(self):
-        """ test for connecting node to project. """
+    def test_project_connect_detach_node(self):
+        """ test for connecting/detaching node to project. """
         C.project.create('proj-04')
-        assert C.project.connect('proj-04', 'node-06') is None
-
-    def test_project_connect_node_duplicate(self):
-        """ test for erronous reconnecting node to project. """
-        C.project.create('proj-05')
-        C.project.connect('proj-05', 'free_node_0')
+        assert C.project.connect('proj-04', 'free_node_0') is None
+        # connecting it again should fail
         with pytest.raises(FailedAPICallException):
-            C.project.connect('proj-05', 'free_node_0')
+            C.project.connect('proj-04', 'free_node_0')
+        assert C.project.detach('proj-04', 'free_node_0') is None
 
     def test_project_connect_node_nosuchobject(self):
         """ test for connecting no such node or project """
@@ -479,18 +477,12 @@ class Test_project:
         with pytest.raises(FailedAPICallException):
             C.project.connect('proj-06', 'no-such-node')
         with pytest.raises(FailedAPICallException):
-            C.project.connect('no-such-project', 'node-06')
+            C.project.connect('no-such-project', 'free_node_1')
 
     def test_project_connect_node_reserved_chars(self):
         """ test for catching illegal argument characters"""
         with pytest.raises(BadArgumentError):
-            C.project.connect('proj/%[-04', 'free_node_0')
-
-    def test_project_detach_node(self):
-        """ Test for correctly detaching node from project."""
-        C.project.create('proj-07')
-        C.project.connect('proj-07', 'free_node_1')
-        assert C.project.detach('proj-07', 'free_node_1') is None
+            C.project.connect('proj/%[-04', 'free_node_1')
 
     def test_project_detach_node_nosuchobject(self):
         """ Test for while detaching node from project."""
@@ -498,7 +490,7 @@ class Test_project:
         with pytest.raises(FailedAPICallException):
             C.project.detach('proj-08', 'no-such-node')
         with pytest.raises(FailedAPICallException):
-            C.project.detach('no-such-project', 'node-06')
+            C.project.detach('no-such-project', 'free_node_1')
 
     def test_project_detach_node_reserved_chars(self):
         """ test for catching illegal argument characters"""
