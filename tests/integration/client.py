@@ -5,7 +5,7 @@ from hil.errors import BadArgumentError, UnknownSubtypeError
 from hil.client.client import Client
 from hil.test_common import config_testsuite, config_merge, \
     fresh_database, fail_on_log_warnings, server_init, uuid_pattern, \
-    HybridHTTPClient
+    HybridHTTPClient, initial_db
 from hil.model import db
 from hil import config, deferred
 
@@ -27,6 +27,7 @@ C = Client(ep, http_client)  # Initializing client library
 fail_on_log_warnings = pytest.fixture(fail_on_log_warnings)
 fresh_database = pytest.fixture(fresh_database)
 server_init = pytest.fixture(server_init)
+intial_db = pytest.fixture(initial_db)
 
 
 @pytest.fixture
@@ -81,9 +82,6 @@ def configure():
             'hil.ext.auth.null': None,
             'hil.ext.auth.database': '',
             'hil.ext.switches.mock': '',
-            'hil.ext.switches.nexus': '',
-            'hil.ext.switches.dell': '',
-            'hil.ext.switches.brocade': '',
             'hil.ext.obm.mock': '',
             'hil.ext.network_allocators.null': None,
             'hil.ext.network_allocators.vlan_pool': '',
@@ -93,6 +91,16 @@ def configure():
         },
     })
     config.load_extensions()
+
+
+@pytest.fixture
+def authentication():
+    """Setup authentication, because initial_db doesn't set one.
+    I'll worry about this later"""
+    with app.app_context():
+        from hil.ext.auth.database import User
+        db.session.add(User(username, password, is_admin=True))
+        db.session.commit()
 
 
 # Allocating nodes to projects
@@ -112,136 +120,13 @@ def assign_nodes2project(project, *nodes):
         )
 
 
-@pytest.fixture()
-def populate_server():
-    """
-    this function will populate some mock objects to faciliate testing of the
-    client library
-    """
-    # FIXME: we're not checking responses for any of these requests, so
-    # failures here will show up as stranger errors later on.
-
-    # create our initial admin user:
-    with app.app_context():
-        from hil.ext.auth.database import User
-        db.session.add(User(username, password, is_admin=True))
-        db.session.commit()
-
-    # Adding nodes, node-01 - node-09
-    url_node = 'http://127.0.0.1:8000/v0/node/'
-    mock = 'http://schema.massopencloud.org/haas/v0/obm/mock'
-
-    for i in range(1, 10):
-        obminfo = {
-                "type": mock, "host": "10.10.0.0"+repr(i),
-                "user": "ipmi_u", "password": "pass1234"
-                }
-        http_client.request(
-                'PUT',
-                url_node + 'node-0'+repr(i), data=json.dumps({
-                    "obm": obminfo,
-                    "obmd": {
-                        'uri': 'https://obmd.example.org/nodes/node-0' +
-                               repr(i),
-                        'admin_token': 'secret',
-                    },
-                })
-        )
-        http_client.request(
-                'PUT',
-                url_node + 'node-0' + repr(i) + '/nic/eth0', data=json.dumps(
-                            {"macaddr": "aa:bb:cc:dd:ee:0" + repr(i)}
-                            )
-                     )
-
-    # Adding Projects proj-01 - proj-03
-    for i in ["proj-01", "proj-02", "proj-03"]:
-        http_client.request('PUT', 'http://127.0.0.1:8000/v0/project/' + i)
-
-    # Adding switches one for each driver
-    url_switch = 'http://127.0.0.1:8000/v0/switch/'
-    api_name = 'http://schema.massopencloud.org/haas/v0/switches/'
-
-    dell_param = {
-            'type': api_name + 'powerconnect55xx', 'hostname': 'dell-01',
-            'username': 'root', 'password': 'root1234'
-            }
-    nexus_param = {
-            'type': api_name + 'nexus', 'hostname': 'nexus-01',
-            'username': 'root', 'password': 'root1234', 'dummy_vlan': '333'
-            }
-    mock_param = {
-            'type': api_name + 'mock', 'hostname': 'mockSwitch-01',
-            'username': 'root', 'password': 'root1234'
-            }
-    brocade_param = {
-            'type': api_name + 'brocade', 'hostname': 'brocade-01',
-            'username': 'root', 'password': 'root1234',
-            'interface_type': 'TenGigabitEthernet'
-            }
-
-    http_client.request('PUT', url_switch + 'dell-01',
-                        data=json.dumps(dell_param))
-    http_client.request('PUT', url_switch + 'nexus-01',
-                        data=json.dumps(nexus_param))
-    http_client.request('PUT', url_switch + 'mock-01',
-                        data=json.dumps(mock_param))
-    http_client.request('PUT', url_switch + 'brocade-01',
-                        data=json.dumps(brocade_param))
-
-    # Adding ports to the mock switch, Connect nics to ports:
-    for i in range(1, 8):
-        http_client.request(
-            'PUT',
-            url_switch + 'mock-01/port/gi1/0/' + repr(i)
-        )
-        http_client.request(
-                'POST',
-                url_switch + 'mock-01/port/gi1/0/' + repr(i) + '/connect_nic',
-                data=json.dumps(
-                    {'node': 'node-0' + repr(i), 'nic': 'eth0'}
-                    )
-                )
-
-    # Adding port gi1/0/8 to switch mock-01 without connecting it to any node.
-    http_client.request('PUT', url_switch + 'mock-01/port/gi1/0/8')
-
-    # Adding Projects proj-01 - proj-03
-    for i in ["proj-01", "proj-02", "proj-03"]:
-        http_client.request('PUT', 'http://127.0.0.1:8000/v0/project/' + i)
-
-    # Allocating nodes to projects
-    assign_nodes2project('proj-01', 'node-01')
-    assign_nodes2project('proj-02', 'node-02', 'node-04')
-    assign_nodes2project('proj-03', 'node-03', 'node-05')
-
-    # Assigning networks to projects
-    url_network = 'http://127.0.0.1:8000/v0/network/'
-    for i in ['net-01', 'net-02', 'net-03']:
-        http_client.request(
-                'PUT',
-                url_network + i,
-                data=json.dumps(
-                    {"owner": "proj-01", "access": "proj-01", "net_id": ""}
-                    )
-                )
-
-    for i in ['net-04', 'net-05']:
-        http_client.request(
-                'PUT',
-                url_network + i,
-                data=json.dumps(
-                    {"owner": "proj-02", "access": "proj-02", "net_id": ""}
-                    )
-                )
-
-
 pytestmark = pytest.mark.usefixtures('dummy_verify',
                                      'fail_on_log_warnings',
                                      'configure',
                                      'fresh_database',
                                      'server_init',
-                                     'populate_server')
+                                     'intial_db',
+                                     'authentication')
 
 
 class Test_ClientBase:
@@ -260,14 +145,15 @@ class Test_node:
     def test_list_nodes_free(self):
         """(successful) to list_nodes('free')"""
         assert C.node.list('free') == [
-                u'node-06', u'node-07', u'node-08', u'node-09'
+                u'free_node_0', u'free_node_1', u'no_nic_node'
                 ]
 
     def test_list_nodes_all(self):
         """(successful) to list_nodes('all')"""
         assert C.node.list('all') == [
-                u'node-01', u'node-02', u'node-03', u'node-04', u'node-05',
-                u'node-06', u'node-07', u'node-08', u'node-09'
+                u'free_node_0', u'free_node_1', u'manhattan_node_0',
+                u'manhattan_node_1', u'no_nic_node', u'runway_node_0',
+                u'runway_node_1'
                 ]
 
     def test_node_register(self):
@@ -297,18 +183,24 @@ class Test_node:
 
     def test_show_node(self):
         """(successful) to show_node"""
-        assert C.node.show('node-07') == {
+        assert C.node.show('free_node_0') == {
                 u'metadata': {},
                 u'project': None,
                 u'nics': [
                     {
-                        u'macaddr': u'aa:bb:cc:dd:ee:07',
-                        u'port': u'gi1/0/7',
-                        u'switch': u'mock-01',
-                        u'networks': {}, u'label': u'eth0'
+                        u'macaddr': u'Unknown',
+                        u'port': None,
+                        u'switch': None,
+                        u'networks': {}, u'label': u'boot-nic'
+                        },
+                    {
+                        u'macaddr': u'Unknown',
+                        u'port': u'free_node_0_port',
+                        u'switch': u'stock_switch_0',
+                        u'networks': {}, u'label': u'nic-with-port'
                         }
                     ],
-                u'name': u'node-07'
+                u'name': u'free_node_0'
                 }
 
     def test_show_node_reserved_chars(self):
@@ -321,33 +213,33 @@ class Test_node:
         # The spec says that these calls should silently no-op if the
         # state doesn't need to change so we call them repeatedly in
         # different orders to verify.
-        C.node.disable_obm('node-07')
+        C.node.disable_obm('free_node_0')
 
-        C.node.enable_obm('node-07')
-        C.node.enable_obm('node-07')
+        C.node.enable_obm('free_node_0')
+        C.node.enable_obm('free_node_0')
 
-        C.node.disable_obm('node-07')
-        C.node.disable_obm('node-07')
-        C.node.disable_obm('node-07')
+        C.node.disable_obm('free_node_0')
+        C.node.disable_obm('free_node_0')
+        C.node.disable_obm('free_node_0')
 
-        C.node.enable_obm('node-07')
+        C.node.enable_obm('free_node_0')
 
     def test_power_cycle(self):
         """(successful) to node_power_cycle"""
-        assert C.node.power_cycle('node-07') is None
+        assert C.node.power_cycle('free_node_0') is None
 
     def test_power_cycle_force(self):
         """(successful) to node_power_cycle(force=True)"""
-        assert C.node.power_cycle('node-07', True) is None
+        assert C.node.power_cycle('free_node_0', True) is None
 
     def test_power_cycle_no_force(self):
         """(successful) to node_power_cycle(force=False)"""
-        assert C.node.power_cycle('node-07', False) is None
+        assert C.node.power_cycle('free_node_0', False) is None
 
     def test_power_cycle_bad_arg(self):
         """error on call to power_cycle with bad argument."""
         with pytest.raises(FailedAPICallException):
-            C.node.power_cycle('node-07', 'wrong')
+            C.node.power_cycle('free_node_0', 'wrong')
 
     def test_power_cycle_reserved_chars(self):
         """ test for catching illegal argument characters"""
@@ -356,7 +248,7 @@ class Test_node:
 
     def test_power_off(self):
         """(successful) to node_power_off"""
-        assert C.node.power_off('node-07') is None
+        assert C.node.power_off('free_node_0') is None
 
     def test_power_off_reserved_chars(self):
         """ test for catching illegal argument characters"""
@@ -365,19 +257,20 @@ class Test_node:
 
     def test_set_bootdev(self):
         """ (successful) to node_set_bootdev """
-        assert C.node.set_bootdev("node-08", "pxe") is None
+        assert C.node.set_bootdev("free_node_1", "pxe") is None
 
     def test_node_add_nic(self):
         """Test removing and then adding a nic."""
-        C.node.remove_nic('node-08', 'eth0')
-        assert C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff') is None
+        C.node.remove_nic('free_node_1', 'boot-nic')
+        assert C.node.add_nic('free_node_1', 'boot-nic', 'aa:bb:cc:dd:ee:ff') \
+            is None
 
     def test_node_add_duplicate_nic(self):
         """Adding a nic twice should fail"""
-        C.node.remove_nic('node-08', 'eth0')
-        C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff')
+        C.node.remove_nic('free_node_1', 'boot-nic')
+        C.node.add_nic('free_node_1', 'boot-nic', 'aa:bb:cc:dd:ee:ff')
         with pytest.raises(FailedAPICallException):
-            C.node.add_nic('node-08', 'eth0', 'aa:bb:cc:dd:ee:ff')
+            C.node.add_nic('free_node_1', 'boot-nic', 'aa:bb:cc:dd:ee:ff')
 
     def test_nosuch_node_add_nic(self):
         """Adding a nic to a non-existent node should fail."""
@@ -391,33 +284,33 @@ class Test_node:
 
     def test_remove_nic(self):
         """(successful) call to node_remove_nic"""
-        assert C.node.remove_nic('node-08', 'eth0') is None
+        assert C.node.remove_nic('free_node_1', 'boot-nic') is None
 
     def test_remove_duplicate_nic(self):
         """Removing a nic twice should fail"""
-        C.node.remove_nic('node-08', 'eth0')
+        C.node.remove_nic('free_node_1', 'boot-nic')
         with pytest.raises(FailedAPICallException):
-            C.node.remove_nic('node-08', 'eth0')
+            C.node.remove_nic('free_node_1', 'boot-nic')
 
     def test_remove_nic_reserved_chars(self):
         """ test for catching illegal argument characters"""
         with pytest.raises(BadArgumentError):
-            C.node.remove_nic('node-/%]08', 'eth0')
+            C.node.remove_nic('node-/%]08', 'boot-nic')
 
     def test_metadata_set(self):
         """ test for registering metadata from a node """
-        assert C.node.metadata_set("node-01", "EK", "pk") is None
+        assert C.node.metadata_set("free_node_0", "EK", "pk") is None
 
     def test_metadata_delete(self):
         """ test for deleting metadata from a node """
         with pytest.raises(FailedAPICallException):
             C.node.metadata_delete("free_node", "EK")
-        C.node.metadata_set("node-01", "EK", "pk")
-        assert C.node.metadata_delete("node-01", "EK") is None
+        C.node.metadata_set("free_node_0", "EK", "pk")
+        assert C.node.metadata_delete("free_node_0", "EK") is None
 
     def test_node_start_console(self):
         """(successful) call to node_start_console"""
-        assert C.node.start_console('node-01') is None
+        assert C.node.start_console('manhattan_node_1') is None
 
     def test_node_start_console_reserved_chars(self):
         """ test for catching illegal argument characters"""
@@ -429,14 +322,14 @@ class Test_node:
 
         # show console without starting should fail.
         with pytest.raises(FailedAPICallException):
-            C.node.show_console('node-01')
+            C.node.show_console('manhattan_node_1')
 
-        C.node.start_console('node-01')
-        assert C.node.show_console('node-01') == 'Some console output'
+        C.node.start_console('manhattan_node_1')
+        assert C.node.show_console('manhattan_node_1') == 'Some console output'
 
-        C.node.stop_console('node-01')
+        C.node.stop_console('manhattan_node_1')
         with pytest.raises(FailedAPICallException):
-            C.node.show_console('node-01')
+            C.node.show_console('manhattan_node_1')
 
     def test_node_show_console_reserved_chars(self):
         """test for cataching illegal argument characters"""
@@ -445,7 +338,7 @@ class Test_node:
 
     def test_node_stop_console(self):
         """(successful) call to node_stop_console"""
-        assert C.node.stop_console('node-01') is None
+        assert C.node.stop_console('manhattan_node_1') is None
 
     def test_node_stop_console_reserved_chars(self):
         """ test for catching illegal argument characters"""
@@ -455,8 +348,8 @@ class Test_node:
     def test_node_connect_network(self):
         """(successful) call to node_connect_network"""
         response = C.node.connect_network(
-                'node-01', 'eth0', 'net-01', 'vlan/native'
-                )
+                'manhattan_node_1', 'nic-with-port', 'manhattan_pxe',
+                'vlan/native')
 
         # check that the reponse contains a valid UUID.
         assert uuid_pattern.match(response['status_id'])
@@ -464,10 +357,14 @@ class Test_node:
 
     def test_node_connect_network_error(self):
         """Duplicate call to node_connect_network should fail."""
-        C.node.connect_network('node-02', 'eth0', 'net-04', 'vlan/native')
+        C.node.connect_network(
+            'manhattan_node_1', 'nic-with-port', 'manhattan_pxe',
+            'vlan/native')
         deferred.apply_networking()
         with pytest.raises(FailedAPICallException):
-            C.node.connect_network('node-02', 'eth0', 'net-04', 'vlan/native')
+            C.node.connect_network(
+                'manhattan_node_1', 'nic-with-port', 'manhattan_pxe',
+                'vlan/native')
         deferred.apply_networking()
 
     def test_node_connect_network_reserved_chars(self):
@@ -478,20 +375,27 @@ class Test_node:
 
     def test_node_detach_network(self):
         """(successful) call to node_detach_network"""
-        C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
+        C.node.connect_network(
+            'manhattan_node_0', 'nic-with-port', 'manhattan_pxe',
+            'vlan/native')
         deferred.apply_networking()
-        response = C.node.detach_network('node-04', 'eth0', 'net-04')
+        response = C.node.detach_network(
+            'manhattan_node_0', 'nic-with-port', 'manhattan_pxe')
         assert uuid_pattern.match(response['status_id'])
         deferred.apply_networking()
 
     def test_node_detach_network_error(self):
         """Duplicate call to node_detach_network should fail."""
-        C.node.connect_network('node-04', 'eth0', 'net-04', 'vlan/native')
+        C.node.connect_network(
+            'manhattan_node_0', 'nic-with-port', 'manhattan_pxe',
+            'vlan/native')
         deferred.apply_networking()
-        C.node.detach_network('node-04', 'eth0', 'net-04')
+        C.node.detach_network(
+            'manhattan_node_0', 'nic-with-port', 'manhattan_pxe')
         deferred.apply_networking()
         with pytest.raises(FailedAPICallException):
-            C.node.detach_network('node-04', 'eth0', 'net-04')
+            C.node.detach_network(
+                'manhattan_node_0', 'nic-with-port', 'manhattan_pxe')
 
     def test_node_detach_network_reserved_chars(self):
         """ test for catching illegal argument characters"""
@@ -565,9 +469,9 @@ class Test_project:
     def test_project_connect_node_duplicate(self):
         """ test for erronous reconnecting node to project. """
         C.project.create('proj-05')
-        C.project.connect('proj-05', 'node-07')
+        C.project.connect('proj-05', 'free_node_0')
         with pytest.raises(FailedAPICallException):
-            C.project.connect('proj-05', 'node-07')
+            C.project.connect('proj-05', 'free_node_0')
 
     def test_project_connect_node_nosuchobject(self):
         """ test for connecting no such node or project """
@@ -580,13 +484,13 @@ class Test_project:
     def test_project_connect_node_reserved_chars(self):
         """ test for catching illegal argument characters"""
         with pytest.raises(BadArgumentError):
-            C.project.connect('proj/%[-04', 'node-07')
+            C.project.connect('proj/%[-04', 'free_node_0')
 
     def test_project_detach_node(self):
         """ Test for correctly detaching node from project."""
         C.project.create('proj-07')
-        C.project.connect('proj-07', 'node-08')
-        assert C.project.detach('proj-07', 'node-08') is None
+        C.project.connect('proj-07', 'free_node_1')
+        assert C.project.detach('proj-07', 'free_node_1') is None
 
     def test_project_detach_node_nosuchobject(self):
         """ Test for while detaching node from project."""
@@ -599,7 +503,7 @@ class Test_project:
     def test_project_detach_node_reserved_chars(self):
         """ test for catching illegal argument characters"""
         with pytest.raises(BadArgumentError):
-            C.project.detach('proj/%]-08', 'node-07')
+            C.project.detach('proj/%]-08', 'free_node_0')
 
 
 class Test_switch:
@@ -607,13 +511,11 @@ class Test_switch:
 
     def test_list_switches(self):
         """(successful) call to list_switches"""
-        assert C.switch.list() == [
-                u'brocade-01', u'dell-01', u'mock-01', u'nexus-01'
-                ]
+        assert C.switch.list() == [u'mock-01']
 
     def test_show_switch(self):
         """(successful) call to show_switch"""
-        assert C.switch.show('dell-01') == {
+        assert C.switch.show('mock-01') == {
             u'name': u'dell-01', u'ports': [],
             u'capabilities': ['nativeless-trunk-mode']}
 
@@ -692,7 +594,7 @@ class Test_port:
         """(successfully) Call port_connect_nic on an existent port"""
         C.port.register('mock-01', 'gi1/1/5')
         assert C.port.connect_nic(
-                'mock-01', 'gi1/1/5', 'node-08', 'eth0'
+                'mock-01', 'gi1/1/5', 'free_node_1', 'eth0'
                 ) is None
 
     def test_port_connect_nic_errors(self):
@@ -702,7 +604,7 @@ class Test_port:
 
         # port already connected
         with pytest.raises(FailedAPICallException):
-            C.port.connect_nic('mock-01', 'gi1/1/6', 'node-08', 'eth0')
+            C.port.connect_nic('mock-01', 'gi1/1/6', 'free_node_1', 'eth0')
 
         # port AND node-09 already connected
         with pytest.raises(FailedAPICallException):
@@ -1006,10 +908,7 @@ class Test_extensions:
                     "hil.ext.auth.database",
                     "hil.ext.network_allocators.vlan_pool",
                     "hil.ext.obm.mock",
-                    "hil.ext.switches.brocade",
-                    "hil.ext.switches.dell",
                     "hil.ext.switches.mock",
-                    "hil.ext.switches.nexus",
                 ]
 
 
