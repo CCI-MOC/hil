@@ -783,32 +783,65 @@ class Test_network:
     def test_network_list(self):
         """ Test list of networks. """
         assert C.network.list() == {
-                u'net-01': {u'network_id': u'1001', u'projects': [u'proj-01']},
-                u'net-02': {u'network_id': u'1002', u'projects': [u'proj-01']},
-                u'net-03': {u'network_id': u'1003', u'projects': [u'proj-01']},
-                u'net-04': {u'network_id': u'1004', u'projects': [u'proj-02']},
-                u'net-05': {u'network_id': u'1005', u'projects': [u'proj-02']}
+                u'manhattan_provider':
+                {
+                    u'network_id': u'manhattan_provider_chan',
+                    u'projects': [u'manhattan']
+                },
+                u'runway_provider':
+                {
+                    u'network_id': u'runway_provider_chan',
+                    u'projects': [u'runway']
+                },
+                u'pub_default':
+                {
+                    u'network_id': u'1002',
+                    u'projects': None
+                },
+                u'manhattan_pxe':
+                {
+                    u'network_id': u'1004',
+                    u'projects': [u'manhattan']
+                },
+                u'stock_int_pub':
+                {
+                    u'network_id': u'1001',
+                    u'projects': None
+                },
+                u'stock_ext_pub':
+                {
+                    u'network_id': u'ext_pub_chan',
+                    u'projects': None
+                },
+                u'runway_pxe':
+                {
+                    u'network_id': u'1003',
+                    u'projects': [u'runway']}
                 }
 
     def test_list_network_attachments(self):
         """ Test list of network attachments """
-        assert C.network.list_network_attachments("net-01", "all") == {}
-        assert C.network.list_network_attachments("net-02", "proj-01") == {}
-        C.node.connect_network('node-01', 'eth0', 'net-03', 'vlan/native')
+        assert C.network.list_network_attachments(
+            "manhattan_provider", "all") == {}
+        assert C.network.list_network_attachments(
+            "runway_provider", "runway") == {}
+        C.node.connect_network('manhattan_node_0', 'nic-with-port',
+                               'manhattan_provider', 'vlan/native')
         deferred.apply_networking()
-        assert C.network.list_network_attachments("net-03", "all") == {
-                'node-01': {'project': 'proj-01',
-                            'nic': 'eth0',
-                            'channel': 'vlan/native'}
+        assert C.network.list_network_attachments(
+            "manhattan_provider", "all") == {
+                'manhattan_node_0': {'project': 'manhattan',
+                                     'nic': 'nic-with-port',
+                                     'channel': 'vlan/native'}
                 }
 
     def test_network_show(self):
         """ Test show network. """
-        assert C.network.show('net-01') == {
-                u'access': [u'proj-01'],
-                u'channels': [u'vlan/native', u'vlan/1001'],
-                u'name': u'net-01',
-                u'owner': u'proj-01',
+        assert C.network.show('runway_provider') == {
+                u'access': [u'runway'],
+                u'channels': [u'vlan/native', u'vlan/runway_provider_chan'],
+                u'name': u'runway_provider',
+                u'owner': u'admin',
                 u'connected-nodes': {},
                 }
 
@@ -819,27 +852,28 @@ class Test_network:
 
     def test_network_create(self):
         """ Test create network. """
-        assert C.network.create('net-abcd', 'proj-01', 'proj-01', '') is None
+        assert C.network.create(
+            'net-abcd', 'manhattan', 'manhattan', '') is None
 
     def test_network_create_duplicate(self):
         """ Test error condition in create network. """
-        C.network.create('net-123', 'proj-01', 'proj-01', '')
+        C.network.create('net-123', 'manhattan', 'manhattan', '')
         with pytest.raises(FailedAPICallException):
-            C.network.create('net-123', 'proj-01', 'proj-01', '')
+            C.network.create('net-123', 'manhattan', 'manhattan', '')
 
     def test_network_create_reserved_chars(self):
         """ test for catching illegal argument characters"""
         with pytest.raises(BadArgumentError):
-            C.network.create('net/%]-123', 'proj-01', 'proj-01', '')
+            C.network.create('net/%]-123', 'manhattan', 'manhattan', '')
 
     def test_network_delete(self):
         """ Test network deletion """
-        C.network.create('net-xyz', 'proj-01', 'proj-01', '')
+        C.network.create('net-xyz', 'manhattan', 'manhattan', '')
         assert C.network.delete('net-xyz') is None
 
     def test_network_delete_duplicate(self):
         """ Test error condition in delete network. """
-        C.network.create('net-xyz', 'proj-01', 'proj-01', '')
+        C.network.create('net-xyz', 'manhattan', 'manhattan', '')
         C.network.delete('net-xyz')
         with pytest.raises(FailedAPICallException):
             C.network.delete('net-xyz')
@@ -852,15 +886,15 @@ class Test_network:
     def test_network_grant_project_access(self):
         """ Test granting  a project access to a network. """
         C.network.create('newnet01', 'admin', '', '')
-        assert C.network.grant_access('proj-02', 'newnet01') is None
-        assert C.network.grant_access('proj-03', 'newnet01') is None
+        assert C.network.grant_access('runway', 'newnet01') is None
+        assert C.network.grant_access('manhattan', 'newnet01') is None
 
     def test_network_grant_project_access_error(self):
         """ Test error while granting a project access to a network. """
         C.network.create('newnet04', 'admin', '', '')
-        C.network.grant_access('proj-02', 'newnet04')
+        C.network.grant_access('runway', 'newnet04')
         with pytest.raises(FailedAPICallException):
-            C.network.grant_access('proj-02', 'newnet04')
+            C.network.grant_access('runway', 'newnet04')
 
     def test_network_grant_project_access_reserved_chars(self):
         """ test for catching illegal argument characters"""
@@ -870,18 +904,18 @@ class Test_network:
     def test_network_revoke_project_access(self):
         """ Test revoking a project's access to a network. """
         C.network.create('newnet02', 'admin', '', '')
-        C.network.grant_access('proj-02', 'newnet02')
-        assert C.network.revoke_access('proj-02', 'newnet02') is None
+        C.network.grant_access('runway', 'newnet02')
+        assert C.network.revoke_access('runway', 'newnet02') is None
 
     def test_network_revoke_project_access_error(self):
         """
         Test error condition when revoking project's access to a network.
         """
         C.network.create('newnet03', 'admin', '', '')
-        C.network.grant_access('proj-02', 'newnet03')
-        C.network.revoke_access('proj-02', 'newnet03')
+        C.network.grant_access('runway', 'newnet03')
+        C.network.revoke_access('runway', 'newnet03')
         with pytest.raises(FailedAPICallException):
-            C.network.revoke_access('proj-02', 'newnet03')
+            C.network.revoke_access('runway', 'newnet03')
 
     def test_network_revoke_project_access_reserved_chars(self):
         """ test for catching illegal argument characters"""
