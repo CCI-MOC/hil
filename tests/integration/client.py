@@ -9,7 +9,6 @@ from hil.test_common import config_testsuite, config_merge, \
 from hil.model import db
 from hil import config, deferred
 
-import json
 import pytest
 
 from passlib.hash import sha512_crypt
@@ -110,6 +109,9 @@ def database_authentication():
 
 @pytest.fixture
 def initial_admin():
+    """Inserts an admin user into the database.
+
+    This fixure is used by Test_user tests"""
     with app.app_context():
         from hil.ext.auth.database import User
         db.session.add(User(username, password, is_admin=True))
@@ -923,36 +925,40 @@ class Test_network:
             C.network.revoke_access('proj/%]-02', 'newnet03')
 
 
+@pytest.mark.usefixtures('fail_on_log_warnings', 'configure', 'fresh_database',
+                         'server_init')
 class Test_extensions:
     """ Test extension related client calls. """
 
     def test_extension_list(self):
         """ Test listing active extensions. """
         assert C.extensions.list_active() == [
-                    "hil.ext.auth.database",
+                    "hil.ext.auth.null",
                     "hil.ext.network_allocators.vlan_pool",
                     "hil.ext.obm.mock",
                     "hil.ext.switches.mock",
                 ]
 
 
+@pytest.mark.usefixtures('fail_on_log_warnings', 'configure', 'fresh_database',
+                         'server_init', 'initial_db')
 class TestShowNetworkingAction:
     """Test calls to show networking action method"""
 
     def test_show_networking_action(self):
         """(successful) call to show_networking_action"""
         response = C.node.connect_network(
-                'node-01', 'eth0', 'net-01', 'vlan/native'
-                )
+                'manhattan_node_0', 'nic-with-port',
+                'manhattan_provider', 'vlan/native')
         status_id = response['status_id']
 
         response = C.node.show_networking_action(status_id)
         assert response == {'status': 'PENDING',
-                            'node': 'node-01',
-                            'nic': 'eth0',
+                            'node': 'manhattan_node_0',
+                            'nic': 'nic-with-port',
                             'type': 'modify_port',
                             'channel': 'vlan/native',
-                            'new_network': 'net-01'}
+                            'new_network': 'manhattan_provider'}
 
         deferred.apply_networking()
         response = C.node.show_networking_action(status_id)
