@@ -1,6 +1,11 @@
 #!/usr/bin/env sh
 set -ex
 
+# Exit if we are only running unit tests
+if [ $TEST_SUITE = unit ]; then
+	exit 0
+fi
+
 pip install .[keystone-auth-backend,keystone-client]
 
 # The exact commit we use here is somewhat arbitrary, but we want

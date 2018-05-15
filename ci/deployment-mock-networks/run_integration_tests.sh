@@ -5,4 +5,4 @@ cp testsuite.cfg ../../
 cp site-layout.json ../../
 
 cd ../..
-py.test --cov=hil --cov-append tests/deployment/*_networks.py
+py.test tests/deployment/*_networks.py
