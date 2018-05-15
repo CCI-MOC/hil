@@ -37,6 +37,7 @@ env:
 install:
   # A dependency might use new pip syntax; upgrade to prevent breakage. See #771
   - pip install --upgrade pip
+  - sh -e ci/optimize_postgres.sh
   - sh -e ci/hil_install.sh
   - sh -e ci/apache/install.sh
   - sh -e ci/keystone/install.sh
