@@ -79,8 +79,6 @@ def configure():
             'require_authentication': 'False',
         },
         'extensions': {
-            'hil.ext.auth.null': None,
-            'hil.ext.auth.database': '',
             'hil.ext.switches.mock': '',
             'hil.ext.obm.mock': '',
             'hil.ext.network_allocators.null': None,
@@ -94,39 +92,28 @@ def configure():
 
 
 @pytest.fixture
-def authentication():
-    """Setup authentication, because initial_db doesn't set one.
-    I'll worry about this later"""
+def database_authentication():
+    """setup the config file for using databae authentication.
+    This fixture is only used by Test_user class"""
+    config_testsuite()
+    config_merge({
+        'auth': {
+            'require_authentication': 'False',
+        },
+        'extensions': {
+            'hil.ext.auth.null': None,
+            'hil.ext.auth.database': '',
+        },
+    })
+    config.load_extensions()
+
+
+@pytest.fixture
+def initial_admin():
     with app.app_context():
         from hil.ext.auth.database import User
         db.session.add(User(username, password, is_admin=True))
         db.session.commit()
-
-
-# Allocating nodes to projects
-def assign_nodes2project(project, *nodes):
-    """ Assigns multiple <nodes> to a <project>.
-
-     Takes as input
-     <*nodes> one or more node names.
-    """
-    url_project = 'http://127.0.0.1:8000/v0/project/'
-
-    for node in nodes:
-        http_client.request(
-            'POST',
-            url_project + project + '/connect_node',
-            data=json.dumps({'node': node})
-        )
-
-
-pytestmark = pytest.mark.usefixtures('dummy_verify',
-                                     'fail_on_log_warnings',
-                                     'configure',
-                                     'fresh_database',
-                                     'server_init',
-                                     'intial_db',
-                                     'authentication')
 
 
 class Test_ClientBase:
@@ -139,6 +126,8 @@ class Test_ClientBase:
         assert y == 'http://127.0.0.1:8000/v0/abc/123/xy23z'
 
 
+@pytest.mark.usefixtures('fail_on_log_warnings', 'configure', 'fresh_database',
+                         'server_init', 'initial_db')
 class Test_node:
     """ Tests Node related client calls. """
 
@@ -403,6 +392,8 @@ class Test_node:
             C.node.detach_network('node-/%]04', 'eth0', 'net-04')
 
 
+@pytest.mark.usefixtures('fail_on_log_warnings', 'configure', 'fresh_database',
+                         'server_init', 'initial_db')
 class Test_project:
     """ Tests project related client calls."""
 
@@ -498,6 +489,8 @@ class Test_project:
             C.project.detach('proj/%]-08', 'free_node_0')
 
 
+@pytest.mark.usefixtures('fail_on_log_warnings', 'configure', 'fresh_database',
+                         'server_init', 'initial_db')
 class Test_switch:
     """ Tests switch related client calls."""
 
@@ -507,7 +500,6 @@ class Test_switch:
 
     def test_show_switch(self):
         """(successful) call to show_switch"""
-        import pdb; pdb.set_trace()
         assert C.switch.show('empty-switch') == {
             u'name': u'empty-switch', u'ports': [],
             u'capabilities': ['nativeless-trunk-mode']}
@@ -548,6 +540,8 @@ class Test_switch:
             C.switch.register('mytestswitch', subtype, switchinfo)
 
 
+@pytest.mark.usefixtures('fail_on_log_warnings', 'configure', 'fresh_database',
+                         'server_init', 'initial_db')
 class Test_port:
     """ Tests port related client calls."""
 
@@ -606,7 +600,8 @@ class Test_port:
     def test_port_detach_nic(self):
         """(succesfully) call port_detach_nic."""
         C.port.register('stock_switch_0', 'gi1/1/7')
-        C.port.connect_nic('stock_switch_0', 'gi1/1/7', 'free_node_1', 'boot-nic')
+        C.port.connect_nic(
+            'stock_switch_0', 'gi1/1/7', 'free_node_1', 'boot-nic')
         assert C.port.detach_nic('stock_switch_0', 'gi1/1/7') is None
 
     def test_port_detach_nic_error(self):
@@ -628,7 +623,8 @@ class Test_port:
 
         C.port.register('stock_switch_0', 'gi1/1/8')
         assert C.port.show('stock_switch_0', 'gi1/1/8') == {}
-        C.port.connect_nic('stock_switch_0', 'gi1/1/8', 'free_node_1', 'boot-nic')
+        C.port.connect_nic(
+            'stock_switch_0', 'gi1/1/8', 'free_node_1', 'boot-nic')
         assert C.port.show('stock_switch_0', 'gi1/1/8') == {
                 'node': 'free_node_1',
                 'nic': 'boot-nic',
@@ -645,7 +641,8 @@ class Test_port:
 
     def test_port_revert(self):
         """Revert port should run without error and remove all networks"""
-        C.node.connect_network('runway_node_0', 'nic-with-port', 'runway_pxe', 'vlan/native')
+        C.node.connect_network(
+            'runway_node_0', 'nic-with-port', 'runway_pxe', 'vlan/native')
         deferred.apply_networking()
         assert C.port.show('stock_switch_0', 'runway_node_0_port') == {
                 'node': 'runway_node_0',
@@ -665,6 +662,9 @@ class Test_port:
             C.port.port_revert('mock/%]-01', 'gi1/0/1')
 
 
+@pytest.mark.usefixtures('fail_on_log_warnings', 'database_authentication',
+                         'fresh_database', 'server_init', 'initial_admin',
+                         'dummy_verify')
 class Test_user:
     """ Tests user related client calls."""
 
@@ -775,6 +775,8 @@ class Test_user:
             C.user.set_admin('hugo/%]', True)
 
 
+@pytest.mark.usefixtures('fail_on_log_warnings', 'configure', 'fresh_database',
+                         'server_init', 'initial_db')
 class Test_network:
     """ Tests network related client calls. """
 
