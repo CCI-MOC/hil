@@ -503,12 +503,13 @@ class Test_switch:
 
     def test_list_switches(self):
         """(successful) call to list_switches"""
-        assert C.switch.list() == [u'mock-01']
+        assert C.switch.list() == [u'empty-switch', u'stock_switch_0']
 
     def test_show_switch(self):
         """(successful) call to show_switch"""
-        assert C.switch.show('mock-01') == {
-            u'name': u'dell-01', u'ports': [],
+        import pdb; pdb.set_trace()
+        assert C.switch.show('empty-switch') == {
+            u'name': u'empty-switch', u'ports': [],
             u'capabilities': ['nativeless-trunk-mode']}
 
     def test_show_switch_reserved_chars(self):
@@ -518,7 +519,7 @@ class Test_switch:
 
     def test_delete_switch(self):
         """(successful) call to switch_delete"""
-        assert C.switch.delete('nexus-01') is None
+        assert C.switch.delete('empty-switch') is None
 
     def test_delete_switch_reserved_chars(self):
         """ test for catching illegal argument characters"""
@@ -552,13 +553,13 @@ class Test_port:
 
     def test_port_register(self):
         """(successful) call to port_register."""
-        assert C.port.register('mock-01', 'gi1/1/1') is None
+        assert C.port.register('stock_switch_0', 'gi1/1/1') is None
 
     def test_port_dupregister(self):
         """Duplicate call to port_register should raise an error."""
-        C.port.register('mock-01', 'gi1/1/2')
+        C.port.register('stock_switch_0', 'gi1/1/2')
         with pytest.raises(FailedAPICallException):
-            C.port.register('mock-01', 'gi1/1/2')
+            C.port.register('stock_switch_0', 'gi1/1/2')
 
     def test_port_register_reserved_chars(self):
         """ test for catching illegal argument characters"""
@@ -567,15 +568,15 @@ class Test_port:
 
     def test_port_delete(self):
         """(successful) call to port_delete"""
-        C.port.register('mock-01', 'gi1/1/3')
-        assert C.port.delete('mock-01', 'gi1/1/3') is None
+        C.port.register('stock_switch_0', 'gi1/1/3')
+        assert C.port.delete('stock_switch_0', 'gi1/1/3') is None
 
     def test_port_delete_error(self):
         """Deleting a port twice should fail with an error."""
-        C.port.register('mock-01', 'gi1/1/4')
-        C.port.delete('mock-01', 'gi1/1/4')
+        C.port.register('stock_switch_0', 'gi1/1/4')
+        C.port.delete('stock_switch_0', 'gi1/1/4')
         with pytest.raises(FailedAPICallException):
-            C.port.delete('mock-01', 'gi1/1/4')
+            C.port.delete('mstock_switch_0', 'gi1/1/4')
 
     def test_port_delete_reserved_chars(self):
         """ test for catching illegal argument characters"""
@@ -584,23 +585,18 @@ class Test_port:
 
     def test_port_connect_nic(self):
         """(successfully) Call port_connect_nic on an existent port"""
-        C.port.register('mock-01', 'gi1/1/5')
+        C.port.register('stock_switch_0', 'gi1/1/5')
         assert C.port.connect_nic(
-                'mock-01', 'gi1/1/5', 'free_node_1', 'eth0'
+                'stock_switch_0', 'gi1/1/5', 'free_node_0', 'boot-nic'
                 ) is None
-
-    def test_port_connect_nic_errors(self):
-        """Test various error conditions for port_connect_nic."""
-        C.port.register('mock-01', 'gi1/1/6')
-        C.port.connect_nic('mock-01', 'gi1/1/6', 'node-09', 'eth0')
 
         # port already connected
         with pytest.raises(FailedAPICallException):
-            C.port.connect_nic('mock-01', 'gi1/1/6', 'free_node_1', 'eth0')
+            C.port.connect_nic('mock-01', 'gi1/1/5', 'free_node_1', 'boot-nic')
 
-        # port AND node-09 already connected
+        # port AND free_node_0 already connected
         with pytest.raises(FailedAPICallException):
-            C.port.connect_nic('mock-01', 'gi1/1/6', 'node-09', 'eth0')
+            C.port.connect_nic('mock-01', 'gi1/1/5', 'free_node_0', 'boot-nic')
 
     def test_port_connect_nic_reserved_chars(self):
         """ test for catching illegal argument characters"""
@@ -609,15 +605,15 @@ class Test_port:
 
     def test_port_detach_nic(self):
         """(succesfully) call port_detach_nic."""
-        C.port.register('mock-01', 'gi1/1/7')
-        C.port.connect_nic('mock-01', 'gi1/1/7', 'node-09', 'eth0')
-        assert C.port.detach_nic('mock-01', 'gi1/1/7') is None
+        C.port.register('stock_switch_0', 'gi1/1/7')
+        C.port.connect_nic('stock_switch_0', 'gi1/1/7', 'free_node_1', 'boot-nic')
+        assert C.port.detach_nic('stock_switch_0', 'gi1/1/7') is None
 
     def test_port_detach_nic_error(self):
         """port_detach_nic on a port w/ no nic should error."""
-        C.port.register('mock-01', 'gi1/1/8')
+        C.port.register('stock_switch_0', 'gi1/1/8')
         with pytest.raises(FailedAPICallException):
-            C.port.detach_nic('mock-01', 'gi1/1/8')
+            C.port.detach_nic('stock_switch_0', 'gi1/1/8')
 
     def test_port_detach_nic_reserved_chars(self):
         """ test for catching illegal argument characters"""
@@ -628,14 +624,14 @@ class Test_port:
         """Test show_port"""
         # do show port on a port that's not registered yet
         with pytest.raises(FailedAPICallException):
-            C.port.show('mock-01', 'gi1/1/8')
+            C.port.show('stock_switch_0', 'gi1/1/8')
 
-        C.port.register('mock-01', 'gi1/1/8')
-        assert C.port.show('mock-01', 'gi1/1/8') == {}
-        C.port.connect_nic('mock-01', 'gi1/1/8', 'node-09', 'eth0')
-        assert C.port.show('mock-01', 'gi1/1/8') == {
-                'node': 'node-09',
-                'nic': 'eth0',
+        C.port.register('stock_switch_0', 'gi1/1/8')
+        assert C.port.show('stock_switch_0', 'gi1/1/8') == {}
+        C.port.connect_nic('stock_switch_0', 'gi1/1/8', 'free_node_1', 'boot-nic')
+        assert C.port.show('stock_switch_0', 'gi1/1/8') == {
+                'node': 'free_node_1',
+                'nic': 'boot-nic',
                 'networks': {}}
 
         # do show port on a non-existing switch
@@ -649,18 +645,18 @@ class Test_port:
 
     def test_port_revert(self):
         """Revert port should run without error and remove all networks"""
-        C.node.connect_network('node-01', 'eth0', 'net-01', 'vlan/native')
+        C.node.connect_network('runway_node_0', 'nic-with-port', 'runway_pxe', 'vlan/native')
         deferred.apply_networking()
-        assert C.port.show('mock-01', 'gi1/0/1') == {
-                'node': 'node-01',
-                'nic': 'eth0',
-                'networks': {'vlan/native': 'net-01'}}
-        response = C.port.port_revert('mock-01', 'gi1/0/1')
+        assert C.port.show('stock_switch_0', 'runway_node_0_port') == {
+                'node': 'runway_node_0',
+                'nic': 'nic-with-port',
+                'networks': {'vlan/native': 'runway_pxe'}}
+        response = C.port.port_revert('stock_switch_0', 'runway_node_0_port')
         assert uuid_pattern.match(response['status_id'])
         deferred.apply_networking()
-        assert C.port.show('mock-01', 'gi1/0/1') == {
-                'node': 'node-01',
-                'nic': 'eth0',
+        assert C.port.show('stock_switch_0', 'runway_node_0_port') == {
+                'node': 'runway_node_0',
+                'nic': 'nic-with-port',
                 'networks': {}}
 
     def test_port_revert_reserved_chars(self):
