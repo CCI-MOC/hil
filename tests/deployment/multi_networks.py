@@ -63,8 +63,6 @@ class TestMultiNets(NetworkTest):
 
             nodes = self.collect_nodes()
 
-            deferred.apply_networking()
-
             # create 5 networks
             network_create_simple('net-0', 'anvil-nextgen')
             network_create_simple('net-1', 'anvil-nextgen')
@@ -117,7 +115,7 @@ class TestMultiNets(NetworkTest):
                     _channel in port_networks.get(nodes[0].nics[0].port)])
             # create a list of networks with native net-0 included
             networks_added = set([get_legal_channels('net-0')[0],
-                                 net_tag[0], net_tag[1],
+                                 net_tag[1],
                                  net_tag[2], net_tag[3]])
             assert networks == networks_added
 

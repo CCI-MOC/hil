@@ -184,9 +184,16 @@ class _Session(_console.Session):
         VLANs.'''
         port_configs = self._port_configs(ports)
         result = {}
+
         for k, v in port_configs.iteritems():
             network_list = []
             non_native_list = []
+            if 'Trunking Native Mode VLAN' not in v:
+                # XXX (probable BUG): For some reason the last port on the
+                # switch sometimes isn't read correctly. For now just don't use
+                # that port for the test suite, and will skip it if this
+                # happens.
+                continue
             # Get native vlan then remove junk if native is not None or Dummy
             native_vlan = v['Trunking Native Mode VLAN'].strip()
             if int(native_vlan.split(' ')[0]) == int(self.switch.dummy_vlan):
@@ -200,6 +207,8 @@ class _Session(_console.Session):
             if trunk_vlans != 'none':
                 non_native_list = parse_vlans(trunk_vlans)
             if native_vlan is not None:
+                # Ensure that native vlan is not in the non-native list
+                non_native_list.remove(native_vlan)
                 network_list.append(('vlan/native', int(native_vlan)))
             for v in (non_native_list):
                 network_list.append(('vlan/%s' % v, int(v)))

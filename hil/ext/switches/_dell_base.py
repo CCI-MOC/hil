@@ -68,12 +68,10 @@ class _BaseSession(_console.Session):
             # append native vlan if appropriate:
             if native_vlan != 'none':
                 native_vlan = native_vlan.replace(' (Inactive)', '')
-                if hasattr(self.switch, 'dummy_vlan'):
-                    # ignore if dummy vlan
-                    if int(native_vlan) == int(self.switch.dummy_vlan):
+                if (hasattr(self.switch, 'dummy_vlan') and
+                        int(native_vlan) == int(self.switch.dummy_vlan)):
+                        # ignore if dummy vlan
                         native_vlan = None
-                    else:
-                        network_list.append(('vlan/native', int(native_vlan)))
                 else:
                     # appropriate to append native vlan to list
                     network_list.append(('vlan/native', int(native_vlan)))
@@ -86,20 +84,17 @@ class _BaseSession(_console.Session):
                 trunk_vlans = v['Trunking Mode VLANs Enabled'].strip()
             # parse out junk
             if trunk_vlans != 'none' and trunk_vlans != '':
-                non_native_list = self._make_vlan_list(trunk_vlans)
+                non_native_list = _make_vlan_list(trunk_vlans)
+                # ensure native vlan is not in the non-native list
+                if native_vlan is not None:
+                    non_native_list.remove(native_vlan)
                 # make final vlan list
                 for v in non_native_list:
+                    # checking for extra whitespace
                     v = "".join(v.split())
                     network_list.append(('vlan/%s' % v, int(v)))
             result[k] = network_list
         return result
-
-    def _make_vlan_list(self, dirty_list):
-        '''Create vlan list from switch config vlan ranges.'''
-        ranges = dirty_list.replace(' (Inactive)', '')
-        ranges = ranges.split('\r\n')
-        ranges = ','.join(ranges)
-        return parse_vlans(ranges)
 
     def disable_port(self):
         self._sendline('sw trunk allowed vlan none')
@@ -160,3 +155,11 @@ class _BaseSession(_console.Session):
         config = config.split("\n", 1)[1]
         self._set_terminal_lines('default')
         return config
+
+
+def _make_vlan_list(dirty_list):
+    '''Create vlan list from switch config vlan ranges.'''
+    ranges = dirty_list.replace(' (Inactive)', '')
+    ranges = ranges.split('\r\n')
+    ranges = ','.join(ranges)
+    return parse_vlans(ranges)
