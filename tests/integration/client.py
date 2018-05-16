@@ -158,7 +158,7 @@ def configure():
             # Disable dry_run, so we can talk to obmd. Note: We register
             # several "real" switches in this module, but never actually
             # preform any "real" network operations on them, so a proper
-            # swtich setup is still not necessary.
+            # switch setup is still not necessary.
             'dry_run': None,
         },
     })
@@ -207,7 +207,7 @@ def populate_server(obmd_cfg):
         # We can't use http_client here, because it doesn't
         # include the auth info for obmd; it is only suitable
         # for "unprivileged" obmd calls, which include all
-        # ncecessary auth info in the URL.
+        # necessary auth info in the URL.
         resp = requests.put(
             obmd_uri,
             auth=('admin', obmd_cfg['AdminToken']),
