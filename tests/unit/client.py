@@ -1,9 +1,4 @@
-"""Unit tests for the client library.
-
-TODO: we have plans to move ./client.py to integration/, since those
-are really integration tests. Once that's done we should move this to
-./client.py; it's here now to avoid name collisions/conflicts.
-"""
+"""Unit tests for the client library."""
 
 import flask
 import pytest
