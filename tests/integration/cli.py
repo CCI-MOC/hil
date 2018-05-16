@@ -2,9 +2,12 @@
 
 
 import subprocess
+import json
+import requests
 import pytest
-from hil.test_common import fail_on_log_warnings
+from hil.test_common import fail_on_log_warnings, obmd_cfg
 
+obmd_cfg = pytest.fixture()(obmd_cfg)
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
 
@@ -24,7 +27,7 @@ def hil(*args):
     return subprocess.check_output(['hil'] + list(args))
 
 
-def test_cli():
+def test_cli(obmd_cfg):
 
     """These tests a lot of different operations together
 
@@ -33,11 +36,23 @@ def test_cli():
     2. Some assertions that actually check the output of the subprocess call.
     """
 
+    obmd_uri = 'http://127.0.0.1' + obmd_cfg['ListenAddr'] + '/node/node'
+    resp = requests.put(obmd_uri,
+                        auth=('admin', obmd_cfg['AdminToken']),
+                        data=json.dumps({
+                            "type": "mock",
+                            "info": {
+                                "addr": "10.0.0.4",
+                                "NumWrites": 0,
+                            },
+                        }))
+    assert resp.ok, ("Failing status from obmd: %d" % resp.status_code)
+
     # Test node and nic creation
     hil('node', 'register',
         NODE1,
-        'http://obmd.exampl.com/nodes/node',
-        'secret',
+        obmd_uri,
+        obmd_cfg['AdminToken'],
         'mock', 'host', 'user', 'password')
     assert NODE1 in hil('node', 'list', 'all')
     assert NODE1 in hil('node', 'list', 'free')
@@ -46,8 +61,11 @@ def test_cli():
     hil('node', 'nic', 'register', NODE1, NIC1, 'aa:bb:cc:dd:ee:ff')
     assert NIC1 in hil('node', 'show', NODE1)
 
+    # Enable the obm
+    hil('node', 'obm', 'enable', NODE1)
+
     # Test that obm related calls run succesfully
-    hil('node', 'bootdev', NODE1, 'pxe')
+    hil('node', 'bootdev', NODE1, 'A')
     hil('node', 'console', 'start', NODE1)
     output = hil('node', 'console', 'show', NODE1)
     assert output.strip('\n') == 'Some console output'
