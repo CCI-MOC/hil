@@ -1,4 +1,8 @@
-"""Test invoking the command line tool"""
+"""Test invoking the command line tool.
+
+These tests expect any already running HIL api server; in our CI this is
+run as part of the 'apache' integration tests.
+"""
 
 
 import subprocess
