@@ -132,6 +132,7 @@ def obm():
 
 
 @obm.command()
+@click.argument('node')
 def enable(node):
     """Enable <node>'s obm"""
     client.node.enable_obm(node)
