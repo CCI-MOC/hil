@@ -33,29 +33,19 @@ intial_db = pytest.fixture(initial_db)
 def dummy_verify():
     """replace sha512_crypt.verify with something faster (albeit broken).
 
-    The tests in this module mostly use the database auth backend. This was,
-    frankly, a mistake. This module pulls in way too much "real" code (as
-    opposed to mock objects) in general, and patches to improve the
-    situation are welcome.
+    This fixture is for testing User related client calls which use database
+    authentication backend.
 
-    In the meantime, this fixture works around a serious consequence of using
-    the database backend: doing password hasing is **SLOW** (by design; the
-    algorithms are intended to make brute-forcing hard), and we've got
-    fixtures where we're going through the request handler tens of times for
-    every test (before even hitting the test itself).
+    This fixture works around a serious consequence of using the database
+    backend: doing password hashing is **SLOW** (by design; the algorithms
+    are intended to make brute-forcing hard), and we've got fixtures where
+    we're going through the request handler tens of times for every test
+    (before even hitting the test itself).
 
     So, this fixture monkey-patches sha512_crypt.verify (the function that
     does the work of checking the password), replacing it with a dummy
     implementation. At the time of writing, this shaves about half an hour
     off of our Travis CI runs.
-
-    Longer term, we should:
-
-    * Not go through the http code when creating database objects (do what
-      e.g. initial_db and additional_db do instead).
-    * Use the null/mock backends and drivers everywhere we can.
-    * Scope this fixture to the Test_user class, which is the only place
-      that should need to be using the database backend in the first place.
     """
 
     @staticmethod
@@ -66,7 +56,7 @@ def dummy_verify():
     old = sha512_crypt.verify
     sha512_crypt.verify = dummy  # override the verify() function
     yield  # Test runs here
-    sha512_crypt.verify = old  # restore the old implementaton.
+    sha512_crypt.verify = old  # restore the old implementation.
 
 
 @pytest.fixture
@@ -92,7 +82,7 @@ def configure():
 
 @pytest.fixture
 def database_authentication():
-    """setup the config file for using databae authentication.
+    """setup the config file for using database authentication.
     This fixture is only used by Test_user class"""
     config_testsuite()
     config_merge({
@@ -111,7 +101,7 @@ def database_authentication():
 def initial_admin():
     """Inserts an admin user into the database.
 
-    This fixure is used by Test_user tests"""
+    This fixture is used by Test_user tests"""
     with app.app_context():
         from hil.ext.auth.database import User
         db.session.add(User(username, password, is_admin=True))
@@ -572,7 +562,7 @@ class Test_port:
         C.port.register('stock_switch_0', 'gi1/1/4')
         C.port.delete('stock_switch_0', 'gi1/1/4')
         with pytest.raises(FailedAPICallException):
-            C.port.delete('mstock_switch_0', 'gi1/1/4')
+            C.port.delete('stock_switch_0', 'gi1/1/4')
 
     def test_port_delete_reserved_chars(self):
         """ test for catching illegal argument characters"""
