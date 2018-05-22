@@ -4,10 +4,13 @@
 #
 #   http://docs.openstack.org/developer/keystone/developing.html
 
+# NOTE: We use the GitHub mirror of OpenStack's respositories rather than the
+# official git.openstack.org host, due to some known certificate problems.
+
 # tunable variables:
 
 # So we can avoid repeatedly downloading the repo when developing this script:
-keystone_repo=${keystone_repo:-https://git.openstack.org/openstack/keystone}
+keystone_repo=${keystone_repo:-https://github.com/openstack/keystone}
 
 # git commit to use. Travis uses this to test against different releases of
 # keystone:
@@ -49,7 +52,7 @@ case "$1" in
     # Use the constraints file to provide an upper bound for package versions.
     pip install \
         -r requirements.txt \
-        -c https://git.openstack.org/cgit/openstack/requirements/plain/upper-constraints.txt?h=${keystone_commit}
+        -c https://raw.githubusercontent.com/openstack/requirements/${keystone_commit}/upper-constraints.txt
     pip install .
     pip install uwsgi # To actually run keystone; no webserver in the deps.
 
@@ -68,7 +71,7 @@ case "$1" in
     pid=$!
     # Doing this after launching keystone will give it plenty of time to get
     # started without adding any wasteful calls to sleep:
-    pip install -c https://git.openstack.org/cgit/openstack/requirements/plain/upper-constraints.txt?h=${keystone_commit} \
+    pip install -c https://raw.githubusercontent.com/openstack/requirements/${keystone_commit}/upper-constraints.txt \
         python-openstackclient
 
     source ../keystonerc # for $OS_PASSWORD
