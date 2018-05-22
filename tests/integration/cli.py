@@ -75,6 +75,15 @@ def test_cli(obmd_cfg):
     hil('node', 'nic', 'register', NODE1, NIC1, 'aa:bb:cc:dd:ee:ff')
     assert NIC1 in hil('node', 'show', NODE1)
 
+    # Test project create command
+    hil('project', 'create', PROJECT1)
+    assert PROJECT1 in hil('project', 'list')
+
+    # project and node connect
+    hil('project', 'node', 'add', PROJECT1, NODE1)
+    assert NODE1 in hil('project', 'node', 'list', PROJECT1)
+    assert NODE1 not in hil('node', 'list', 'free')
+
     # Enable the obm
     hil('node', 'obm', 'enable', NODE1)
 
@@ -91,15 +100,6 @@ def test_cli(obmd_cfg):
     # Test node metadata calls
     hil('node', 'metadata', 'add', NODE1, 'metadata-label', 'metadata-value')
     hil('node', 'metadata', 'delete', NODE1, 'metadata-label')
-
-    # Test project create command
-    hil('project', 'create', PROJECT1)
-    assert PROJECT1 in hil('project', 'list')
-
-    # project and node connect
-    hil('project', 'node', 'add', PROJECT1, NODE1)
-    assert NODE1 in hil('project', 'node', 'list', PROJECT1)
-    assert NODE1 not in hil('node', 'list', 'free')
 
     # test switch register in 2 ways
 
