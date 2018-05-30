@@ -123,6 +123,7 @@ def test_cli(obmd_cfg):
     hil('port', 'delete', SWITCH1, PORT)
     hil('switch', 'delete', SWITCH1)
     hil('switch', 'delete', SWITCH2)
+    hil('node', 'obm', 'disable', NODE1)
     hil('project', 'node', 'remove', PROJECT1, NODE1)
     hil('project', 'delete', PROJECT1)
     hil('node', 'nic', 'delete', NODE1, NIC1)
