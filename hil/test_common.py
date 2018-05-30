@@ -15,6 +15,7 @@ from abc import ABCMeta, abstractmethod
 import json
 import subprocess
 import sys
+import os
 import os.path
 import logging
 import tempfile
@@ -437,7 +438,16 @@ def obmd_cfg():
         be used as a fixture, but not declared here as such; individual
         modules should declare it as a fixture.
         """
-        portno = 8833
+        # Make the port number a function of which worker we're running on,
+        # so parallel tests don't try to use the same port. We derive the
+        # port number by stripping out all non-digit characters from the
+        # worker id, and then adding the result to a base.
+        portno = 8800 + int(''.join([
+            char
+            for char in os.getenv('PYTEST_XDIST_WORKER')
+            if char.isdigit()
+        ]))
+
         cfg = {
             'ListenAddr': ":" + str(portno),
             'AdminToken': "8fcfe5d3f8ca8c4b87d0f8ae86b43bca",
