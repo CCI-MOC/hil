@@ -16,9 +16,6 @@ endpoint = http://127.0.0.1
 [database]
 uri = postgresql://postgres@localhost/hil
 
-[devel]
-dry_run=True
-
 [extensions]
 hil.ext.obm.mock =
 hil.ext.switches.mock =
