@@ -17,6 +17,9 @@ import subprocess
 import sys
 import os.path
 import logging
+import tempfile
+import time
+import socket
 import re
 from urlparse import urlparse
 from base64 import urlsafe_b64encode
@@ -424,6 +427,51 @@ def site_layout():
                                  node['name'], nic['name'])
 
 
+def obmd_cfg():
+        """Fixture launching obmd with a config.
+
+        The fixture yields the config as a parsed json object. The obmd
+        process is terminated when the test completes.
+
+        Like many of the functions in this module, this is intended to
+        be used as a fixture, but not declared here as such; individual
+        modules should declare it as a fixture.
+        """
+        portno = 8833
+        cfg = {
+            'ListenAddr': ":" + str(portno),
+            'AdminToken': "8fcfe5d3f8ca8c4b87d0f8ae86b43bca",
+            'DBType': 'sqlite3',
+            'DBPath': ':memory:',
+        }
+
+        (fd, name) = tempfile.mkstemp()
+        os.write(fd, json.dumps(cfg))
+        os.close(fd)
+        try:
+            obmd_proc = subprocess.Popen(['obmd', '-config', name])
+        except Exception as e:
+            assert False, ("Error spawning obmd: %r" % e)
+
+        # wait for obmd to start accepting connections:
+        attempts = 0
+        while attempts < 60:
+            try:
+                conn = socket.create_connection(('127.0.0.1', portno))
+                conn.close()
+                break
+            except socket.error:
+                time.sleep(0.1)
+                attempts += 1
+        assert attempts < 60, "Timeout waiting for obmd to start"
+
+        yield cfg
+
+        obmd_proc.terminate()
+        obmd_proc.wait()
+        os.remove(name)
+
+
 def headnode_cleanup(request):
     """Clean up headnode VMs left by tests.
 
@@ -692,3 +740,15 @@ def initial_db():
         )
 
         db.session.commit()
+
+
+def spoof_enable_obm(nodename):
+    """spoof "enabling" the named node's obm.
+
+    Stores a phony token in the node's obmd_node_token. This is necessary
+    for tests where we can't actually get a token from obmd, but need to run
+    other tests that will check for a token.
+    """
+    node = api.get_or_404(Node, nodename)
+    node.obmd_node_token = '0123456789'
+    db.session.commit()

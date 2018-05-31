@@ -16,7 +16,8 @@ from hil.auth import get_auth_backend
 from hil.errors import AuthorizationError, BadArgumentError, \
     ProjectMismatchError, BlockedError
 from hil.test_common import config_testsuite, config_merge, fresh_database, \
-    with_request_context, additional_db, fail_on_log_warnings, server_init
+    with_request_context, additional_db, fail_on_log_warnings, server_init, \
+    spoof_enable_obm
 
 MOCK_OBM_API_NAME = 'http://schema.massopencloud.org/haas/v0/obm/mock'
 MOCK_SWITCH_API_NAME = 'http://schema.massopencloud.org/haas/v0/switches/mock'
@@ -603,6 +604,20 @@ def test_auth_call(kwargs):
     return auth_call_test(**kwargs)
 
 
+def _with_enabled_obm(api_call, node):
+    """Return a wrapper around an API call that spoofs enabling a node's obm.
+
+    This is needed to test calls like power_off, which in addition to auth
+    requirements, need the obm to be enabled. Calls spoof_enable_obm.
+    """
+    def f(*args, **kwargs):
+        """Wrapper that calls spoof_enable_obm before invoking the api call.
+        """
+        spoof_enable_obm(node)
+        return api_call(*args, **kwargs)
+    return f
+
+
 # There are a whole bunch of api calls that just unconditionally require admin
 # access. This is  a list of (function, args) pairs, each of which should
 # succed as admin and fail as a regular project. The actual test functions for
@@ -631,9 +646,12 @@ admin_calls = [
 
     # node_power_* and node_set_bootdev, on free nodes only.
     # Nodes assigned to a project are tested in project_calls, below.
-    (api.node_power_cycle, ['free_node_0'], {}),
-    (api.node_power_off, ['free_node_0'], {}),
-    (api.node_set_bootdev, ['free_node_0'], {'bootdev': {'none'}}),
+    (_with_enabled_obm(api.node_power_cycle, 'free_node_0'),
+     ['free_node_0'], {}),
+    (_with_enabled_obm(api.node_power_off, 'free_node_0'),
+     ['free_node_0'], {}),
+    (_with_enabled_obm(api.node_set_bootdev, 'free_node_0'),
+     ['free_node_0'], {'bootdev': {'none'}}),
 
     (api.project_delete, ['empty-project'], {}),
 
@@ -662,9 +680,12 @@ admin_calls = [
 project_calls = [
     # node_power_* and node_set_bootdev, on allocated nodes only.
     # Free nodes are testsed in admin_calls, above.
-    (api.node_power_cycle, ['runway_node_0'], {}),
-    (api.node_power_off, ['runway_node_0'], {}),
-    (api.node_set_bootdev, ['runway_node_0'], {'bootdev': {'none'}}),
+    (_with_enabled_obm(api.node_power_cycle, 'runway_node_0'),
+     ['runway_node_0'], {}),
+    (_with_enabled_obm(api.node_power_off, 'runway_node_0'),
+     ['runway_node_0'], {}),
+    (_with_enabled_obm(api.node_set_bootdev, 'runway_node_0'),
+     ['runway_node_0'], {'bootdev': {'none'}}),
 
     (api.project_connect_node, ['runway', 'free_node_0'], {}),
     (api.project_detach_node, ['runway', 'runway_node_0'], {}),

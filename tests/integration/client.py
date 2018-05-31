@@ -5,11 +5,13 @@ from hil.errors import BadArgumentError, UnknownSubtypeError
 from hil.client.client import Client
 from hil.test_common import config_testsuite, config_merge, \
     fresh_database, fail_on_log_warnings, server_init, uuid_pattern, \
-    HybridHTTPClient, initial_db
+    obmd_cfg, HybridHTTPClient, initial_db
 from hil.model import db
 from hil import config, deferred
 
+import json
 import pytest
+import requests
 
 from passlib.hash import sha512_crypt
 
@@ -26,6 +28,7 @@ C = Client(ep, http_client)  # Initializing client library
 fail_on_log_warnings = pytest.fixture(fail_on_log_warnings)
 fresh_database = pytest.fixture(fresh_database)
 server_init = pytest.fixture(server_init)
+obmd_cfg = pytest.fixture(obmd_cfg)
 intial_db = pytest.fixture(initial_db)
 
 
@@ -76,6 +79,13 @@ def configure():
         'hil.ext.network_allocators.vlan_pool': {
             'vlans': '1001-1040',
         },
+        'devel': {
+            # Disable dry_run, so we can talk to obmd. Note: We register
+            # several "real" switches in this module, but never actually
+            # preform any "real" network operations on them, so a proper
+            # switch setup is still not necessary.
+            'dry_run': None,
+        },
     })
     config.load_extensions()
 
@@ -97,11 +107,46 @@ def database_authentication():
     config.load_extensions()
 
 
+@pytest.fixture()
+def obmd_node(obmd_cfg):
+    """register a node with both obmd & HIL
+
+    ...so we can use it in tests that touch the obmd-related calls.
+    """
+    obmd_uri = 'http://localhost' + obmd_cfg['ListenAddr'] + \
+        '/node/obmd-node'
+
+    # Register the node with obmd:
+    resp = requests.put(
+        obmd_uri,
+        auth=('admin', obmd_cfg['AdminToken']),
+        data=json.dumps({
+            'type': 'mock',
+            'info': {
+                "addr": "10.0.0.23",
+                "NumWrites": 0,
+            },
+        }),
+    )
+    assert resp.ok, "Failed to register node with obmd."
+
+    # ...and with HIL:
+    assert C.node.register(
+        "obmd-node",
+        obmd_uri,
+        obmd_cfg['AdminToken'],
+        "mock", "dummy", "dummy", "dummy",
+    ) is None
+
+    return 'obmd-node'
+
+
 @pytest.fixture
 def initial_admin():
     """Inserts an admin user into the database.
 
-    This fixture is used by Test_user tests"""
+    This fixture is used by Test_user tests
+    """
     with app.app_context():
         from hil.ext.auth.database import User
         db.session.add(User(username, password, is_admin=True))
@@ -189,56 +234,62 @@ class Test_node:
         with pytest.raises(BadArgumentError):
             C.node.show('node-/%]07')
 
-    def test_enable_disable_obm(self):
+    def test_enable_disable_obm(self, obmd_node):
         """Test enable_obm/disable_obm"""
         # The spec says that these calls should silently no-op if the
         # state doesn't need to change so we call them repeatedly in
         # different orders to verify.
-        C.node.disable_obm('free_node_0')
+        C.node.disable_obm(obmd_node)
 
-        C.node.enable_obm('free_node_0')
-        C.node.enable_obm('free_node_0')
+        C.node.enable_obm(obmd_node)
+        C.node.enable_obm(obmd_node)
 
-        C.node.disable_obm('free_node_0')
-        C.node.disable_obm('free_node_0')
-        C.node.disable_obm('free_node_0')
+        C.node.disable_obm(obmd_node)
+        C.node.disable_obm(obmd_node)
+        C.node.disable_obm(obmd_node)
 
-        C.node.enable_obm('free_node_0')
+        C.node.enable_obm(obmd_node)
 
-    def test_power_cycle(self):
+    def test_power_cycle(self, obmd_node):
         """(successful) to node_power_cycle"""
-        assert C.node.power_cycle('free_node_0') is None
+        C.node.enable_obm(obmd_node)
+        assert C.node.power_cycle(obmd_node) is None
 
-    def test_power_cycle_force(self):
+    def test_power_cycle_force(self, obmd_node):
         """(successful) to node_power_cycle(force=True)"""
-        assert C.node.power_cycle('free_node_0', True) is None
+        C.node.enable_obm(obmd_node)
+        assert C.node.power_cycle(obmd_node, True) is None
 
-    def test_power_cycle_no_force(self):
+    def test_power_cycle_no_force(self, obmd_node):
         """(successful) to node_power_cycle(force=False)"""
-        assert C.node.power_cycle('free_node_0', False) is None
+        C.node.enable_obm(obmd_node)
+        assert C.node.power_cycle(obmd_node, False) is None
 
-    def test_power_cycle_bad_arg(self):
+    def test_power_cycle_bad_arg(self, obmd_node):
         """error on call to power_cycle with bad argument."""
+        C.node.enable_obm(obmd_node)
         with pytest.raises(FailedAPICallException):
-            C.node.power_cycle('free_node_0', 'wrong')
+            C.node.power_cycle(obmd_node, 'wrong')
 
     def test_power_cycle_reserved_chars(self):
         """ test for catching illegal argument characters"""
         with pytest.raises(BadArgumentError):
             C.node.power_cycle('node-/%]07', False)
 
-    def test_power_off(self):
+    def test_power_off(self, obmd_node):
         """(successful) to node_power_off"""
-        assert C.node.power_off('free_node_0') is None
+        C.node.enable_obm(obmd_node)
+        assert C.node.power_off(obmd_node) is None
 
     def test_power_off_reserved_chars(self):
         """ test for catching illegal argument characters"""
         with pytest.raises(BadArgumentError):
             C.node.power_off('node-/%]07')
 
-    def test_set_bootdev(self):
+    def test_set_bootdev(self, obmd_node):
         """ (successful) to node_set_bootdev """
-        assert C.node.set_bootdev("free_node_1", "pxe") is None
+        C.node.enable_obm(obmd_node)
+        assert C.node.set_bootdev(obmd_node, "A") is None
 
     def test_node_add_nic(self):
         """Test removing and then adding a nic."""

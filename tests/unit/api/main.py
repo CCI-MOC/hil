@@ -45,7 +45,7 @@ import hil
 from hil import model, deferred, errors, config, api
 from hil.test_common import config_testsuite, config_merge, fresh_database, \
     fail_on_log_warnings, additional_db, with_request_context, \
-    network_create_simple, server_init, uuid_pattern
+    network_create_simple, server_init, uuid_pattern, spoof_enable_obm
 from hil.network_allocator import get_network_allocator
 from hil.auth import get_auth_backend
 import pytest
@@ -2444,6 +2444,7 @@ class TestDryRun:
         api.project_create('anvil-nextgen')
         new_node('node-99')
         api.project_connect_node('anvil-nextgen', 'node-99')
+        spoof_enable_obm('node-99')
         api.node_power_cycle('node-99')
 
     def test_node_power_cycle_force(self):
@@ -2455,6 +2456,7 @@ class TestDryRun:
         api.project_create('anvil-nextgen')
         new_node('node-99')
         api.project_connect_node('anvil-nextgen', 'node-99')
+        spoof_enable_obm('node-99')
         api.node_power_cycle('node-99', True)
 
 

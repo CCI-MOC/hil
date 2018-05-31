@@ -132,12 +132,14 @@ def obm():
 
 
 @obm.command()
+@click.argument('node')
 def enable(node):
     """Enable <node>'s obm"""
     client.node.enable_obm(node)
 
 
 @obm.command()
+@click.argument('node')
 def disable(node):
     """Disable <node>'s obm"""
     client.node.disable_obm(node)

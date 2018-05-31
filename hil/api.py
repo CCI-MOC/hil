@@ -5,6 +5,7 @@ TODO: Spec out and document what sanitization is required.
 import json
 import requests
 import uuid
+import flask
 
 from schema import Schema, And, Optional, SchemaError
 from urlparse import urlparse
@@ -277,7 +278,9 @@ def node_power_cycle(node, force=False):
     """
     node = get_or_404(model.Node, node)
     get_auth_backend().require_project_access(node.project)
-    node.obm.power_cycle(force)
+    if not node.obm_is_enabled():
+        raise errors.BlockedError("OBM is not enabled")
+    return _obmd_redirect(node, '/power_cycle')
 
 
 @rest_call('POST', '/node/<node>/power_off', Schema({'node': basestring}))
@@ -285,7 +288,9 @@ def node_power_off(node):
     """Power off the node."""
     node = get_or_404(model.Node, node)
     get_auth_backend().require_project_access(node.project)
-    node.obm.power_off()
+    if not node.obm_is_enabled():
+        raise errors.BlockedError("OBM is not enabled")
+    return _obmd_redirect(node, '/power_off')
 
 
 @rest_call('PUT', '/node/<node>/boot_device', Schema({
@@ -295,10 +300,9 @@ def node_set_bootdev(node, bootdev):
     """Set the node's boot device."""
     node = get_or_404(model.Node, node)
     get_auth_backend().require_project_access(node.project)
-
-    node.obm.require_legal_bootdev(bootdev)
-
-    node.obm.set_bootdev(bootdev)
+    if not node.obm_is_enabled():
+        raise errors.BlockedError("OBM is not enabled")
+    return _obmd_redirect(node, '/boot_device')
 
 
 @rest_call('DELETE', '/node/<node>', Schema({'node': basestring}))
@@ -1380,6 +1384,16 @@ def get_or_404(cls, name):
         raise errors.NotFoundError("%s %s does not exist." % (cls.__name__,
                                                               name))
     return obj
+
+
+def _obmd_redirect(node, path):
+    return flask.redirect(
+        node.obmd_uri + path + '?token=' + node.obmd_node_token,
+        # 307 is important, since it requires that the client not change
+        # the request method. So obmd will see the same method as HIL
+        # did:
+        code=307,
+    )
 
 
 def _namespaced_query(obj_outer, cls_inner, name_inner):

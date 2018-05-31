@@ -1,10 +1,20 @@
-"""Test invoking the command line tool"""
+"""Test invoking the command line tool.
+
+These tests expect any already running HIL api server; in our CI this is
+run as part of the 'apache' integration tests.
+"""
 
 
+import logging
 import subprocess
+import json
+import requests
 import pytest
-from hil.test_common import fail_on_log_warnings
+from hil.test_common import fail_on_log_warnings, obmd_cfg
 
+logger = logging.getLogger(__name__)
+
+obmd_cfg = pytest.fixture()(obmd_cfg)
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
 
 
@@ -20,11 +30,18 @@ PORT = 'gi1/0/1'
 def hil(*args):
     """Convenience function that calls the hil command line tool with
     the given arguments.
+
+    returns the output from the command. If the command exits non-zero,
+    an exception is raised.
     """
-    return subprocess.check_output(['hil'] + list(args))
+    cmd = ['hil'] + list(args)
+    logger.info('command: %r', cmd)
+    output = subprocess.check_output(['hil'] + list(args))
+    logger.info('output: %r', output)
+    return output
 
 
-def test_cli():
+def test_cli(obmd_cfg):
 
     """These tests a lot of different operations together
 
@@ -33,11 +50,23 @@ def test_cli():
     2. Some assertions that actually check the output of the subprocess call.
     """
 
+    obmd_uri = 'http://127.0.0.1' + obmd_cfg['ListenAddr'] + '/node/node'
+    resp = requests.put(obmd_uri,
+                        auth=('admin', obmd_cfg['AdminToken']),
+                        data=json.dumps({
+                            "type": "mock",
+                            "info": {
+                                "addr": "10.0.0.4",
+                                "NumWrites": 0,
+                            },
+                        }))
+    assert resp.ok, ("Failing status from obmd: %d" % resp.status_code)
+
     # Test node and nic creation
     hil('node', 'register',
         NODE1,
-        'http://obmd.exampl.com/nodes/node',
-        'secret',
+        obmd_uri,
+        obmd_cfg['AdminToken'],
         'mock', 'host', 'user', 'password')
     assert NODE1 in hil('node', 'list', 'all')
     assert NODE1 in hil('node', 'list', 'free')
@@ -46,8 +75,20 @@ def test_cli():
     hil('node', 'nic', 'register', NODE1, NIC1, 'aa:bb:cc:dd:ee:ff')
     assert NIC1 in hil('node', 'show', NODE1)
 
+    # Test project create command
+    hil('project', 'create', PROJECT1)
+    assert PROJECT1 in hil('project', 'list')
+
+    # project and node connect
+    hil('project', 'node', 'add', PROJECT1, NODE1)
+    assert NODE1 in hil('project', 'node', 'list', PROJECT1)
+    assert NODE1 not in hil('node', 'list', 'free')
+
+    # Enable the obm
+    hil('node', 'obm', 'enable', NODE1)
+
     # Test that obm related calls run succesfully
-    hil('node', 'bootdev', NODE1, 'pxe')
+    hil('node', 'bootdev', NODE1, 'A')
     hil('node', 'console', 'start', NODE1)
     output = hil('node', 'console', 'show', NODE1)
     assert output.strip('\n') == 'Some console output'
@@ -59,15 +100,6 @@ def test_cli():
     # Test node metadata calls
     hil('node', 'metadata', 'add', NODE1, 'metadata-label', 'metadata-value')
     hil('node', 'metadata', 'delete', NODE1, 'metadata-label')
-
-    # Test project create command
-    hil('project', 'create', PROJECT1)
-    assert PROJECT1 in hil('project', 'list')
-
-    # project and node connect
-    hil('project', 'node', 'add', PROJECT1, NODE1)
-    assert NODE1 in hil('project', 'node', 'list', PROJECT1)
-    assert NODE1 not in hil('node', 'list', 'free')
 
     # test switch register in 2 ways
 
@@ -91,6 +123,7 @@ def test_cli():
     hil('port', 'delete', SWITCH1, PORT)
     hil('switch', 'delete', SWITCH1)
     hil('switch', 'delete', SWITCH2)
+    hil('node', 'obm', 'disable', NODE1)
     hil('project', 'node', 'remove', PROJECT1, NODE1)
     hil('project', 'delete', PROJECT1)
     hil('node', 'nic', 'delete', NODE1, NIC1)
