@@ -431,7 +431,7 @@ def obmd_cfg():
         """Fixture launching obmd with a config.
 
         The fixture yields the config as a parsed json object. The obmd
-        process is teminated when the test completes.
+        process is terminated when the test completes.
 
         Like many of the functions in this module, this is intended to
         be used as a fixture, but not declared here as such; individual
