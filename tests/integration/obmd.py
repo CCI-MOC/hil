@@ -116,6 +116,8 @@ def test_power_operations(mock_node):
     with pytest.raises(errors.BlockedError):
         api.node_power_off(mock_node)
     with pytest.raises(errors.BlockedError):
+        api.node_power_on(mock_node)
+    with pytest.raises(errors.BlockedError):
         api.node_set_bootdev(mock_node, 'A')
     with pytest.raises(errors.BlockedError):
         api.node_power_cycle(mock_node, force=True)
@@ -134,6 +136,7 @@ def test_power_operations(mock_node):
             }))
 
     _follow_redirect('POST', api.node_power_off(mock_node))
+    _follow_redirect('POST', api.node_power_on(mock_node))
     _follow_redirect(
         'PUT',
         api.node_set_bootdev(mock_node, 'A'),

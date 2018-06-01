@@ -283,14 +283,29 @@ def node_power_cycle(node, force=False):
     return _obmd_redirect(node, '/power_cycle')
 
 
-@rest_call('POST', '/node/<node>/power_off', Schema({'node': basestring}))
-def node_power_off(node):
-    """Power off the node."""
+def _node_power_on_off(node, op):
+    """helper for node_power_{on,off}
+
+    This implements the actual logic for both calls. `op` should be
+    one of 'on' or 'off'
+    """
     node = get_or_404(model.Node, node)
     get_auth_backend().require_project_access(node.project)
     if not node.obm_is_enabled():
         raise errors.BlockedError("OBM is not enabled")
-    return _obmd_redirect(node, '/power_off')
+    return _obmd_redirect(node, '/power_' + op)
+
+
+@rest_call('POST', '/node/<node>/power_on', Schema({'node', basestring}))
+def node_power_on(node):
+    """Power on the node."""
+    return _node_power_on_off(node, 'on')
+
+
+@rest_call('POST', '/node/<node>/power_off', Schema({'node': basestring}))
+def node_power_off(node):
+    """Power off the node."""
+    return _node_power_on_off(node, 'off')
 
 
 @rest_call('PUT', '/node/<node>/boot_device', Schema({

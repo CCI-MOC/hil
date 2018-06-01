@@ -607,6 +607,17 @@ Authorization requirements:
 
 * Access to the project to which `<node>` is assigned (if any) or administrative access.
 
+#### node_power_on
+
+`POST /node/<node>/power_on`
+
+Power on the node named `<node>`. If the node is already powered on,
+this will have no effect.
+
+Authorization requirements:
+
+* Access to the project to which `<node>` is assigned (if any) or administrative access.
+
 #### list_nodes
 
 `GET /nodes/<is_free>`
