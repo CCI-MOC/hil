@@ -296,7 +296,7 @@ def _node_power_on_off(node, op):
     return _obmd_redirect(node, '/power_' + op)
 
 
-@rest_call('POST', '/node/<node>/power_on', Schema({'node', basestring}))
+@rest_call('POST', '/node/<node>/power_on', Schema({'node': basestring}))
 def node_power_on(node):
     """Power on the node."""
     return _node_power_on_off(node, 'on')

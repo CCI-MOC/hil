@@ -157,6 +157,13 @@ def node_power_off(node):
     client.node.power_off(node)
 
 
+@node_power.command(name='on')
+@click.argument('node')
+def node_power_on(node):
+    """Power on <node>"""
+    client.node.power_on(node)
+
+
 @node_power.command(name='cycle')
 @click.argument('node')
 def node_power_cycle(node):

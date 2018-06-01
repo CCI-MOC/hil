@@ -98,6 +98,12 @@ class Node(ClientBase):
         return self.check_response(self.httpClient.request('POST', url))
 
     @check_reserved_chars()
+    def power_on(self, node_name):
+        """Power ons the <node> """
+        url = self.object_url('node', node_name, 'power_on')
+        return self.check_response(self.httpClient.request('POST', url))
+
+    @check_reserved_chars()
     def set_bootdev(self, node, dev):
         """Set <node> to boot from <dev> persistently"""
         url = self.object_url('node', node, 'boot_device')
