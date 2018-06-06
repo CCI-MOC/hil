@@ -95,6 +95,7 @@ def test_cli(obmd_cfg):
 
     hil('node', 'console', 'stop', NODE1)
     hil('node', 'power', 'off', NODE1)
+    hil('node', 'power', 'on', NODE1)
     hil('node', 'power', 'cycle', NODE1)
 
     # Test node metadata calls

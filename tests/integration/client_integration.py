@@ -286,6 +286,11 @@ class Test_node:
         with pytest.raises(BadArgumentError):
             C.node.power_off('node-/%]07')
 
+    def test_power_on(self, obmd_node):
+        """(successful) to node_power_on"""
+        C.node.enable_obm(obmd_node)
+        assert C.node.power_on(obmd_node) is None
+
     def test_set_bootdev(self, obmd_node):
         """ (successful) to node_set_bootdev """
         C.node.enable_obm(obmd_node)
