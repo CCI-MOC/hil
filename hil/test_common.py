@@ -447,7 +447,7 @@ def obmd_cfg():
         portno = 8800
         worker = os.getenv('PYTEST_XDIST_WORKER')
         if worker is not None:
-            portno += + int(''.join([
+            portno += int(''.join([
                 char
                 for char in worker
                 if char.isdigit()
