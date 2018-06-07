@@ -129,8 +129,8 @@ eg. There has to be a system user `hil` to access database named `hil` as databa
 
 Create database `hil_dev` owned by database role `hil_dev`::
 
-  sudo -i -u hil_dev
-  $ createdb hil
+  $ sudo -i -u hil_dev
+  $ createdb hil_dev
 
 Confirm it created a database named `hil_dev` and it is owned by `hil_dev`::
 
