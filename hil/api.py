@@ -1495,12 +1495,12 @@ def _maintain(project, node, node_label):
         response = requests.post(url,
                                  headers={'Content-Type': 'application/json'},
                                  data=payload)
+        if (not 200 <= response < 300):
+            logger.warn('POST to maintenance service'
+                        ' failed with response: %s', response.text)
     except requests.ConnectionError:
         logger.warn('POST to maintenance service'
                     ' failed: connection failed')
-    if (not 200 <= response < 300):
-        logger.warn('POST to maintenance service'
-                    ' failed with response: %s', response.text)
 
 
 def check_pending_action(nic):
