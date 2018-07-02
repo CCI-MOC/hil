@@ -40,12 +40,13 @@ class TestMultiNets(NetworkTest):
     """NetworkTest using multiple tagged vlan networks on a port."""
 
     def test_multi_networks(self):
-        """Do a bunch of network operations on the switch, and verify things
-        along the way.
-
-        The above is super vague; unfortunately the setup operations are very
-        slow, so it makes a huge difference to do everything in one pass. See
-        the comments in-line to understand exactly what is being tested.
+        """A suite of tests to ensure that multiple networks can relate
+        to a single port. Previously, there was an issue with
+        get_port_networks() where it didn't return the full range of
+        vlans, rather it returned only the ones at the ends of the ranges.
+        These tests ensure that the full range of vlans can be fetched.
+        Issue: https://github.com/CCI-MOC/hil/issues/921
+        See the inline comments for the specifics.
         """
 
         def get_legal_channels(network):
@@ -64,11 +65,8 @@ class TestMultiNets(NetworkTest):
             nodes = self.collect_nodes()
 
             # create 5 networks
-            network_create_simple('net-0', 'anvil-nextgen')
-            network_create_simple('net-1', 'anvil-nextgen')
-            network_create_simple('net-2', 'anvil-nextgen')
-            network_create_simple('net-3', 'anvil-nextgen')
-            network_create_simple('net-4', 'anvil-nextgen')
+            for i in range(5):
+                network_create_simple('net-%d' % i, 'anvil-nextgen')
 
             ports = self.get_all_ports(nodes)
 
@@ -79,10 +77,8 @@ class TestMultiNets(NetworkTest):
 
             # get channel IDs for tagged versions of networks
             net_tag = {}
-            net_tag[0] = get_legal_channels('net-0')[1]
-            net_tag[1] = get_legal_channels('net-1')[1]
-            net_tag[2] = get_legal_channels('net-2')[1]
-            net_tag[3] = get_legal_channels('net-3')[1]
+            for i in range(4):
+                net_tag[i] = get_legal_channels('net-%d' % i)[1]
 
             # connect node 0 to net-0 in native mode
             api.node_connect_network(nodes[0].label,
