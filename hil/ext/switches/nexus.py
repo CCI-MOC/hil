@@ -15,7 +15,7 @@ from os.path import join, dirname
 from hil.migrations import paths
 from hil.model import BigIntegerType
 from hil.config import core_schema, string_is_bool
-
+from hil.ext.switches.common import parse_vlans
 
 logger = logging.getLogger(__name__)
 
@@ -180,43 +180,39 @@ class _Session(_console.Session):
         return result
 
     def get_port_networks(self, ports):
-        num_re = re.compile(r'(\d+)')
+        '''Returns dictionary of ports, each containing a list of related
+        VLANs.'''
         port_configs = self._port_configs(ports)
         result = {}
 
         for k, v in port_configs.iteritems():
-            networks = []
+            network_list = []
+            non_native_list = []
             if 'Trunking Native Mode VLAN' not in v:
                 # XXX (probable BUG): For some reason the last port on the
                 # switch sometimes isn't read correctly. For now just don't use
                 # that port for the test suite, and will skip it if this
                 # happens.
                 continue
-            native = v['Trunking Native Mode VLAN'].strip()
-            match = re.match(num_re, native)
-            if match:
-                num_str = match.groups()[0]
-                native = int(num_str)
-                if native == int(self.switch.dummy_vlan):
-                    native = None
+            # Get native vlan then remove junk if native is not None or Dummy
+            native_vlan = v['Trunking Native Mode VLAN'].strip()
+            if int(native_vlan.split(' ')[0]) == int(self.switch.dummy_vlan):
+                native_vlan = None
+            elif native_vlan != 'none':
+                native_vlan = native_vlan.split(' ')[0]
             else:
-                native = None
-            for range_str in v['Trunking VLANs Allowed'].split(','):
-                # XXX TODO make this actualy interpret e.g. 2-7 as a *range*
-                for num_str in range_str.split('-'):
-                    num_str = num_str.strip()
-                    match = re.match(num_re, num_str)
-                    if match:
-                        # There may be other tokens in the output, e.g.
-                        # the string "(Inactive)" somteimtes appears.
-                        # We should only use the value if it's an actual
-                        # number.
-                        num_str = match.groups()[0]
-                        networks.append(('vlan/%s' % num_str, int(num_str)))
-
-            if native is not None:
-                networks.append(('vlan/native', native))
-            result[k] = networks
+                native_vlan = None
+            # Get other vlans
+            trunk_vlans = v['Trunking VLANs Allowed'].strip()
+            if trunk_vlans != 'none':
+                non_native_list = parse_vlans(trunk_vlans)
+            if native_vlan is not None:
+                # Ensure that native vlan is not in the non-native list
+                non_native_list.remove(native_vlan)
+                network_list.append(('vlan/native', int(native_vlan)))
+            for v in (non_native_list):
+                network_list.append(('vlan/%s' % v, int(v)))
+            result[k] = network_list
         return result
 
     def save_running_config(self):

@@ -155,36 +155,3 @@ class _DellN3000Session(_BaseSession):
         self._sendline('\n')
         self.console.expect(self.main_prompt)
         return result
-
-    def get_port_networks(self, ports):
-        num_re = re.compile(r'(\d+)')
-        port_configs = self._port_configs(ports)
-        result = {}
-        for k, v in port_configs.iteritems():
-            native = v['Trunking Mode Native VLAN'].strip()
-            match = re.match(num_re, native)
-            if match:
-                # We need to call groups to get the part of the string that
-                # actually matched, because it could include some junk on the
-                # end, e.g. "100 (Inactive)".
-                num_str = match.groups()[0]
-                native = int(num_str)
-                if native == int(self.switch.dummy_vlan):
-                    native = None
-            else:
-                native = None
-            networks = []
-            for range_str in v['Trunking Mode VLANs Enabled'].split(','):
-                for num_str in range_str.split('-'):
-                    num_str = num_str.strip()
-                    match = re.match(num_re, num_str)
-                    if match:
-                        # There may be other tokens in the output, e.g.
-                        # the string "(Inactive)" somteimtes appears.
-                        # We should only use the value if it's an actual number
-                        num_str = match.groups()[0]
-                        networks.append(('vlan/%s' % num_str, int(num_str)))
-            if native is not None:
-                networks.append(('vlan/native', native))
-            result[k] = networks
-        return result

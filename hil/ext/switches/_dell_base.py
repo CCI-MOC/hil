@@ -2,6 +2,7 @@
 
 import re
 import logging
+from hil.ext.switches.common import parse_vlans
 
 from hil.ext.switches import _console
 
@@ -36,35 +37,63 @@ class _BaseSession(_console.Session):
         self._sendline('sw trunk native vlan none')
 
     def get_port_networks(self, ports):
-        num_re = re.compile(r'(\d+)')
+        '''Returns every trunking VLAN and native VLAN from a port config.
+        Example: Port 1 has 'Trunking Native Mode VLAN': ' 3 (Inactive)',
+        'Trunking VLANs Enabled': 'none'
+        Port 2 has 'Trunking Native Mode VLAN': 'none',
+        'Trunking VLANs Enabled': ' 10, 2000'
+        Port 3 has 'Trunking Native Mode VLAN': 'none',
+        'Trunking VLANs Enabled': ' 23 - 25'
+
+        Return:
+        {<hil.model.Port object at 0xDEADBEEF0123>: [('vlan/native', '3')],
+        <hil.model.Port object at 0x7F8503AB4991>: [('vlan/10', 10),
+                                                    ('vlan/2000', 2000)],
+        <hil.model.Port object at 0xABCD01234ABCD>: [('vlan/23', 23),
+                                                     ('vlan/24', 24),
+                                                     ('vlan/25', 25)]}
+        '''
         port_configs = self._port_configs(ports)
+        # iterate through the port configurations
         result = {}
         for k, v in port_configs.iteritems():
-            native = v['Trunking Native Mode VLAN'].strip()
-            match = re.match(num_re, native)
-            if match:
-                # We need to call groups to get the part of the string that
-                # actually matched, because it could include some junk on the
-                # end, e.g. "100 (Inactive)".
-                num_str = match.groups()[0]
-                native = int(num_str)
+            network_list = []
+            non_native_list = []
+            # get native vlan then remove junk if native is not None
+            try:
+                native_vlan = v['Trunking Native Mode VLAN'].strip()
+            except KeyError:
+                # some dell switches say "Mode Native" instead
+                native_vlan = v['Trunking Mode Native VLAN'].strip()
+            # append native vlan if appropriate:
+            if native_vlan != 'none':
+                native_vlan = native_vlan.replace(' (Inactive)', '')
+                if (hasattr(self.switch, 'dummy_vlan') and
+                        int(native_vlan) == int(self.switch.dummy_vlan)):
+                        # ignore if dummy vlan
+                        native_vlan = None
+                else:
+                    # appropriate to append native vlan to list
+                    network_list.append(('vlan/native', int(native_vlan)))
             else:
-                native = None
-            networks = []
-            range_str = v['Trunking VLANs Enabled']
-            for range_str in v['Trunking VLANs Enabled'].split(','):
-                for num_str in range_str.split('-'):
-                    num_str = num_str.strip()
-                    match = re.match(num_re, num_str)
-                    if match:
-                        # There may be other tokens in the output, e.g.
-                        # the string "(Inactive)" somteimtes appears.
-                        # We should only use the value if it's an actual number
-                        num_str = match.groups()[0]
-                        networks.append(('vlan/%s' % num_str, int(num_str)))
-            if native is not None:
-                networks.append(('vlan/native', native))
-            result[k] = networks
+                native_vlan = None
+            # select correct key and get other vlans
+            try:
+                trunk_vlans = v['Trunking VLANs Enabled'].strip()
+            except KeyError:
+                trunk_vlans = v['Trunking Mode VLANs Enabled'].strip()
+            # parse out junk
+            if trunk_vlans != 'none' and trunk_vlans != '':
+                non_native_list = _make_vlan_list(trunk_vlans)
+                # ensure native vlan is not in the non-native list
+                if native_vlan is not None:
+                    non_native_list.remove(native_vlan)
+                # make final vlan list
+                for v in non_native_list:
+                    # checking for extra whitespace
+                    v = "".join(v.split())
+                    network_list.append(('vlan/%s' % v, int(v)))
+            result[k] = network_list
         return result
 
     def disable_port(self):
@@ -126,3 +155,11 @@ class _BaseSession(_console.Session):
         config = config.split("\n", 1)[1]
         self._set_terminal_lines('default')
         return config
+
+
+def _make_vlan_list(dirty_list):
+    '''Create vlan list from switch config vlan ranges.'''
+    ranges = dirty_list.replace(' (Inactive)', '')
+    ranges = ranges.split('\r\n')
+    ranges = ','.join(ranges)
+    return parse_vlans(ranges)
