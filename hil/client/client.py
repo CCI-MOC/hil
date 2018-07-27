@@ -71,13 +71,16 @@ class HTTPResponse(namedtuple('HTTPResponse', ['status_code',
         An iterator that reads the body of the response in chunks, in a
         streaming fasion.
     content : str
-        The entire body of the response, as a string. The first
-        access to this attribute drains body, so further calls to body.next()
-        will raise StopIteration.
+        (see below)
     """
 
     @property
     def content(self):
+        """The entire body of the response, as a string.
+
+        The first access to this attribute drains body, so further calls to
+        body.next() will raise StopIteration.
+        """
         if not hasattr(self, '_content'):
             self._content = ''.join(list(self.body))
         return self._content
