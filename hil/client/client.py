@@ -57,7 +57,7 @@ class HTTPClient(object):
 
 class HTTPResponse(namedtuple('HTTPResponse', ['status_code',
                                                'headers',
-                                               'content'])):
+                                               'body'])):
     """An http response.
 
     Attributes
@@ -67,9 +67,20 @@ class HTTPResponse(namedtuple('HTTPResponse', ['status_code',
         The http status code
     headers : dict
         http headers
+    body : iterator
+        An iterator that reads the body of the response in chunks, in a
+        streaming fasion.
     content : str
-        The body of the response
+        The entire body of the response, as a string. The first
+        access to this attribute drains body, so further calls to body.next()
+        will raise StopIteration.
     """
+
+    @property
+    def content(self):
+        if not hasattr(self, '_content'):
+            self._content = ''.join(list(self.body))
+        return self._content
 
 
 class RequestsHTTPClient(requests.Session, HTTPClient):
@@ -90,10 +101,10 @@ class RequestsHTTPClient(requests.Session, HTTPClient):
     #
     # pylint: disable=arguments-differ
     def request(self, *args, **kwargs):
-        resp = requests.Session.request(self, *args, **kwargs)
+        resp = requests.Session.request(self, *args, stream=True, **kwargs)
         return HTTPResponse(status_code=resp.status_code,
                             headers=resp.headers,
-                            content=resp.content)
+                            body=resp.iter_content())
 
 
 class KeystoneHTTPClient(HTTPClient):
@@ -130,13 +141,14 @@ class KeystoneHTTPClient(HTTPClient):
             resp = self.session.request(method=method,
                                         url=url,
                                         data=data,
-                                        params=params)
+                                        params=params,
+                                        stream=True)
 
         except HttpError as e:
             resp = e.response
         return HTTPResponse(status_code=resp.status_code,
                             headers=resp.headers,
-                            content=resp.content)
+                            content=resp.iter_content())
 
 
 class Client(object):

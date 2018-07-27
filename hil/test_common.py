@@ -113,7 +113,14 @@ class HybridHTTPClient(HTTPClient):
             )
             return HTTPResponse(status_code=resp.status_code,
                                 headers=resp.headers,
-                                content=resp.get_data())
+                                # As far as I(zenhack) can tell, flask's test
+                                # client doesn't support streaming, so we just
+                                # return a one-shot iterator. This is
+                                # conceptually not ideal, but fine in practice
+                                # because the HIL api server doesn't do any
+                                # streaming anyway; we only need that
+                                # functionality with requests that go to OBMd.
+                                body=iter([resp.get_data()]))
         else:
             # URL is outside of our flask app; use the real http client.
             return self._requests_client.request(method,
