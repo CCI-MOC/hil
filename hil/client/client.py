@@ -151,7 +151,7 @@ class KeystoneHTTPClient(HTTPClient):
             resp = e.response
         return HTTPResponse(status_code=resp.status_code,
                             headers=resp.headers,
-                            content=resp.iter_content())
+                            body=resp.iter_content())
 
 
 class Client(object):
