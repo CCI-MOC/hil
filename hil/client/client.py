@@ -69,7 +69,7 @@ class HTTPResponse(namedtuple('HTTPResponse', ['status_code',
         http headers
     body : iterator
         An iterator that reads the body of the response in chunks, in a
-        streaming fasion.
+        streaming fashion.
     content : str
         (see below)
     """
