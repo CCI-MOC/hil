@@ -345,42 +345,34 @@ class Test_node:
         C.node.metadata_set("free_node_0", "EK", "pk")
         assert C.node.metadata_delete("free_node_0", "EK") is None
 
-    def test_node_start_console(self):
-        """(successful) call to node_start_console"""
-        assert C.node.start_console('manhattan_node_1') is None
-
-    def test_node_start_console_reserved_chars(self):
-        """ test for catching illegal argument characters"""
-        with pytest.raises(BadArgumentError):
-            C.node.start_console('node-/%]01')
-
-    def test_node_show_console(self):
+    def test_node_show_console(self, obmd_node):
         """various calls to node_show_console"""
+        node = 'manhattan_node_1'
 
-        # show console without starting should fail.
+        # show console without enabling the obm.
         with pytest.raises(FailedAPICallException):
-            C.node.show_console('manhattan_node_1')
+            C.node.show_console(obmd_node)
 
-        C.node.start_console('manhattan_node_1')
-        assert C.node.show_console('manhattan_node_1') == 'Some console output'
+        C.node.enable_obm(obmd_node)
 
-        C.node.stop_console('manhattan_node_1')
+        # Read in a prefix of the output from the console; the obmd mock driver
+        # keeps counting forever.
+        console_stream = C.node.show_console(obmd_node)
+        expected = '\n'.join([str(i) for i in range(10)])
+        actual = ''
+        while len(actual) < len(expected):
+            actual += console_stream.next()
+        assert actual.startswith(expected)
+
+        C.node.disable_obm(obmd_node)
+
         with pytest.raises(FailedAPICallException):
-            C.node.show_console('manhattan_node_1')
+            C.node.show_console(obmd_node)
 
     def test_node_show_console_reserved_chars(self):
         """test for cataching illegal argument characters"""
         with pytest.raises(BadArgumentError):
             C.node.show_console('node-/%]01')
-
-    def test_node_stop_console(self):
-        """(successful) call to node_stop_console"""
-        assert C.node.stop_console('manhattan_node_1') is None
-
-    def test_node_stop_console_reserved_chars(self):
-        """ test for catching illegal argument characters"""
-        with pytest.raises(BadArgumentError):
-            C.node.stop_console('node-/%]01')
 
     def test_node_connect_network(self):
         """(successful) call to node_connect_network"""
