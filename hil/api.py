@@ -278,8 +278,6 @@ def node_power_cycle(node, force=False):
     """
     node = get_or_404(model.Node, node)
     get_auth_backend().require_project_access(node.project)
-    if not node.obm_is_enabled():
-        raise errors.BlockedError("OBM is not enabled")
     return _obmd_redirect(node, '/power_cycle')
 
 
@@ -291,8 +289,6 @@ def _node_power_on_off(node, op):
     """
     node = get_or_404(model.Node, node)
     get_auth_backend().require_project_access(node.project)
-    if not node.obm_is_enabled():
-        raise errors.BlockedError("OBM is not enabled")
     return _obmd_redirect(node, '/power_' + op)
 
 
@@ -315,8 +311,6 @@ def node_set_bootdev(node, bootdev):
     """Set the node's boot device."""
     node = get_or_404(model.Node, node)
     get_auth_backend().require_project_access(node.project)
-    if not node.obm_is_enabled():
-        raise errors.BlockedError("OBM is not enabled")
     return _obmd_redirect(node, '/boot_device')
 
 
@@ -1402,6 +1396,8 @@ def get_or_404(cls, name):
 
 
 def _obmd_redirect(node, path):
+    if not node.obm_is_enabled():
+        raise errors.BlockedError("OBM is not enabled")
     return flask.redirect(
         node.obmd_uri + path + '?token=' + node.obmd_node_token,
         # 307 is important, since it requires that the client not change
