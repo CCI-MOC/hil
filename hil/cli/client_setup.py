@@ -2,7 +2,6 @@
 
 import sys
 import os
-import requests
 
 from hil.client.client import Client, RequestsHTTPClient, KeystoneHTTPClient
 

@@ -347,8 +347,6 @@ class Test_node:
 
     def test_node_show_console(self, obmd_node):
         """various calls to node_show_console"""
-        node = 'manhattan_node_1'
-
         # show console without enabling the obm.
         with pytest.raises(FailedAPICallException):
             C.node.show_console(obmd_node)
