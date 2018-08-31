@@ -91,7 +91,7 @@ def test_cli(obmd_cfg):
     hil('node', 'bootdev', NODE1, 'A')
 
     console_proc = subprocess.Popen(
-        ['node', 'console', 'show', NODE1],
+        ['hil', 'node', 'console', 'show', NODE1],
         stdout=subprocess.PIPE,
     )
     for i in range(10):
