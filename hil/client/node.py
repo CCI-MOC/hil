@@ -168,27 +168,23 @@ class Node(ClientBase):
 
     @check_reserved_chars()
     def show_console(self, node):
-        """Display console log for <node> """
+        """Stream the console for <node>.
+
+        Unlike most of the other API calls, rather than returning a json
+        value, this returns an iterator allowing the caller to read the
+        console in a streaming fashion. The iterator's next() method
+        returns the next chunk of data from the console, when it is
+        available.
+        """
         url = self.object_url('node', node, 'console')
         response = self.httpClient.request('GET', url)
         # we don't call check_response here because we want to return the
-        # raw byte stream, rather than converting it to json.
+        # raw byte stream, rather than reading the whole thing in and
+        # converting it to json.
         if 200 <= response.status_code < 300:
-            return response.content
+            return response.body
         raise FailedAPICallException(error_type=response.status_code,
                                      message=response.content)
-
-    @check_reserved_chars()
-    def start_console(self, node):
-        """Start logging console output from <node> """
-        url = self.object_url('node', node, 'console')
-        return self.check_response(self.httpClient.request('PUT', url))
-
-    @check_reserved_chars()
-    def stop_console(self, node):
-        """Stop logging console output from <node> and delete the log"""
-        url = self.object_url('node', node, 'console')
-        return self.check_response(self.httpClient.request('DELETE', url))
 
     def show_networking_action(self, status_id):
         """Returns the status of the networking action"""

@@ -89,11 +89,15 @@ def test_cli(obmd_cfg):
 
     # Test that obm related calls run succesfully
     hil('node', 'bootdev', NODE1, 'A')
-    hil('node', 'console', 'start', NODE1)
-    output = hil('node', 'console', 'show', NODE1)
-    assert output.strip('\n') == 'Some console output'
 
-    hil('node', 'console', 'stop', NODE1)
+    console_proc = subprocess.Popen(
+        ['hil', 'node', 'console', 'show', NODE1],
+        stdout=subprocess.PIPE,
+    )
+    for i in range(10):
+        assert console_proc.stdout.readline() == str(i) + '\n'
+    console_proc.kill()
+
     hil('node', 'power', 'off', NODE1)
     hil('node', 'power', 'on', NODE1)
     hil('node', 'power', 'cycle', NODE1)

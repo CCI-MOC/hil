@@ -278,8 +278,6 @@ def node_power_cycle(node, force=False):
     """
     node = get_or_404(model.Node, node)
     get_auth_backend().require_project_access(node.project)
-    if not node.obm_is_enabled():
-        raise errors.BlockedError("OBM is not enabled")
     return _obmd_redirect(node, '/power_cycle')
 
 
@@ -291,8 +289,6 @@ def _node_power_on_off(node, op):
     """
     node = get_or_404(model.Node, node)
     get_auth_backend().require_project_access(node.project)
-    if not node.obm_is_enabled():
-        raise errors.BlockedError("OBM is not enabled")
     return _obmd_redirect(node, '/power_' + op)
 
 
@@ -315,8 +311,6 @@ def node_set_bootdev(node, bootdev):
     """Set the node's boot device."""
     node = get_or_404(model.Node, node)
     get_auth_backend().require_project_access(node.project)
-    if not node.obm_is_enabled():
-        raise errors.BlockedError("OBM is not enabled")
     return _obmd_redirect(node, '/boot_device')
 
 
@@ -1337,28 +1331,8 @@ def list_active_extensions():
 def show_console(nodename):
     """Show the contents of the console log."""
     node = get_or_404(model.Node, nodename)
-    log = node.obm.get_console()
-    if log is None:
-        raise errors.NotFoundError(
-            'The console log for %s does not exist.' % nodename)
-    return log
-
-
-@rest_call('PUT', '/node/<nodename>/console', Schema({'nodename': basestring}))
-def start_console(nodename):
-    """Start logging output from the console."""
-    node = get_or_404(model.Node, nodename)
-    node.obm.start_console()
-
-
-@rest_call('DELETE', '/node/<nodename>/console', Schema({
-    'nodename': basestring,
-}))
-def stop_console(nodename):
-    """Stop logging output from the console and delete the log."""
-    node = get_or_404(model.Node, nodename)
-    node.obm.stop_console()
-    node.obm.delete_console()
+    get_auth_backend().require_project_access(node.project)
+    return _obmd_redirect(node, '/console')
 
 
 # Helper functions #
@@ -1402,6 +1376,8 @@ def get_or_404(cls, name):
 
 
 def _obmd_redirect(node, path):
+    if not node.obm_is_enabled():
+        raise errors.BlockedError("OBM is not enabled")
     return flask.redirect(
         node.obmd_uri + path + '?token=' + node.obmd_node_token,
         # 307 is important, since it requires that the client not change

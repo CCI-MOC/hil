@@ -2,7 +2,6 @@
 
 import sys
 import os
-import requests
 
 from hil.client.client import Client, RequestsHTTPClient, KeystoneHTTPClient
 
@@ -74,7 +73,7 @@ def setup_http_client():
     except (ImportError, KeyError):
         pass
     # Finally, fall back to no authentication:
-    http_client = requests.Session()
+    http_client = RequestsHTTPClient()
     return Client(ep, http_client), http_client
 
 

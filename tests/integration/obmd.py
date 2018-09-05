@@ -123,6 +123,8 @@ def test_power_operations(mock_node):
         api.node_power_cycle(mock_node, force=True)
     with pytest.raises(errors.BlockedError):
         api.node_power_cycle(mock_node, force=False)
+    with pytest.raises(errors.BlockedError):
+        api.show_console(mock_node)
 
     # Now let's enable it and try again.
     api.node_enable_disable_obm(mock_node, enabled=True)
@@ -144,3 +146,13 @@ def test_power_operations(mock_node):
     )
     _power_cycle(True)
     _power_cycle(False)
+
+    resp = _follow_redirect('GET', api.show_console(mock_node), stream=True)
+    # Read the first chunk of the output from the console to make sure it
+    # looks right:
+    i = 0
+    for line in resp.iter_lines():
+        assert line == str(i)
+        if i >= 10:
+            break
+        i += 1

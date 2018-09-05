@@ -201,19 +201,13 @@ def node_console():
 @node_console.command(name='show', short_help='Show console')
 @click.argument('node')
 def node_show_console(node):
-    """Display console log for <node>"""
-    print(client.node.show_console(node))
+    """Display console log for <node>
 
-
-@node_console.command(name='start', short_help='Start console')
-@click.argument('node')
-def node_start_console(node):
-    """Start logging console output from <node>"""
-    client.node.start_console(node)
-
-
-@node_console.command(name='stop', short_help='Stop console')
-@click.argument('node')
-def node_stop_console(node):
-    """Stop logging console output from <node> and delete the log"""
-    client.node.stop_console(node)
+    This will stream data from the console to standard output; press
+    Ctrl+C to stop.
+    """
+    try:
+        for data in client.node.show_console(node):
+            sys.stdout.write(data)
+    except KeyboardInterrupt:
+        pass
