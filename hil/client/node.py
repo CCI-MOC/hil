@@ -179,8 +179,8 @@ class Node(ClientBase):
         url = self.object_url('node', node, 'console')
         response = self.httpClient.request('GET', url)
         # we don't call check_response here because we want to return the
-        # raw byte stream, rather reading the whole thing in and converting
-        # it to json.
+        # raw byte stream, rather than reading the whole thing in and
+        # converting it to json.
         if 200 <= response.status_code < 300:
             return response.body
         raise FailedAPICallException(error_type=response.status_code,
