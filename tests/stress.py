@@ -4,7 +4,7 @@ Tests here are catch problems like resource leaks, that only become apparent
 after a certain amount of use.
 """
 
-from hil.test_common import config_testsuite, fresh_database, config_merge, \
+from hil.test_common import config_testsuite, fresh_database, \
     fail_on_log_warnings, server_init
 from hil import api, config, rest
 
@@ -16,9 +16,6 @@ import pytest
 def configure():
     """Configure HIL"""
     config_testsuite()
-    config_merge(
-            {'extensions': {'hil.ext.obm.ipmi': '', }, })
-
     config.load_extensions()
 
 
@@ -47,12 +44,6 @@ def test_many_http_queries():
         rest.init_auth()
         api.node_register(
             node='node-99',
-            obm={
-                "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                "host": "ipmihost",
-                "user": "root",
-                "password": "tapeworm",
-            },
             obmd={
                 'uri': 'http://obmd.example.com/nodes/node-99',
                 'admin_token': 'secret',
@@ -60,12 +51,6 @@ def test_many_http_queries():
         )
         api.node_register(
             node='node-98',
-            obm={
-                "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                "host": "ipmihost",
-                "user": "root",
-                "password": "tapeworm",
-            },
             obmd={
                 'uri': 'http://obmd.example.com/nodes/node-98',
                 'admin_token': 'secret',
@@ -73,12 +58,6 @@ def test_many_http_queries():
         )
         api.node_register(
             node='node-97',
-            obm={
-                "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                "host": "ipmihost",
-                "user": "root",
-                "password": "tapeworm",
-            },
             obmd={
                 'uri': 'http://obmd.example.com/nodes/node-97',
                 'admin_token': 'secret',

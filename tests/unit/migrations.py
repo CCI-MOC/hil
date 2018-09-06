@@ -48,12 +48,6 @@ def create_pending_actions_db():
             'uri': 'http://obmd.example.com/nodes/node-1',
             'admin_token': 'secret',
         },
-        obm={
-            'type': MOCK_OBM_TYPE,
-            'user': 'user',
-            'host': 'host',
-            'password': 'pass',
-        },
     )
     api.node_register_nic('node-1', 'pxe', 'de:ad:be:ef:20:16')
     api.switch_register('sw0',
@@ -80,8 +74,6 @@ def create_bigint_db():
     from hil.ext.switches.brocade import Brocade
     from hil.ext.switches.nexus import Nexus
     from hil.ext.switches.mock import MockSwitch
-    from hil.ext.obm.ipmi import Ipmi
-    from hil.ext.obm.mock import MockObm
     from hil.ext.auth.database import User
     from hil.ext.auth import database as dbauth
     with app.app_context():
@@ -122,18 +114,9 @@ def create_bigint_db():
         db.session.add(headnode1)
         db.session.add(model.Hnic(label='hnic1',
                                   headnode=headnode1))
-        ipmi = Ipmi(host='host',
-                    user='user',
-                    password='pass')
-        db.session.add(ipmi)
-        mock_obm = MockObm(host='host',
-                           user='user',
-                           password='pass')
-        db.session.add(mock_obm)
         node1 = model.Node(label='node-1',
                            obmd_uri='http://obmd.example.com/nodes/node-1',
-                           obmd_admin_token='secret',
-                           obm=ipmi)
+                           obmd_admin_token='secret')
         db.session.add(node1)
 
         db.session.add(model.Metadata(label='meta',

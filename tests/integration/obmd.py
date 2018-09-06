@@ -15,9 +15,6 @@ def configure():
     """Set up the HIL configureation."""
     config_testsuite()
     config_merge({
-        'extensions': {
-            'hil.ext.obm.mock': '',
-        },
         'devel': {
             'dry_run': None,
         },
@@ -64,12 +61,6 @@ def mock_node(obmd_cfg):
     # and then with hil:
     api.node_register(
         node='node-99',
-        obm={
-            "type": 'http://schema.massopencloud.org/haas/v0/obm/mock',
-            "host": "ipmihost",
-            "user": "root",
-            "password": "tapeworm",
-        },
         obmd={
             'uri': obmd_uri,
             'admin_token': obmd_cfg['AdminToken'],

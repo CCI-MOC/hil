@@ -125,8 +125,6 @@ def project_detach_node(project, node):
            nic.current_action.status == 'PENDING':
             raise errors.BlockedError("Node has pending network actions")
 
-    node.obm.stop_console()
-    node.obm.delete_console()
     project.nodes.remove(node)
     _maintain(project, node, node.label)
     db.session.commit()
@@ -212,10 +210,6 @@ def network_revoke_project_access(project, network):
 #############
 @rest_call('PUT', '/node/<node>', schema=Schema({
     'node': basestring,
-    'obm': {
-        'type': basestring,
-        Optional(object): object,
-    },
     'obmd': {
         'uri': And(basestring,
                    lambda s: urlparse(s).scheme in ('http', 'https')),
@@ -232,15 +226,9 @@ def node_register(node, obmd, **kwargs):
     """
     get_auth_backend().require_admin()
     absent_or_conflict(model.Node, node)
-    obm_type = kwargs['obm']['type']
-    cls = concrete_class_for(model.Obm, obm_type)
-    if cls is None:
-        raise errors.BadArgumentError('%r is not a valid OBM type.' % obm_type)
-    cls.validate(kwargs['obm'])
     node_obj = model.Node(label=node,
                           obmd_uri=obmd['uri'],
-                          obmd_admin_token=obmd['admin_token'],
-                          obm=cls(**kwargs['obm']))
+                          obmd_admin_token=obmd['admin_token'])
     if 'metadata' in kwargs:
         for label, value in kwargs['metadata'].items():
             metadata_obj = model.Metadata(label, json.dumps(value), node_obj)
@@ -330,8 +318,6 @@ def node_delete(node):
         raise errors.BlockedError(
             "Node %r has nics; remove them before deleting %r." % (node.label,
                                                                    node.label))
-    node.obm.stop_console()
-    node.obm.delete_console()
     db.session.delete(node)
     db.session.commit()
 
@@ -1462,8 +1448,6 @@ def _maintain(project, node, node_label):
     else:
         return
 
-    if (cfg.has_option('maintenance', 'shutdown')):
-        node.obm.power_off()
     maintenance_proj.nodes.append(node)
     url = cfg.get('maintenance', 'url')
     payload = json.dumps({'node': node_label})

@@ -72,7 +72,6 @@ def configure():
         },
         'extensions': {
             'hil.ext.switches.mock': '',
-            'hil.ext.obm.mock': '',
             'hil.ext.network_allocators.null': None,
             'hil.ext.network_allocators.vlan_pool': '',
         },
@@ -971,7 +970,6 @@ class Test_extensions:
         assert C.extensions.list_active() == [
                     "hil.ext.auth.null",
                     "hil.ext.network_allocators.vlan_pool",
-                    "hil.ext.obm.mock",
                     "hil.ext.switches.mock",
                 ]
 

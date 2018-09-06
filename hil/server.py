@@ -16,7 +16,6 @@ def register_drivers():
     This must be run *after* extensions have been loaded.
     """
     build_class_map_for(model.Switch)
-    build_class_map_for(model.Obm)
 
 
 def validate_state():

@@ -28,7 +28,6 @@ def configure():
         'extensions': {
             'hil.ext.auth.null': '',
             'hil.ext.switches.dellnos9': '',
-            'hil.ext.obm.mock': '',
             'hil.ext.network_allocators.null': None,
             'hil.ext.network_allocators.vlan_pool': '',
         },
@@ -93,12 +92,6 @@ def test_ensure_legal_operations():
     # register a ndoe and a nic
     api.node_register(
         node='compute-01',
-        obm={
-            "type": "http://schema.massopencloud.org/haas/v0/obm/mock",
-            "host": "ipmihost",
-            "user": "root",
-            "password": "tapeworm"
-        },
         obmd={
             'uri': 'http://obmd.example.com',
             'admin_token': 'secret',

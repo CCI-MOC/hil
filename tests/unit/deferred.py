@@ -44,23 +44,19 @@ def configure():
     """
     config_testsuite()
 
-    additional_config = {
-        'extensions': {
-            'hil.ext.obm.mock': ''
-            }
-        }
-
     # if we are using sqlite's in memory db, then change uri to a db on disk
     uri = config.cfg.get('database', 'uri')
     if uri == 'sqlite:///:memory:':
         with tempfile.NamedTemporaryFile() as temp_db:
             uri = 'sqlite:///' + temp_db.name
-            additional_config['database'] = {'uri': uri}
-            config_merge(additional_config)
+            config_merge({
+                'database': {
+                    'uri': uri
+                },
+            })
             config.load_extensions()
             yield
     else:
-        config_merge(additional_config)
         config.load_extensions()
         yield
 
@@ -172,18 +168,11 @@ def new_nic(name):
     The new nic is attached to a new node each time, and the node is added to
     the project named 'anvil-nextgen-####' """
 
-    from hil.ext.obm.mock import MockObm
     unique_id = str(uuid.uuid4())
     project = model.Project('anvil-nextgen-' + unique_id)
     label = str(uuid.uuid4())
     node = model.Node(
         label=label,
-        obm=MockObm(
-            type="http://schema.massopencloud.org/haas/v0/obm/mock",
-            host="ipmihost",
-            user="root",
-            password="tapeworm",
-        ),
         obmd_uri='http://obmd.example.com/nodes/' + label,
         obmd_admin_token='secret',
     )

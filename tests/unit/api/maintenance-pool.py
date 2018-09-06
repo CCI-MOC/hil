@@ -21,8 +21,6 @@ def configure():
             'hil.ext.auth.null': None,
             'hil.ext.auth.mock': '',
             'hil.ext.switches.mock': '',
-            'hil.ext.obm.ipmi': '',
-            'hil.ext.obm.mock': '',
             'hil.ext.network_allocators.null': None,
             'hil.ext.network_allocators.vlan_pool': '',
         },

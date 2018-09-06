@@ -72,8 +72,6 @@ def configure():
             'hil.ext.auth.null': None,
             'hil.ext.auth.mock': '',
             'hil.ext.switches.mock': '',
-            'hil.ext.obm.ipmi': '',
-            'hil.ext.obm.mock': '',
             'hil.ext.network_allocators.null': None,
             'hil.ext.network_allocators.vlan_pool': '',
         },
@@ -114,12 +112,6 @@ def new_node(name):
     """Create a mock node named ``name``"""
     api.node_register(
         node=name,
-        obm={
-            "type": OBM_TYPE_MOCK,
-            "host": "ipmihost",
-            "user": "root",
-            "password": "tapeworm",
-        },
         obmd={
             'uri': 'http://obmd.example.com/nodes/' + name,
             'admin_token': 'secret',
@@ -408,16 +400,9 @@ class TestRegisterCorrectObm:
                 'uri': 'http://obmd.example.com/nodes/compute-01',
                 'admin_token': 'secret',
             },
-            obm={
-                "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                "host": "ipmihost",
-                "user": "root",
-                "password": "tapeworm",
-            },
         )
 
-        node_obj = model.Node.query.filter_by(label="compute-01")\
-                        .join(model.Obm).join(hil.ext.obm.ipmi.Ipmi).one()
+        node_obj = model.Node.query.filter_by(label="compute-01").one()
 
         assert str(node_obj.label) == 'compute-01'
         assert str(node_obj.obmd_uri) == \
@@ -432,12 +417,6 @@ class TestNodeRegisterDelete:
         """node_register should add the node to the db."""
         api.node_register(
             node='node-99',
-            obm={
-                "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                "host": "ipmihost",
-                "user": "root",
-                "password": "tapeworm",
-            },
             obmd={
                 'uri': 'http://obmd.example.com/nodes/node-99',
                 'admin_token': 'secret',
@@ -449,13 +428,6 @@ class TestNodeRegisterDelete:
         """Same thing, but try it with metadata."""
         api.node_register(
             node='node-99',
-            obm={
-                "type": "http://schema.massopencloud.org/haas/v0"
-                        "/obm/ipmi",
-                "host": "ipmihost",
-                "user": "root",
-                "password": "tapeworm"
-            },
             obmd={
                 'uri': 'http://obmd.example.com/nodes/node-99',
                 'admin_token': 'secret',
@@ -471,12 +443,6 @@ class TestNodeRegisterDelete:
         with pytest.raises(SchemaError):
             api.node_register.api_schema.validate({
                 'node': 'node-99',
-                'obm': {
-                    "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                    "host": "ipmihost",
-                    "user": "root",
-                    "password": "tapeworm"
-                },
                 'obmd': {
                     'uri': 'http://obmd.example.com/nodes/node-99',
                     'admin_token': 'secret',
@@ -488,13 +454,6 @@ class TestNodeRegisterDelete:
         """...and with the metadata being something other than a string."""
         api.node_register(
             node='node-99',
-            obm={
-                "type": "http://schema.massopencloud.org/haas/v0"
-                        "/obm/ipmi",
-                "host": "ipmihost",
-                "user": "root",
-                "password": "tapeworm",
-            },
             obmd={
                 'uri': 'http://obmd.example.com/nodes/node-99',
                 'admin_token': 'secret',
@@ -509,13 +468,6 @@ class TestNodeRegisterDelete:
         """...and with multiple metadata keys."""
         api.node_register(
             node='node-99',
-            obm={
-                "type": "http://schema.massopencloud.org/haas/v0"
-                        "/obm/ipmi",
-                "host": "ipmihost",
-                "user": "root",
-                "password": "tapeworm"
-            },
             obmd={
                 'uri': 'http://obmd.example.com/nodes/node-99',
                 'admin_token': 'secret',
@@ -1406,12 +1358,6 @@ class TestNetworkCreateDelete:
         network_create_simple('hammernet', 'anvil-nextgen')
         api.node_register(
             node='node-99',
-            obm={
-                "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                "host": "ipmihost",
-                "user": "root",
-                "password": "tapeworm",
-            },
             obmd={
                 'uri': 'http://obmd.example.com/nodes/node-99',
                 'admin_token': 'secret',
@@ -1437,12 +1383,6 @@ class TestNetworkCreateDelete:
         network_create_simple('hammernet', 'anvil-nextgen')
         api.node_register(
             node='node-99',
-            obm={
-                "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                "host": "ipmihost",
-                "user": "root",
-                "password": "tapeworm",
-            },
             obmd={
                 'uri': 'http://obmd.example.com/nodes/node-99',
                 'admin_token': 'secret',
@@ -2043,12 +1983,6 @@ class TestQuery_unpopulated_db:
         api.switch_register_port('sw0', PORTS[1])
         api.node_register(
             node='robocop',
-            obm={
-                "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                "host": "ipmihost",
-                "user": "root",
-                "password": "tapeworm",
-            },
             obmd={
                 'uri': 'http://obmd.example.com/nodes/robocop',
                 'admin_token': 'secret',
@@ -2428,8 +2362,6 @@ class TestExtensions:
         assert result == [
             'hil.ext.auth.mock',
             'hil.ext.network_allocators.vlan_pool',
-            'hil.ext.obm.ipmi',
-            'hil.ext.obm.mock',
             'hil.ext.switches.mock',
             ]
 
