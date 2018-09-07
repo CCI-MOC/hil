@@ -40,15 +40,12 @@ def hil(*args):
 hil('switch', 'register', switch, 'mock', 'ip', 'user', 'pass')
 
 for node in range(N_NODES):
-    ipmi_ip = "10.0.0." + str(node + 1)
-
     nic_port = "gi1/0/%d" % (node)
     nic_name = 'nic1'
     hil('node', 'register',
         node,
         obmd_base_uri + str(node),
-        obmd_admin_token,
-        "mock", ipmi_ip, ipmi_user, ipmi_pass)
+        obmd_admin_token)
     hil('node', 'nic', 'register', node, nic_name, 'FillThisInLater')
     hil('port', 'register', switch, nic_port)
     hil('port', 'nic', 'add', switch, nic_port, node, nic_name)
