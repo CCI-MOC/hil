@@ -133,6 +133,7 @@ def obmd_node(obmd_cfg):
     assert C.node.register(
         "obmd-node",
         obmd_uri,
+        obmd_cfg['AdminToken'],
     ) is None
 
     return 'obmd-node'
