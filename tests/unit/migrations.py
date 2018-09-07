@@ -31,7 +31,6 @@ from pprint import pformat
 import difflib
 
 MOCK_SWITCH_TYPE = 'http://schema.massopencloud.org/haas/v0/switches/mock'
-MOCK_OBM_TYPE = 'http://schema.massopencloud.org/haas/v0/obm/mock'
 
 
 def create_pending_actions_db():
@@ -285,8 +284,6 @@ def get_db_state():
             'hil.ext.switches.dell': '',
             'hil.ext.switches.n3000': '',
             'hil.ext.switches.brocade': '',
-            'hil.ext.obm.ipmi': '',
-            'hil.ext.obm.mock': '',
             'hil.ext.auth.database': '',
             'hil.ext.network_allocators.vlan_pool': '',
 
@@ -303,8 +300,6 @@ def get_db_state():
             'hil.ext.switches.mock': '',
             'hil.ext.switches.nexus': '',
             'hil.ext.switches.dell': '',
-            'hil.ext.obm.ipmi': '',
-            'hil.ext.obm.mock': '',
             'hil.ext.auth.database': '',
             'hil.ext.network_allocators.vlan_pool': '',
 
@@ -318,7 +313,6 @@ def get_db_state():
     }],
     ['pending-networking-actions.sql', create_pending_actions_db, {
         'extensions': {
-            'hil.ext.obm.mock': '',
             'hil.ext.switches.mock': '',
             'hil.ext.auth.null': '',
             'hil.ext.network_allocators.null': '',
