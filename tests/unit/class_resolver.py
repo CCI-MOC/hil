@@ -1,5 +1,5 @@
 """Test the hil.class_resolver module."""
-import hil
+import hil  # pylint: disable=unused-import
 from hil.class_resolver import concrete_class_for, build_class_map_for
 from hil import model
 from hil.test_common import fail_on_log_warnings
