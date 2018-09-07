@@ -41,7 +41,6 @@ General advice on working with this module:
   readability and maintainability.
 * make sure it is easy to see what a new test is trying to verify.
 """
-import hil
 from hil import model, deferred, errors, config, api
 from hil.test_common import config_testsuite, config_merge, fresh_database, \
     fail_on_log_warnings, additional_db, with_request_context, \
