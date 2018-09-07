@@ -450,29 +450,31 @@ Possible Errors:
 
 #### node_register
 
-Register a node with OBM of <type> and optional metadata
-
-<type> (a string) is the type of OBM. The possible value depends on what drivers
-HIL is configured to use. The remainder of the field are driver-specific;
-see the documentation of the OBM driver in question (read `docs/obm-drivers.md`).
-
 `PUT /node/<node>`
+
+Register a node with optional metadata
+
+The `"obmd"` field has two subfields. The first is `"uri"`, which is the
+uri for the given node under obmd's API; if obmd's API is available at
+`https://obmd.example.com`, then `node4` will have a uri of
+`https://obmd.example.com/node/node4`. The second is `"admin_token"`,
+which is the admin token for obmd.
+
+Note that different nodes may be managed by different instances of obmd;
+HIL does not care.
 
 Request Body:
 
     {
-        "obm": {
-            "type": <obm-subtype>, <additional sub-type specific values>
+        "obmd": {
+            "uri": "https://obmd.example.com/node/node4",
+            "admin_token": "208eb61c77c3468558ccd9eec9ca0598"
         },
         "metadata": { (Optional)
             "label_1": "value_1",
             "label_2": "value_2"
         }
     }
-
-example provided in USING.rst
-
-Register a node named `<node>` with the database.
 
 Authorization requirements:
 

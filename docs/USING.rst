@@ -93,32 +93,31 @@ cli call
 
     $ hil switch register mockswitch02 mock switchhost01 switchuser01 password1234
 
-2) Registering a Node which uses IPMI for out of band management
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
+2) Registering a Node
+^^^^^^^^^^^^^^^^^^^^^
 
 - **Node name:**  dummyNoderHIL-02
-- **Ipmi info:**
-   + **hostname:**           ipmiHost4node-02
-   + **ipmi_username:**      ipmiUser4node-02
-   + **ipmi_password:**      ipmiPass4node-02
+- **OBMd uri: ``https://obmd.example.com/node/node-02``**
+- **OBMd admin token: d7c9e587124fb1cb0d03f79933a9ce28**
 
-For nodes using IPMI use the following api call:
+For a node with the above information, use the following api call:
 
 ::
 
-     curl -X PUT http://127.0.0.1:5001/v0/node/dummyNode01 -d '
-     > {"obm": { "type": "http://schema.massopencloud.org/haas/v0/obm/ipmi",
-     > "host": "ipmiHost4node-01",
-     > "user": "ipmiUser4node-01",
-     > "password": "ipmiPass4node-01"
-     > }}'
+     curl -X PUT http://127.0.0.1:5001/v0/node/dummyNode01 -d '{
+     >     "obmd": {
+     >         "uri": "https://obmd.example.com/node/node-02",
+     >         "admin_token": "d7c9e587124fb1cb0d03f79933a9ce28"
+     >     }
+     > }'
 
 Corresponding cli calls will be as follows:
 
 ::
 
-     $ hil node register ipmi dummyNode01 ipmiHost4node-01 ipmiUser4node-01 ipmiPass4node-01
+     $ hil node register dummyNoderHIL-02 \
+             https://obmd.example.com/node/node-02  \
+             d7c9e587124fb1cb0d03f79933a9ce28
 
 3) Creating a Project in HIL
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
