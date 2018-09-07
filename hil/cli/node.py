@@ -46,29 +46,15 @@ def node_bootdev(node, bootdev):
 @click.argument('node')
 @click.argument('obmd-uri')
 @click.argument('obmd-admin-token')
-@click.argument('obmtype')
-@click.argument('hostname')
-@click.argument('username')
-@click.argument('password')
 def node_register(node,
                   obmd_uri,
-                  obmd_admin_token,
-                  obmtype,
-                  hostname,
-                  username,
-                  password):
-    """Register a node named <node>, with the given type
-        if obm is of type: ipmi then provide arguments
-        "ipmi", <hostname>, <ipmi-username>, <ipmi-password>
-    """
+                  obmd_admin_token):
+    """Register a node named <node>"""
     client.node.register(
         node,
         obmd_uri,
         obmd_admin_token,
-        obmtype,
-        hostname,
-        username,
-        password)
+    )
 
 
 @node.command(name='delete')

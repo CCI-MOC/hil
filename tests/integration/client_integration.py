@@ -133,8 +133,6 @@ def obmd_node(obmd_cfg):
     assert C.node.register(
         "obmd-node",
         obmd_uri,
-        obmd_cfg['AdminToken'],
-        "mock", "dummy", "dummy", "dummy",
     ) is None
 
     return 'obmd-node'
@@ -186,25 +184,7 @@ class Test_node:
         assert C.node.register("dummy-node-01",
                                "http://obmd.example.com/node/dummy-node-01",
                                "secret",
-                               "mock", "dummy", "dummy", "dummy") is None
-        with pytest.raises(BadArgumentError):
-            C.node.register("dummy-node-02",
-                            "http://obmd.example.com/node/dummy-node-02",
-                            "secret",
-                            # Too few arguments
-                            "mock", "dummy", "dummy")
-        with pytest.raises(BadArgumentError):
-            C.node.register("dummy-node-03",
-                            "http://obmd.example.com/node/dummy-node-02",
-                            "secret",
-                            # Too many arguments
-                            "mock", "dummy", "dummy", "dummy", "dummy")
-        with pytest.raises(UnknownSubtypeError):
-            C.node.register("dummy-node-04",
-                            "http://obmd.example.com/node/dummy-node-02",
-                            "secret",
-                            # Non-existent subtype.
-                            "donotexist", "dummy", "dummy", "dummy")
+                               ) is None
 
     def test_show_node(self):
         """(successful) to show_node"""
