@@ -572,6 +572,10 @@ Authorization requirements:
 
 * Access to the project to which `<node>` is assigned (if any) or administrative access.
 
+Possible Errors:
+
+* 409, if the node's OBM is not enabled (see node_enable_obm).
+
 #### node_set_bootdev
 
 `PUT /node/<node>/boot_device`
@@ -589,6 +593,10 @@ Sets the node's next boot device persistently
 Authorization requirements:
 
 * Access to the project to which `<node>` is assigned (if any) or administrative access.
+
+Possible Errors:
+
+* 409, if the node's OBM is not enabled (see node_enable_obm).
 
 ##### For IPMI devices
 
@@ -609,6 +617,10 @@ Authorization requirements:
 
 * Access to the project to which `<node>` is assigned (if any) or administrative access.
 
+Possible Errors:
+
+* 409, if the node's OBM is not enabled (see node_enable_obm).
+
 #### node_power_on
 
 `POST /node/<node>/power_on`
@@ -619,6 +631,33 @@ this will have no effect.
 Authorization requirements:
 
 * Access to the project to which `<node>` is assigned (if any) or administrative access.
+
+Possible Errors:
+
+* 409, if the node's OBM is not enabled (see node_enable_obm).
+
+#### show_console
+
+`GET /node/<node>/<console`
+
+Stream output from the node's serial console.
+
+The response body will be a byte stream from the node's serial console;
+streaming will continue until the connection is broken.
+
+Only one client may be connected to a node's console in this fashion at
+a time; if a second client connects, the first will be disconnected.
+
+The node's obm must be enabled; a `BlockedError` will be raised
+otherwise.
+
+Authorization requirements:
+
+* Access to the project to which `<node>` is assigned (if any) or administrative access.
+
+Possible Errors:
+
+* 409, if the node's OBM is not enabled (see node_enable_obm).
 
 #### list_nodes
 
