@@ -12,7 +12,11 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '02f7e9607e16'
-down_revision = 'd65a9dc873d7'
+down_revision = (
+    'd65a9dc873d7',  # hil core
+    '655e037522d0',  # mock obm
+    'fcb23cd2e9b7',  # ipmi
+)
 branch_labels = ('hil',)
 
 # pylint: disable=missing-docstring
@@ -20,13 +24,9 @@ branch_labels = ('hil',)
 
 def upgrade():
     engine = op.get_bind()
-
-    # These tables may or may not exist, depending on what extensions the user
-    # had enabled:
-    for driver_table in 'mock_obm', 'ipmi':
-        if engine.dialect.has_table(engine, driver_table):
-            op.drop_table(driver_table)
-
+    for table in 'mock_obm', 'ipmi':
+        if engine.dialect.has_table(engine, table):
+            op.drop_table(table)
     op.drop_constraint(u'node_obm_id_fkey', 'node', type_='foreignkey')
     op.drop_column('node', 'obm_id')
     op.drop_table('obm')

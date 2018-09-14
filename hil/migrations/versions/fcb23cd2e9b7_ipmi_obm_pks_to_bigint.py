@@ -19,6 +19,9 @@ branch_labels = ('hil.ext.obm.ipmi',)
 
 
 def upgrade():
+    engine = op.get_bind()
+    if not engine.dialect.has_table(engine, 'ipmi'):
+        return
     op.alter_column('ipmi', 'id',
                     existing_type=sa.Integer(),
                     type_=sa.BIGINT())

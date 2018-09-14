@@ -19,7 +19,9 @@ branch_labels = ('hil.ext.obm.mock',)
 
 
 def upgrade():
-
+    engine = op.get_bind()
+    if not engine.dialect.has_table(engine, 'mock_obm'):
+        return
     op.alter_column('mock_obm', 'id',
                     existing_type=sa.INTEGER(),
                     type_=sa.BigInteger())
