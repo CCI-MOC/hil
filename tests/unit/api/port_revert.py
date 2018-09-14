@@ -21,8 +21,6 @@ class Test_port_revert(unittest.TestCase):
         config_merge({
             'extensions': {
                 'hil.ext.switches.mock': '',
-                'hil.ext.obm.ipmi': '',
-                'hil.ext.obm.mock': '',
                 'hil.ext.network_allocators.null': None,
                 'hil.ext.network_allocators.vlan_pool': '',
             },

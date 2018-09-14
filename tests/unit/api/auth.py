@@ -66,7 +66,6 @@ def configure():
             # disable it explicitly:
             'hil.ext.auth.null': None,
             'hil.ext.switches.mock': '',
-            'hil.ext.obm.mock': ''
         },
     })
     config.load_extensions()
@@ -625,12 +624,6 @@ def _with_enabled_obm(api_call, node):
 
 admin_calls = [
     (api.node_register, ['new_node'], {
-        'obm': {
-            "type": MOCK_OBM_API_NAME,
-            "host": "ipmihost",
-            "user": "root",
-            "password": "tapeworm",
-        },
         'obmd': {
             'uri': 'http://obmd.example.com/node/new_node',
             'admin_token': 'secret',

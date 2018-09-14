@@ -26,7 +26,6 @@ dry_run=True
 
 [extensions]
 hil.ext.switches.mock =
-hil.ext.obm.mock =
 hil.ext.network_allocators.null =
 hil.ext.auth.null =
 # Depending on what you're doing, you may want to change this to a

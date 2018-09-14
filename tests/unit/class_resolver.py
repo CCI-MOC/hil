@@ -16,7 +16,6 @@ def mock_extensions():
     Just used for the side-effect of registering the subclasses.
     """
     # pylint: disable=unused-variable
-    import hil.ext.obm.mock
     import hil.ext.switches.mock
 
 
@@ -70,13 +69,6 @@ def test_class_resolver():
     assert concrete_class_for(Drink, 'apple') is None
     assert concrete_class_for(Drink, 'orange') is OrangeJuice
     assert concrete_class_for(Drink, 'grape') is GrapeJuice
-
-
-def test_class_Obm():
-    """Test class_resolver with MockObm"""
-    build_class_map_for(model.Obm)
-    assert concrete_class_for(model.Obm, mockapi_name + "obm/mock") \
-        is hil.ext.obm.mock.MockObm
 
 
 def test_class_Switch():

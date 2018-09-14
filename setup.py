@@ -48,7 +48,6 @@ setup(name='hil',
               'migrations/script.py.mako',
               'migrations/versions/*.py',
           ],
-          'hil.ext.obm': ['migrations/*/*.py'],
           'hil.ext.switches': ['migrations/*/*.py'],
           'hil.ext.auth': ['migrations/*/*.py'],
           'hil.ext.network_allocators': ['migrations/*/*.py']

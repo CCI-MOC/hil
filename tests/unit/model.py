@@ -31,29 +31,30 @@ fresh_database = pytest.fixture(fresh_database)
 pytestmark = pytest.mark.usefixtures('configure', 'fresh_database')
 
 
-class TestNic(ModelTest):
-    """ModelTest for Nic objects."""
+def _test_node():
+    """Generate a test node.
 
-    def sample_obj(self):
-        from hil.ext.obm.ipmi import Ipmi
-        return Nic(Node(label='node-99',
-                        obm=Ipmi(type=Ipmi.api_name,
-                                 host="ipmihost",
-                                 user="root",
-                                 password="tapeworm")),
-                   'ipmi', '00:11:22:33:44:55')
+    In addition to `TestNode`, several of the other objects require a node,
+    so we re-use the same one.
+    """
+    return Node(label='node-99',
+                obmd_uri='https://obmd.example.com/node/node-99',
+                # arbitrary:
+                obmd_admin_token='b6a8a4e183fe26936efcd386e938cbfb')
 
 
 class TestNode(ModelTest):
     """ModelTest for Node objects."""
 
     def sample_obj(self):
-        from hil.ext.obm.ipmi import Ipmi
-        return Node(label='node-99',
-                    obm=Ipmi(type=Ipmi.api_name,
-                             host="ipmihost",
-                             user="root",
-                             password="tapeworm"))
+        return _test_node()
+
+
+class TestNic(ModelTest):
+    """ModelTest for Nic objects."""
+
+    def sample_obj(self):
+        return Nic(_test_node(), 'ipmi', '00:11:22:33:44:55')
 
 
 class TestProject(ModelTest):
@@ -92,26 +93,14 @@ class TestMetadata(ModelTest):
     """ModelTest for Metadata objects."""
 
     def sample_obj(self):
-        from hil.ext.obm.ipmi import Ipmi
-        node = Node(label='node-99',
-                    obm=Ipmi(type=Ipmi.api_name,
-                             host="ipmihost",
-                             user="root",
-                             password="tapeworm"))
-        return Metadata('EK', 'pk', node)
+        return Metadata('EK', 'pk', _test_node())
 
 
 class TestNetworkingAction(ModelTest):
     """ModelTest for NetworkingAction objects."""
 
     def sample_obj(self):
-        from hil.ext.obm.ipmi import Ipmi
-        nic = Nic(Node(label='node-99',
-                       obm=Ipmi(type=Ipmi.api_name,
-                                host="ipmihost",
-                                user="root",
-                                password="tapeworm")),
-                  'ipmi', '00:11:22:33:44:55')
+        nic = Nic(_test_node(), 'ipmi', '00:11:22:33:44:55')
         project = Project('anvil-nextgen')
         network = Network(project, [project], True, '102', 'hammernet')
         return NetworkingAction(nic=nic,

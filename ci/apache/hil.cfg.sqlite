@@ -20,7 +20,6 @@ uri = sqlite:////home/travis/hil.db
 dry_run=True
 
 [extensions]
-hil.ext.obm.mock =
 hil.ext.switches.mock =
 hil.ext.auth.database =
 

@@ -591,18 +591,16 @@ def initial_db():
     Is static to allow database migrations to be tested, if new objects need
     to be added they should be included in additional_db not initial_db.
 
-    Note that this fixture requires the use of the following extensions:
+    Note that this fixture requires the use of the following extension:
 
         - hil.ext.switches.mock
-        - hil.ext.obm.mock
     """
-    for required_extension in 'hil.ext.switches.mock', 'hil.ext.obm.mock':
+    for required_extension in ['hil.ext.switches.mock']:
         assert required_extension in sys.modules, \
             "The 'initial_db' fixture requires the extension %r" % \
             required_extension
 
     from hil.ext.switches.mock import MockSwitch
-    from hil.ext.obm.mock import MockObm
 
     with app.app_context():
         # Create a couple projects:
@@ -701,13 +699,8 @@ def initial_db():
             {'label': 'free_node_1', 'project': None},
         ]
         for node_dict in nodes:
-            obm = MockObm(type=MockObm.api_name,
-                          host=node_dict['label'],
-                          user='user',
-                          password='password')
             node = Node(
                 label=node_dict['label'],
-                obm=obm,
                 obmd_uri='http://obmd.example.com/nodes/'+node_dict['label'],
                 obmd_admin_token='secret',
             )
@@ -748,14 +741,9 @@ def initial_db():
                 .filter_by(label='pub_default').one()
 
         # ... and at least one node with no nics (useful for testing delete):
-        obm = MockObm(type=MockObm.api_name,
-                      host='hostname',
-                      user='user',
-                      password='password')
         db.session.add(
             Node(
                 label='no_nic_node',
-                obm=obm,
                 obmd_uri='http://obmd.example.com/nodes/no_nic_node',
                 obmd_admin_token='secret',
             )

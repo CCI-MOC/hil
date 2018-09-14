@@ -159,17 +159,11 @@ class TestBrocade(object):
     @pytest.fixture()
     def nic(self):
         """Create a Nic object (and associated Node) to work with."""
-        from hil.ext.obm.ipmi import Ipmi
         return model.Nic(
-            model.Node(
-                label='node-99',
-                obm=Ipmi(
-                    type="http://schema.massopencloud.org/haas/v0/obm/ipmi",
-                    host="ipmihost",
-                    user="root",
-                    password="tapeworm")),
+            model.Node(label='node-99'),
             'ipmi',
-            '00:11:22:33:44:55')
+            '00:11:22:33:44:55',
+        )
 
     @pytest.fixture
     def network(self):

@@ -90,15 +90,6 @@ class Node(db.Model):
     project_id = db.Column(db.ForeignKey('project.id'))
     project = db.relationship("Project", backref=db.backref('nodes'))
 
-    # The Obm info is fetched from the obm class and its respective subclass
-    # pertaining to the node
-    obm_id = db.Column(BigIntegerType, db.ForeignKey('obm.id'), nullable=False)
-    obm = db.relationship("Obm",
-                          uselist=False,
-                          backref="node",
-                          single_parent=True,
-                          cascade='all, delete-orphan')
-
     obmd_uri = db.Column(db.String, nullable=False)
     obmd_admin_token = db.Column(db.String, nullable=False)
     obmd_node_token = db.Column(db.String, nullable=True)
@@ -361,82 +352,6 @@ class SwitchSession(object):
         """
 
         assert False, "Subclasses MUST override save_running_config"
-
-
-class Obm(db.Model):
-    """Obm superclass supporting various drivers
-
-    related to out of band management of servers.
-    """
-    id = db.Column(BigIntegerType, primary_key=True)
-    type = db.Column(db.String, nullable=False)
-
-    __mapper_args__ = {
-        'polymorphic_on': type
-    }
-
-    @staticmethod
-    def validate(kwargs):
-        """Make sure ``kwargs`` is a legal set of keywords args to ``__init__``
-
-        Raise a ``schema.SchemaError`` if the  ``kwargs`` is invalid.
-        Note well: This is a *static* method; it will be invoked on the class.
-        """
-        assert False, "Subclasses MUST override the validate method "
-
-    def power_cycle(self, force):
-        """Power cycles the node.
-
-        Exact implementation is left to the subclasses.
-
-        ``force`` indicates that the node should be *forced* off, as opposed to
-        e.g. given an ACPI shutdown signal, to which the node may respond.
-        """
-        assert False, "Subclasses MUST override the power_cycle method "
-
-    def power_off(self):
-        """ Shuts off the node.
-
-        Exact implementation is left to the subclasses.
-        """
-
-        assert False, "Subclasses MUST override the power_off method "
-
-    def require_legal_bootdev(self, dev):
-        """Throws an exception upon invalid bootdev.
-
-        Exact implementation is left to the subclasses.
-        """
-        assert False, "Subclasses MUST override the require_legal_bootdev" \
-            "method"
-
-    def set_bootdev(self, dev):
-        """sets bootdevice to dev.
-
-        Exact implementation is left to the subclasses.
-        """
-        assert False, "Subclasses MUST override the set_bootdev method "
-
-    def start_console(self):
-        """Starts logging to the console. """
-        assert False, "Subclasses MUST override the start_console method"
-
-    def stop_console(self):
-        """Stops console logging. """
-        assert False, "Subclasses MUST override the stop_console method"
-
-    def delete_console(self):
-        """Delete the console log."""
-        assert False, "Subclasses MUST override the delete_console method"
-
-    def get_console(self):
-        """Return the contents of the console log."""
-        assert False, "Subclasses MUST override the get_console method"
-
-    def get_console_log_filename(self):
-        """Return the name of the file containing the console log."""
-        assert False, "Subclasses MUST override the get_console_log_filename" \
-            "method"
 
 
 def _on_virt_uri(args_list):

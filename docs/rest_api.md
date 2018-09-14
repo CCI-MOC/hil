@@ -450,29 +450,31 @@ Possible Errors:
 
 #### node_register
 
-Register a node with OBM of <type> and optional metadata
-
-<type> (a string) is the type of OBM. The possible value depends on what drivers
-HIL is configured to use. The remainder of the field are driver-specific;
-see the documentation of the OBM driver in question (read `docs/obm-drivers.md`).
-
 `PUT /node/<node>`
+
+Register a node with optional metadata
+
+The `"obmd"` field has two subfields. The first is `"uri"`, which is the
+uri for the given node under obmd's API; if obmd's API is available at
+`https://obmd.example.com`, then `node4` will have a uri of
+`https://obmd.example.com/node/node4`. The second is `"admin_token"`,
+which is the admin token for obmd.
+
+Note that different nodes may be managed by different instances of obmd;
+HIL does not care.
 
 Request Body:
 
     {
-        "obm": {
-            "type": <obm-subtype>, <additional sub-type specific values>
+        "obmd": {
+            "uri": "https://obmd.example.com/node/node4",
+            "admin_token": "208eb61c77c3468558ccd9eec9ca0598"
         },
         "metadata": { (Optional)
             "label_1": "value_1",
             "label_2": "value_2"
         }
     }
-
-example provided in USING.rst
-
-Register a node named `<node>` with the database.
 
 Authorization requirements:
 
@@ -570,6 +572,10 @@ Authorization requirements:
 
 * Access to the project to which `<node>` is assigned (if any) or administrative access.
 
+Possible Errors:
+
+* 409, if the node's OBM is not enabled (see node_enable_obm).
+
 #### node_set_bootdev
 
 `PUT /node/<node>/boot_device`
@@ -587,6 +593,10 @@ Sets the node's next boot device persistently
 Authorization requirements:
 
 * Access to the project to which `<node>` is assigned (if any) or administrative access.
+
+Possible Errors:
+
+* 409, if the node's OBM is not enabled (see node_enable_obm).
 
 ##### For IPMI devices
 
@@ -607,6 +617,10 @@ Authorization requirements:
 
 * Access to the project to which `<node>` is assigned (if any) or administrative access.
 
+Possible Errors:
+
+* 409, if the node's OBM is not enabled (see node_enable_obm).
+
 #### node_power_on
 
 `POST /node/<node>/power_on`
@@ -617,6 +631,33 @@ this will have no effect.
 Authorization requirements:
 
 * Access to the project to which `<node>` is assigned (if any) or administrative access.
+
+Possible Errors:
+
+* 409, if the node's OBM is not enabled (see node_enable_obm).
+
+#### show_console
+
+`GET /node/<node>/<console`
+
+Stream output from the node's serial console.
+
+The response body will be a byte stream from the node's serial console;
+streaming will continue until the connection is broken.
+
+Only one client may be connected to a node's console in this fashion at
+a time; if a second client connects, the first will be disconnected.
+
+The node's obm must be enabled; a `BlockedError` will be raised
+otherwise.
+
+Authorization requirements:
+
+* Access to the project to which `<node>` is assigned (if any) or administrative access.
+
+Possible Errors:
+
+* 409, if the node's OBM is not enabled (see node_enable_obm).
 
 #### list_nodes
 

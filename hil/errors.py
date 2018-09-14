@@ -63,12 +63,6 @@ class BadArgumentError(APIError):
     """An exception indicating an invalid request on the part of the user."""
 
 
-class UnknownSubtypeError(APIError):
-    """An exception indicating an invalid request of subtypes
-    on the part of the user.
-    """
-
-
 class ProjectMismatchError(APIError):
     """An exception indicating that the resources given don't belong to the
     same project.

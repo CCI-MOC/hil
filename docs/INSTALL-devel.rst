@@ -267,11 +267,6 @@ section.
 For suppressing actual network switch operations, use the ``mock`` switch driver ::
   hil.ext.switches.mock =
 
-To suppress actual IPMI calls made to nodes on account of node_power_cycle
-requests, enable the ``mock`` OBM driver with ::
-
-  hil.ext.obm.mock =
-
 You can choose to disable authentication mechanism by enabling the ``null``
 auth driver ::
 

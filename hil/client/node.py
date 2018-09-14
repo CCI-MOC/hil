@@ -2,7 +2,6 @@
 import json
 from hil.client.base import ClientBase, FailedAPICallException
 from hil.client.base import check_reserved_chars
-from hil.errors import BadArgumentError, UnknownSubtypeError
 
 
 class Node(ClientBase):
@@ -23,31 +22,10 @@ class Node(ClientBase):
         return self.check_response(self.httpClient.request('GET', url))
 
     @check_reserved_chars(dont_check=['obmd_uri'])
-    def register(self, node, obmd_uri, obmd_admin_token, subtype, *args):
-        """Register a node with appropriate OBM driver. """
-        # Registering a node requires apriori knowledge of the
-        # available OBM driver and its corresponding arguments.
-        # We assume that the HIL administrator is aware as to which
-        # Node requires which OBM, and knows arguments required
-        # for successful node registration.
-        if (len(args) != 3):
-            raise BadArgumentError("3 Arguments needed. Supplied " +
-                                   str(len(args)))
-
-        obm_api = "http://schema.massopencloud.org/haas/v0/obm/"
-        # This is a bit of a hack, but this block of code will be removed
-        # soon when obmd becomes the only mechanism.
-        obm_types = ["ipmi", "mock"]
-        if subtype in obm_types:
-            obminfo = {"type": obm_api + subtype, "host": args[0],
-                       "user": args[1], "password": args[2]
-                       }
-        else:
-            raise UnknownSubtypeError("Unknown subtype provided.")
-
+    def register(self, node, obmd_uri, obmd_admin_token):
+        """Register a node. """
         url = self.object_url('node', node)
         payload = json.dumps({
-            "obm": obminfo,
             "obmd": {
                 'uri': obmd_uri,
                 'admin_token': obmd_admin_token,

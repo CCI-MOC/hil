@@ -66,8 +66,7 @@ def test_cli(obmd_cfg):
     hil('node', 'register',
         NODE1,
         obmd_uri,
-        obmd_cfg['AdminToken'],
-        'mock', 'host', 'user', 'password')
+        obmd_cfg['AdminToken'])
     assert NODE1 in hil('node', 'list', 'all')
     assert NODE1 in hil('node', 'list', 'free')
 
