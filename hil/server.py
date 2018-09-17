@@ -47,8 +47,7 @@ def stop_orphan_consoles():
     # Stop all orphan console logging processes on startup
     nodes = model.Node.query.all()
     for node in nodes:
-        node.obm.stop_console()
-        node.obm.delete_console()
+        node.disable_obm()
 
 
 def init():
