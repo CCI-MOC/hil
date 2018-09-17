@@ -101,7 +101,7 @@ def _follow_redirect(method, resp, data=None, stream=False):
 def test_power_operations(mock_node):
     """Test the power-related obm api calls.
 
-    i.e. power_off, power_cycle, set_bootdev.
+    i.e. power_off, power_cycle, set_bootdev, power_status
     """
     # Obm is disabled; these should all fail:
     with pytest.raises(errors.BlockedError):
@@ -114,6 +114,8 @@ def test_power_operations(mock_node):
         api.node_power_cycle(mock_node, force=True)
     with pytest.raises(errors.BlockedError):
         api.node_power_cycle(mock_node, force=False)
+    with pytest.raises(errors.BlockedError):
+        api.node_power_status(mock_node)
     with pytest.raises(errors.BlockedError):
         api.show_console(mock_node)
 
@@ -129,7 +131,12 @@ def test_power_operations(mock_node):
             }))
 
     _follow_redirect('POST', api.node_power_off(mock_node))
+
+    resp = _follow_redirect('GET', api.node_power_status(mock_node))
+    assert json.loads(resp) == {'power_status': 'Mock Status'}
+
     _follow_redirect('POST', api.node_power_on(mock_node))
+
     _follow_redirect(
         'PUT',
         api.node_set_bootdev(mock_node, 'A'),

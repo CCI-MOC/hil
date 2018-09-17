@@ -157,6 +157,13 @@ def node_power_cycle(node):
     client.node.power_cycle(node)
 
 
+@node_power.command(name='status')
+@click.argument('node')
+def node_power_status(node):
+    """Power cycle <node>"""
+    print client.node.power_status(node)
+
+
 @node.group(name='metadata')
 def node_metadata():
     """Node metadata commands"""

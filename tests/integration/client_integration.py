@@ -276,6 +276,12 @@ class Test_node:
         C.node.enable_obm(obmd_node)
         assert C.node.set_bootdev(obmd_node, "A") is None
 
+    def test_power_status(self, obmd_node):
+        """(successful) to node_power_on"""
+        C.node.enable_obm(obmd_node)
+        resp = C.node.power_status(obmd_node)
+        assert resp["power_status"] == "Mock Status"
+
     def test_node_add_nic(self):
         """Test removing and then adding a nic."""
         C.node.remove_nic('free_node_1', 'boot-nic')
