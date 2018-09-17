@@ -133,7 +133,7 @@ def test_power_operations(mock_node):
     _follow_redirect('POST', api.node_power_off(mock_node))
 
     resp = _follow_redirect('GET', api.node_power_status(mock_node))
-    assert json.loads(resp) == {'power_status': 'Mock Status'}
+    assert json.loads(resp.content) == {'power_status': 'Mock Status'}
 
     _follow_redirect('POST', api.node_power_on(mock_node))
 

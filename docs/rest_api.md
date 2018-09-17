@@ -636,6 +636,28 @@ Possible Errors:
 
 * 409, if the node's OBM is not enabled (see node_enable_obm).
 
+#### node_power_status
+
+`POST /node/<node>/power_status`
+
+Returns the node's power status.
+
+Response body:
+
+    [
+        "power_status": "<IPMI chassis power status response>"
+    ]
+
+Response examples: "on" or "off" for IPMI, or "Mock Status" for mock OBM.
+
+Authorization requirements:
+
+* Access to the project to which `<node>` is assigned (if any) or administrative access.
+
+Possible Errors:
+
+* 409, if the node's OBM is not enabled (see node_enable_obm).
+
 #### show_console
 
 `GET /node/<node>/<console`
