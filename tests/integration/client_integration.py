@@ -277,7 +277,7 @@ class Test_node:
         assert C.node.set_bootdev(obmd_node, "A") is None
 
     def test_power_status(self, obmd_node):
-        """(successful) to node_power_on"""
+        """(successful) to node_power_status"""
         C.node.enable_obm(obmd_node)
         resp = C.node.power_status(obmd_node)
         assert resp["power_status"] == "Mock Status"

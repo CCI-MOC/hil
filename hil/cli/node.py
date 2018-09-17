@@ -160,7 +160,7 @@ def node_power_cycle(node):
 @node_power.command(name='status')
 @click.argument('node')
 def node_power_status(node):
-    """Power cycle <node>"""
+    """Returns node power status"""
     print client.node.power_status(node)
 
 

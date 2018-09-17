@@ -83,7 +83,7 @@ class Node(ClientBase):
 
     @check_reserved_chars()
     def power_status(self, node_name):
-        """Power ons the <node> """
+        """Returns the power status of node """
         url = self.object_url('node', node_name, 'power_status')
         return self.check_response(self.httpClient.request('GET', url))
 
