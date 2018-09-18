@@ -638,7 +638,7 @@ Possible Errors:
 
 #### node_power_status
 
-`POST /node/<node>/power_status`
+`GET /node/<node>/power_status`
 
 Returns the node's power status.
 

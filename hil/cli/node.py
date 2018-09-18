@@ -161,7 +161,7 @@ def node_power_cycle(node):
 @click.argument('node')
 def node_power_status(node):
     """Returns node power status"""
-    print client.node.power_status(node)
+    print(client.node.power_status(node))
 
 
 @node.group(name='metadata')
