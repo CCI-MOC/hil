@@ -302,6 +302,14 @@ def node_set_bootdev(node, bootdev):
     return _obmd_redirect(node, '/boot_device')
 
 
+@rest_call('GET', '/node/<node>/power_status', Schema({'node': basestring}))
+def node_power_status(node):
+    """Returns nodes power status"""
+    node = get_or_404(model.Node, node)
+    get_auth_backend().require_project_access(node.project)
+    return _obmd_redirect(node, '/power_status')
+
+
 @rest_call('DELETE', '/node/<node>', Schema({'node': basestring}))
 def node_delete(node):
     """Delete node.
