@@ -360,10 +360,13 @@ def node_delete_nic(node, nic):
     """
 
     get_auth_backend().require_admin()
-    nic = get_child_or_404(get_or_404(model.Node, node), model.Nic, nic)
-    check_pending_action(nic)
-    if nic.attachments:
-        raise errors.BlockedError("Nic is connected to a network")
+    node = get_or_404(model.Node, node)
+    nic = get_child_or_404(node, model.Nic, nic)
+    if node.project:
+        raise errors.BlockedError("Nic is on a node that belongs to a project."
+                                  " Remove node from project and try again")
+    if nic.current_action:
+        db.session.delete(nic.current_action)
     db.session.delete(nic)
     db.session.commit()
 

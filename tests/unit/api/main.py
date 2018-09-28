@@ -580,9 +580,7 @@ class TestNodeRegisterDeleteNic:
         """
         Test node_delete_nic during various stages of a networking_action
 
-        1. Deleting a nic with a pending networking action should fail.
-        2. Deleting a nic connected to a network should fail.
-        2. Deleting a nic after the networking operation is done should work.
+        1. Deleting a nic after the networking operation is done should work.
         """
         # 1. Create a node with a nic. Connect that nic to a switchport, and
         # add it to a project. Create a network and connect node's nic to
@@ -596,21 +594,26 @@ class TestNodeRegisterDeleteNic:
         api.node_connect_network('node-99', 'nic1', 'hammernet')
         deferred.apply_networking()
 
-        # 2. Deleting a nic connected to a network should result in an error
-        with pytest.raises(errors.BlockedError):
-            api.node_delete_nic('node-99', 'nic1')
-
-        # 3. Remove node's nic from the network.
+        # 2. Remove node's nic from the network.
         api.node_detach_network('node-99', 'nic1', 'hammernet')
-
-        # 4. Deleting a nic that has a pending networking action should result
-        # in a BlockedError
-        with pytest.raises(errors.BlockedError):
-            api.node_delete_nic('node-99', 'nic1')
-
         deferred.apply_networking()
 
-        # 5. Deleting the nic should work now.
+        # 3. Deleting the nic should work now.
+        api.project_detach_node('anvil-nextgen', 'node-99')
+        api.node_delete_nic('node-99', 'nic1')
+
+    def test_node_delete_nic_in_project(self):
+        """Deleting a nic on a node that belongs to a project should fail.
+        This also ensures that there are no pending actions or networks
+        connected to that nic."""
+
+        new_node('node-99')
+        api.node_register_nic('node-99', 'nic1', 'DE:AD:BE:EF:20:18')
+        api.project_create('anvil-nextgen')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        with pytest.raises(errors.BlockedError):
+            api.node_delete_nic('node-99', 'nic1')
+        api.project_detach_node('anvil-nextgen', 'node-99')
         api.node_delete_nic('node-99', 'nic1')
 
     def test_node_register_nic_diff_nodes(self):
