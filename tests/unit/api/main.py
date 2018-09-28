@@ -576,6 +576,30 @@ class TestNodeRegisterDeleteNic:
         with pytest.raises(errors.NotFoundError):
             api.node_delete_nic('compute-02', '01-eth0')
 
+    def test_node_delete_nic_after_networking_action(self, switchinit):
+        """node_delete_nic should succeed after a networking action.
+        """
+        # 1. Create a node with a nic. Connect that nic to a switchport, and
+        # add it to a project. Create a network and connect node's nic to
+        # that network.
+        new_node('node-99')
+        api.node_register_nic('node-99', 'nic1', 'DE:AD:BE:EF:20:18')
+        api.project_create('anvil-nextgen')
+        api.project_connect_node('anvil-nextgen', 'node-99')
+        network_create_simple('hammernet', 'anvil-nextgen')
+        api.port_connect_nic('sw0', PORTS[2], 'node-99', 'nic1')
+        api.node_connect_network('node-99', 'nic1', 'hammernet')
+        deferred.apply_networking()
+
+        # 2. Remove node's nic from the network, and remove node from project
+        api.node_detach_network('node-99', 'nic1', 'hammernet')
+        deferred.apply_networking()
+        api.project_detach_node('anvil-nextgen', 'node-99')
+
+        # 3. Remove the node from the nic and delete it.
+        api.port_detach_nic('sw0', PORTS[2])
+        api.node_delete_nic('node-99', 'nic1')
+
     def test_node_register_nic_diff_nodes(self):
         """Registering two nics with the same name on diff. nodes is ok."""
         new_node('compute-01')

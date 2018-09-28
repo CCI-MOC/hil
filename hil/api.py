@@ -355,9 +355,11 @@ def node_delete_nic(node, nic):
     """Delete nic with given name from it's node.
 
     If the node or nic does not exist, a NotFoundError will be raised.
+    If there's a pending networking action then a BlockedError will be raised.
     """
     get_auth_backend().require_admin()
     nic = get_child_or_404(get_or_404(model.Node, node), model.Nic, nic)
+    check_pending_action(nic)
     db.session.delete(nic)
     db.session.commit()
 
