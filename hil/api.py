@@ -355,8 +355,8 @@ def node_delete_nic(node, nic):
     """Delete nic with given name from it's node.
 
     If the node or nic does not exist, a NotFoundError will be raised.
-    If there's a pending networking action or if the nic is connected to a
-    network then a BlockedError will be raised.
+    If the nic is on a node that belongs to a project then a BlockedError will
+    be raised.
     """
 
     get_auth_backend().require_admin()
