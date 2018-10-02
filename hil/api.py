@@ -355,9 +355,18 @@ def node_delete_nic(node, nic):
     """Delete nic with given name from it's node.
 
     If the node or nic does not exist, a NotFoundError will be raised.
+    If the nic is on a node that belongs to a project then a BlockedError will
+    be raised.
     """
+
     get_auth_backend().require_admin()
-    nic = get_child_or_404(get_or_404(model.Node, node), model.Nic, nic)
+    node = get_or_404(model.Node, node)
+    nic = get_child_or_404(node, model.Nic, nic)
+    if node.project:
+        raise errors.BlockedError("Nic is on a node that belongs to a project."
+                                  " Remove node from project and try again")
+    if nic.current_action:
+        db.session.delete(nic.current_action)
     db.session.delete(nic)
     db.session.commit()
 
