@@ -36,9 +36,7 @@ class ClientBase(object):
         """ Initialize an instance of the library with following parameters.
 
        endpoint: stands for the http endpoint eg. endpoint=http://127.0.0.1
-       sess: depending on the authentication backend (db vs keystone) the
-       parameters required to make up the session vary.
-       user: username as which you wish to connect to HIL
+       httpClient: creates object for rest api
        Currently all this information is fetched from the user's environment.
         """
         self.endpoint = endpoint
