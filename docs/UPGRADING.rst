@@ -55,7 +55,6 @@ Release Notes
   3. Update the HIL software as usual. Before restarting the serivces, remove
      both of the above obm extensions from ``hil.cfg``.
 
-* OpenVSwitch is now supported in HIL.
 * New APIs to get a node's power status and to power on a node.
 * Fix a bug which prevented the deletion of a nic.
 
