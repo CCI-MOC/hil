@@ -39,7 +39,7 @@ This file describes the procedure for upgrading HIL to a new version.
 Release Notes
 -------------
 
-0.4 (Upcoming)
+0.4
 ++++++++++++++
 
 * HIL now depends on OBMd to manage obms; the built in driver support has
@@ -55,6 +55,9 @@ Release Notes
   3. Update the HIL software as usual. Before restarting the serivces, remove
      both of the above obm extensions from ``hil.cfg``.
 
+* OpenVSwitch is now supported in HIL.
+* New APIs to get a node's power status and to power on a node.
+* Fix a bug which prevented the deletion of a nic.
 
 0.3
 +++
