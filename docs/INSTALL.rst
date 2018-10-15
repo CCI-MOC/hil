@@ -432,6 +432,14 @@ You should also set apache to start on boot::
 
   $ sudo chkconfig httpd on
 
+**Note:**
+
+It is recommended to use TLS when running HIL in production.
+
+You can use [Let's Encrypt](https://letsencrypt.org/) to generate free certificates.
+[Certbot](https://certbot.eff.org/) makes this process easier.
+Note that the certificates are only valid for 3 months, but you can set it up to auto-renew.
+
 Running the network server:
 ---------------------------
 
