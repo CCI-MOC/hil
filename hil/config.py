@@ -101,6 +101,9 @@ def load(filename='hil.cfg'):
 
     If the config file is not found, it will simply exit.
     """
+    if (os.stat(filename).st_mode & 0o077) != 0:
+        sys.exit("Config file has overly-permissive permissions; make sure "
+                 "that only the HIL user may access the file.")
     opened_file = cfg.read(filename)
     if filename not in opened_file:
         sys.exit("Config file not found. Please create hil.cfg")

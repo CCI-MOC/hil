@@ -38,6 +38,7 @@ def make_config(request):
             'hil.ext.network_allocators.null =',
         ])
         f.write(config)
+        os.chmod('hil.cfg', 0o600)
 
     def cleanup():
         """Remove the config file, database, and temp dir."""

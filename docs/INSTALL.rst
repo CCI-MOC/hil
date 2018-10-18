@@ -105,10 +105,12 @@ Logging level and directory can be set in the ``[general]`` section. For more
 information view `logging <logging.html>`_.
 
 
-``hil.cfg`` file contains sensitive administrative information and should not be exposed to clients or
-end users. Therefore, after placing the file at ``/etc/hil.cfg`` its
-permissions should be set to read-only and ownership set to ``${HIL_USER}``
-From source directory of hil as user root do the following::
+``hil.cfg`` file contains sensitive administrative information and should not
+be exposed to clients or end users. Accordingly, HIL checks the permissions on
+startup and refuses to run if it is accessible by any user other than its
+owner. Ideally the file should also be read-only, as write access is not
+required at runtime. From the source directory of hil as user root do the
+following::
 
     (from /root/hil)
     $ cp examples/hil.cfg /etc/hil.cfg

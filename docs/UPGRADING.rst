@@ -39,8 +39,14 @@ This file describes the procedure for upgrading HIL to a new version.
 Release Notes
 -------------
 
-0.4
+0.5 (Upcoming)
 ++++++++++++++
+
+* HIL now checks the permissions of hil.cfg on startup; if they are too
+  permissive (i.e. non-owners may access the file) it will refuse to run.
+
+0.4
++++
 
 * HIL now depends on OBMd to manage obms; the built in driver support has
   been removed. Upgrading requires several steps:
