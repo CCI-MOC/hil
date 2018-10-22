@@ -2,6 +2,8 @@
 import click
 import sys
 from hil.cli.client_setup import client
+from prettytable import PrettyTable
+import json
 
 
 @click.group()
@@ -11,22 +13,70 @@ def node():
 
 @node.command(name='list')
 @click.argument('pool', type=click.Choice(['free', 'all']), required=True)
-def nodes_list(pool):
+@click.option('--jsonout', is_flag=True)
+def nodes_list(pool, jsonout):
     """List all nodes or free nodes"""
-    q = client.node.list(pool)
-    if pool == 'all':
-        sys.stdout.write('All nodes %s\t:    %s\n' % (len(q), " ".join(q)))
-    else:
-        sys.stdout.write('Free nodes %s\t:   %s\n' % (len(q), " ".join(q)))
+    raw_output = client.node.list(pool)
+
+    if jsonout:
+        json_output = json.dumps(raw_output)
+        print(json_output)
+        return
+
+    node_list = PrettyTable(['NODE LIST'])
+    for node in raw_output:
+        node_list.add_row([node])
+    print(node_list)
 
 
 @node.command(name='show')
 @click.argument('node')
-def node_show(node):
+@click.option('--jsonout', is_flag=True)
+def node_show(node, jsonout):
     """Show node information"""
-    q = client.node.show(node)
-    for item in q.items():
-        sys.stdout.write("%s\t  :  %s\n" % (item[0], item[1]))
+    raw_output = client.node.show(node)
+    node_table = PrettyTable()
+
+    if jsonout:
+        json_output = json.dumps(raw_output)
+        print(json_output)
+        return
+
+    node_table.field_names = ['ATTRIBUTE', 'INFORMATION']
+
+    if 'project' in raw_output:
+        node_table.add_row(['Project', raw_output['project']])
+    if 'name' in raw_output:
+        node_table.add_row(['Name', raw_output['name']])
+        node_table.add_row(['', ''])
+    if 'nics' in raw_output:
+        for n in raw_output['nics']:
+            if 'label' in n:
+                node_table.add_row(['Label', n['label']])
+            if 'macaddr' in n:
+                node_table.add_row(['Macaddr', n['macaddr']])
+            if 'switch' in n:
+                node_table.add_row(['Switch', n['switch']])
+            if 'port' in n:
+                node_table.add_row(['Port', n['port']])
+            if 'networks' in n:
+                if not n['networks']:
+                    node_table.add_row(['Networks', 'None'])
+                else:
+                    info = n['networks'].values()[0] + \
+                        '(' + n['networks'].keys()[0] + ')'
+                    node_table.add_row(['Networks', info])
+                    if len(n['networks']) > 1:
+                        for i in range(1, len(n['networks'])):
+                            info = n['networks'].values()[i] + \
+                                '(' + n['networks'].keys()[i] + ')'
+                            node_table.add_row(['', info])
+                node_table.add_row(['', ''])
+        if 'metadata' in raw_output:
+            for key, val in raw_output['metadata'].items():
+                node_table.add_row([key, val.strip('""')])
+
+    print(node_table)
 
 
 @node.command(name='bootdev', short_help="Set a node's boot device")
@@ -76,7 +126,7 @@ def node_network():
 @click.argument('channel', default='', required=False)
 def node_network_connect(node, network, nic, channel):
     """Connect <node> to <network> on given <nic> and <channel>"""
-    print client.node.connect_network(node, nic, network, channel)
+    print(client.node.connect_network(node, nic, network, channel))
 
 
 @node_network.command(name='detach', short_help="Detach node from a network")
@@ -85,7 +135,7 @@ def node_network_connect(node, network, nic, channel):
 @click.argument('network')
 def node_network_detach(node, network, nic):
     """Detach <node> from the given <network> on the given <nic>"""
-    print client.node.detach_network(node, nic, network)
+    print(client.node.detach_network(node, nic, network))
 
 
 @node.group(name='nic')

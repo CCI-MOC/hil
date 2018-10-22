@@ -27,7 +27,7 @@ def project_delete(project):
 def project_list():
     """List all projects"""
     q = client.project.list()
-    sys.stdout.write('%s Projects :    ' % len(q) + " ".join(q) + '\n')
+    sys.stdout.write('%s Projects :    ' % len(q) + " , ".join(q) + '\n')
 
 
 @project.command(name='list-networks')
@@ -36,8 +36,8 @@ def project_list_networks(project):
     """List all networks attached to a <project>"""
     q = client.project.networks_in(project)
     sys.stdout.write(
-            "Networks allocated to %s\t:   %s\n" % (project, " ".join(q))
-            )
+        "Networks allocated to %s\t:   %s\n" % (project, " , ".join(q))
+    )
 
 
 @project.group(name='node')
@@ -50,7 +50,9 @@ def project_node():
 def project_node_list(project):
     """List all nodes attached to a <project>"""
     q = client.project.nodes_in(project)
-    sys.stdout.write('Nodes allocated to %s:  ' % project + " ".join(q) + '\n')
+    sys.stdout.write(
+        'Nodes allocated to %s:  ' %
+        project + " , ".join(q) + '\n')
 
 
 @project_node.command(name='add')

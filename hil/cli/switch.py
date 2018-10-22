@@ -3,6 +3,8 @@ import click
 import sys
 import ast
 from hil.cli.client_setup import client
+from prettytable import PrettyTable
+import json
 
 
 @click.group()
@@ -12,18 +14,55 @@ def switch():
 
 @switch.command(name='show')
 @click.argument('switch')
-def node_show(switch):
+@click.option('--jsonout', is_flag=True)
+def switch_show(switch, jsonout):
     """Display information about <switch>"""
-    q = client.switch.show(switch)
-    for item in q.items():
-        sys.stdout.write("%s\t  :  %s\n" % (item[0], item[1]))
+    raw_output = client.switch.show(switch)
+
+    if jsonout:
+        json_output = json.dumps(raw_output)
+        print(json_output)
+        return
+
+    switch_table = PrettyTable()
+    switch_table.field_names = ['ATTRIBUTE', 'INFORMATION']
+
+    if 'name' in raw_output:
+        switch_table.add_row(['Name', raw_output['name']])
+
+    if 'capabilities' in raw_output:
+        if not raw_output['capabilities']:
+            switch_table.add_row(['Capabilities', 'None'])
+        else:
+            switch_table.add_row(
+                ['Capabilities', raw_output['capabilities'][0]])
+
+    if 'ports' in raw_output:
+        if not raw_output['ports']:
+            switch_table.add_row(['Ports', 'None'])
+        else:
+            switch_table.add_row(['Ports', raw_output['ports'][0].values()[0]])
+            for i in range(1, len(raw_output['ports'])):
+                switch_table.add_row(['', raw_output['ports'][i].values()[0]])
+
+    print(switch_table)
 
 
 @switch.command(name='list')
-def list_switches():
+@click.option('--jsonout', is_flag=True)
+def list_switches(jsonout):
     """List all switches"""
-    q = client.switch.list()
-    sys.stdout.write('%s switches :    ' % len(q) + " ".join(q) + '\n')
+    raw_output = client.switch.list()
+
+    if jsonout:
+        json_output = json.dumps(raw_output)
+        print(json_output)
+        return
+
+    switch_table = PrettyTable(['SWITCH LIST'])
+    for switch in raw_output:
+        switch_table.add_row([switch])
+    print(switch_table)
 
 
 @switch.command(name='register', short_help='Register a switch')
