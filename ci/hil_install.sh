@@ -2,8 +2,10 @@
 
 # Setup configuration
 cp ci/testsuite.cfg.$DB testsuite.cfg
+chmod 0600 testsuite.cfg
 sudo cp ci/apache/hil.cfg.$DB /etc/hil.cfg
 sudo chown travis:travis /etc/hil.cfg
+sudo chmod 0600 /etc/hil.cfg
 
 # Database Setup
 if [ $DB = postgres ]; then
