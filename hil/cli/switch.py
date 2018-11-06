@@ -25,14 +25,14 @@ def switch_show(switch, jsonout):
         return
 
     switch_table = PrettyTable()
-    switch_table.field_names = ['ATTRIBUTE', 'INFORMATION']
+    switch_table.field_names = ['Field', 'Value']
 
     if 'name' in raw_output:
         switch_table.add_row(['Name', raw_output['name']])
 
     if 'capabilities' in raw_output:
         if not raw_output['capabilities']:
-            switch_table.add_row(['Capabilities', 'None'])
+            switch_table.add_row(['Capabilities', 'Standard'])
         else:
             switch_table.add_row(
                 ['Capabilities', raw_output['capabilities'][0]])
@@ -59,7 +59,7 @@ def list_switches(jsonout):
         print(json_output)
         return
 
-    switch_table = PrettyTable(['SWITCH LIST'])
+    switch_table = PrettyTable(['Switch List'])
     for switch in raw_output:
         switch_table.add_row([switch])
     print(switch_table)

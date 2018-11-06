@@ -1,9 +1,9 @@
 """Commands related to node are in this module"""
 import click
 import sys
-from hil.cli.client_setup import client
-from prettytable import PrettyTable
 import json
+from prettytable import PrettyTable
+from hil.cli.client_setup import client
 
 
 @click.group()
@@ -23,7 +23,10 @@ def nodes_list(pool, jsonout):
         print(json_output)
         return
 
-    node_list = PrettyTable(['NODE LIST'])
+    if pool == 'free':
+        node_list = PrettyTable(['Free Nodes'])
+    else:
+        node_list = PrettyTable(['All Nodes'])
     for node in raw_output:
         node_list.add_row([node])
     print(node_list)
@@ -42,7 +45,7 @@ def node_show(node, jsonout):
         print(json_output)
         return
 
-    node_table.field_names = ['ATTRIBUTE', 'INFORMATION']
+    node_table.field_names = ['Field', 'Value']
 
     if 'project' in raw_output:
         node_table.add_row(['Project', raw_output['project']])
