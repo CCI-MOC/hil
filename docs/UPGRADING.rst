@@ -45,6 +45,9 @@ Release Notes
 * HIL now checks the permissions of hil.cfg on startup; if they are too
   permissive (i.e. non-owners may access the file) it will refuse to run.
 
+* The CLI formats the output to be more readable. Output can be formatted
+  as json by passing `--json` flag to any command.
+
 0.4
 +++
 
