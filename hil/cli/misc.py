@@ -12,7 +12,7 @@ def networking_action():
 
 @networking_action.command('show')
 @click.argument('status_id')
-@click.option('--jsonout', is_flag=True)
+@click.option('--json', 'jsonout', is_flag=True)
 def show_networking_action(status_id, jsonout):
     """Displays the status of the networking action"""
     raw_output = client.node.show_networking_action(status_id)

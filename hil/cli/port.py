@@ -13,7 +13,7 @@ def port():
 @port.command(name='show')
 @click.argument('switch')
 @click.argument('port')
-@click.option('--jsonout', is_flag=True)
+@click.option('--json', 'jsonout', is_flag=True)
 def port_show(switch, port, jsonout):
     """Show what's connected to <port>"""
 

@@ -341,5 +341,5 @@ def test_cli_call(keystone_projects, user_info):
     os.environ["OS_USERNAME"] = user_info['name']
     os.environ["OS_PROJECT_NAME"] = user_info['project_name']
     output = subprocess.check_output(
-        ['hil', 'node', 'list', 'all', '--jsonout'])
+        ['hil', 'node', 'list', 'all', '--json'])
     assert output == '[]\n'

@@ -14,7 +14,7 @@ def switch():
 
 @switch.command(name='show')
 @click.argument('switch')
-@click.option('--jsonout', is_flag=True)
+@click.option('--json', 'jsonout', is_flag=True)
 def switch_show(switch, jsonout):
     """Display information about <switch>"""
     raw_output = client.switch.show(switch)
@@ -49,7 +49,7 @@ def switch_show(switch, jsonout):
 
 
 @switch.command(name='list')
-@click.option('--jsonout', is_flag=True)
+@click.option('--json', 'jsonout', is_flag=True)
 def list_switches(jsonout):
     """List all switches"""
     raw_output = client.switch.list()

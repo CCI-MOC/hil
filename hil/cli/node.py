@@ -13,7 +13,7 @@ def node():
 
 @node.command(name='list')
 @click.argument('pool', type=click.Choice(['free', 'all']), required=True)
-@click.option('--jsonout', is_flag=True)
+@click.option('--json', 'jsonout', is_flag=True)
 def nodes_list(pool, jsonout):
     """List all nodes or free nodes"""
     raw_output = client.node.list(pool)
@@ -34,7 +34,7 @@ def nodes_list(pool, jsonout):
 
 @node.command(name='show')
 @click.argument('node')
-@click.option('--jsonout', is_flag=True)
+@click.option('--json', 'jsonout', is_flag=True)
 def node_show(node, jsonout):
     """Show node information"""
     raw_output = client.node.show(node)
