@@ -2,9 +2,9 @@
 import click
 import sys
 import ast
-from hil.cli.client_setup import client
 from prettytable import PrettyTable
-import json
+from hil.cli.client_setup import client
+from hil.cli.helper import print_json
 
 
 @click.group()
@@ -20,9 +20,7 @@ def switch_show(switch, jsonout):
     raw_output = client.switch.show(switch)
 
     if jsonout:
-        json_output = json.dumps(raw_output)
-        print(json_output)
-        return
+        print_json(raw_output)
 
     switch_table = PrettyTable()
     switch_table.field_names = ['Field', 'Value']
@@ -55,9 +53,7 @@ def list_switches(jsonout):
     raw_output = client.switch.list()
 
     if jsonout:
-        json_output = json.dumps(raw_output)
-        print(json_output)
-        return
+        print_json(raw_output)
 
     switch_table = PrettyTable(['Switch List'])
     for switch in raw_output:

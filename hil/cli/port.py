@@ -2,7 +2,7 @@
 import click
 from hil.cli.client_setup import client
 from prettytable import PrettyTable
-import json
+from hil.cli.helper import print_json
 
 
 @click.group()
@@ -20,9 +20,7 @@ def port_show(switch, port, jsonout):
     raw_output = client.port.show(switch, port)
 
     if jsonout:
-        json_output = json.dumps(raw_output)
-        print(json_output)
-        return
+        print_json(raw_output)
 
     port_table = PrettyTable()
     port_table.field_names = ['Field', 'Value']

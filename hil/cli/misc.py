@@ -2,7 +2,7 @@
 import click
 from hil.cli.client_setup import client
 from prettytable import PrettyTable
-import json
+from hil.cli.helper import print_json
 
 
 @click.group(name='networking-action')
@@ -18,9 +18,7 @@ def show_networking_action(status_id, jsonout):
     raw_output = client.node.show_networking_action(status_id)
 
     if jsonout:
-        json_output = json.dumps(raw_output)
-        print(json_output)
-        return
+        print_json(raw_output)
 
     net_actions_table = PrettyTable()
     net_actions_table.field_names = ['Field', 'Value']
