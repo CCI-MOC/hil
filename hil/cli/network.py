@@ -1,7 +1,9 @@
 """Commands related to networks are in this module"""
 import click
 import sys
+from prettytable import PrettyTable
 from hil.cli.client_setup import client
+from hil.cli.helper import print_json
 
 
 @click.group()
@@ -34,30 +36,92 @@ def network_delete(network):
 
 @network.command(name='show')
 @click.argument('network')
-def network_show(network):
+@click.option('--json', 'jsonout', is_flag=True)
+def network_show(network, jsonout):
     """Display information about network"""
-    q = client.network.show(network)
-    for item in q.items():
-        sys.stdout.write("%s\t  :  %s\n" % (item[0], item[1]))
+    raw_output = client.network.show(network)
+
+    if jsonout:
+        print_json(raw_output)
+
+    # Collect raw output into presentable form
+    channels = ''
+    for channel in raw_output['channels']:
+        channels += channel + '\n'
+
+    projects = ''
+    for project in raw_output['access']:
+        projects += project + '\n'
+
+    connected_nodes = ''
+    for connected_node, nics in raw_output['connected-nodes'].iteritems():
+
+        # Because a node can be connected to same network over multiple nics
+        all_nics = ''
+        for nic in nics:
+            all_nics+= nic + ','
+
+        connected_nodes += connected_node + ' (' + all_nics.rstrip(',') + ')\n'
+
+    # Make the table and print it
+    network_show_table = PrettyTable()
+    network_show_table.field_names = ['Field', 'Value']
+    network_show_table.add_row(['Name', raw_output['name']])
+    network_show_table.add_row(['Owner', raw_output['owner']])
+    network_show_table.add_row(['Channels', channels])
+    network_show_table.add_row(['Access', projects])
+    network_show_table.add_row(['Connected Nodes', connected_nodes.rstrip()])
+    print(network_show_table)
 
 
 @network.command(name='list')
-def network_list():
+@click.option('--json', 'jsonout', is_flag=True)
+def network_list(jsonout):
     """List all networks"""
-    q = client.network.list()
-    for item in q.items():
-        sys.stdout.write('%s \t : %s\n' % (item[0], item[1]))
+    raw_output = client.network.list()
 
+    if jsonout:
+        print_json(raw_output)
+
+    network_list_table = PrettyTable()
+    network_list_table.field_names = ['Name', 'Network ID', 'Projects']
+
+    for name, attributes in raw_output.iteritems():
+        projects = ''
+        for project in attributes['projects']:
+            projects += project + ','
+
+        network_list_table.add_row([name, attributes['network_id'],
+            projects.rstrip(',')])
+
+    network_list_table.sortby = 'Name'
+    print(network_list_table)
 
 @network.command('list-attachments')
 @click.argument('network')
 @click.option('--project', help='Name of project.')
-def list_network_attachments(network, project):
+@click.option('--json', 'jsonout', is_flag=True)
+def list_network_attachments(network, project, jsonout):
     """Lists all the attachments from <project> for <network>
 
     If <project> is `None`, lists all attachments for <network>
     """
-    print client.network.list_network_attachments(network, project)
+    # Client library expects us to send it a 'all' instead of nothing.
+    if project is None:
+        project = 'all'
+
+    raw_output = client.network.list_network_attachments(network, project)
+
+    if jsonout:
+        print_json(raw_output)
+
+    attachments_table = PrettyTable()
+    attachments_table.field_names = ['Node', 'Project', 'Nic', 'Channel']
+    for node, attributes in raw_output.iteritems():
+        attachments_table.add_row([node, attributes['project'],
+            attributes['nic'], attributes['channel']])
+
+    print(attachments_table)
 
 
 @network.command(name='grant-access')

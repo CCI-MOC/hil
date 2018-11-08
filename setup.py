@@ -88,7 +88,7 @@ setup(name='hil',
                         'pexpect>=3.3,<4.0',
                         'requests>=2.4.1,<3.0',
                         'lxml>=3.6.0,<4.0',
-                        'click>=6.0,<7.0'
+                        'click>=6.0,<7.0',
                         'prettytable>=0.7.2',
                         ],
       extras_require={
