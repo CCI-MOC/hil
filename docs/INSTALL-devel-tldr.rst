@@ -38,7 +38,7 @@ Initialize database::
 
 Start server::
 
-  hil-admin run-dev-server 5000
+  hil-admin run-dev-server
 
 
 From a separate terminal window::
@@ -51,7 +51,7 @@ From a separate terminal window::
 
 Testing the setup::
 
-  hil list_nodes all
+  hil node list all
 
 If the above command reports an empty list.
 HIL is successfully installed and ready for hacking.

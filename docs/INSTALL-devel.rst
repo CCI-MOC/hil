@@ -292,7 +292,7 @@ Start the server
 
 Run the server with the port number as defined in ``hil.cfg``::
 
-  hil-admin run-dev-server <port no>
+  hil-admin run-dev-server --port <port no>
 
 and in a separate window terminal::
 
