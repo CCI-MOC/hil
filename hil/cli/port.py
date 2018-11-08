@@ -1,6 +1,8 @@
 """Commands related to port are in this module"""
 import click
 from hil.cli.client_setup import client
+from prettytable import PrettyTable
+from hil.cli.helper import print_json
 
 
 @click.group()
@@ -11,9 +13,32 @@ def port():
 @port.command(name='show')
 @click.argument('switch')
 @click.argument('port')
-def port_show(switch, port):
+@click.option('--json', 'jsonout', is_flag=True)
+def port_show(switch, port, jsonout):
     """Show what's connected to <port>"""
-    print client.port.show(switch, port)
+
+    raw_output = client.port.show(switch, port)
+
+    if jsonout:
+        print_json(raw_output)
+
+    port_table = PrettyTable()
+    port_table.field_names = ['Field', 'Value']
+
+    # Gather all networks
+    networks = ''
+    for channel, network in raw_output['networks'].iteritems():
+        network_string = network + ' (' + channel + ')'
+        networks += network_string + "\n"
+
+    if 'node' in raw_output:
+        port_table.add_row(['Node', raw_output['node']])
+    if 'nic' in raw_output:
+        port_table.add_row(['NIC', raw_output['nic']])
+    if 'networks' in raw_output:
+        port_table.add_row(['Networks', networks.rstrip()])
+
+    print(port_table)
 
 
 @port.command(name='register')
