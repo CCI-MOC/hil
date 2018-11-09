@@ -3,7 +3,7 @@ import click
 import sys
 from prettytable import PrettyTable
 from hil.cli.client_setup import client
-from hil.cli.helper import print_json
+from hil.cli.helper import print_json, print_status_table
 
 
 @click.group()
@@ -123,18 +123,29 @@ def node_network():
 @click.argument('nic')
 @click.argument('network')
 @click.argument('channel', default='', required=False)
-def node_network_connect(node, network, nic, channel):
+@click.option('--json', 'jsonout', is_flag=True)
+def node_network_connect(node, network, nic, channel, jsonout):
     """Connect <node> to <network> on given <nic> and <channel>"""
-    print(client.node.connect_network(node, nic, network, channel))
+    raw_output = client.node.connect_network(node, nic, network, channel)
+
+    if jsonout:
+        print_json(raw_output)
+
+    print_status_table(raw_output)
 
 
 @node_network.command(name='detach', short_help="Detach node from a network")
 @click.argument('node')
 @click.argument('nic')
 @click.argument('network')
-def node_network_detach(node, network, nic):
+@click.option('--json', 'jsonout', is_flag=True)
+def node_network_detach(node, network, nic, jsonout):
     """Detach <node> from the given <network> on the given <nic>"""
-    print(client.node.detach_network(node, nic, network))
+    raw_output = client.node.detach_network(node, nic, network)
+    if jsonout:
+        print_json(raw_output)
+
+    print_status_table(raw_output)
 
 
 @node.group(name='nic')

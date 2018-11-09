@@ -2,7 +2,7 @@
 import click
 from hil.cli.client_setup import client
 from prettytable import PrettyTable
-from hil.cli.helper import print_json
+from hil.cli.helper import print_json, print_status_table
 
 
 @click.group()
@@ -60,9 +60,15 @@ def port_delete(switch, port):
 @port.command(name='revert')
 @click.argument('switch')
 @click.argument('port')
-def port_revert(switch, port):
+@click.option('--json', 'jsonout', is_flag=True)
+def port_revert(switch, port, jsonout):
     """Detach a <port> on a <switch> from all attached networks."""
-    print client.port.port_revert(switch, port)
+    raw_output = client.port.port_revert(switch, port)
+
+    if jsonout:
+        print_json(raw_output)
+
+    print_status_table(raw_output)
 
 
 @port.group(name='nic')
