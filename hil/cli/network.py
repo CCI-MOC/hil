@@ -2,7 +2,7 @@
 import click
 from prettytable import PrettyTable
 from hil.cli.client_setup import client
-from hil.cli.helper import print_json, gather_output
+from hil.cli.helper import print_json
 
 
 @click.group()
@@ -44,14 +44,13 @@ def network_show(network, jsonout):
         print_json(raw_output)
 
     # Collect raw output into presentable form
-    channels = gather_output(raw_output['channels'], '\n')
-    projects = gather_output(raw_output['access'], '\n')
+    channels = '\n'.join(raw_output['channels']) + '\n'
+    projects = '\n'.join(raw_output['access']) + '\n'
 
-    # Can't use gather_output method here because it's slightly more complex
     connected_nodes = ''
     for connected_node, nics in raw_output['connected-nodes'].iteritems():
         # Because a node can be connected to same network over multiple nics
-        all_nics = gather_output(nics, ',').rstrip(',')
+        all_nics = ','.join(nics)
         connected_nodes += connected_node + ' (' + all_nics + ')\n'
 
     # Make the table and print it
@@ -78,10 +77,9 @@ def network_list(jsonout):
     network_list_table.field_names = ['Name', 'Network ID', 'Projects']
 
     for name, attributes in raw_output.iteritems():
-        projects = gather_output(attributes['projects'], separator=',')
+        projects = ','.join(attributes['projects'])
 
-        network_list_table.add_row([name, attributes['network_id'],
-                                    projects.rstrip(',')])
+        network_list_table.add_row([name, attributes['network_id'], projects])
 
     network_list_table.sortby = 'Name'
     print(network_list_table)

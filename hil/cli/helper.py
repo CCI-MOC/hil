@@ -10,13 +10,6 @@ def print_json(raw_output):
     sys.exit(0)
 
 
-def gather_output(items, separator='\n'):
-    """Takes a list of <items> and returns a single string
-    separated by <separator>
-    """
-    return separator.join(items) + separator
-
-
 def print_status_table(raw_output):
     """Print the networking action status ID in a PrettyTable"""
     status_table = PrettyTable()
