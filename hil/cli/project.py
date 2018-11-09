@@ -1,7 +1,5 @@
 """Commands related to projects are in this module"""
 import click
-import sys
-from prettytable import PrettyTable
 from hil.cli.client_setup import client
 from hil.cli.helper import print_json, print_list_table
 
