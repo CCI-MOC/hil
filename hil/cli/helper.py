@@ -14,11 +14,7 @@ def gather_output(items, separator='\n'):
     """Takes a list of <items> and returns a single string
     separated by <separator>
     """
-    returnee = ''
-    for item in items:
-        returnee += item + separator
-
-    return returnee
+    return separator.join(items) + separator
 
 
 def print_status_table(raw_output):
@@ -27,4 +23,18 @@ def print_status_table(raw_output):
     status_table.field_names = ['Field', 'Value']
     status_table.add_row(['Status ID', raw_output['status_id']])
     print(status_table)
+    sys.exit(0)
+
+
+def print_list_table(raw_output, header):
+    """Prints a table with a single column. Also, puts the the counts
+    of items in the column name.
+    """
+    count = str(len(raw_output))
+    output_table = PrettyTable([header + ' (' + count + ')'])
+
+    for item in raw_output:
+        output_table.add_row([item])
+
+    print(output_table)
     sys.exit(0)

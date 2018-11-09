@@ -3,7 +3,7 @@ import click
 import sys
 from prettytable import PrettyTable
 from hil.cli.client_setup import client
-from hil.cli.helper import print_json, print_status_table
+from hil.cli.helper import print_json, print_status_table, print_list_table
 
 
 @click.group()
@@ -22,12 +22,9 @@ def nodes_list(pool, jsonout):
         print_json(raw_output)
 
     if pool == 'free':
-        node_list = PrettyTable(['Free Nodes'])
+        print_list_table(raw_output, 'Free Nodes')
     else:
-        node_list = PrettyTable(['All Nodes'])
-    for node in raw_output:
-        node_list.add_row([node])
-    print(node_list)
+        print_list_table(raw_output, 'All Nodes')
 
 
 @node.command(name='show')
