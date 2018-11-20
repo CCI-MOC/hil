@@ -3,7 +3,7 @@ import click
 import sys
 from prettytable import PrettyTable
 from hil.cli.client_setup import client
-from hil.cli.helper import print_json, print_status_table, print_list_table
+from hil.cli.helper import print_json, make_table
 
 
 @click.group()
@@ -22,9 +22,11 @@ def nodes_list(pool, jsonout):
         print_json(raw_output)
 
     if pool == 'free':
-        print_list_table(raw_output, 'Free Nodes')
+        print(make_table(field_names=['Free Nodes'],
+                         rows=[[i] for i in raw_output]))
     else:
-        print_list_table(raw_output, 'All Nodes')
+        print(make_table(field_names=['All Nodes'],
+                         rows=[[i] for i in raw_output]))
 
 
 @node.command(name='show')
@@ -128,7 +130,8 @@ def node_network_connect(node, network, nic, channel, jsonout):
     if jsonout:
         print_json(raw_output)
 
-    print_status_table(raw_output)
+    print(make_table(field_names=['Field', 'Value'],
+                     rows=['Status ID', raw_output['status_id']]))
 
 
 @node_network.command(name='detach', short_help="Detach node from a network")
@@ -142,7 +145,8 @@ def node_network_detach(node, network, nic, jsonout):
     if jsonout:
         print_json(raw_output)
 
-    print_status_table(raw_output)
+    print(make_table(field_names=['Field', 'Value'],
+                     rows=['Status ID', raw_output['status_id']]))
 
 
 @node.group(name='nic')

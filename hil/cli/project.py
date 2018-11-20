@@ -1,7 +1,7 @@
 """Commands related to projects are in this module"""
 import click
 from hil.cli.client_setup import client
-from hil.cli.helper import print_json, print_list_table
+from hil.cli.helper import print_json, make_table
 
 
 @click.group()
@@ -32,7 +32,8 @@ def project_list(jsonout):
     if jsonout:
         print_json(raw_output)
 
-    print_list_table(raw_output, 'Projects')
+    print(make_table(field_names=['Projects'],
+                     rows=[[i] for i in raw_output]))
 
 
 @project.command(name='list-networks')
@@ -45,7 +46,8 @@ def project_list_networks(project, jsonout):
     if jsonout:
         print_json(raw_output)
 
-    print_list_table(raw_output, 'Networks')
+    print(make_table(field_names=['Networks'],
+                     rows=[[i] for i in raw_output]))
 
 
 @project.group(name='node')
@@ -63,7 +65,8 @@ def project_node_list(project, jsonout):
     if jsonout:
         print_json(raw_output)
 
-    print_list_table(raw_output, 'Nodes')
+    print(make_table(field_names=['Nodes'],
+                     rows=[[i] for i in raw_output]))
 
 
 @project_node.command(name='add')

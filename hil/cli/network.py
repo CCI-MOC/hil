@@ -2,7 +2,7 @@
 import click
 from prettytable import PrettyTable
 from hil.cli.client_setup import client
-from hil.cli.helper import print_json
+from hil.cli.helper import print_json, make_table
 
 
 @click.group()
@@ -47,21 +47,16 @@ def network_show(network, jsonout):
     channels = '\n'.join(raw_output['channels']) + '\n'
     projects = '\n'.join(raw_output['access']) + '\n'
 
-    connected_nodes = ''
-    for connected_node, nics in raw_output['connected-nodes'].iteritems():
-        # Because a node can be connected to same network over multiple nics
-        all_nics = ','.join(nics)
-        connected_nodes += connected_node + ' (' + all_nics + ')\n'
+    nodes = [node + '(' + ','.join(nics) + ')'
+             for node, nics in raw_output['connected-nodes'].iteritems()]
 
-    # Make the table and print it
-    network_show_table = PrettyTable()
-    network_show_table.field_names = ['Field', 'Value']
-    network_show_table.add_row(['Name', raw_output['name']])
-    network_show_table.add_row(['Owner', raw_output['owner']])
-    network_show_table.add_row(['Channels', channels])
-    network_show_table.add_row(['Access', projects])
-    network_show_table.add_row(['Connected Nodes', connected_nodes.rstrip()])
-    print(network_show_table)
+    print(make_table(field_names=['Field', 'Value'],
+                     rows=[['Name', raw_output['name']],
+                           ['Owner', raw_output['owner']],
+                           ['Channels', channels],
+                           ['Access', projects],
+                           ['Connected Nodes', '\n'.join(nodes)]
+                           ]))
 
 
 @network.command(name='list')
@@ -73,16 +68,14 @@ def network_list(jsonout):
     if jsonout:
         print_json(raw_output)
 
-    network_list_table = PrettyTable()
-    network_list_table.field_names = ['Name', 'Network ID', 'Projects']
+    rows = [[name, attributes['network_id'],
+             ','.join(attributes['projects'])]
+            for name, attributes in raw_output.iteritems()]
 
-    for name, attributes in raw_output.iteritems():
-        projects = ','.join(attributes['projects'])
-
-        network_list_table.add_row([name, attributes['network_id'], projects])
-
-    network_list_table.sortby = 'Name'
-    print(network_list_table)
+    table = make_table(
+        field_names=['Name', 'Network ID', 'Projects'], rows=rows)
+    table.sortby = 'Name'
+    print(table)
 
 
 @network.command('list-attachments')
@@ -103,13 +96,12 @@ def list_network_attachments(network, project, jsonout):
     if jsonout:
         print_json(raw_output)
 
-    attachments_table = PrettyTable()
-    attachments_table.field_names = ['Node', 'Project', 'Nic', 'Channel']
-    for node, attributes in raw_output.iteritems():
-        attachments_table.add_row([node, attributes['project'],
-                                   attributes['nic'], attributes['channel']])
+    rows = [[node, attributes['project'],
+             attributes['nic'], attributes['channel']]
+            for node, attributes in raw_output.iteritems()]
 
-    print(attachments_table)
+    print(make_table(field_names=['Node', 'Project', 'Nic', 'Channel'],
+                     rows=rows))
 
 
 @network.command(name='grant-access')

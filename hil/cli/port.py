@@ -2,7 +2,7 @@
 import click
 from hil.cli.client_setup import client
 from prettytable import PrettyTable
-from hil.cli.helper import print_json, print_status_table
+from hil.cli.helper import print_json, make_table
 
 
 @click.group()
@@ -68,7 +68,8 @@ def port_revert(switch, port, jsonout):
     if jsonout:
         print_json(raw_output)
 
-    print_status_table(raw_output)
+    print(make_table(field_names=['Field', 'Value'],
+                     rows=['Status ID', raw_output['status_id']]))
 
 
 @port.group(name='nic')
