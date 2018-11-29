@@ -1,6 +1,5 @@
 """Commands related to networks are in this module"""
 import click
-from prettytable import PrettyTable
 from hil.cli.client_setup import client
 from hil.cli.helper import print_json, make_table
 
@@ -96,8 +95,10 @@ def list_network_attachments(network, project, jsonout):
     if jsonout:
         print_json(raw_output)
 
-    rows = [[node, attributes['project'],
-             attributes['nic'], attributes['channel']]
+    rows = [[node,
+             attributes['project'],
+             attributes['nic'],
+             attributes['channel']]
             for node, attributes in raw_output.iteritems()]
 
     print(make_table(field_names=['Node', 'Project', 'Nic', 'Channel'],

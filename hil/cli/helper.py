@@ -10,7 +10,7 @@ def print_json(raw_output):
     sys.exit(0)
 
 
-def make_table(field_names=[], rows=[]):
+def make_table(field_names, rows):
     """Generate a PrettyTable and return it.
     If there's only field, then it will add the count of items in the header.
     """
