@@ -1,7 +1,7 @@
 """Commands related to projects are in this module"""
 import click
-import sys
 from hil.cli.client_setup import client
+from hil.cli.helper import print_json, make_table
 
 
 @click.group()
@@ -24,20 +24,30 @@ def project_delete(project):
 
 
 @project.command(name='list')
-def project_list():
+@click.option('--json', 'jsonout', is_flag=True)
+def project_list(jsonout):
     """List all projects"""
-    q = client.project.list()
-    sys.stdout.write('%s Projects :    ' % len(q) + " , ".join(q) + '\n')
+    raw_output = client.project.list()
+
+    if jsonout:
+        print_json(raw_output)
+
+    print(make_table(field_names=['Projects'],
+                     rows=[[i] for i in raw_output]))
 
 
 @project.command(name='list-networks')
 @click.argument('project')
-def project_list_networks(project):
+@click.option('--json', 'jsonout', is_flag=True)
+def project_list_networks(project, jsonout):
     """List all networks attached to a <project>"""
-    q = client.project.networks_in(project)
-    sys.stdout.write(
-        "Networks allocated to %s\t:   %s\n" % (project, " , ".join(q))
-    )
+    raw_output = client.project.networks_in(project)
+
+    if jsonout:
+        print_json(raw_output)
+
+    print(make_table(field_names=['Networks'],
+                     rows=[[i] for i in raw_output]))
 
 
 @project.group(name='node')
@@ -47,12 +57,16 @@ def project_node():
 
 @project_node.command(name='list')
 @click.argument('project')
-def project_node_list(project):
+@click.option('--json', 'jsonout', is_flag=True)
+def project_node_list(project, jsonout):
     """List all nodes attached to a <project>"""
-    q = client.project.nodes_in(project)
-    sys.stdout.write(
-        'Nodes allocated to %s:  ' %
-        project + " , ".join(q) + '\n')
+    raw_output = client.project.nodes_in(project)
+
+    if jsonout:
+        print_json(raw_output)
+
+    print(make_table(field_names=['Nodes'],
+                     rows=[[i] for i in raw_output]))
 
 
 @project_node.command(name='add')

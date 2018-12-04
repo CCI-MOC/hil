@@ -4,7 +4,7 @@ import sys
 import ast
 from prettytable import PrettyTable
 from hil.cli.client_setup import client
-from hil.cli.helper import print_json
+from hil.cli.helper import print_json, make_table
 
 
 @click.group()
@@ -55,10 +55,8 @@ def list_switches(jsonout):
     if jsonout:
         print_json(raw_output)
 
-    switch_table = PrettyTable(['Switch List'])
-    for switch in raw_output:
-        switch_table.add_row([switch])
-    print(switch_table)
+    print(make_table(field_names=['Switches'],
+                     rows=[[i] for i in raw_output]))
 
 
 @switch.command(name='register', short_help='Register a switch')
