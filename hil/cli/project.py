@@ -80,6 +80,18 @@ def project_connect_node(project, node):
 @project_node.command(name='remove')
 @click.argument('project')
 @click.argument('node')
-def project_detach_node(project, node):
+@click.option('--force', is_flag=True)
+def project_detach_node(project, node, force):
     """Remove <node> from <project>"""
+    if force:
+        client.node.disable_obm(node)
+
+        node_info = client.node.show(node)
+        if 'nics' in node_info:
+            for n in node_info['nics']:
+                # if any nic is connected to a network, then it has a switch
+                # and port. So call revert port on those.
+                if 'networks' in n:
+                    client.port.detach_nic(n['switch'], n['port'])
+
     client.project.detach(project, node)
