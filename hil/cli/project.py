@@ -1,8 +1,10 @@
 """Commands related to projects are in this module"""
 import click
 import time
+import sys
 from hil.cli.client_setup import client
 from hil.cli.helper import print_json, make_table, HIL_TIMEOUT
+
 
 @click.group()
 def project():
@@ -86,7 +88,6 @@ def project_detach_node(project, node, force):
     if force:
         client.node.disable_obm(node)
         print("Disabled OBM")
-
         node_info = client.node.show(node)
         statuses = []
         if 'nics' in node_info:
@@ -94,8 +95,13 @@ def project_detach_node(project, node, force):
                 # if any nic is connected to a network, then it has a switch
                 # and port. So call revert port on those.
                 if 'networks' in n:
-                    response = client.port.port_revert(n['switch'], n['port'])
-                    statuses.append(response['status_id'])
+                    try:
+                        response = client.port.port_revert(
+                                                    n['switch'], n['port'])
+                        statuses.append(response['status_id'])
+                    except KeyError:
+                        print("Only admins can force remove nodes.")
+                        sys.exit(1)
 
         done = False
         end_time = time.time() + HIL_TIMEOUT
