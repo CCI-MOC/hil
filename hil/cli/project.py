@@ -1,8 +1,8 @@
 """Commands related to projects are in this module"""
 import click
+import time
 from hil.cli.client_setup import client
-from hil.cli.helper import print_json, make_table
-
+from hil.cli.helper import print_json, make_table, HIL_TIMEOUT
 
 @click.group()
 def project():
@@ -85,13 +85,33 @@ def project_detach_node(project, node, force):
     """Remove <node> from <project>"""
     if force:
         client.node.disable_obm(node)
+        print("Disabled OBM")
 
         node_info = client.node.show(node)
+        statuses = []
         if 'nics' in node_info:
             for n in node_info['nics']:
                 # if any nic is connected to a network, then it has a switch
                 # and port. So call revert port on those.
                 if 'networks' in n:
-                    client.port.detach_nic(n['switch'], n['port'])
+                    response = client.port.port_revert(n['switch'], n['port'])
+                    statuses.append(response['status_id'])
+
+        done = False
+        end_time = time.time() + HIL_TIMEOUT
+        while not done:
+            if time.time() > end_time:
+                raise Exception("Removing networks is taking too long. "
+                                "Set HIL_TIMEOUT to wait longer")
+            done = True
+            for status_id in statuses:
+                response = client.node.show_networking_action(status_id)
+                if response['status'] == 'ERROR':
+                    print("Revert port failed. Check HIL network server")
+                    return
+                elif response['status'] == 'PENDING':
+                    done = False
+                    break
+        print("Succesfuly finished removing all networks from the node.")
 
     client.project.detach(project, node)
