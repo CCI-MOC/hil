@@ -7,8 +7,7 @@ from prettytable import PrettyTable
 try:
     HIL_TIMEOUT = int(os.getenv('HIL_TIMEOUT', 10))
 except ValueError:
-    print("HIL_TIMEOUT is not a number")
-    sys.exit(1)
+    sys.exit("Please set environment variable HIL_TIMEOUT to a number")
 
 
 def print_json(raw_output):

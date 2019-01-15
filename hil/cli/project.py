@@ -82,7 +82,9 @@ def project_connect_node(project, node):
 @project_node.command(name='remove')
 @click.argument('project')
 @click.argument('node')
-@click.option('--force', is_flag=True)
+@click.option('--force', is_flag=True,
+              help="Disables obm and removes all networks before removing "
+                   "node from project. Requires admin privileges.")
 def project_detach_node(project, node, force):
     """Remove <node> from <project>"""
     if force:
@@ -97,11 +99,15 @@ def project_detach_node(project, node, force):
                 if 'networks' in n:
                     try:
                         response = client.port.port_revert(
-                                                    n['switch'], n['port'])
+                            n['switch'], n['port'])
                         statuses.append(response['status_id'])
                     except KeyError:
-                        print("Only admins can force remove nodes.")
-                        sys.exit(1)
+                        # This is raised when we try to look for switch and
+                        # and port in the output of node.show; which is only
+                        # available for HIL administrators.
+                        sys.exit("Could not get switch and port information"
+                                 " to call revert port with. Try running this"
+                                 " as a HIL admin.")
 
         done = False
         end_time = time.time() + HIL_TIMEOUT
