@@ -94,8 +94,11 @@ setup(name='hil',
       extras_require={
           'tests': [
                 'pytest>=3.4.0,<3.6',
-                'pytest-cov>2.0,<3.0',
-                'pytest-xdist>=1.14,<2.0',
+                # Not using standard sermver bounds because the latest version
+                # of the plugins require pytest version>3.5.1, which has other
+                # issues. See Issue #1057
+                'pytest-cov>2.0,<2.6.1',
+                'pytest-xdist>=1.14,<1.25',
                 'pycodestyle>=2.3.1',
                 'pylint>=1.6.0,<2.0',
                 'requests_mock>=1.0.0,<2.0',
