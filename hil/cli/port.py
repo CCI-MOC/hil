@@ -69,7 +69,7 @@ def port_revert(switch, port, jsonout):
         print_json(raw_output)
 
     print(make_table(field_names=['Field', 'Value'],
-                     rows=['Status ID', raw_output['status_id']]))
+                     rows=[['Status ID', raw_output['status_id']]]))
 
 
 @port.group(name='nic')

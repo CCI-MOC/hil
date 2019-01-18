@@ -131,7 +131,7 @@ def node_network_connect(node, network, nic, channel, jsonout):
         print_json(raw_output)
 
     print(make_table(field_names=['Field', 'Value'],
-                     rows=['Status ID', raw_output['status_id']]))
+                     rows=[['Status ID', raw_output['status_id']]]))
 
 
 @node_network.command(name='detach', short_help="Detach node from a network")
@@ -146,7 +146,7 @@ def node_network_detach(node, network, nic, jsonout):
         print_json(raw_output)
 
     print(make_table(field_names=['Field', 'Value'],
-                     rows=['Status ID', raw_output['status_id']]))
+                     rows=[['Status ID', raw_output['status_id']]]))
 
 
 @node.group(name='nic')
