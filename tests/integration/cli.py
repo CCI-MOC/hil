@@ -10,6 +10,7 @@ import subprocess
 import json
 import requests
 import pytest
+import time
 from hil.test_common import fail_on_log_warnings, obmd_cfg
 
 logger = logging.getLogger(__name__)
@@ -127,8 +128,11 @@ def test_cli(obmd_cfg):
     hil('network', 'create', 'test-net', PROJECT1)
     hil('port', 'nic', 'add', SWITCH1, PORT, NODE1, NIC1)
     hil('node', 'network', 'connect', NODE1, NIC1, 'test-net', 'null')
+    time.sleep(1)
     hil('node', 'network', 'detach', NODE1, NIC1, 'test-net')
+    time.sleep(1)
     hil('port', 'revert', SWITCH1, PORT)
+    time.sleep(1)
 
     # delete everything
     hil('port', 'nic', 'remove', SWITCH1, PORT)
