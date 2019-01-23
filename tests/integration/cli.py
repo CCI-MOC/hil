@@ -123,9 +123,11 @@ def test_cli(obmd_cfg):
     assert PORT in hil('switch', 'show', SWITCH1)
     assert PORT not in hil('switch', 'show', SWITCH2)
 
-    # Connect a nic to a switchport and call revert port on it.
-    # This should run sucessfully.
+    # Connect a nic to switchport, and perform all networking operations on it
+    hil('network', 'create', 'test-net', PROJECT1)
     hil('port', 'nic', 'add', SWITCH1, PORT, NODE1, NIC1)
+    hil('node', 'network', 'connect', NODE1, NIC1, 'test-net', 'null')
+    hil('node', 'network', 'detach', NODE1, NIC1, 'test-net')
     hil('port', 'revert', SWITCH1, PORT)
 
     # delete everything

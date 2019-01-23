@@ -10,7 +10,6 @@ from subprocess import check_call, check_output, Popen, CalledProcessError, \
     STDOUT
 from time import sleep
 from hil.test_common import fail_on_log_warnings
-from hil.cli.helper import make_table
 
 
 fail_on_log_warnings = pytest.fixture(autouse=True)(fail_on_log_warnings)
@@ -107,17 +106,3 @@ def test_db_init_error(command):
             'Should have printed an error re: database initialization, '
             'but printed %r' % e.output
         )
-
-
-def test_cli_helper_make_table():
-    """Test CLI helper that makes table."""
-
-    # Pretty table doesn't throw a named exception to catch.
-    with pytest.raises(Exception) as e:
-        make_table(field_names=['Field', 'Value'], rows=['Potato', 'corn'])
-
-    # But we can check if the error message is correct.
-    assert "Row has incorrect number of values" in e.value.message
-
-    # This should run succesfully.
-    make_table(field_names=['Field', 'Value'], rows=[['Potato', 'corn']])
