@@ -92,6 +92,7 @@ def project_detach_node(project, node, force):
         print("Disabled OBM")
         node_info = client.node.show(node)
         statuses = []
+        done = True
         if 'nics' in node_info:
             for n in node_info['nics']:
                 # if any nic is connected to a network, then it has a switch
@@ -101,6 +102,7 @@ def project_detach_node(project, node, force):
                         response = client.port.port_revert(
                             n['switch'], n['port'])
                         statuses.append(response['status_id'])
+                        done = False
                     except KeyError:
                         # This is raised when we try to look for switch and
                         # and port in the output of node.show; which is only
@@ -109,7 +111,6 @@ def project_detach_node(project, node, force):
                                  " to call revert port with. Try running this"
                                  " as a HIL admin.")
 
-        done = False
         end_time = time.time() + HIL_TIMEOUT
         while not done:
             if time.time() > end_time:
