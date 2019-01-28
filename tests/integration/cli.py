@@ -134,9 +134,13 @@ def test_cli(obmd_cfg):
     hil('port', 'revert', SWITCH1, PORT)
     time.sleep(2)
 
+    # Test force removing the node here
+    hil('node', 'network', 'connect', NODE1, NIC1, 'test-net', 'null')
+    time.sleep(2)
+    hil('node', 'obm', 'enable', NODE1)
+    hil('project', 'node', 'remove', PROJECT1, NODE1, '--force')
+
     # delete everything
-    hil('node', 'obm', 'disable', NODE1)
-    hil('project', 'node', 'remove', PROJECT1, NODE1)
     hil('network', 'delete', 'test-net')
     hil('port', 'nic', 'remove', SWITCH1, PORT)
     hil('port', 'delete', SWITCH1, PORT)
