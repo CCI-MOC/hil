@@ -10,6 +10,7 @@ import subprocess
 import json
 import requests
 import pytest
+import time
 from hil.test_common import fail_on_log_warnings, obmd_cfg
 
 logger = logging.getLogger(__name__)
@@ -123,12 +124,24 @@ def test_cli(obmd_cfg):
     assert PORT in hil('switch', 'show', SWITCH1)
     assert PORT not in hil('switch', 'show', SWITCH2)
 
+    # Connect a nic to switchport, and perform all networking operations on it
+    hil('network', 'create', 'test-net', PROJECT1)
+    hil('port', 'nic', 'add', SWITCH1, PORT, NODE1, NIC1)
+    hil('node', 'network', 'connect', NODE1, NIC1, 'test-net', 'null')
+    time.sleep(2)
+    hil('node', 'network', 'detach', NODE1, NIC1, 'test-net')
+    time.sleep(2)
+    hil('port', 'revert', SWITCH1, PORT)
+    time.sleep(2)
+
     # delete everything
+    hil('node', 'obm', 'disable', NODE1)
+    hil('project', 'node', 'remove', PROJECT1, NODE1)
+    hil('network', 'delete', 'test-net')
+    hil('port', 'nic', 'remove', SWITCH1, PORT)
     hil('port', 'delete', SWITCH1, PORT)
     hil('switch', 'delete', SWITCH1)
     hil('switch', 'delete', SWITCH2)
-    hil('node', 'obm', 'disable', NODE1)
-    hil('project', 'node', 'remove', PROJECT1, NODE1)
     hil('project', 'delete', PROJECT1)
     hil('node', 'nic', 'delete', NODE1, NIC1)
     hil('node', 'delete', NODE1)
