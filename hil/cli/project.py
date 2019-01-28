@@ -105,7 +105,7 @@ def project_detach_node(project, node, force):
                         done = False
                     except KeyError:
                         # This is raised when we try to look for switch and
-                        # and port in the output of node.show; which is only
+                        # port in the output of node.show; which is only
                         # available for HIL administrators.
                         sys.exit("Could not get switch and port information"
                                  " to call revert port with. Try running this"
