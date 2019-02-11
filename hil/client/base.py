@@ -60,8 +60,9 @@ class ClientBase(object):
         if 200 <= response.status_code < 300:
             try:
                 return json.loads(response.content)
-            except ValueError:  # No JSON request body; typical
-                                # For methods PUT, POST, DELETE
+            except ValueError:
+                # No JSON request body; typical
+                # For methods PUT, POST, DELETE
                 return
         try:
             e = json.loads(response.content)

@@ -333,13 +333,13 @@ for (project, project_access, net) in [
 # Admin should be able to list attachments for public network:
 for net in ('stock_int_pub', 'stock_ext_pub'):
     for project in ('runway', 'manhattan'):
-            auth_call_params.append(dict(
-                fn=api.list_network_attachments,
-                error=None,
-                admin=True,
-                project=project,
-                args=[net]
-            ))
+        auth_call_params.append(dict(
+            fn=api.list_network_attachments,
+            error=None,
+            admin=True,
+            project=project,
+            args=[net]
+        ))
 
 # Projects should be able to view their own nodes in a network:
 for (project, net) in [

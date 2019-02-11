@@ -70,8 +70,8 @@ class _BaseSession(_console.Session):
                 native_vlan = native_vlan.replace(' (Inactive)', '')
                 if (hasattr(self.switch, 'dummy_vlan') and
                         int(native_vlan) == int(self.switch.dummy_vlan)):
-                        # ignore if dummy vlan
-                        native_vlan = None
+                    # ignore if dummy vlan
+                    native_vlan = None
                 else:
                     # appropriate to append native vlan to list
                     network_list.append(('vlan/native', int(native_vlan)))

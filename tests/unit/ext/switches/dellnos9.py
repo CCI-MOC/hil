@@ -58,14 +58,14 @@ def mock_networking_action():
         .order_by(model.NetworkingAction.id).one_or_none()
 
     if action.new_network is None:
-            db.session.query(model.NetworkAttachment) \
-                .filter_by(nic=action.nic, channel=action.channel)\
-                .delete()
+        db.session.query(model.NetworkAttachment) \
+            .filter_by(nic=action.nic, channel=action.channel)\
+            .delete()
     else:
-            db.session.add(model.NetworkAttachment(
-                nic=action.nic,
-                network=action.new_network,
-                channel=action.channel))
+        db.session.add(model.NetworkAttachment(
+            nic=action.nic,
+            network=action.new_network,
+            channel=action.channel))
 
     db.session.delete(action)
     db.session.commit()
