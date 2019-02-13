@@ -436,62 +436,62 @@ def site_layout():
 
 
 def obmd_cfg():
-        """Fixture launching obmd with a config.
+    """Fixture launching obmd with a config.
 
-        The fixture yields the config as a parsed json object. The obmd
-        process is terminated when the test completes.
+    The fixture yields the config as a parsed json object. The obmd
+    process is terminated when the test completes.
 
-        Like many of the functions in this module, this is intended to
-        be used as a fixture, but not declared here as such; individual
-        modules should declare it as a fixture.
-        """
-        # Make the port number a function of which worker we're running on,
-        # so parallel tests don't try to use the same port. We derive the
-        # port number by stripping out all non-digit characters from the
-        # worker id, and then adding the result to a base. If the worker id
-        # isn't set, we're probably not running in parallel, so just use
-        # the base.
-        portno = 8800
-        worker = os.getenv('PYTEST_XDIST_WORKER')
-        if worker is not None:
-            portno += int(''.join([
-                char
-                for char in worker
-                if char.isdigit()
-            ]))
+    Like many of the functions in this module, this is intended to
+    be used as a fixture, but not declared here as such; individual
+    modules should declare it as a fixture.
+    """
+    # Make the port number a function of which worker we're running on,
+    # so parallel tests don't try to use the same port. We derive the
+    # port number by stripping out all non-digit characters from the
+    # worker id, and then adding the result to a base. If the worker id
+    # isn't set, we're probably not running in parallel, so just use
+    # the base.
+    portno = 8800
+    worker = os.getenv('PYTEST_XDIST_WORKER')
+    if worker is not None:
+        portno += int(''.join([
+            char
+            for char in worker
+            if char.isdigit()
+        ]))
 
-        cfg = {
-            'ListenAddr': ":" + str(portno),
-            'AdminToken': "8fcfe5d3f8ca8c4b87d0f8ae86b43bca",
-            'DBType': 'sqlite3',
-            'DBPath': ':memory:',
-        }
+    cfg = {
+        'ListenAddr': ":" + str(portno),
+        'AdminToken': "8fcfe5d3f8ca8c4b87d0f8ae86b43bca",
+        'DBType': 'sqlite3',
+        'DBPath': ':memory:',
+    }
 
-        (fd, name) = tempfile.mkstemp()
-        os.write(fd, json.dumps(cfg))
-        os.close(fd)
+    (fd, name) = tempfile.mkstemp()
+    os.write(fd, json.dumps(cfg))
+    os.close(fd)
+    try:
+        obmd_proc = subprocess.Popen(['obmd', '-config', name])
+    except Exception as e:
+        assert False, ("Error spawning obmd: %r" % e)
+
+    # wait for obmd to start accepting connections:
+    attempts = 0
+    while attempts < 60:
         try:
-            obmd_proc = subprocess.Popen(['obmd', '-config', name])
-        except Exception as e:
-            assert False, ("Error spawning obmd: %r" % e)
+            conn = socket.create_connection(('127.0.0.1', portno))
+            conn.close()
+            break
+        except socket.error:
+            time.sleep(0.1)
+            attempts += 1
+    assert attempts < 60, "Timeout waiting for obmd to start"
 
-        # wait for obmd to start accepting connections:
-        attempts = 0
-        while attempts < 60:
-            try:
-                conn = socket.create_connection(('127.0.0.1', portno))
-                conn.close()
-                break
-            except socket.error:
-                time.sleep(0.1)
-                attempts += 1
-        assert attempts < 60, "Timeout waiting for obmd to start"
+    yield cfg
 
-        yield cfg
-
-        obmd_proc.terminate()
-        obmd_proc.wait()
-        os.remove(name)
+    obmd_proc.terminate()
+    obmd_proc.wait()
+    os.remove(name)
 
 
 def headnode_cleanup(request):

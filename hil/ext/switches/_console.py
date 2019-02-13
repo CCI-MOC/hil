@@ -140,31 +140,31 @@ class Session(SwitchSession):
 
 
 def get_prompts(console):
-        """Determine the prompts used by the console.
+    """Determine the prompts used by the console.
 
-        console should be a pexpect connection.
+    console should be a pexpect connection.
 
-        The return value is a dictionary mapping prompt names to regexes
-        matching them. The keys are:
+    The return value is a dictionary mapping prompt names to regexes
+    matching them. The keys are:
 
-            * config_prompt
-            * if_prompt
-            * main_prompt
-        """
-        # Regex to handle different prompt at switch
-        # [\r\n]+ will handle any newline
-        # .+ will handle any character after newline
-        # this sequence terminates with #
-        console.expect(r'[\r\n]+.+#')
-        cmd_prompt = console.after.split('\n')[-1]
-        cmd_prompt = cmd_prompt.strip(' \r\n\t')
+        * config_prompt
+        * if_prompt
+        * main_prompt
+    """
+    # Regex to handle different prompt at switch
+    # [\r\n]+ will handle any newline
+    # .+ will handle any character after newline
+    # this sequence terminates with #
+    console.expect(r'[\r\n]+.+#')
+    cmd_prompt = console.after.split('\n')[-1]
+    cmd_prompt = cmd_prompt.strip(' \r\n\t')
 
-        # :-1 omits the last hash character
-        return {
-            'config_prompt': re.escape(cmd_prompt[:-1] + '(config)#'),
-            'if_prompt': re.escape(cmd_prompt[:-1]) + r'\(config\-if[^)]*\)#',
-            'main_prompt': re.escape(cmd_prompt),
-        }
+    # :-1 omits the last hash character
+    return {
+        'config_prompt': re.escape(cmd_prompt[:-1] + '(config)#'),
+        'if_prompt': re.escape(cmd_prompt[:-1]) + r'\(config\-if[^)]*\)#',
+        'main_prompt': re.escape(cmd_prompt),
+    }
 
 
 def login(switch):
