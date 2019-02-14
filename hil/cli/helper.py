@@ -1,7 +1,13 @@
 """Helper functions for the CLI live here"""
 import json
 import sys
+import os
 from prettytable import PrettyTable
+
+try:
+    HIL_TIMEOUT = int(os.getenv('HIL_TIMEOUT', 10))
+except ValueError:
+    sys.exit("Please set environment variable HIL_TIMEOUT to a number")
 
 
 def print_json(raw_output):

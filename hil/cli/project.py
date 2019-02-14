@@ -1,7 +1,9 @@
 """Commands related to projects are in this module"""
 import click
+import time
+import sys
 from hil.cli.client_setup import client
-from hil.cli.helper import print_json, make_table
+from hil.cli.helper import print_json, make_table, HIL_TIMEOUT
 
 
 @click.group()
@@ -80,6 +82,49 @@ def project_connect_node(project, node):
 @project_node.command(name='remove')
 @click.argument('project')
 @click.argument('node')
-def project_detach_node(project, node):
+@click.option('--force', is_flag=True,
+              help="Disables obm and removes all networks before removing "
+                   "node from project. Requires admin privileges.")
+def project_detach_node(project, node, force):
     """Remove <node> from <project>"""
+    if force:
+        client.node.disable_obm(node)
+        print("Disabled OBM")
+        node_info = client.node.show(node)
+        statuses = []
+        done = True
+        if 'nics' in node_info:
+            for n in node_info['nics']:
+                # if any nic is connected to a network, then it has a switch
+                # and port. So call revert port on those.
+                if 'networks' in n:
+                    try:
+                        response = client.port.port_revert(
+                            n['switch'], n['port'])
+                        statuses.append(response['status_id'])
+                        done = False
+                    except KeyError:
+                        # This is raised when we try to look for switch and
+                        # port in the output of node.show; which is only
+                        # available for HIL administrators.
+                        sys.exit("Could not get switch and port information"
+                                 " to call revert port with. Try running this"
+                                 " as a HIL admin.")
+
+        end_time = time.time() + HIL_TIMEOUT
+        while not done:
+            if time.time() > end_time:
+                raise Exception("Removing networks is taking too long. "
+                                "Set HIL_TIMEOUT to wait longer")
+            done = True
+            for status_id in statuses:
+                response = client.node.show_networking_action(status_id)
+                if response['status'] == 'ERROR':
+                    print("Revert port failed. Check HIL network server")
+                    return
+                elif response['status'] == 'PENDING':
+                    done = False
+                    break
+        print("Succesfuly finished removing all networks from the node.")
+
     client.project.detach(project, node)
