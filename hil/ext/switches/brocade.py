@@ -12,7 +12,7 @@ from schema import Schema, Optional
 
 from hil.migrations import paths
 from hil.model import db, Switch
-from hil.errors import BadArgumentError
+from hil.errors import BadArgumentError, SwitchError
 from hil.model import BigIntegerType
 from hil.ext.switches.common import check_native_networks, parse_vlans
 from hil.config import core_schema, string_is_bool
@@ -72,8 +72,23 @@ class Brocade(Switch, _vlan_http.Session):
         return []
 
     def _port_shutdown(self, interface):
-        """Shuts down port; unimplemented right now
-        TODO: Implement this and associated methods see #970"""
+        """Shuts down port"""
+        payload = '<shutdown>true</shutdown'
+        # accepting 409 makes it idempotent
+        self._make_request('POST', url, data=payload, acceptable_error_codes=(409,))
+
+    def _is_interface_off(self, interface):
+        """ Returns a boolean that tells the status of a switchport"""
+
+        url = self._construct_url(interface)
+        response = self._make_request('GET', url)
+        shutdown = root.find(self._construct_tag("shutdown"))
+        if shutdown is None:
+            return False
+        elif shutdown.text == "true":
+            return True
+        else
+            raise SwitchError("Could not determine if interface is off")
 
     def _get_mode(self, interface):
         """ Return the mode of an interface.
@@ -100,10 +115,14 @@ class Brocade(Switch, _vlan_http.Session):
             mode: 'access' or 'trunk'
 
         Raises: AssertionError if mode is invalid.
-
         """
-        # Enable switching
         url = self._construct_url(interface)
+
+        # Turn on port; equivalent to running `no shutdown` on the switchport
+        if self._is_interface_off:
+            self._make_request('DELETE', url+"/shutdown")
+
+        # Enable switching
         payload = '<switchport></switchport>'
         self._make_request('POST', url, data=payload,
                            acceptable_error_codes=(409,))
