@@ -75,7 +75,8 @@ class Brocade(Switch, _vlan_http.Session):
         """Shuts down port"""
         payload = '<shutdown>true</shutdown'
         # accepting 409 makes it idempotent
-        self._make_request('POST', url, data=payload, acceptable_error_codes=(409,))
+        self._make_request('POST', url, data=payload,
+                           acceptable_error_codes=(409,))
 
     def _is_interface_off(self, interface):
         """ Returns a boolean that tells the status of a switchport"""
@@ -87,7 +88,7 @@ class Brocade(Switch, _vlan_http.Session):
             return False
         elif shutdown.text == "true":
             return True
-        else
+        else:
             raise SwitchError("Could not determine if interface is off")
 
     def _get_mode(self, interface):
@@ -267,10 +268,10 @@ class Brocade(Switch, _vlan_http.Session):
         return '%(hostname)s/rest/config/running/interface/' \
             '%(interface_type)s/%%22%(interface)s%%22%(suffix)s' \
             % {
-                  'hostname': self.hostname,
-                  'interface_type': self.interface_type,
-                  'interface': interface,
-                  'suffix': '/switchport/%s' % suffix if suffix else ''
+                'hostname': self.hostname,
+                'interface_type': self.interface_type,
+                'interface': interface,
+                'suffix': '/switchport/%s' % suffix if suffix else ''
             }
 
     @staticmethod
