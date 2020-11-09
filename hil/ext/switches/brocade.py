@@ -73,7 +73,7 @@ class Brocade(Switch, _vlan_http.Session):
 
     def _port_shutdown(self, interface):
         """Shuts down port"""
-        payload = '<shutdown>true</shutdown'
+        payload = '<shutdown>true</shutdown>'
         # accepting 409 makes it idempotent
         self._make_request('POST', url, data=payload,
                            acceptable_error_codes=(409,))
