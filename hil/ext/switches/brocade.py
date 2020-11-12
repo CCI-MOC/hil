@@ -74,6 +74,7 @@ class Brocade(Switch, _vlan_http.Session):
     def _port_shutdown(self, interface):
         """Shuts down port"""
         payload = '<shutdown>true</shutdown>'
+        url = self._construct_url(interface)
         # accepting 409 makes it idempotent
         self._make_request('POST', url, data=payload,
                            acceptable_error_codes=(409,))
@@ -83,6 +84,7 @@ class Brocade(Switch, _vlan_http.Session):
 
         url = self._construct_url(interface)
         response = self._make_request('GET', url)
+        root = etree.fromstring(response.text)
         shutdown = root.find(self._construct_tag("shutdown"))
         if shutdown is None:
             return False
@@ -120,7 +122,7 @@ class Brocade(Switch, _vlan_http.Session):
         url = self._construct_url(interface)
 
         # Turn on port; equivalent to running `no shutdown` on the switchport
-        if self._is_interface_off:
+        if self._is_interface_off(interface):
             self._make_request('DELETE', url+"/shutdown")
 
         # Enable switching
